@@ -1,0 +1,17 @@
+{
+  "name": "ชีวิตนับร้อยชาติ",
+  "short_name": "นับร้อยชาติ",
+  "description": "Life simulator แบบ BitLife ผสมมังฮวา — ตื่นพลัง บุก Gate ย้อนเวลา",
+  "lang": "th",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070d",
+  "theme_color": "#05070d",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

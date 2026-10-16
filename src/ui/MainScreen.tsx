@@ -1,0 +1,119 @@
+import { useEffect, useRef } from "react";
+import { careerById } from "../content/hunter/careers";
+import { rankName } from "../content/hunter/power";
+import { STAT_LABEL } from "../engine/game";
+import type { Life, LogEntry, StatKey } from "../engine/types";
+import { formatMoney } from "../engine/util";
+
+export type TabId = "career" | "people" | "power" | "activities" | "soul";
+
+const TABS: { id: TabId; emoji: string; label: string }[] = [
+  { id: "career", emoji: "💼", label: "อาชีพ" },
+  { id: "people", emoji: "❤️", label: "คน" },
+  { id: "power", emoji: "⚔️", label: "พลัง" },
+  { id: "activities", emoji: "🎯", label: "ทำ" },
+  { id: "soul", emoji: "👻", label: "วิญญาณ" },
+];
+
+const VISIBLE_STATS: StatKey[] = ["health", "happiness", "smarts", "looks"];
+const STAT_EMOJI: Record<StatKey, string> = { health: "❤️", happiness: "😊", smarts: "🧠", looks: "✨", luck: "🍀" };
+
+export function StatBar({ k, value }: { k: StatKey; value: number }) {
+  const tone = value < 25 ? "low" : value < 50 ? "mid" : "high";
+  return (
+    <div className="stat">
+      <span className="stat-label">
+        {STAT_EMOJI[k]} {STAT_LABEL[k]}
+      </span>
+      <div className="bar">
+        <div className={`fill ${tone}`} style={{ width: `${value}%` }} />
+      </div>
+      <span className="stat-val">{value}</span>
+    </div>
+  );
+}
+
+function groupByAge(log: LogEntry[]) {
+  const groups: { age: number; entries: LogEntry[] }[] = [];
+  for (const e of log) {
+    const g = groups[groups.length - 1];
+    if (g && g.age === e.age) g.entries.push(e);
+    else groups.push({ age: e.age, entries: [e] });
+  }
+  return groups;
+}
+
+export function MainScreen({ life, onAgeUp, onTab }: { life: Life; onAgeUp: () => void; onTab: (t: TabId) => void }) {
+  const logRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
+  }, [life.log.length]);
+
+  const job = life.job ? careerById(life.job.careerId) : undefined;
+  const subtitle = job ? job.titles[life.job!.level - 1] : life.education.stage === "university" ? "นักศึกษา" : life.age >= 18 ? "ว่างงาน" : "นักเรียน";
+
+  return (
+    <div className="main">
+      <header className="top">
+        <div className="who" style={{ flex: 1, minWidth: 0 }}>
+          <div className="name">
+            {life.firstName} {life.lastName}
+          </div>
+          <div className="sub">
+            {subtitle} · {formatMoney(life.money)}
+            {life.debt > 0 && <span className="debt"> · หนี้ {formatMoney(life.debt)}</span>}
+          </div>
+        </div>
+        {life.power && (
+          <div className={`rank-badge rank rank-${rankName(life.power.rank)}`} title="แรงก์">
+            {rankName(life.power.rank)}
+          </div>
+        )}
+        <div className="age-badge">
+          <span className="age-num">{life.age}</span>
+          <span className="age-unit">ปี</span>
+        </div>
+      </header>
+
+      <section className="stats">
+        {VISIBLE_STATS.map((k) => (
+          <StatBar key={k} k={k} value={life.stats[k]} />
+        ))}
+      </section>
+
+      <div className="log" ref={logRef}>
+        {groupByAge(life.log).map((g) => (
+          <div className="log-group" key={g.age}>
+            <div className="log-age">อายุ {g.age} ปี</div>
+            {g.entries.map((e, i) =>
+              e.kind === "system" ? (
+                <div className="sys-window inline" key={i}>
+                  <div className="sys-head">ระบบ</div>
+                  <p>{e.text}</p>
+                </div>
+              ) : (
+                <p className={`log-line ${e.kind}`} key={i}>
+                  {e.text}
+                </p>
+              ),
+            )}
+          </div>
+        ))}
+      </div>
+
+      <footer className="bottom">
+        <button className="age-btn" onClick={onAgeUp} disabled={life.queue.length > 0}>
+          ＋ อายุ 1 ปี
+        </button>
+        <nav className="tabs">
+          {TABS.map((t) => (
+            <button key={t.id} className="tab" onClick={() => onTab(t.id)}>
+              <span className="tab-emoji">{t.emoji}</span>
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </nav>
+      </footer>
+    </div>
+  );
+}

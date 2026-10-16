@@ -1,0 +1,208 @@
+export type StatKey = "health" | "happiness" | "smarts" | "looks" | "luck";
+
+export type Stats = Record<StatKey, number>;
+
+export type Gender = "m" | "f";
+
+export type Relation =
+  | "father"
+  | "mother"
+  | "sibling"
+  | "friend"
+  | "partner"
+  | "spouse"
+  | "child"
+  | "rival";
+
+export interface Person {
+  id: string;
+  name: string;
+  gender: Gender;
+  relation: Relation;
+  age: number;
+  bond: number; // 0-100
+  alive: boolean;
+  job?: string;
+}
+
+export type Wealth = "poor" | "middle" | "rich" | "elite";
+
+export type SchoolStage =
+  | "none"
+  | "kinder"
+  | "primary"
+  | "secondary"
+  | "high"
+  | "university"
+  | "done";
+
+export type Faculty = "med" | "eng" | "business" | "comm" | "edu";
+
+export interface Education {
+  stage: SchoolStage;
+  grade: number; // 0-100 ผลการเรียนช่วงปัจจุบัน
+  faculty?: Faculty;
+  uniYearsLeft?: number;
+  degree?: Faculty; // ปริญญาที่จบแล้ว
+  highSchoolDone: boolean;
+}
+
+export interface Job {
+  careerId: string;
+  level: number; // 1..5
+  performance: number; // 0-100
+  years: number;
+}
+
+export type Rarity = "common" | "rare" | "legendary" | "divine";
+
+export interface TalentState {
+  id: string;
+  revealed: boolean;
+}
+
+export type LogKind = "normal" | "good" | "bad" | "system" | "milestone";
+
+export interface LogEntry {
+  age: number;
+  text: string;
+  kind: LogKind;
+}
+
+/** event ที่รอผู้เล่นตัดสินใจ — เก็บเฉพาะข้อมูลที่ serialize ได้ */
+export interface QueuedEvent {
+  eventId: string;
+  ctx: Record<string, string | number | boolean>;
+  /** ฉากปัจจุบันของตอนพิเศษ (ไม่มี = "start") */
+  scene?: string;
+}
+
+export type HunterClass = "sword" | "mage" | "healer" | "assassin" | "tank" | "summoner";
+
+/** สถานะผู้ตื่นพลัง — rank: 0=F … 8=SSS */
+export interface Power {
+  rank: number;
+  hunterClass: HunterClass;
+  level: number;
+  exp: number;
+  skills: string[];
+  guild?: string;
+  gates: number;
+  bossKills: number;
+  awakenedAt: number;
+  items: string[];
+}
+
+export interface Life {
+  version: 1;
+  id: string;
+  worldId: "hunter";
+  seed: number;
+  rng: number; // สถานะ RNG ปัจจุบัน
+
+  firstName: string;
+  nickname: string;
+  lastName: string;
+  gender: Gender;
+  birthYear: number;
+  age: number;
+  alive: boolean;
+  causeOfDeath?: string;
+
+  stats: Stats;
+  money: number;
+  debt: number;
+  fame: number; // -100..100
+
+  wealth: Wealth;
+  talents: TalentState[];
+  people: Person[];
+  education: Education;
+  job?: Job;
+  power?: Power;
+
+  flags: Record<string, string | number | boolean>;
+  /** event ที่เคยเกิดแล้ว (นับครั้ง) */
+  seen: Record<string, number>;
+  /** กิจกรรมที่ทำไปแล้วในปีนี้ */
+  doneThisYear: string[];
+
+  log: LogEntry[];
+  queue: QueuedEvent[];
+  devCreated?: boolean;
+
+  // ── ระบบวิญญาณ (M3) — optional เพื่อให้เซฟเก่ายังโหลดได้ ──
+  /** seed ของโลก: ข้อเท็จจริงของโลก (เลขหวย, มหันตภัย ฯลฯ) มาจากค่านี้ + ปีเกิด ไม่ขึ้นกับการตัดสินใจของผู้เล่น */
+  worldSeed?: number;
+  /** ย้อนเวลามาแล้วกี่ครั้งในเส้นเวลานี้ */
+  regressions?: number;
+  /** อนาคตเบี่ยงไปจากที่จำได้มากแค่ไหน (0–100+) */
+  divergence?: number;
+  /** ความทรงจำจากชาติก่อนที่ติดตัวมา */
+  memories?: Memory[];
+  /** สิ่งที่ได้เห็นในชาตินี้ — จะกลายเป็นความทรงจำถ้าย้อนเวลา */
+  observed?: Memory[];
+  /** มรดกจากชาติก่อนในโลกเดียวกัน (เกิดใหม่ยุคถัดไป) */
+  legacy?: Legacy;
+}
+
+export interface Memory {
+  key: string;
+  age: number;
+  text: string;
+  data?: Record<string, string | number>;
+}
+
+export interface Legacy {
+  founderName: string;
+  lastName: string;
+  founderAge: number;
+  founderDeathYear: number;
+  fame: number;
+  rank?: number;
+  wealth: Wealth;
+  children: string[];
+  stash?: number;
+  generation: number;
+}
+
+export interface PastLife {
+  id: string;
+  name: string;
+  gender: Gender;
+  age: number;
+  cause: string;
+  money: number;
+  job?: string;
+  degree?: Faculty;
+  fame: number;
+  talents: string[];
+  endedAt: number;
+  rank?: number;
+  points?: number;
+  regressed?: boolean;
+  birthYear?: number;
+}
+
+export interface Soul {
+  version: 1;
+  points: number;
+  totalPoints: number;
+  lives: number;
+  achievements: string[];
+  /** life id ที่ให้แต้มไปแล้ว (กันได้ซ้ำ) */
+  awarded: string[];
+  perks: {
+    blessing: number; // ใช้ครั้งเดียวต่อการเกิด
+    reroll: number;
+    clarity: boolean; // ถาวร: ความทรงจำเพี้ยนช้าลง
+    lockedTalent?: string;
+  };
+  timeline?: {
+    worldSeed: number;
+    regressions: number;
+    divergence: number;
+    memories: Memory[];
+    legacy?: Legacy;
+  };
+}
