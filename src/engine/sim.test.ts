@@ -1,15 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { loadHunterWorld } from "../content/hunter";
 import { CAREERS } from "../content/hunter/careers";
-import { canEnterGate, enterGate } from "../content/hunter/events/gates";
-import { rankName } from "../content/hunter/power";
+import { canEnterGate, enterGate, train } from "../content/hunter/events/gates";
+import { rankLabel, rankName } from "../content/hunter/power";
+import { loadMurimWorld } from "../content/murim";
 import { ACTIVITIES, activityLocked, doActivity } from "./activities";
 import { visibleChoices } from "./events";
 import { ageUp, applyJob, createLife, resolveChoice } from "./game";
 import { nextFloat } from "./rng";
-import type { Life } from "./types";
+import type { Life, WorldId } from "./types";
 
 loadHunterWorld();
+loadMurimWorld();
 
 function drain(life: Life, r: { rng: number }) {
   let guard = 0;
@@ -20,16 +22,19 @@ function drain(life: Life, r: { rng: number }) {
   }
 }
 
-function playLife(seed: number, opts: { hunterBot?: boolean } = {}): Life {
-  const life = createLife({ seed });
+function playLife(seed: number, opts: { hunterBot?: boolean; world?: WorldId } = {}): Life {
+  const life = createLife({ seed, worldId: opts.world });
   const r = { rng: seed ^ 0x5bd1e995 };
   let guard = 0;
   while (life.alive && guard++ < 200) {
     drain(life, r);
     if (!life.alive) break;
     for (const a of ACTIVITIES) if (!activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
-    if (life.power && opts.hunterBot && life.job?.careerId !== "hunter") applyJob(life, "hunter");
-    if (!life.job && life.age >= 18) applyJob(life, CAREERS[Math.floor(nextFloat(r) * CAREERS.length)].id);
+    const questJob = life.worldId === "murim" ? "wanderer" : "hunter";
+    if (life.power && opts.hunterBot && !["hunter", "disciple", "wanderer"].includes(life.job?.careerId ?? "")) applyJob(life, questJob);
+    const careers = CAREERS.filter((c) => (c.world ?? "hunter") === life.worldId);
+    if (!life.job && life.age >= 16) applyJob(life, careers[Math.floor(nextFloat(r) * careers.length)].id);
+    if (opts.hunterBot && life.power) train(life);
     if (opts.hunterBot) {
       for (let i = 0; i < 3 && life.alive; i++) {
         const gr = Math.max(0, (life.power?.rank ?? 0) - (nextFloat(r) < 0.7 ? 1 : 0));
@@ -90,6 +95,31 @@ describe("จำลองชีวิต", () => {
     const avg = hunterAges.reduce((a, b) => a + b, 0) / Math.max(1, hunterAges.length);
     console.log("SIM Hunter", hunters, "คน | อายุเฉลี่ย", avg.toFixed(1), "| ตายใน Gate", gateDeaths, "| แรงก์ตอนจบ", JSON.stringify(ranks), "| เลเวลมัธยฐาน", levels.sort((a, b) => a - b)[levels.length >> 1]);
     expect(hunters).toBeGreaterThan(100);
+  });
+
+  it("ยุทธภพ: บอทจอมยุทธ์เล่นจนจบได้ 300 ชีวิต", () => {
+    const ranks: Record<string, number> = {};
+    const ages: number[] = [];
+    let cultivators = 0;
+    let sect = 0;
+    const causes: Record<string, number> = {};
+    for (let s = 1; s <= 300; s++) {
+      const life = playLife(s * 15485863, { hunterBot: true, world: "murim" });
+      expect(life.alive).toBe(false);
+      expect(life.worldId).toBe("murim");
+      ages.push(life.age);
+      const cause = (life.causeOfDeath ?? "").replace(/ระดับ.*$/, "");
+      causes[cause] = (causes[cause] ?? 0) + 1;
+      if (!life.power) continue;
+      cultivators++;
+      if (life.power.guild) sect++;
+      const k = rankLabel(life, life.power.rank);
+      ranks[k] = (ranks[k] ?? 0) + 1;
+    }
+    const avg = ages.reduce((a, b) => a + b, 0) / ages.length;
+    console.log("SIM ยุทธภพ อายุเฉลี่ย", avg.toFixed(1), "| ผู้ฝึกยุทธ์", cultivators, "| มีสำนัก", sect, "| ขั้นตอนจบ", JSON.stringify(ranks));
+    console.log("SIM ยุทธภพ สาเหตุการตาย", JSON.stringify(Object.entries(causes).sort((a, b) => b[1] - a[1]).slice(0, 8)));
+    expect(cultivators).toBeGreaterThan(100);
   });
 
   it("seed เดียวกันได้ชีวิตเหมือนกัน (จำเป็นสำหรับการย้อนเวลา)", () => {

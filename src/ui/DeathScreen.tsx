@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { careerById, facultyById } from "../content/hunter/careers";
-import { rankName } from "../content/hunter/power";
+import { rankLabel } from "../content/hunter/power";
+import { worldOf } from "../content/worlds";
 import { talentById } from "../content/talents";
 import { SHOP, previewAward, regressTarget } from "../engine/soul";
 import type { Life, Soul } from "../engine/types";
-import { formatMoney, people } from "../engine/util";
+import { displayName, money, people } from "../engine/util";
 
 export type RebirthChoice = "regress" | "nextEra" | "newTimeline";
 
@@ -55,7 +56,7 @@ export function DeathScreen({
       <div className="tomb">
         <div className="rip">⚰️</div>
         <h2>
-          {life.firstName} {life.lastName}
+          {displayName(life)}
         </h2>
         <p className="muted">
           {life.birthYear} – {life.birthYear + life.age} · อายุ {life.age} ปี
@@ -66,13 +67,13 @@ export function DeathScreen({
 
       <div className="card">
         <div className="card-title">สรุปชีวิต</div>
-        <p>ทรัพย์สินสุทธิ: {formatMoney(life.money - life.debt)}</p>
+        <p>ทรัพย์สินสุทธิ: {money(life, life.money - life.debt)}</p>
         <p>
           การศึกษา:{" "}
           {life.education.degree ? `ปริญญาตรี ${facultyById(life.education.degree).name}` : life.education.highSchoolDone ? "ม.6" : "ไม่จบ ม.6"}
         </p>
         <p>งานสุดท้าย: {job ? `${job.titles[life.job!.level - 1]} (${job.name})` : "-"}</p>
-        {life.power && <p>แรงก์: {rankName(life.power.rank)} · Lv.{life.power.level} · Gate {life.power.gates}</p>}
+        {life.power && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · {life.worldId === "murim" ? "ภารกิจ" : "Gate"} {life.power.gates}</p>}
         <p>
           ครอบครัว: {spouse ? "แต่งงาน" : "โสด"} · ลูก {kids} คน · ชื่อเสียง {life.fame}
         </p>
@@ -170,7 +171,7 @@ export function DeathScreen({
       </button>
       <button className="path" disabled={busy} onClick={() => go("newTimeline")}>
         <span className="path-title">✨ เส้นเวลาใหม่</span>
-        <span className="path-desc">เริ่มโลก Hunter ใหม่หมด ทุกอย่างสุ่มใหม่ (โลกยุทธภพและราชสำนักจะมาในอนาคต)</span>
+        <span className="path-desc">สุ่มเกิดในโลกใดโลกหนึ่งที่ปลดล็อกแล้ว: 🌀 โลก Hunter หรือ ⛰️ ยุทธภพ — ทุกอย่างเริ่มใหม่หมด (โลกราชสำนักจะมาในอนาคต)</span>
       </button>
     </div>
   );

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ageUp, createLife, resolveChoice, toPastLife, type BirthOptions } from "../engine/game";
 import { currentScene, labelOf, type Outcome } from "../engine/events";
 import { buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
-import type { Life, PastLife, Soul } from "../engine/types";
+import type { Life, PastLife, Soul, WorldId } from "../engine/types";
 import {
   addToGraveyard,
   applyBundle,
@@ -73,6 +73,11 @@ export function App() {
       }
     })();
   }, []);
+
+  // ธีมเปลี่ยนตามโลก (หน้าต่างระบบสีฟ้าเหมือนเดิมทุกโลก)
+  useEffect(() => {
+    document.documentElement.dataset.world = life?.worldId ?? "hunter";
+  }, [life?.worldId]);
 
   const flash = useCallback(() => {
     setShake(true);
@@ -185,7 +190,9 @@ export function App() {
         return;
       }
       await clearCurrent();
-      await birth(choice === "nextEra" ? nextEraOptions(life) : {});
+      // เส้นเวลาใหม่: สุ่มโลกจากโลกที่ปลดล็อกแล้ว (ยุทธภพปลดล็อกหลังตายครั้งแรก)
+      const worlds: WorldId[] = ["hunter", "murim"];
+      await birth(choice === "nextEra" ? { ...nextEraOptions(life), worldId: life.worldId } : { worldId: worlds[Math.floor(Math.random() * worlds.length)] });
     },
     [life, soul, birth, commit, commitSoul],
   );

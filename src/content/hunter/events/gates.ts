@@ -3,6 +3,8 @@ import { kill, openHiddenSlot, runEvent } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { HunterClass, Life } from "../../../engine/types";
 import { addFame, addStat, checkChance, clamp, hasTalent, log } from "../../../engine/util";
+import { startQuest } from "../../murim/quest";
+import { worldOf } from "../../worlds";
 import {
   CLASSES,
   GATE_TYPES,
@@ -289,11 +291,13 @@ export function gatesLeft(life: Life) {
 }
 
 export function canEnterGate(life: Life, gateRank: number): string | undefined {
-  if (!life.power) return "ยังไม่ตื่นพลัง";
-  if (life.job?.careerId !== "hunter") return "ต้องลงทะเบียนเป็น Hunter ก่อน (แท็บอาชีพ)";
+  const murim = life.worldId === "murim";
+  if (!life.power) return murim ? "ยังไม่มีรากฐานยุทธ์" : "ยังไม่ตื่นพลัง";
+  if (!worldOf(life.worldId).questJobs.includes(life.job?.careerId ?? ""))
+    return murim ? "ต้องเป็นศิษย์สำนัก จอมยุทธ์พเนจร หรือนักฆ่ารับจ้างก่อน (แท็บอาชีพ)" : "ต้องลงทะเบียนเป็น Hunter ก่อน (แท็บอาชีพ)";
   if (life.queue.length) return "กำลังมีเหตุการณ์อยู่";
-  if (gatesLeft(life) <= 0) return "ปีนี้บุกครบแล้ว";
-  if (gateRank > life.power.rank + 1) return "สมาคมไม่อนุญาต (สูงกว่าแรงก์คุณเกิน 1 ขั้น)";
+  if (gatesLeft(life) <= 0) return murim ? "ปีนี้ออกภารกิจครบแล้ว" : "ปีนี้บุกครบแล้ว";
+  if (gateRank > life.power.rank + 1) return murim ? "อันตรายเกินฝีมือ (สูงกว่าขั้นคุณเกิน 1 ขั้น)" : "สมาคมไม่อนุญาต (สูงกว่าแรงก์คุณเกิน 1 ขั้น)";
   if (life.stats.health < 15) return "บาดเจ็บหนักเกินไป";
   return;
 }
@@ -301,7 +305,8 @@ export function canEnterGate(life: Life, gateRank: number): string | undefined {
 export function enterGate(life: Life, gateRank: number) {
   if (canEnterGate(life, gateRank)) return;
   life.doneThisYear.push("gate");
-  startGate(life, gateRank);
+  if (life.worldId === "murim") startQuest(life, gateRank);
+  else startGate(life, gateRank);
 }
 
 // ───────────────────────── ฝึกฝน / ภารกิจรายวัน ─────────────────────────
@@ -312,8 +317,14 @@ export function train(life: Life): Outcome | undefined {
   const cls = classById(life.power.hunterClass);
   addStat(life, cls.key, randInt(life, 1, 3));
   addStat(life, "health", -1);
-  const out = { text: `คุณฝึกฝน${cls.name}อย่างหนักที่ศูนย์ฝึกของสมาคม`, kind: "good" as const };
+  const murim = life.worldId === "murim";
+  const out = {
+    text: murim ? `คุณนั่งสมาธิเดินลมปราณและฝึก${cls.name}ทั้งปีที่${worldOf(life.worldId).labels.trainText}` : `คุณฝึกฝน${cls.name}อย่างหนักที่ศูนย์ฝึกของสมาคม`,
+    kind: "good" as const,
+  };
   log(life, out.text, out.kind);
+  // ยุทธภพ: การบำเพ็ญคือทางเติบโตหลัก
+  if (murim) gainExp(life, 120 + life.power.level * 15);
   return out;
 }
 

@@ -1,3 +1,5 @@
+export type WorldId = "hunter" | "murim";
+
 export type StatKey = "health" | "happiness" | "smarts" | "looks" | "luck";
 
 export type Stats = Record<StatKey, number>;
@@ -77,7 +79,10 @@ export interface QueuedEvent {
   scene?: string;
 }
 
-export type HunterClass = "sword" | "mage" | "healer" | "assassin" | "tank" | "summoner";
+export type HunterClass =
+  | "sword" | "mage" | "healer" | "assassin" | "tank" | "summoner"
+  // วิชาในยุทธภพ
+  | "m_sword" | "m_palm" | "m_spear" | "m_hidden" | "m_medic" | "m_demon";
 
 /** สถานะผู้ตื่นพลัง — rank: 0=F … 8=SSS */
 export interface Power {
@@ -96,7 +101,7 @@ export interface Power {
 export interface Life {
   version: 1;
   id: string;
-  worldId: "hunter";
+  worldId: WorldId;
   seed: number;
   rng: number; // สถานะ RNG ปัจจุบัน
 
@@ -182,6 +187,7 @@ export interface PastLife {
   points?: number;
   regressed?: boolean;
   birthYear?: number;
+  world?: WorldId;
 }
 
 export interface Soul {

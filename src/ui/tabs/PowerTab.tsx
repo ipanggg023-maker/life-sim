@@ -1,18 +1,10 @@
 import { RARITY_LABEL, talentById } from "../../content/talents";
 import { canEnterGate, dailyQuest, enterGate, gatesLeft, train } from "../../content/hunter/events/gates";
-import {
-  GUILDS,
-  RANKS,
-  classById,
-  combatPower,
-  expToNext,
-  fightOdds,
-  guildById,
-  rankName,
-  survivalOdds,
-} from "../../content/hunter/power";
+import { RANKS, classById, combatPower, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds } from "../../content/hunter/power";
+import { breakLevel } from "../../content/murim/events";
+import { worldOf } from "../../content/worlds";
 import type { Life } from "../../engine/types";
-import { hasTalent } from "../../engine/util";
+import { displayName, hasTalent } from "../../engine/util";
 import type { Act } from "../App";
 
 export function PowerTab({ life, act }: { life: Life; act: Act }) {
@@ -30,7 +22,7 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
               <div className="talent hidden" key={i}>
                 <div className="t-rarity">???</div>
                 <div className="t-name">ช่องลับ</div>
-                <div className="t-desc">จะเปิดเมื่อตื่นพลัง เฉียดตาย หรืออายุ 21</div>
+                <div className="t-desc">จะเปิดเมื่อ{life.worldId === "murim" ? "รากฐานตื่น" : "ตื่นพลัง"} เฉียดตาย หรืออายุ 21</div>
               </div>
             );
           return (
@@ -48,27 +40,39 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
         {life.flags.amulet && <li>🪬 พระเครื่องของยาย (อุ่นอยู่ตลอด)</li>}
         {life.flags.ghostBox && <li>🪙 เหรียญโบราณสลักอักษรประหลาด</li>}
         {life.flags.oldBook && <li>📕 หนังสือปกหนังที่อ่านไม่ออก</li>}
+        {life.flags.ringMaster && <li>💍 แหวนหยกดำที่มีวิญญาณปรมาจารย์</li>}
         {p?.items.map((it, i) => <li key={i}>🎒 {it}</li>)}
-        {!life.flags.amulet && !life.flags.ghostBox && !life.flags.oldBook && !p?.items.length && <li className="muted">ยังไม่มี</li>}
+        {!life.flags.amulet && !life.flags.ghostBox && !life.flags.oldBook && !life.flags.ringMaster && !p?.items.length && (
+          <li className="muted">ยังไม่มี</li>
+        )}
       </ul>
     </div>
   );
 }
 
 function Dormant({ life }: { life: Life }) {
-  const awakenAge = Number(life.flags.awakenAge ?? 19);
+  const w = worldOf(life.worldId);
+  const murim = life.worldId === "murim";
+  const [from, to] = w.awakenAge;
+  const awakenAge = Number(life.flags.awakenAge ?? to);
   return (
     <div className="sys-window">
       <div className="sys-head">ระบบ · สถานะ</div>
       <p>
-        แรงก์: <b>—</b>
+        {w.labels.rank}: <b>—</b>
       </p>
       <p className="muted">
-        {life.age < 18
-          ? "ยังไม่ถึงวัยตื่นพลัง (โดยทั่วไป 18–20 ปี)"
+        {life.age < from
+          ? murim
+            ? `ยังไม่ถึงวัยคัดเลือกศิษย์ (${from}–${to} ปี)`
+            : `ยังไม่ถึงวัยตื่นพลัง (โดยทั่วไป ${from}–${to} ปี)`
           : life.flags.awakenDone || life.age > awakenAge
-            ? "ไม่พบการตื่นพลัง — คุณเป็นคนธรรมดา (…หรือเปล่า?)"
-            : "รอการตื่นพลัง…"}
+            ? murim
+              ? "เส้นชีพจรอุดตัน — คุณเป็นคนธรรมดา (…หรือเปล่า?)"
+              : "ไม่พบการตื่นพลัง — คุณเป็นคนธรรมดา (…หรือเปล่า?)"
+            : murim
+              ? "รอวันคัดเลือกศิษย์…"
+              : "รอการตื่นพลัง…"}
         {Number(life.flags.glitch ?? 0) > 0 && " · พบสัญญาณผิดปกติ " + life.flags.glitch + " ครั้ง"}
       </p>
     </div>
@@ -76,10 +80,12 @@ function Dormant({ life }: { life: Life }) {
 }
 
 function StatusWindow({ life, act }: { life: Life; act: Act }) {
+  const w = worldOf(life.worldId);
+  const murim = life.worldId === "murim";
   const p = life.power!;
   const cls = classById(p.hunterClass);
   const guild = guildById(p.guild);
-  const isHunter = life.job?.careerId === "hunter";
+  const canQuest = w.questJobs.includes(life.job?.careerId ?? "");
   const need = expToNext(p.level);
   const left = gatesLeft(life);
   const gateRanks = Array.from({ length: Math.min(p.rank + 2, RANKS.length) }, (_, i) => i);
@@ -90,24 +96,25 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
         <div className="sys-head">ระบบ · สถานะ</div>
         <div className="status-grid">
           <span>ชื่อ</span>
-          <b>
-            {life.firstName} {life.lastName}
-          </b>
-          <span>แรงก์</span>
-          <b className={`rank rank-${rankName(p.rank)}`}>{rankName(p.rank)}</b>
-          <span>สายอาชีพ</span>
+          <b>{displayName(life)}</b>
+          <span>{w.labels.rank}</span>
+          <b className={`rank r${p.rank}`}>{rankLabel(life, p.rank)}</b>
+          <span>{murim ? "วิชา" : "สายอาชีพ"}</span>
           <b>
             {cls.emoji} {cls.name}
           </b>
           <span>เลเวล</span>
-          <b>Lv.{p.level}</b>
+          <b>
+            Lv.{p.level}
+            {murim && p.rank < 8 && <span className="muted small"> (ทะลวงขั้นได้ที่ Lv.{breakLevel(p.rank)})</span>}
+          </b>
           <span>พลังต่อสู้</span>
           <b>{combatPower(life)}</b>
-          <span>กิลด์</span>
-          <b>{guild?.name ?? "อิสระ"}</b>
-          <span>Gate ที่เคลียร์</span>
+          <span>{w.labels.guild}</span>
+          <b>{guild?.name ?? (murim ? "ไร้สังกัด" : "อิสระ")}</b>
+          <span>{murim ? "ภารกิจสำเร็จ" : "Gate ที่เคลียร์"}</span>
           <b>
-            {p.gates} (บอส {p.bossKills})
+            {p.gates} ({murim ? "ล้มยอดฝีมือ" : "บอส"} {p.bossKills})
           </b>
         </div>
         <div className="exp">
@@ -128,24 +135,29 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
       </div>
 
       <div className="section-title">
-        บุก Gate · เหลือ {Math.max(0, left)} ครั้งในปีนี้
+        {w.labels.raid} · เหลือ {Math.max(0, left)} ครั้งในปีนี้
       </div>
-      {!isHunter && <p className="muted small">ต้องลงทะเบียนเป็น Hunter ที่แท็บ 💼 อาชีพก่อน</p>}
+      {!canQuest && (
+        <p className="muted small">
+          {murim ? "ต้องเป็นศิษย์สำนัก จอมยุทธ์พเนจร หรือนักฆ่ารับจ้างก่อน (แท็บ 💼 อาชีพ)" : "ต้องลงทะเบียนเป็น Hunter ที่แท็บ 💼 อาชีพก่อน"}
+        </p>
+      )}
       {gateRanks.map((r) => {
         const blocked = canEnterGate(life, r);
         return (
           <div className="job" key={r}>
             <div className="job-main">
               <div className="job-name">
-                🌀 Gate แรงก์ <span className={`rank rank-${rankName(r)}`}>{rankName(r)}</span>
+                {w.emoji} {murim ? "ภารกิจระดับ" : "Gate แรงก์ "}
+                <span className={`rank r${r}`}>{rankLabel(life, r)}</span>
               </div>
               <div className="job-sub">
-                ชนะบอส {Math.round(fightOdds(life, r) * 100)}% ·{" "}
+                ชนะ {Math.round(fightOdds(life, r) * 100)}% ·{" "}
                 <span className={survivalOdds(life, r) < 0.8 ? "danger-text" : ""}>รอด {Math.round(survivalOdds(life, r) * 100)}%</span>
               </div>
             </div>
             <button className="btn small" disabled={!!blocked} title={blocked} onClick={() => act((l) => enterGate(l, r))}>
-              เข้า
+              {murim ? "รับ" : "เข้า"}
             </button>
           </div>
         );
@@ -153,7 +165,7 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
 
       <div className="row">
         <button className="btn" disabled={life.doneThisYear.includes("train")} onClick={() => act(train)}>
-          🏋️ ฝึกฝน
+          {murim ? "🧘" : "🏋️"} {w.labels.train}
         </button>
         {hasTalent(life, "system_user") && (
           <button className="btn sys-btn" disabled={life.doneThisYear.includes("daily")} onClick={() => act(dailyQuest)}>
@@ -162,7 +174,7 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
         )}
       </div>
 
-      <div className="section-title">กิลด์</div>
+      <div className="section-title">{w.labels.guild}</div>
       {guild ? (
         <div className="job">
           <div className="job-main">
@@ -174,7 +186,8 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
             onClick={() =>
               act((l) => {
                 l.power!.guild = undefined;
-                return { text: `คุณออกจาก${guild.name}` };
+                if (l.job?.careerId === "disciple") l.job = undefined;
+                return { text: murim ? `คุณคืนป้ายศิษย์แล้วลงเขาจาก${guild.name}` : `คุณออกจาก${guild.name}` };
               })
             }
           >
@@ -182,27 +195,27 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
           </button>
         </div>
       ) : (
-        GUILDS.map((g) => {
+        guildsFor(life).map((g) => {
           const locked = g.minRank > p.rank;
           return (
             <div className={`job ${locked ? "locked" : ""}`} key={g.id}>
               <div className="job-main">
                 <div className="job-name">{g.name}</div>
-                <div className="job-sub">
-                  {locked ? `🔒 แรงก์ ${rankName(g.minRank)}+` : g.desc}
-                </div>
+                <div className="job-sub">{locked ? `🔒 ${w.labels.rank} ${rankLabel(life, g.minRank)}+` : g.desc}</div>
               </div>
               <button
                 className="btn small"
-                disabled={locked || !isHunter}
+                disabled={locked || (!murim && !canQuest)}
                 onClick={() =>
                   act((l) => {
                     l.power!.guild = g.id;
-                    return { text: `คุณเข้าร่วม${g.name}`, kind: "good" };
+                    // ยุทธภพ: เข้าสำนัก = เป็นศิษย์สำนัก
+                    if (murim) l.job = { careerId: "disciple", level: 1, performance: 50, years: 0 };
+                    return { text: murim ? `คุณคุกเข่าคารวะ และได้เป็นศิษย์แห่ง${g.name}` : `คุณเข้าร่วม${g.name}`, kind: "good" };
                   })
                 }
               >
-                สมัคร
+                {murim ? "ฝากตัว" : "สมัคร"}
               </button>
             </div>
           );

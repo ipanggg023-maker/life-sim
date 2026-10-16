@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { RARITY_LABEL, talentById } from "../content/talents";
 import { wealthLabel } from "../engine/game";
+import { worldOf } from "../content/worlds";
 import type { Life, StatKey } from "../engine/types";
-import { firstPerson, people, shortName } from "../engine/util";
+import { displayName, firstPerson, people, shortName } from "../engine/util";
 import { StatBar } from "./MainScreen";
 
 const STATS: StatKey[] = ["health", "happiness", "smarts", "looks"];
@@ -37,10 +38,10 @@ export function BirthScreen({
       <div className="sys-window">
         <div className="sys-head">ระบบ · สุ่มการเกิด</div>
         <p className="birth-name">
-          {life.gender === "m" ? "♂" : "♀"} {life.firstName} {life.lastName} ("{life.nickname}")
+          {life.gender === "m" ? "♂" : "♀"} {displayName(life)} ("{life.nickname}")
         </p>
         <p className="muted">
-          {wealthLabel(life.wealth)} · กรุงเทพฯ · ปี {life.birthYear}
+          {worldOf(life.worldId).emoji} {worldOf(life.worldId).name} · {wealthLabel(life.wealth, life.worldId)} · {worldOf(life.worldId).yearLabel} {life.birthYear}
           {life.devCreated && <span className="dev-tag"> · สร้างโดย Admin</span>}
         </p>
         {life.legacy && (

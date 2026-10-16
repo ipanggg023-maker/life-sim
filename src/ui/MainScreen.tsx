@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
 import { careerById } from "../content/hunter/careers";
-import { rankName } from "../content/hunter/power";
+import { rankLabel } from "../content/hunter/power";
+import { worldOf } from "../content/worlds";
 import { STAT_LABEL } from "../engine/game";
 import type { Life, LogEntry, StatKey } from "../engine/types";
-import { formatMoney } from "../engine/util";
+import { displayName, money } from "../engine/util";
 
 export type TabId = "career" | "people" | "power" | "activities" | "soul";
 
@@ -50,23 +51,30 @@ export function MainScreen({ life, onAgeUp, onTab }: { life: Life; onAgeUp: () =
   }, [life.log.length]);
 
   const job = life.job ? careerById(life.job.careerId) : undefined;
-  const subtitle = job ? job.titles[life.job!.level - 1] : life.education.stage === "university" ? "นักศึกษา" : life.age >= 18 ? "ว่างงาน" : "นักเรียน";
+  const murim = life.worldId === "murim";
+  const subtitle = job
+    ? job.titles[life.job!.level - 1]
+    : life.education.stage === "university"
+      ? "นักศึกษา"
+      : life.age >= 18
+        ? murim ? "ผู้ไร้สังกัด" : "ว่างงาน"
+        : murim ? "เด็กในหมู่บ้าน" : "นักเรียน";
 
   return (
     <div className="main">
       <header className="top">
         <div className="who" style={{ flex: 1, minWidth: 0 }}>
           <div className="name">
-            {life.firstName} {life.lastName}
+            {displayName(life)}
           </div>
           <div className="sub">
-            {subtitle} · {formatMoney(life.money)}
-            {life.debt > 0 && <span className="debt"> · หนี้ {formatMoney(life.debt)}</span>}
+            {subtitle} · {money(life, life.money)}
+            {life.debt > 0 && <span className="debt"> · หนี้ {money(life, life.debt)}</span>}
           </div>
         </div>
         {life.power && (
-          <div className={`rank-badge rank rank-${rankName(life.power.rank)}`} title="แรงก์">
-            {rankName(life.power.rank)}
+          <div className={`rank-badge rank r${life.power.rank} ${life.worldId}`} title={worldOf(life.worldId).labels.rank}>
+            {rankLabel(life, life.power.rank)}
           </div>
         )}
         <div className="age-badge">

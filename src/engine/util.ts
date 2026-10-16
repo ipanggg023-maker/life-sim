@@ -1,5 +1,5 @@
 import { nextFloat, pick } from "./rng";
-import { FEMALE_NAMES, LAST_NAMES, MALE_NAMES, NICKNAMES_F, NICKNAMES_M } from "../content/hunter/names";
+import { worldOf } from "../content/worlds";
 import type { Gender, Life, LogKind, Person, Relation, StatKey } from "./types";
 
 export const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
@@ -24,8 +24,14 @@ export function uid(life: Life): string {
   return Math.floor(nextFloat(life) * 1e9).toString(36);
 }
 
-export function displayName(life: Life) {
-  return `${life.firstName} ${life.lastName}`;
+/** ชื่อเต็มตามธรรมเนียมของโลก (ยุทธภพ: แซ่ขึ้นก่อน ไม่เว้นวรรค) */
+export function displayName(life: Pick<Life, "firstName" | "lastName" | "worldId">) {
+  return life.worldId === "murim" ? `${life.lastName}${life.firstName}` : `${life.firstName} ${life.lastName}`;
+}
+
+/** แสดงจำนวนเงินด้วยสกุลเงินของโลกนั้น */
+export function money(life: Pick<Life, "worldId">, n: number) {
+  return worldOf(life.worldId).currency(n);
 }
 
 export function hasTalent(life: Life, id: string) {
@@ -41,10 +47,11 @@ export function firstPerson(life: Life, relation: Relation): Person | undefined 
 }
 
 export function randomName(life: Life, gender: Gender) {
+  const n = worldOf(life.worldId).names;
   return {
-    first: pick(life, gender === "m" ? MALE_NAMES : FEMALE_NAMES),
-    nick: pick(life, gender === "m" ? NICKNAMES_M : NICKNAMES_F),
-    last: pick(life, LAST_NAMES),
+    first: pick(life, gender === "m" ? n.male : n.female),
+    nick: pick(life, gender === "m" ? n.nickM : n.nickF),
+    last: pick(life, n.last),
   };
 }
 
@@ -57,7 +64,8 @@ export function createPerson(
   const n = randomName(life, gender);
   const person: Person = {
     id: uid(life),
-    name: `${n.first} (${n.nick}) ${opts.lastName ?? n.last}`,
+    // ยุทธภพเรียกชื่อเต็มแบบแซ่นำหน้า (shortName จะได้ชื่อเต็ม ซึ่งเข้ากับสำนวนนิยายจีน)
+    name: life.worldId === "murim" ? `${opts.lastName ?? n.last}${n.first}` : `${n.first} (${n.nick}) ${opts.lastName ?? n.last}`,
     gender,
     relation,
     age: opts.age,

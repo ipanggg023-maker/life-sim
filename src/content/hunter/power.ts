@@ -1,12 +1,15 @@
 import { chance, nextFloat, pick, weightedPick } from "../../engine/rng";
-import type { HunterClass, Life, StatKey } from "../../engine/types";
-import { addFame, addMoney, addStat, clamp, formatMoney, log } from "../../engine/util";
+import type { HunterClass, Life, StatKey, WorldId } from "../../engine/types";
+import { addFame, addMoney, addStat, clamp, log, money as fmtMoney } from "../../engine/util";
+import { worldOf } from "../worlds";
 
 // ───────────────────────── แรงก์ ─────────────────────────
 
 export const RANKS = ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"] as const;
 export const rankName = (r: number) => RANKS[clamp(r, 0, RANKS.length - 1)];
 export const MAX_RANK = RANKS.length - 1;
+/** ชื่อแรงก์ตามโลก (ยุทธภพ = ขั้นยุทธ์) */
+export const rankLabel = (life: Pick<Life, "worldId">, r: number) => worldOf(life.worldId).ranks[clamp(r, 0, MAX_RANK)];
 
 // ───────────────────────── สายอาชีพ ─────────────────────────
 
@@ -20,6 +23,7 @@ export interface ClassInfo {
   skills: [number, string][];
   cp: number;
   survival: number;
+  world?: WorldId;
 }
 
 export const CLASSES: ClassInfo[] = [
@@ -47,6 +51,31 @@ export const CLASSES: ClassInfo[] = [
     id: "summoner", name: "ผู้อัญเชิญ", emoji: "👁️", key: "smarts", desc: "สายหายาก เรียกมอนสเตอร์มาสู้แทน", cp: 6, survival: 0.05,
     skills: [[1, "อัญเชิญหมาป่าเงา"], [10, "สัญญาวิญญาณ"], [25, "กองทัพอมตะ"], [45, "ประตูนรก"]],
   },
+  // ── วิชาในยุทธภพ ──
+  {
+    id: "m_sword", name: "วิชากระบี่", emoji: "🗡️", key: "health", desc: "เพลงกระบี่รวดเร็วดุจสายลม", cp: 3, survival: 0, world: "murim",
+    skills: [[1, "กระบี่ลมพัดใบไผ่"], [10, "กระบี่พันเงา"], [25, "ปราณกระบี่ทะลวงฟ้า"], [45, "กระบี่ไร้กระบี่"]],
+  },
+  {
+    id: "m_palm", name: "วิชาฝ่ามือ", emoji: "✋", key: "smarts", desc: "ลมปราณหนักแน่น ฝ่ามือเดียวทลายหิน", cp: 2, survival: 0.05, world: "murim",
+    skills: [[1, "ฝ่ามือพยัคฆ์คำราม"], [10, "ฝ่ามือสิบแปดมังกร"], [25, "ฝ่ามือหมื่นพุทธะ"], [45, "ฝ่ามือสวรรค์ถล่ม"]],
+  },
+  {
+    id: "m_spear", name: "วิชาทวน", emoji: "🔱", key: "health", desc: "ทวนยาวทะลวงทัพ ห้าวหาญไม่ถอย", cp: 2, survival: 0.08, world: "murim",
+    skills: [[1, "ทวนพายุหมุน"], [10, "ทวนมังกรทะยาน"], [25, "ทวนเจ็ดดาว"], [45, "ทวนเทพสงคราม"]],
+  },
+  {
+    id: "m_hidden", name: "อาวุธลับ", emoji: "🎯", key: "luck", desc: "เข็มบินและมีดซัด สังหารก่อนศัตรูรู้ตัว", cp: 2, survival: 0.03, world: "murim",
+    skills: [[1, "เข็มเงาเหมยฮวา"], [10, "พันมีดซัด"], [25, "ฝนพิรุณพิฆาต"], [45, "เงามรณะไร้รูป"]],
+  },
+  {
+    id: "m_medic", name: "แพทย์ยุทธ์", emoji: "🌿", key: "smarts", desc: "ฝังเข็ม ปรุงยา รักษาได้ทั้งตัวเองและผู้อื่น", cp: -2, survival: 0.14, world: "murim",
+    skills: [[1, "เข็มทองฟื้นชีพ"], [10, "ยาเม็ดเก้าหยาง"], [25, "สิบสองจุดชีพจร"], [45, "หัตถ์หมอเทวดา"]],
+  },
+  {
+    id: "m_demon", name: "วิชามาร", emoji: "🩸", key: "luck", desc: "สายหายาก รุนแรงที่สุด แต่ทุกสำนักฝ่ายธรรมะจะตามล่า", cp: 7, survival: -0.04, world: "murim",
+    skills: [[1, "ฝ่ามือโลหิตมาร"], [10, "ดูดพลังมาร"], [25, "ร่างอสูรฟ้า"], [45, "จักรพรรดิมารสวรรค์"]],
+  },
 ];
 
 export const classById = (id: HunterClass) => CLASSES.find((c) => c.id === id)!;
@@ -61,6 +90,9 @@ export interface Guild {
   cp: number;
   safety: number;
   desc: string;
+  world?: WorldId;
+  /** ฝ่ายมาร: ได้วิชามารง่าย แต่ฝ่ายธรรมะตามล่า */
+  demonic?: boolean;
 }
 
 export const GUILDS: Guild[] = [
@@ -69,9 +101,17 @@ export const GUILDS: Guild[] = [
   { id: "tiger", name: "กิลด์พยัคฆ์ขาว", minRank: 3, pay: 1.5, cp: 3, safety: 0.06, desc: "กิลด์ใหญ่อันดับ 3 ของประเทศ ระบบดี" },
   { id: "naga", name: "กิลด์นาคราช", minRank: 4, pay: 2.2, cp: 5, safety: 0.08, desc: "กิลด์อันดับ 2 เชี่ยวชาญ Gate ใต้น้ำ" },
   { id: "lion", name: "กิลด์ราชสีห์ทองคำ", minRank: 5, pay: 3, cp: 7, safety: 0.1, desc: "กิลด์อันดับ 1 ของประเทศ มีแรงก์ S สามคน" },
+  // ── สำนักในยุทธภพ (สมมติขึ้นทั้งหมด) ──
+  { id: "beggar", name: "พรรคกระยาจก", minRank: 0, pay: 0.8, cp: 2, safety: 0.05, world: "murim", desc: "รับทุกคน ข่าวสารไวที่สุดในใต้หล้า แต่จนกรอบ" },
+  { id: "cloud", name: "สำนักกระบี่เมฆา", minRank: 1, pay: 1.3, cp: 3, safety: 0.05, world: "murim", desc: "สำนักฝ่ายธรรมะบนยอดเขา เข้มงวดเรื่องกฎ" },
+  { id: "tang", name: "ตระกูลถังเรือนพิษ", minRank: 2, pay: 1.8, cp: 3, safety: 0.02, world: "murim", desc: "เชี่ยวชาญพิษและอาวุธลับ คนนอกเข้ายาก" },
+  { id: "vajra", name: "วัดวัชระ", minRank: 3, pay: 1.2, cp: 5, safety: 0.12, world: "murim", desc: "สำนักพุทธที่เก่าแก่ที่สุด ศิษย์ตายยาก" },
+  { id: "cult", name: "ลัทธิมารสวรรค์", minRank: 2, pay: 2.5, cp: 6, safety: -0.06, world: "murim", demonic: true, desc: "ฝ่ายอธรรม จ่ายหนัก ฆ่าไม่เลือก ทั้งใต้หล้าเกลียดชัง" },
+  { id: "alliance", name: "พันธมิตรยุทธจักร", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "murim", desc: "รวมยอดฝีมือฝ่ายธรรมะ เป็นเหมือนรัฐบาลของยุทธภพ" },
 ];
 
 export const guildById = (id?: string) => GUILDS.find((g) => g.id === id);
+export const guildsFor = (life: Pick<Life, "worldId">) => GUILDS.filter((g) => (g.world ?? "hunter") === life.worldId);
 
 // ───────────────────────── ประเภท Gate ─────────────────────────
 
@@ -149,19 +189,16 @@ export function rollAwakening(life: Life, bonus: number): number {
 
 /** เสนอสายอาชีพ 2–3 สายตามสเตตัสเด่น */
 export function offerClasses(life: Life): HunterClass[] {
-  const byKey: Record<StatKey, HunterClass[]> = {
-    health: ["sword", "tank"],
-    smarts: ["mage", "healer"],
-    luck: ["assassin"],
-    looks: ["healer", "assassin"],
-    happiness: ["healer"],
-  };
+  const murim = life.worldId === "murim";
+  const byKey: Record<StatKey, HunterClass[]> = murim
+    ? { health: ["m_sword", "m_spear"], smarts: ["m_palm", "m_medic"], luck: ["m_hidden"], looks: ["m_medic", "m_hidden"], happiness: ["m_medic"] }
+    : { health: ["sword", "tank"], smarts: ["mage", "healer"], luck: ["assassin"], looks: ["healer", "assassin"], happiness: ["healer"] };
   const keys = (["health", "smarts", "luck", "looks"] as StatKey[]).sort((a, b) => life.stats[b] - life.stats[a]);
   const offer = new Set<HunterClass>();
   offer.add(pick(life, byKey[keys[0]]));
   for (const c of byKey[keys[1]]) if (offer.size < 2 && !offer.has(c)) offer.add(c);
-  if (offer.size < 2) offer.add("sword");
-  if (life.stats.luck >= 70 || owns(life, "system_user") || chance(life, 0.05)) offer.add("summoner");
+  if (offer.size < 2) offer.add(murim ? "m_sword" : "sword");
+  if (life.stats.luck >= 70 || owns(life, "system_user") || chance(life, 0.05)) offer.add(murim ? "m_demon" : "summoner");
   return [...offer];
 }
 
@@ -206,7 +243,8 @@ function levelUp(life: Life) {
     rankUp(life, "[ระบบ] ครบเงื่อนไขการเลื่อนขั้น");
   } else if (ownsActive(life, "late_bloomer") && p.level % 10 === 0 && p.rank < 6) {
     rankUp(life, "พลังที่หลับใหลตื่นขึ้นอีกขั้น");
-  } else if (p.level % 15 === 0 && p.rank < 6 && chance(life, 0.12)) {
+  } else if (life.worldId !== "murim" && p.level % 15 === 0 && p.rank < 6 && chance(life, 0.12)) {
+    // ยุทธภพเลื่อนขั้นผ่านตอนพิเศษ "ทะลวงขั้น" แทน
     rankUp(life, "คุณทะลวงขีดจำกัดของตัวเอง");
   }
 }
@@ -235,5 +273,5 @@ export function gateRewards(life: Life, gateRank: number, mult: number, boss: bo
   if (boss) p.bossKills++;
   if (life.job?.careerId === "hunter") life.job.performance = clamp(life.job.performance + (boss ? 8 : 4), 0, 100);
   gainExp(life, exp);
-  return `ได้ค่าตอบแทน ${formatMoney(money)} และ EXP ${Math.round(exp)}`;
+  return `ได้ค่าตอบแทน ${fmtMoney(life, money)} และ EXP ${Math.round(exp)}`;
 }

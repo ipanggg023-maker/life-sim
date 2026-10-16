@@ -1,7 +1,7 @@
 import { CAREERS, careerById, facultyById } from "../../content/hunter/careers";
 import { applyJob, gradeToGpa, isStudent, jobChance, jobRequirementMissing, quitJob, salaryOf, studyHard, workHard } from "../../engine/game";
 import type { Life, SchoolStage } from "../../engine/types";
-import { formatMoney } from "../../engine/util";
+import { money } from "../../engine/util";
 import type { Act } from "../App";
 
 const STAGE_LABEL: Record<SchoolStage, string> = {
@@ -21,7 +21,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
 
   return (
     <div className="tab-content">
-      <div className="card">
+      {life.worldId !== "hunter" ? null : <div className="card">
         <div className="card-title">🎓 การศึกษา</div>
         <p>
           สถานะ: {STAGE_LABEL[ed.stage]}
@@ -35,7 +35,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
             📚 ตั้งใจเรียนให้หนัก
           </button>
         )}
-      </div>
+      </div>}
 
       {job && career && (
         <div className="card">
@@ -45,7 +45,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
           <p>
             <b>{career.titles[job.level - 1]}</b> · {career.name}
           </p>
-          <p>รายได้ {formatMoney(salaryOf(life, career, job.level))}/ปี · ทำมา {job.years} ปี</p>
+          <p>รายได้ {money(life, salaryOf(life, career, job.level))}/ปี · ทำมา {job.years} ปี</p>
           <div className="mini-bar">
             <span>ผลงาน</span>
             <div className="bar">
@@ -66,7 +66,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
       {!job && (
         <>
           <div className="section-title">หางาน</div>
-          {CAREERS.map((c) => {
+          {CAREERS.filter((c) => (c.world ?? "hunter") === life.worldId).map((c) => {
             const missing = jobRequirementMissing(life, c);
             const applied = life.doneThisYear.includes(`apply:${c.id}`);
             return (
@@ -76,7 +76,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
                     {c.emoji} {c.name}
                   </div>
                   <div className="job-sub">
-                    {formatMoney(salaryOf(life, c, 1))}/ปี
+                    {money(life, salaryOf(life, c, 1))}/ปี
                     {missing ? ` · 🔒 ${missing}` : ` · โอกาสผ่าน ${Math.round(jobChance(life, c) * 100)}%`}
                   </div>
                 </div>

@@ -3,7 +3,8 @@ import { HIDDEN_RARITY_ODDS, RARITY_ODDS, TALENTS, talentById } from "../content
 import { currentScene, getEvent, pickEvents, stillValid, type Choice, type Ctx, type Outcome } from "./events";
 import { chance, newSeed, nextFloat, pick, randInt, weightedPick } from "./rng";
 import type { Career } from "../content/hunter/careers";
-import type { Faculty, Gender, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth } from "./types";
+import type { Faculty, Gender, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
+import { worldOf } from "../content/worlds";
 import {
   addFame,
   addMoney,
@@ -11,8 +12,9 @@ import {
   checkChance,
   clamp,
   createPerson,
+  displayName,
   firstPerson,
-  formatMoney,
+  money,
   hasTalent,
   log,
   people,
@@ -30,6 +32,7 @@ export interface BirthOptions {
   wealth?: Wealth;
   stats?: Partial<Stats>;
   talents?: string[];
+  worldId?: WorldId;
   // ── ระบบวิญญาณ ──
   worldSeed?: number;
   birthYear?: number;
@@ -64,34 +67,21 @@ export function revealTalent(life: Life, id: string) {
   info.apply?.(life);
 }
 
-const WEALTH_LABEL: Record<Wealth, string> = {
-  poor: "ครอบครัวยากจน",
-  middle: "ครอบครัวชนชั้นกลาง",
-  rich: "ครอบครัวมีฐานะ",
-  elite: "ตระกูลมหาเศรษฐี",
-};
-export const wealthLabel = (w: Wealth) => WEALTH_LABEL[w];
-
-const PARENT_JOBS: Record<Wealth, string[]> = {
-  poor: ["รับจ้างทั่วไป", "ขายของตลาดนัด", "ชาวนา", "วินมอเตอร์ไซค์", "แม่บ้าน"],
-  middle: ["พนักงานบริษัท", "ข้าราชการ", "ครู", "เจ้าของร้านอาหาร", "พยาบาล"],
-  rich: ["ผู้บริหาร", "แพทย์", "เจ้าของโรงงาน", "ทนายความ", "นักธุรกิจ"],
-  elite: ["ประธานเครือบริษัท", "ทายาทตระกูลดัง", "นักการเมือง", "เจ้าของห้าง"],
-};
+export const wealthLabel = (w: Wealth, world?: WorldId) => worldOf(world).wealthLabel[w];
 
 export function createLife(opts: BirthOptions = {}): Life {
   const seed = opts.seed ?? newSeed();
   const life: Life = {
     version: 1,
     id: "",
-    worldId: "hunter",
+    worldId: opts.worldId ?? "hunter",
     seed,
     rng: seed,
     firstName: "",
     nickname: "",
     lastName: "",
     gender: "m",
-    birthYear: opts.birthYear ?? 2008,
+    birthYear: opts.birthYear ?? worldOf(opts.worldId).startYear,
     age: 0,
     alive: true,
     stats: { health: 0, happiness: 0, smarts: 0, looks: 0, luck: 0 },
@@ -150,13 +140,13 @@ export function createLife(opts: BirthOptions = {}): Life {
     revealTalent(life, id);
   }
   life.talents.push({ id: rollTalent(life, opts.blessed ? BLESSED_HIDDEN : HIDDEN_RARITY_ODDS, ids, true), revealed: false });
-  life.flags.awakenAge = randInt(life, 18, 20);
+  life.flags.awakenAge = randInt(life, ...worldOf(life.worldId).awakenAge);
 
   // ครอบครัว
   const dadAge = randInt(life, 24, 42);
   const momAge = clamp(dadAge + randInt(life, -6, 3), 20, 42);
-  createPerson(life, "father", { gender: "m", age: dadAge, bond: randInt(life, 55, 90), lastName: life.lastName, job: pick(life, PARENT_JOBS[life.wealth]) });
-  createPerson(life, "mother", { gender: "f", age: momAge, bond: randInt(life, 60, 95), lastName: life.lastName, job: pick(life, PARENT_JOBS[life.wealth]) });
+  createPerson(life, "father", { gender: "m", age: dadAge, bond: randInt(life, 55, 90), lastName: life.lastName, job: pick(life, worldOf(life.worldId).parentJobs[life.wealth]) });
+  createPerson(life, "mother", { gender: "f", age: momAge, bond: randInt(life, 60, 95), lastName: life.lastName, job: pick(life, worldOf(life.worldId).parentJobs[life.wealth]) });
   const siblings = weightedPick(life, [0, 1, 2], (k) => [45, 40, 15][k])!;
   for (let i = 0; i < siblings; i++) {
     const maxSibAge = Math.max(1, Math.min(10, momAge - 19));
@@ -165,7 +155,7 @@ export function createLife(opts: BirthOptions = {}): Life {
 
   log(
     life,
-    `คุณเกิดเป็น${life.gender === "m" ? "ผู้ชาย" : "ผู้หญิง"} ชื่อ ${life.firstName} ${life.lastName} (ชื่อเล่น "${life.nickname}") ใน${wealthLabel(life.wealth)} ที่กรุงเทพฯ`,
+    `คุณเกิดเป็น${life.gender === "m" ? "ผู้ชาย" : "ผู้หญิง"} ชื่อ ${displayName(life)} (ชื่อเรียกในบ้าน "${life.nickname}") ใน${wealthLabel(life.wealth, life.worldId)} ที่${worldOf(life.worldId).birthplace}`,
     "milestone",
   );
   const dad = firstPerson(life, "father")!;
@@ -181,8 +171,6 @@ export function createLife(opts: BirthOptions = {}): Life {
 
 // ───────────────────────── +1 ปี ─────────────────────────
 
-const DEATH_CAUSES_YOUNG = ["อุบัติเหตุรถชน", "จมน้ำ", "ไข้เลือดออก", "โดนไฟดูด"];
-const DEATH_CAUSES_OLD = ["หัวใจวาย", "เส้นเลือดในสมองแตก", "มะเร็ง", "ปอดบวม", "หลับไปอย่างสงบ", "ไตวาย"];
 
 export function kill(life: Life, cause: string) {
   if (!life.alive) return;
@@ -307,7 +295,7 @@ function progressJob(life: Life) {
     const pension = ["police", "teacher"].includes(career.id) ? Math.round(pay * 0.4) : 0;
     life.flags.pension = pension;
     life.job = undefined;
-    log(life, `คุณเกษียณจากงาน${career.name}${pension ? ` ได้บำนาญปีละ ${formatMoney(pension)}` : ""}`, "milestone");
+    log(life, `คุณเกษียณจากงาน${career.name}${pension ? ` ได้บำนาญปีละ ${money(life, pension)}` : ""}`, "milestone");
   }
 }
 
@@ -358,7 +346,7 @@ function progressPeople(life: Life) {
     const heirs = 1 + people(life, "sibling").length;
     const amount = Math.round(INHERITANCE[life.wealth] / heirs);
     addMoney(life, amount);
-    log(life, `คุณได้รับมรดกจากพ่อแม่ ${formatMoney(amount)}`, "milestone");
+    log(life, `คุณได้รับมรดกจากพ่อแม่ ${money(life, amount)}`, "milestone");
   }
   // เพื่อนที่ห่างกันจนหมดความสัมพันธ์
   for (const p of life.people) {
@@ -414,7 +402,7 @@ export function ageUp(life: Life) {
   life.flags.income = 0;
 
   ageHealth(life);
-  progressSchool(life);
+  if (life.worldId === "hunter") progressSchool(life);
   progressJob(life);
   progressMoney(life);
   progressPeople(life);
@@ -424,12 +412,12 @@ export function ageUp(life: Life) {
     const gift = { poor: 0, middle: 20_000, rich: 300_000, elite: 5_000_000 }[life.wealth];
     if (gift) {
       addMoney(life, gift);
-      log(life, `ครอบครัวให้เงินตั้งตัวคุณ ${formatMoney(gift)} เป็นของขวัญวันโต`, "good");
+      log(life, `ครอบครัวให้เงินตั้งตัวคุณ ${money(life, gift)} เป็นของขวัญวันโต`, "good");
     }
   }
 
   if (chance(life, mortality(life.age, life.stats.health))) {
-    kill(life, life.age < 50 ? pick(life, DEATH_CAUSES_YOUNG) : pick(life, DEATH_CAUSES_OLD));
+    kill(life, life.age < 50 ? pick(life, worldOf(life.worldId).deathYoung) : pick(life, worldOf(life.worldId).deathOld));
     return;
   }
 
@@ -475,6 +463,7 @@ export function choiceChance(life: Life, q: QueuedEvent, index: number): number 
 // ───────────────────────── งาน ─────────────────────────
 
 export function jobRequirementMissing(life: Life, c: Career): string | undefined {
+  if ((c.world ?? "hunter") !== life.worldId) return "ไม่มีในโลกนี้";
   if (life.age < c.minAge) return `อายุ ${c.minAge}+`;
   if (c.needsPower && !life.power) return "ต้องเป็นผู้ตื่นพลัง";
   if (c.mundaneOnly && life.power) return "รับเฉพาะคนธรรมดา";
@@ -501,7 +490,7 @@ export function applyJob(life: Life, careerId: string): Outcome {
   if (missing) return { text: `สมัครไม่ได้ (${missing})`, kind: "bad" };
   if (chance(life, jobChance(life, c))) {
     life.job = { careerId, level: 1, performance: 50, years: 0 };
-    const out = { text: `คุณได้งานเป็น${c.titles[0]} (${c.name}) เงินเดือนปีละ ${formatMoney(salaryOf(life, c, 1))}`, kind: "good" as const };
+    const out = { text: `คุณได้งานเป็น${c.titles[0]} (${c.name}) เงินเดือนปีละ ${money(life, salaryOf(life, c, 1))}`, kind: "good" as const };
     log(life, out.text, out.kind);
     return out;
   }
@@ -581,7 +570,7 @@ export function askMoney(life: Life, p: Person): Outcome {
   if (chance(life, p.bond / 120)) {
     addMoney(life, amount);
     p.bond = clamp(p.bond - 3, 0, 100);
-    const out = { text: `${shortName(p)}ให้เงินคุณ ${formatMoney(amount)}`, kind: "good" as const };
+    const out = { text: `${shortName(p)}ให้เงินคุณ ${money(life, amount)}`, kind: "good" as const };
     log(life, out.text, out.kind);
     return out;
   }
@@ -599,7 +588,7 @@ export function propose(life: Life, p: Person): Outcome {
     const cost = { poor: 50_000, middle: 250_000, rich: 1_500_000, elite: 20_000_000 }[life.wealth];
     addMoney(life, -cost);
     addStat(life, "happiness", 20);
-    const out = { text: `💍 ${shortName(p)}ตอบตกลง! งานแต่งจัดใหญ่ ค่าสินสอดและงานรวม ${formatMoney(cost)}`, kind: "milestone" as const };
+    const out = { text: `💍 ${shortName(p)}ตอบตกลง! งานแต่งจัดใหญ่ ค่าสินสอดและงานรวม ${money(life, cost)}`, kind: "milestone" as const };
     log(life, out.text, out.kind);
     return out;
   }
@@ -650,7 +639,8 @@ export const STAT_LABEL: Record<keyof Stats, string> = {
 export function toPastLife(life: Life): PastLife {
   return {
     id: life.id,
-    name: `${life.firstName} ${life.lastName}`,
+    name: displayName(life),
+    world: life.worldId,
     gender: life.gender,
     age: life.age,
     cause: life.causeOfDeath ?? "-",

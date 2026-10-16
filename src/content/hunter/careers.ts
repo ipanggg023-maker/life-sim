@@ -1,4 +1,4 @@
-import type { Faculty, Life, StatKey } from "../../engine/types";
+import type { Faculty, Life, StatKey, WorldId } from "../../engine/types";
 import { RETAINER, guildById } from "./power";
 
 export interface Career {
@@ -16,6 +16,8 @@ export interface Career {
   key: StatKey;
   /** ความยากตอนสมัคร (เทียบกับสเตตัส key) */
   dc: number;
+  /** โลกที่มีอาชีพนี้ (ไม่ใส่ = โลก Hunter) */
+  world?: WorldId;
   /** ต้องเป็นผู้ตื่นพลัง */
   needsPower?: boolean;
   /** ต้องเป็นคนธรรมดา (ไม่ตื่นพลัง) */

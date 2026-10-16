@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { loadHunterWorld } from "../content/hunter";
+import { loadMurimWorld } from "../content/murim";
 import { worldFacts } from "../content/hunter/worldFacts";
 import { exportCode, importCode } from "../save";
 import { visibleChoices } from "./events";
@@ -9,6 +10,7 @@ import { buildRegression, claimAward, newSoul, nextEraOptions, regressTarget } f
 import type { Life } from "./types";
 
 loadHunterWorld();
+loadMurimWorld();
 
 /** เล่นจนตาย (หรือถึงอายุ stopAt) โดยเก็บ snapshot ทุกปีไว้ใน Map แบบเดียวกับ UI */
 function play(life: Life, snaps: Map<number, Life>, pickFirst = false, stopAt = 200) {

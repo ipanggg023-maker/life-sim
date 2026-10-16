@@ -1,5 +1,5 @@
 import { weightedPick } from "./rng";
-import type { Life, LogKind, QueuedEvent, StatKey } from "./types";
+import type { Life, LogKind, QueuedEvent, StatKey, WorldId } from "./types";
 
 export type Ctx = Record<string, string | number | boolean>;
 
@@ -33,6 +33,7 @@ export interface Scene {
 
 export interface GameEvent {
   id: string;
+  world?: WorldId;
   minAge: number;
   maxAge: number;
   weight?: number | ((life: Life) => number);
@@ -58,10 +59,11 @@ export interface GameEvent {
 const registry = new Map<string, GameEvent>();
 const QUIET_WEIGHT = 25;
 
-export function registerEvents(events: GameEvent[]) {
+/** world: event เกิดเฉพาะในโลกนั้น · ไม่ใส่ = ทุกโลก */
+export function registerEvents(events: GameEvent[], world?: WorldId) {
   for (const e of events) {
     if (registry.has(e.id)) throw new Error(`event ซ้ำ: ${e.id}`);
-    registry.set(e.id, e);
+    registry.set(e.id, world && !e.world ? { ...e, world } : e);
   }
 }
 
@@ -78,6 +80,7 @@ export function currentScene(q: QueuedEvent): Scene | undefined {
 
 function eligible(life: Life, e: GameEvent, takenThisYear: Set<string>): boolean {
   if (e.manual) return false;
+  if (e.world && e.world !== (life.worldId ?? "hunter")) return false;
   if (life.age < e.minAge || life.age > e.maxAge) return false;
   if (takenThisYear.has(e.id)) return false;
   const max = e.maxTimes ?? 1;

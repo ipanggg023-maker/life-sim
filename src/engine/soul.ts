@@ -3,7 +3,7 @@ import { createLife, type BirthOptions } from "./game";
 import { mergeMemories } from "./memory";
 import { randInt } from "./rng";
 import type { Legacy, Life, Memory, Soul, Wealth } from "./types";
-import { clamp, log, people, shortName } from "./util";
+import { clamp, displayName, log, people, shortName } from "./util";
 
 export function newSoul(): Soul {
   return {
@@ -74,7 +74,7 @@ function deathMemory(life: Life): Memory {
 export function buildRegression(dead: Life, snapshot: Life | undefined, clarity: boolean): Life {
   const base: Life = snapshot
     ? structuredClone(snapshot)
-    : createLife({ seed: dead.seed, worldSeed: dead.worldSeed, birthYear: dead.birthYear, legacy: dead.legacy });
+    : createLife({ seed: dead.seed, worldId: dead.worldId, worldSeed: dead.worldSeed, birthYear: dead.birthYear, legacy: dead.legacy });
   base.id = `${dead.id}r${(dead.regressions ?? 0) + 1}`;
   base.alive = true;
   base.causeOfDeath = undefined;
@@ -104,7 +104,7 @@ function wealthTier(net: number): Wealth {
 
 export function legacyOf(dead: Life): Legacy {
   return {
-    founderName: `${dead.firstName} ${dead.lastName}`,
+    founderName: displayName(dead),
     lastName: dead.lastName,
     founderAge: dead.age,
     founderDeathYear: dead.birthYear + dead.age,
@@ -120,6 +120,7 @@ export function legacyOf(dead: Life): Legacy {
 export function nextEraOptions(dead: Life): BirthOptions {
   const r = { rng: dead.rng ^ 0x9e3779b9 };
   return {
+    worldId: dead.worldId,
     worldSeed: dead.worldSeed ?? dead.seed,
     birthYear: dead.birthYear + dead.age + randInt(r, 15, 45),
     legacy: legacyOf(dead),

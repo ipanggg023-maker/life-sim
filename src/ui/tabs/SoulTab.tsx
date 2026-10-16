@@ -2,12 +2,12 @@ import { useState } from "react";
 import { ACHIEVEMENTS } from "../../content/achievements";
 import { TALENTS, RARITY_LABEL, talentById } from "../../content/talents";
 import { facultyById } from "../../content/hunter/careers";
-import { rankName } from "../../content/hunter/power";
+import { rankLabel } from "../../content/hunter/power";
 import { ageUp, resolveChoice, STAT_LABEL, type BirthOptions } from "../../engine/game";
 import { visibleChoices } from "../../engine/events";
 import { memoryOdds } from "../../engine/memory";
-import type { Gender, Life, PastLife, Soul, Stats, Wealth } from "../../engine/types";
-import { formatMoney } from "../../engine/util";
+import type { Gender, Life, PastLife, Soul, Stats, Wealth, WorldId } from "../../engine/types";
+import { displayName, money } from "../../engine/util";
 import { saveSnapshot, type Bundle } from "../../save";
 import type { Act } from "../App";
 import { SaveTransfer } from "../SaveTransfer";
@@ -36,7 +36,7 @@ export function SoulTab({
       <div className="sys-window">
         <div className="sys-head">บันทึกวิญญาณ</div>
         <p>
-          ชาติที่ {graveyard.length + 1} · {life.firstName} {life.lastName} · ปี {life.birthYear}
+          ชาติที่ {graveyard.length + 1} · {displayName(life)} · ปี {life.birthYear}
         </p>
         <p>
           แต้มวิญญาณ: <b>{soul.points}</b> <span className="muted small">(สะสมทั้งหมด {soul.totalPoints})</span>
@@ -96,11 +96,11 @@ export function SoulTab({
             <div className="grave" key={g.id}>
               <div className="grave-name">
                 ชาติที่ {graveyard.length - i}: {g.name} · {g.age} ปี
-                {g.rank !== undefined && <span className={`rank rank-${rankName(g.rank)}`}> [{rankName(g.rank)}]</span>}
+                {g.rank !== undefined && <span className={`rank r${g.rank}`}> [{rankLabel({ worldId: g.world ?? "hunter" }, g.rank)}]</span>}
                 {g.regressed && " ⏪"}
               </div>
               <div className="grave-sub">
-                {g.cause} · {formatMoney(g.money)}
+                {g.cause} · {money({ worldId: g.world ?? "hunter" }, g.money)}
                 {g.job ? ` · ${g.job}` : ""}
                 {g.degree ? ` · ${facultyById(g.degree).name}` : ""}
                 {g.points !== undefined ? ` · +${g.points} แต้ม` : ""}
@@ -139,6 +139,7 @@ const STAT_KEYS: (keyof Stats)[] = ["health", "happiness", "smarts", "looks", "l
 /** Admin: สร้างตัวละครแบบ D&D และกรอเวลา */
 function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOptions) => void }) {
   const [gender, setGender] = useState<Gender>("m");
+  const [world, setWorld] = useState<WorldId>("hunter");
   const [firstName, setFirstName] = useState("");
   const [wealth, setWealth] = useState<Wealth>("middle");
   const [stats, setStats] = useState<Stats>({ health: 70, happiness: 70, smarts: 60, looks: 60, luck: 50 });
@@ -167,6 +168,10 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
 
       <div className="section-title">สร้างตัวละคร</div>
       <div className="row">
+        <select value={world} onChange={(e) => setWorld(e.target.value as WorldId)}>
+          <option value="hunter">🌀 โลก Hunter</option>
+          <option value="murim">⛰️ ยุทธภพ</option>
+        </select>
         <select value={gender} onChange={(e) => setGender(e.target.value as Gender)}>
           <option value="m">ชาย</option>
           <option value="f">หญิง</option>
@@ -201,7 +206,7 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
       </div>
       <button
         className="btn primary"
-        onClick={() => onNewLife({ gender, wealth, stats, talents, firstName: firstName.trim() || undefined })}
+        onClick={() => onNewLife({ worldId: world, gender, wealth, stats, talents, firstName: firstName.trim() || undefined })}
       >
         เกิดด้วยค่านี้
       </button>

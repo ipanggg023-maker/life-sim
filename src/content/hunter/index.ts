@@ -22,5 +22,5 @@ export function loadHunterWorld() {
     ...HUNTER_LIFE_EVENTS,
     ...MEMORY_EVENTS,
     ...LEGACY_EVENTS,
-  ]);
+  ], "hunter");
 }

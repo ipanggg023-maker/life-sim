@@ -1,7 +1,7 @@
 import { chance, randInt } from "./rng";
 import type { Outcome } from "./events";
-import type { Life } from "./types";
-import { addFame, addMoney, addStat, checkChance, createPerson, formatMoney, hasTalent, log, people, shortName } from "./util";
+import type { Life, WorldId } from "./types";
+import { addFame, addMoney, addStat, checkChance, createPerson, money, hasTalent, log, people, shortName } from "./util";
 
 export interface Activity {
   id: string;
@@ -9,6 +9,8 @@ export interface Activity {
   name: string;
   desc: string;
   minAge: number;
+  /** ไม่ใส่ = โลก Hunter */
+  world?: WorldId;
   cost?: number;
   /** % สำเร็จที่แสดงให้ผู้เล่นเห็น */
   odds?: (life: Life) => number;
@@ -145,11 +147,14 @@ export const ACTIVITIES: Activity[] = [
   },
 ];
 
+export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => (a.world ?? "hunter") === life.worldId);
+
 export function activityLocked(life: Life, a: Activity): string | undefined {
+  if ((a.world ?? "hunter") !== life.worldId) return "ไม่มีในโลกนี้";
   if (life.age < a.minAge) return `อายุ ${a.minAge}+`;
   if (a.available && !a.available(life)) return "ตอนนี้ทำไม่ได้";
   if (life.doneThisYear.includes(`act:${a.id}`)) return "ปีนี้ทำแล้ว";
-  if (a.cost && life.age >= 18 && life.money < a.cost) return `ต้องมี ${formatMoney(a.cost)}`;
+  if (a.cost && life.age >= 18 && life.money < a.cost) return `ต้องมี ${money(life, a.cost)}`;
   return;
 }
 

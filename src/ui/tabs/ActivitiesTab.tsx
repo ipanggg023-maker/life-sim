@@ -1,12 +1,12 @@
-import { ACTIVITIES, activityLocked, doActivity } from "../../engine/activities";
+import { activitiesFor, activityLocked, doActivity } from "../../engine/activities";
 import type { Life } from "../../engine/types";
-import { formatMoney } from "../../engine/util";
+import { money } from "../../engine/util";
 import type { Act } from "../App";
 
 export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
   return (
     <div className="tab-content grid">
-      {ACTIVITIES.filter((a) => life.age >= a.minAge - 2).map((a) => {
+      {activitiesFor(life).filter((a) => life.age >= a.minAge - 2).map((a) => {
         const locked = activityLocked(life, a);
         const odds = a.odds?.(life);
         return (
@@ -15,7 +15,7 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
             <span className="act-name">{a.name}</span>
             <span className="act-desc">
               {locked ?? a.desc}
-              {!locked && a.cost && life.age >= 18 ? ` · ${formatMoney(a.cost)}` : ""}
+              {!locked && a.cost && life.age >= 18 ? ` · ${money(life, a.cost)}` : ""}
               {!locked && odds !== undefined ? ` · ${Math.round(odds * 100)}%` : ""}
             </span>
           </button>
