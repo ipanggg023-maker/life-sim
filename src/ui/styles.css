@@ -70,6 +70,26 @@
   --scrim: rgba(42, 33, 24, 0.45);
   --font: "Noto Serif Thai", "Noto Sans Thai", serif;
 }
+/* ── ธีมหอคอย: หินดำ / ทองเรืองแสง ── */
+:root[data-world="tower"] {
+  --bg: #07060b;
+  --bg-2: #100d18;
+  --surface: #16121f;
+  --surface-2: #211b2e;
+  --line: #3a2f4d;
+  --text: #f1ebdd;
+  --muted: #a397b5;
+  --accent: #e8b84a;
+  --milestone: #f0d98a;
+  --body-bg: radial-gradient(1000px 600px at 50% -15%, #2a1f3d 0%, var(--bg) 62%);
+  --glow: 0 0 14px rgba(232, 184, 74, 0.35);
+  --fill-grad: linear-gradient(90deg, #a5782a, var(--accent));
+  --footer-bg: linear-gradient(180deg, rgba(7, 6, 11, 0.6), var(--bg));
+  --primary-grad: linear-gradient(90deg, #a5782a, #e8b84a);
+  --primary-shadow: 0 4px 20px rgba(232, 184, 74, 0.3);
+}
+:root[data-world="tower"] .age-badge { border-color: #e8b84a; }
+
 /* ── ธีมราชสำนัก: ครีม / ทอง / ลวดลายหรูหรา ── */
 :root[data-world="court"] {
   --bg: #fbf6ec;
@@ -599,6 +619,7 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 }
 .cover-hunter { background: linear-gradient(160deg, #0b1530 0%, #1d3f8a 60%, #3ea8ff 130%); }
 .cover-murim { background: linear-gradient(160deg, #2a1e14 0%, #5b2a1e 55%, #b3261e 130%); }
+.cover-tower { background: linear-gradient(160deg, #07060b 0%, #2a1f3d 55%, #e8b84a 140%); }
 .cover-court { background: linear-gradient(160deg, #3a2a10 0%, #8a5a14 55%, #e2bf62 130%); }
 .cover::after {
   content: "";

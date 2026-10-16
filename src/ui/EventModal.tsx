@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { loc } from "../engine/util";
 import { currentScene, labelOf, visibleChoices, type Outcome } from "../engine/events";
 import { choiceChance } from "../engine/game";
 import type { Life } from "../engine/types";
@@ -25,7 +26,7 @@ function useTypewriter(text: string, speed = 18) {
 export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: number) => void }) {
   const q = life.queue[0];
   const scene = currentScene(q, life)!;
-  const text = scene.text(life, q.ctx);
+  const text = loc(life, scene.text(life, q.ctx));
   const { shown, done, skip } = useTypewriter(text);
   const choices = visibleChoices(life, q);
 
@@ -51,7 +52,7 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
                   onChoose(index);
                 }}
               >
-                <span>{labelOf(c, life, q.ctx)}</span>
+                <span>{loc(life, labelOf(c, life, q.ctx))}</span>
                 {survive !== undefined && survive < 0.95 && <span className="warn">[คำเตือน: อัตรารอดชีวิต {Math.round(survive * 100)}%]</span>}
                 {pct !== undefined && <span className="pct">สำเร็จ {Math.round(pct * 100)}%</span>}
               </button>

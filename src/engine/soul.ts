@@ -75,7 +75,7 @@ function deathMemory(life: Life): Memory {
 export function buildRegression(dead: Life, snapshot: Life | undefined, clarity: boolean): Life {
   const base: Life = snapshot
     ? structuredClone(snapshot)
-    : createLife({ seed: dead.seed, worldId: dead.worldId, worldSeed: dead.worldSeed, birthYear: dead.birthYear, legacy: dead.legacy });
+    : createLife({ seed: dead.seed, worldId: dead.worldId, country: dead.country, worldSeed: dead.worldSeed, birthYear: dead.birthYear, legacy: dead.legacy });
   base.id = `${dead.id}r${(dead.regressions ?? 0) + 1}`;
   base.alive = true;
   base.causeOfDeath = undefined;
@@ -121,6 +121,7 @@ export function nextEraOptions(dead: Life): BirthOptions {
   const r = { rng: dead.rng ^ 0x9e3779b9 };
   return {
     worldId: dead.worldId,
+    country: dead.country,
     worldSeed: dead.worldSeed ?? dead.seed,
     birthYear: dead.birthYear + dead.age + randInt(r, 15, 45),
     legacy: legacyOf(dead),

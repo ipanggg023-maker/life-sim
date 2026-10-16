@@ -1,6 +1,14 @@
 import { nextFloat, pick } from "./rng";
 import { worldOf } from "../content/worlds";
-import type { Gender, Life, LogKind, Person, Relation, StatKey } from "./types";
+import { countryMoney, countryOf, localize } from "../content/countries";
+import type { Country, Gender, Life, LogKind, Person, Relation, StatKey, WorldId } from "./types";
+
+/** ประเทศที่มีผลกับชีวิตนี้ (โลกแฟนตาซีไม่มีประเทศ) */
+export const countryIn = (l: { worldId?: WorldId; country?: Country }): Country | undefined =>
+  worldOf(l.worldId).modern ? (l.country ?? "th") : undefined;
+
+/** แปลงคำเฉพาะถิ่นตามประเทศของชีวิตนี้ */
+export const loc = (l: { worldId?: WorldId; country?: Country }, text: string) => localize(text, countryIn(l));
 
 export const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
@@ -17,7 +25,7 @@ export function addFame(life: Life, delta: number) {
 }
 
 export function log(life: Life, text: string, kind: LogKind = "normal") {
-  life.log.push({ age: life.age, text, kind });
+  life.log.push({ age: life.age, text: loc(life, text), kind });
 }
 
 export function uid(life: Life): string {
@@ -25,13 +33,16 @@ export function uid(life: Life): string {
 }
 
 /** ชื่อเต็มตามธรรมเนียมของโลก (ยุทธภพ: แซ่ขึ้นก่อน ไม่เว้นวรรค) */
-export function displayName(life: Pick<Life, "firstName" | "lastName" | "worldId">) {
-  return life.worldId === "murim" ? `${life.lastName}${life.firstName}` : `${life.firstName} ${life.lastName}`;
+export function displayName(life: Pick<Life, "firstName" | "lastName" | "worldId" | "country">) {
+  if (life.worldId === "murim") return `${life.lastName}${life.firstName}`;
+  const c = countryIn(life);
+  return c && countryOf(c).familyFirst ? `${life.lastName} ${life.firstName}` : `${life.firstName} ${life.lastName}`;
 }
 
 /** แสดงจำนวนเงินด้วยสกุลเงินของโลกนั้น */
-export function money(life: Pick<Life, "worldId">, n: number) {
-  return worldOf(life.worldId).currency(n);
+export function money(life: Pick<Life, "worldId" | "country">, n: number) {
+  const c = countryIn(life);
+  return c ? countryMoney(c, n) : worldOf(life.worldId).currency(n);
 }
 
 export function hasTalent(life: Life, id: string) {
@@ -47,6 +58,12 @@ export function firstPerson(life: Life, relation: Relation): Person | undefined 
 }
 
 export function randomName(life: Life, gender: Gender) {
+  const c = countryIn(life);
+  if (c && c !== "th") {
+    const k = countryOf(c).names;
+    const first = pick(life, gender === "m" ? k.male : k.female);
+    return { first, nick: first, last: pick(life, k.last) };
+  }
   const n = worldOf(life.worldId).names;
   return {
     first: pick(life, gender === "m" ? n.male : n.female),
@@ -62,13 +79,17 @@ export function createPerson(
 ): Person {
   const gender = opts.gender ?? (nextFloat(life) < 0.5 ? "m" : "f");
   const n = randomName(life, gender);
+  const c = countryIn(life);
+  const familyFirst = !!c && countryOf(c).familyFirst;
   const person: Person = {
     id: uid(life),
     // ยุทธภพเรียกชื่อเต็มแบบแซ่นำหน้า (shortName จะได้ชื่อเต็ม ซึ่งเข้ากับสำนวนนิยายจีน)
     name:
       life.worldId === "murim"
         ? `${opts.lastName ?? n.last}${n.first}`
-        : life.worldId === "court"
+        : familyFirst
+          ? `${opts.lastName ?? n.last} ${n.first}` // เกาหลี/ญี่ปุ่น: นามสกุลขึ้นก่อน เรียกด้วยชื่อตัว
+          : life.worldId === "court"
           ? `${n.first} ${opts.lastName ?? n.last}` // ราชสำนักเรียกด้วยชื่อตัว (shortName = ชื่อตัว)
           : `${n.first} (${n.nick}) ${opts.lastName ?? n.last}`,
     gender,
@@ -77,6 +98,7 @@ export function createPerson(
     bond: opts.bond ?? 50,
     alive: true,
     job: opts.job,
+    ...(familyFirst ? { short: n.first } : {}),
   };
   life.people.push(person);
   return person;
@@ -84,6 +106,7 @@ export function createPerson(
 
 /** ชื่อสั้นสำหรับใช้ในประโยค: ชื่อเล่น */
 export function shortName(p: Person) {
+  if (p.short) return p.short;
   const m = p.name.match(/\((.+?)\)/);
   return m ? m[1] : p.name.split(" ")[0];
 }

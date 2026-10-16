@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { loadHunterWorld } from "./content/hunter";
 import { loadMurimWorld } from "./content/murim";
 import { loadCourtWorld } from "./content/court";
+import { loadTowerWorld } from "./content/tower";
 import { loadSharedEvents } from "./content/shared";
 import { App } from "./ui/App";
 import "./ui/styles.css";
@@ -10,6 +11,7 @@ import "./ui/styles.css";
 loadHunterWorld();
 loadMurimWorld();
 loadCourtWorld();
+loadTowerWorld();
 loadSharedEvents();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {

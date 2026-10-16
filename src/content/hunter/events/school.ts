@@ -272,6 +272,7 @@ export const SCHOOL_EVENTS: GameEvent[] = [
   },
   {
     id: "school.hunter_visit",
+    world: "hunter",
     minAge: 10,
     maxAge: 17,
     weight: 8,

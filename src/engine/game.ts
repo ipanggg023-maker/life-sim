@@ -3,11 +3,13 @@ import { HIDDEN_RARITY_ODDS, RARITY_ODDS, TALENTS, talentById } from "../content
 import { currentScene, getEvent, pickEvents, stillValid, type Choice, type Ctx, type Outcome } from "./events";
 import { chance, newSeed, nextFloat, pick, randInt, weightedPick } from "./rng";
 import type { Career } from "../content/hunter/careers";
-import type { Faculty, Gender, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
-import { worldOf } from "../content/worlds";
+import type { Country, Faculty, Gender, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
+import { worldMatches, worldOf } from "../content/worlds";
+import { countryOf } from "../content/countries";
 import { rollAwakenTrack } from "../content/hunter/power";
 import { awakenArc, birthArc, maybeComment, seriesOf, startChapter } from "../content/manhwa";
 import { checkTitles, titleBonus } from "../content/titles";
+import { sponsorBonus } from "../content/sponsors";
 import {
   addFame,
   addMoney,
@@ -44,6 +46,8 @@ export interface BirthOptions {
   blessed?: boolean;
   /** พรสวรรค์ที่ผนึกติดตัวมาจากชาติก่อน */
   inheritTalent?: string;
+  /** ประเทศที่เกิด (โลกยุคปัจจุบัน) — ไม่ใส่ = สุ่ม ไทย/เกาหลี/ญี่ปุ่น */
+  country?: Country;
   /** วิญญาณข้ามโลก: ชาติก่อนมาจากโลกอื่น */
   pastLife?: PastSelf;
 }
@@ -91,6 +95,8 @@ export function revealTalent(life: Life, id: string) {
 
 export const wealthLabel = (w: Wealth, world?: WorldId) => worldOf(world).wealthLabel[w];
 
+const parentJobs = (l: Life) => (l.country && countryOf(l.country).parentJobs?.[l.wealth]) || worldOf(l.worldId).parentJobs[l.wealth];
+
 export function createLife(opts: BirthOptions = {}): Life {
   const seed = opts.seed ?? newSeed();
   const life: Life = {
@@ -122,6 +128,10 @@ export function createLife(opts: BirthOptions = {}): Life {
   };
   life.id = Math.floor(nextFloat(life) * 1e12).toString(36);
   life.worldSeed = opts.worldSeed ?? seed;
+  // ประเทศสุ่มจาก RNG แยก เพื่อไม่ให้ชะตาส่วนอื่นของ seed เดิมเปลี่ยน
+  if (worldOf(life.worldId).modern) {
+    life.country = opts.country ?? weightedPick({ rng: seed ^ 0x5bd1e995 }, ["th", "kr", "jp"] as Country[], () => 1)!;
+  }
   life.gender = opts.gender ?? (chance(life, 0.5) ? "m" : "f");
   const n = randomName(life, life.gender);
   life.firstName = opts.firstName ?? n.first;
@@ -167,8 +177,8 @@ export function createLife(opts: BirthOptions = {}): Life {
   // ครอบครัว
   const dadAge = randInt(life, 24, 42);
   const momAge = clamp(dadAge + randInt(life, -6, 3), 20, 42);
-  createPerson(life, "father", { gender: "m", age: dadAge, bond: randInt(life, 55, 90), lastName: life.lastName, job: pick(life, worldOf(life.worldId).parentJobs[life.wealth]) });
-  createPerson(life, "mother", { gender: "f", age: momAge, bond: randInt(life, 60, 95), lastName: life.lastName, job: pick(life, worldOf(life.worldId).parentJobs[life.wealth]) });
+  createPerson(life, "father", { gender: "m", age: dadAge, bond: randInt(life, 55, 90), lastName: life.lastName, job: pick(life, parentJobs(life)) });
+  createPerson(life, "mother", { gender: "f", age: momAge, bond: randInt(life, 60, 95), lastName: life.lastName, job: pick(life, parentJobs(life)) });
   const siblings = weightedPick(life, [0, 1, 2], (k) => [45, 40, 15][k])!;
   for (let i = 0; i < siblings; i++) {
     const maxSibAge = Math.max(1, Math.min(10, momAge - 19));
@@ -287,7 +297,7 @@ export function salaryOf(life: Life, career: Career, level: number) {
   let base = career.baseSalary * (1 + 0.35 * (level - 1));
   if (career.salary) base = career.salary(life, base);
   if (hasTalent(life, "merchant")) base *= 1.25;
-  base *= 1 + titleBonus(life, "money");
+  base *= 1 + titleBonus(life, "money") + sponsorBonus(life, "money");
   if (isStudent(life)) base *= 0.4;
   return Math.round(base / 1000) * 1000;
 }
@@ -442,7 +452,7 @@ export function ageUp(life: Life) {
   life.flags.income = 0;
 
   ageHealth(life);
-  if (life.worldId === "hunter") progressSchool(life);
+  if (worldOf(life.worldId).modern) progressSchool(life);
   progressJob(life);
   progressMoney(life);
   progressPeople(life);
@@ -523,7 +533,7 @@ export function choiceChance(life: Life, q: QueuedEvent, index: number): number 
 // ───────────────────────── งาน ─────────────────────────
 
 export function jobRequirementMissing(life: Life, c: Career): string | undefined {
-  if ((c.world ?? "hunter") !== life.worldId) return "ไม่มีในโลกนี้";
+  if (!worldMatches(c.world, life.worldId)) return "ไม่มีในโลกนี้";
   if (life.age < c.minAge) return `อายุ ${c.minAge}+`;
   if (c.needsPower && !life.power) return "ต้องเป็นผู้ตื่นพลัง";
   if (c.mundaneOnly && life.power) return "รับเฉพาะคนธรรมดา";

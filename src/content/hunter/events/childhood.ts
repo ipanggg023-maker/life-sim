@@ -26,6 +26,7 @@ export const CHILDHOOD_EVENTS: GameEvent[] = [
   },
   {
     id: "child.hunter_tv",
+    world: "hunter",
     minAge: 3,
     maxAge: 6,
     weight: 15,

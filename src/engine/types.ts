@@ -1,4 +1,7 @@
-export type WorldId = "hunter" | "murim" | "court";
+export type WorldId = "hunter" | "murim" | "court" | "tower";
+
+/** ประเทศที่เกิด (เฉพาะโลกยุคปัจจุบัน) */
+export type Country = "th" | "kr" | "jp";
 
 export type StatKey = "health" | "happiness" | "smarts" | "looks" | "luck";
 
@@ -26,6 +29,8 @@ export interface Person {
   bond: number; // 0-100
   alive: boolean;
   job?: string;
+  /** ชื่อเรียกสั้น (เกาหลี/ญี่ปุ่นเรียกด้วยชื่อตัว ซึ่งอยู่ท้ายชื่อเต็ม) */
+  short?: string;
 }
 
 export type Wealth = "poor" | "middle" | "rich" | "elite";
@@ -88,7 +93,9 @@ export type HunterClass =
   // วิชาในยุทธภพ
   | "m_sword" | "m_palm" | "m_spear" | "m_hidden" | "m_medic" | "m_demon"
   // สายเวทในราชสำนัก
-  | "c_fire" | "c_ice" | "c_holy" | "c_aura" | "c_spirit" | "c_dark";
+  | "c_fire" | "c_ice" | "c_holy" | "c_aura" | "c_spirit" | "c_dark"
+  // ตำแหน่งในหอคอย
+  | "t_vanguard" | "t_lancer" | "t_lantern" | "t_wave" | "t_scout" | "t_outsider";
 
 /** สถานะผู้ตื่นพลัง — rank: 0=F … 8=SSS */
 export interface Power {
@@ -110,6 +117,8 @@ export interface Life {
   version: 1;
   id: string;
   worldId: WorldId;
+  /** ประเทศที่เกิด — ไม่มี = ไทย (เซฟเก่า และโลกแฟนตาซี) */
+  country?: Country;
   seed: number;
   rng: number; // สถานะ RNG ปัจจุบัน
 

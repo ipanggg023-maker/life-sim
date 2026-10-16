@@ -4,6 +4,7 @@ import { addFame, addMoney, addStat, clamp, log, money as fmtMoney } from "../..
 import { worldOf } from "../worlds";
 import { titleBonus } from "../titles";
 import { skillInfo, type SkillInfo } from "../skills";
+import { sponsorBonus } from "../sponsors";
 
 /** เพื่อนร่วมทีมที่ยังมีชีวิต (นับสูงสุด 3 คน) */
 export const partySize = (life: Life) => Math.min(3, life.people.filter((p) => p.relation === "ally" && p.alive).length);
@@ -106,6 +107,31 @@ export const CLASSES: ClassInfo[] = [
     id: "c_dark", name: "เวทมืด", emoji: "🌑", key: "luck", desc: "สายต้องห้าม รุนแรงที่สุด แต่วิหารตามล่า", cp: 7, survival: -0.04, world: "court",
     skills: [[1, "เงาสาป"], [10, "กลืนวิญญาณ"], [25, "ประตูนรก"], [45, "จอมราชันย์ปีศาจ"]],
   },
+  // ── ตำแหน่งในหอคอย ──
+  {
+    id: "t_vanguard", name: "หัวหอก", emoji: "⚔️", key: "health", desc: "บุกเปิดทางให้ทีม ปะทะทุกอย่างตรงหน้า", cp: 3, survival: 0, world: "tower",
+    skills: [[1, "ทะลวงแนวหน้า"], [10, "ก้าวสายฟ้า"], [25, "หมัดพันชั้น"], [45, "ผู้ทะลวงยอดหอคอย"]],
+  },
+  {
+    id: "t_lancer", name: "มือขว้างหอก", emoji: "🔱", key: "luck", desc: "ขว้างหอกพลังงานจากระยะไกล ชี้ขาดการต่อสู้ในนัดเดียว", cp: 4, survival: -0.03, world: "tower",
+    skills: [[1, "หอกพลังงาน"], [10, "หอกนำวิถี"], [25, "ฝนหอก"], [45, "หอกทะลุมิติ"]],
+  },
+  {
+    id: "t_lantern", name: "ผู้ถือโคม", emoji: "🏮", key: "smarts", desc: "โคมสอดแนมมองเห็นทั้งสนาม ทีมที่มีผู้ถือโคมตายยาก", cp: -1, survival: 0.12, world: "tower",
+    skills: [[1, "โคมสอดแนม"], [10, "โคมคุ้มกัน"], [25, "เครือข่ายโคม"], [45, "ประภาคารแห่งหอคอย"]],
+  },
+  {
+    id: "t_wave", name: "ผู้ควบคุมพลังงาน", emoji: "🌊", key: "smarts", desc: "บิดพลังงานในอากาศให้เป็นอาวุธหรือกำแพง", cp: 3, survival: 0.04, world: "tower",
+    skills: [[1, "คลื่นพลังงาน"], [10, "เกราะพลังงาน"], [25, "ทะเลพลังงาน"], [45, "ผู้ปกครองพลังงาน"]],
+  },
+  {
+    id: "t_scout", name: "หน่วยสอดแนม", emoji: "👣", key: "luck", desc: "หาเส้นทางลับและกับดักก่อนใคร ผ่านบททดสอบด้วยทางที่ไม่มีใครคิด", cp: 1, survival: 0.07, world: "tower",
+    skills: [[1, "เดินไร้เสียง"], [10, "ตาเหยี่ยว"], [25, "เงาหลบหนี"], [45, "ผู้เห็นทุกเส้นทาง"]],
+  },
+  {
+    id: "t_outsider", name: "ผู้บุกรุก", emoji: "🌀", key: "luck", desc: "สายหายาก — เข้าหอคอยโดยไม่ได้รับเชิญ กฎของหอคอยใช้กับคุณไม่ได้ทั้งหมด", cp: 7, survival: -0.03, world: "tower",
+    skills: [[1, "ประตูต้องห้าม"], [10, "ฝ่ากฎหอคอย"], [25, "พลังจากภายนอก"], [45, "ผู้ทำลายหอคอย"]],
+  },
 ];
 
 export const classById = (id: HunterClass) => CLASSES.find((c) => c.id === id)!;
@@ -158,6 +184,12 @@ export const GUILDS: Guild[] = [
   { id: "c_north", name: "กองอัศวินดยุกแห่งทิศเหนือ", minRank: 3, pay: 2, cp: 5, safety: 0.05, world: "court", desc: "ปกป้องชายแดนจากฝูงมอนสเตอร์ ดยุกเย็นชาที่สุดในจักรวรรดิ" },
   { id: "c_shadow", name: "สมาคมจอมเวทมืด", minRank: 2, pay: 2.4, cp: 6, safety: -0.05, world: "court", demonic: true, desc: "เวทต้องห้าม ถ้าวิหารรู้ จะถูกเผาทั้งเป็น" },
   { id: "c_guard", name: "หน่วยองครักษ์จักรพรรดิ", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "court", desc: "ยอดฝีมือที่ใกล้ชิดบัลลังก์ที่สุด" },
+  // ── ทีมในหอคอย ──
+  { id: "t_rookie", name: "ทีมผู้ท้าชิงหน้าใหม่", minRank: 0, pay: 1, cp: 2, safety: 0.05, world: "tower", desc: "ทีมรวมคนแปลกหน้าที่เพิ่งเข้าหอคอย ไม่มีใครเก่ง แต่ทุกคนจริงใจ" },
+  { id: "t_hawk", name: "กิลด์เหยี่ยวเงิน", minRank: 2, pay: 1.6, cp: 3, safety: 0.05, world: "tower", desc: "กิลด์ที่ปีนเร็วที่สุดในรุ่น มีสปอนเซอร์จากโลกภายนอกหนุนหลัง" },
+  { id: "t_pk", name: "กลุ่มล่าผู้ท้าชิง", minRank: 2, pay: 2.4, cp: 6, safety: -0.06, world: "tower", demonic: true, desc: "ฆ่าผู้ท้าชิงคนอื่นเพื่อชิงคะแนน — หอคอยไม่ห้าม แต่ทุกคนเกลียด" },
+  { id: "t_family", name: "ตระกูลผู้ปกครองชั้นบน", minRank: 4, pay: 2.2, cp: 6, safety: 0.1, world: "tower", desc: "ตระกูลเก่าแก่ที่อยู่ในหอคอยมาหลายร้อยปี รับคนนอกยากมาก" },
+  { id: "t_summit", name: "สมาพันธ์ผู้มุ่งยอดหอคอย", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "tower", desc: "รวมผู้ท้าชิงที่เก่งที่สุดจากทุกประเทศ มีเป้าหมายเดียวคือชั้น 100" },
   { id: "alliance", name: "พันธมิตรยุทธจักร", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "murim", desc: "รวมยอดฝีมือฝ่ายธรรมะ เป็นเหมือนรัฐบาลของยุทธภพ" },
 ];
 
@@ -186,7 +218,7 @@ export function combatPower(life: Life): number {
   const cls = classById(p.hunterClass);
   const g = guildById(p.guild);
   return Math.round(
-    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp"),
+    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp") + sponsorBonus(life, "cp"),
   );
 }
 
@@ -200,7 +232,7 @@ export function survivalOdds(life: Life, gateRank: number, mod = 0) {
   const p = life.power;
   const cls = p ? classById(p.hunterClass) : undefined;
   const g = guildById(p?.guild);
-  return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300 + partySize(life) * 0.03 + titleBonus(life, "survival") + sumSkills(life, "survival"), 0.05, 0.99);
+  return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300 + partySize(life) * 0.03 + titleBonus(life, "survival") + sponsorBonus(life, "survival") + sumSkills(life, "survival"), 0.05, 0.99);
 }
 
 export const expToNext = (level: number) => 60 + level * 40;
@@ -280,6 +312,11 @@ export function offerClasses(life: Life): HunterClass[] {
       fallback: "m_sword",
       rare: "m_demon",
     },
+    tower: {
+      map: { health: ["t_vanguard"], smarts: ["t_wave", "t_lantern"], luck: ["t_lancer", "t_scout"], looks: ["t_lantern", "t_lancer"], happiness: ["t_lantern"] },
+      fallback: "t_vanguard",
+      rare: "t_outsider",
+    },
     court: {
       map: { health: ["c_aura"], smarts: ["c_fire", "c_ice"], luck: ["c_spirit"], looks: ["c_holy", "c_ice"], happiness: ["c_holy"] },
       fallback: "c_aura",
@@ -311,6 +348,7 @@ export function awaken(life: Life, rank: number, cls: HunterClass) {
   };
   life.flags.awakenDone = true;
   delete life.flags.notYet;
+  if (life.worldId === "tower" && !life.flags.floor) life.flags.floor = 1; // เริ่มที่ชั้น 1
   addFame(life, rank >= 8 ? 50 : rank >= 5 ? 25 : rank >= 3 ? 8 : 1);
   addStat(life, "happiness", rank >= 3 ? 20 : 8);
   const track = trackOf(life);
@@ -375,7 +413,7 @@ export function gainExp(life: Life, amount: number) {
   const p = life.power;
   if (!p) return;
   // ตื่นช้าโตเร็ว · ความรู้วิธีฝึกจากชาติก่อน · สัญญากับสิ่งเหนือธรรมชาติ
-  const mult = (life.flags.lateBloom ? 1.4 : 1) * (life.flags.knowsMethod ? 1.25 : 1) * (life.flags.pact ? 1.2 : 1) * (1 + titleBonus(life, "exp"));
+  const mult = (life.flags.lateBloom ? 1.4 : 1) * (life.flags.knowsMethod ? 1.25 : 1) * (life.flags.pact ? 1.2 : 1) * (1 + titleBonus(life, "exp") + sponsorBonus(life, "exp"));
   p.exp += Math.round(amount * mult);
   const before = p.level;
   while (p.exp >= expToNext(p.level)) {

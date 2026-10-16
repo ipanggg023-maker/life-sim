@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { RARITY_LABEL, talentById } from "../content/talents";
 import { wealthLabel } from "../engine/game";
 import { worldOf } from "../content/worlds";
+import { countryOf } from "../content/countries";
 import type { Life, StatKey } from "../engine/types";
 import { displayName, firstPerson, people, shortName } from "../engine/util";
 import { StatBar } from "./MainScreen";
@@ -41,7 +42,7 @@ export function BirthScreen({
           {life.gender === "m" ? "♂" : "♀"} {displayName(life)} ("{life.nickname}")
         </p>
         <p className="muted">
-          {worldOf(life.worldId).emoji} {worldOf(life.worldId).name} · {wealthLabel(life.wealth, life.worldId)} · {worldOf(life.worldId).yearLabel} {life.birthYear}
+          {worldOf(life.worldId).emoji} {worldOf(life.worldId).name}{life.country ? ` · ${countryOf(life.country).flag} ${countryOf(life.country).name}` : ""} · {wealthLabel(life.wealth, life.worldId)} · {worldOf(life.worldId).yearLabel} {life.birthYear}
           {life.devCreated && <span className="dev-tag"> · สร้างโดย Admin</span>}
         </p>
         {life.legacy && (

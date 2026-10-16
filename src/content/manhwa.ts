@@ -1,7 +1,7 @@
 // การนำเสนอแบบมังฮวา: ตอน ภาค คอมเมนต์ผู้อ่าน ประโยคค้างคา และชื่อเรื่องตอนจบ
 import { chance, pick, randInt } from "../engine/rng";
 import type { Life, LogEntry, Series } from "../engine/types";
-import { displayName, log, people } from "../engine/util";
+import { displayName, loc, log, people } from "../engine/util";
 import { classById, rankLabel } from "./hunter/power";
 import { worldFacts } from "./hunter/worldFacts";
 import { worldOf } from "./worlds";
@@ -166,7 +166,8 @@ function titleOf(life: Life): string {
   if (reg >= 1 && (f.revenge || f.arcWon)) return `ผู้ย้อนเวลาครั้งที่ ${reg} กลับมาทวงคืนทุกอย่าง`;
   if (f.arcWon && p) return `${r}ผู้ยืนอยู่เหนือทุกคน`;
   if (f.rankRevealed && p) return `แรงก์ต่ำที่จริงๆ แล้วคือ${r}`;
-  if (f.sssAwakened) return life.worldId === "murim" ? "อัจฉริยะเซียนตั้งแต่กำเนิด" : life.worldId === "court" ? "ผู้ใช้เวทวงที่ 8 คนแรกในรอบห้าร้อยปี" : "แรงก์ SSS ตั้งแต่วันแรก";
+  if (f.towerTop) return "ผู้ยืนบนยอดหอคอย";
+  if (f.sssAwakened) return life.worldId === "murim" ? "อัจฉริยะเซียนตั้งแต่กำเนิด" : life.worldId === "tower" ? "ผู้ท้าชิงระดับ SSS คนแรกในรอบสิบปี" : life.worldId === "court" ? "ผู้ใช้เวทวงที่ 8 คนแรกในรอบห้าร้อยปี" : "แรงก์ SSS ตั้งแต่วันแรก";
   if (reg >= 1) return `ย้อนเวลามาครั้งที่ ${reg} รอบนี้จะไม่ตายแบบเดิม`;
   if (life.talents.some((t) => t.id === "system_user" && t.revealed)) return "ผู้เล่นคนเดียวที่มีหน้าต่างระบบ";
   if (p && f.lateBloom && p.awakenedAt >= 30) return `ตาลุงวัย ${p.awakenedAt} ที่เพิ่งตื่นพลัง`;
@@ -187,7 +188,7 @@ function titleOf(life: Life): string {
 function tagsOf(life: Life): string[] {
   const f = life.flags;
   const tags = [`#${worldOf(life.worldId).name.replace(/^โลก /, "")}`];
-  if (life.power) tags.push(life.worldId === "murim" ? "#ฝึกยุทธ์" : life.worldId === "court" ? "#เวทมนตร์" : "#ตื่นพลัง");
+  if (life.power) tags.push(life.worldId === "murim" ? "#ฝึกยุทธ์" : life.worldId === "court" ? "#เวทมนตร์" : life.worldId === "tower" ? "#ปีนหอคอย" : "#ตื่นพลัง");
   else tags.push("#ไร้พลัง");
   if ((life.regressions ?? 0) > 0) tags.push("#ย้อนเวลา");
   if (f.revenge || f.vendetta) tags.push("#ล้างแค้น");
@@ -206,7 +207,7 @@ export function seriesOf(life: Life): Series {
   if (life.age < 12) rating -= 0.6;
   rating = Math.round(Math.max(1, Math.min(5, rating)) * 10) / 10;
   const views = Math.round((chapters * 8000 + Math.max(0, life.fame) * 30_000 + life.age * 500) * (0.7 + rating / 5));
-  return { title: titleOf(life), rating, views, chapters, tags: tagsOf(life) };
+  return { title: loc(life, titleOf(life)), rating, views, chapters, tags: tagsOf(life) };
 }
 
 export const formatViews = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}K` : String(n));

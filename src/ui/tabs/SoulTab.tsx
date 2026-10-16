@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { COUNTRIES } from "../../content/countries";
 import { ACHIEVEMENTS } from "../../content/achievements";
 import { TALENTS, RARITY_LABEL, talentById } from "../../content/talents";
 import { facultyById } from "../../content/hunter/careers";
@@ -6,7 +7,8 @@ import { rankLabel } from "../../content/hunter/power";
 import { ageUp, resolveChoice, STAT_LABEL, type BirthOptions } from "../../engine/game";
 import { visibleChoices } from "../../engine/events";
 import { memoryOdds } from "../../engine/memory";
-import type { Gender, Life, PastLife, Soul, Stats, Wealth, WorldId } from "../../engine/types";
+import type { Country, Gender, Life, PastLife, Soul, Stats, Wealth, WorldId } from "../../engine/types";
+import { worldOf } from "../../content/worlds";
 import { displayName, money } from "../../engine/util";
 import { saveSnapshot, type Bundle } from "../../save";
 import type { Act } from "../App";
@@ -154,6 +156,7 @@ const STAT_KEYS: (keyof Stats)[] = ["health", "happiness", "smarts", "looks", "l
 function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOptions) => void }) {
   const [gender, setGender] = useState<Gender>("m");
   const [world, setWorld] = useState<WorldId>("hunter");
+  const [country, setCountry] = useState<Country | "">("");
   const [firstName, setFirstName] = useState("");
   const [wealth, setWealth] = useState<Wealth>("middle");
   const [stats, setStats] = useState<Stats>({ health: 70, happiness: 70, smarts: 60, looks: 60, luck: 50 });
@@ -186,7 +189,18 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
           <option value="hunter">🌀 โลก Hunter</option>
           <option value="murim">⛰️ ยุทธภพ</option>
           <option value="court">👑 ราชสำนัก</option>
+          <option value="tower">🗼 หอคอย</option>
         </select>
+        {worldOf(world).modern && (
+          <select value={country} onChange={(e) => setCountry(e.target.value as Country | "")}>
+            <option value="">สุ่มประเทศ</option>
+            {Object.values(COUNTRIES).map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.flag} {c.name}
+              </option>
+            ))}
+          </select>
+        )}
         <select value={gender} onChange={(e) => setGender(e.target.value as Gender)}>
           <option value="m">ชาย</option>
           <option value="f">หญิง</option>
@@ -221,7 +235,7 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
       </div>
       <button
         className="btn primary"
-        onClick={() => onNewLife({ worldId: world, gender, wealth, stats, talents, firstName: firstName.trim() || undefined })}
+        onClick={() => onNewLife({ worldId: world, country: country || undefined, gender, wealth, stats, talents, firstName: firstName.trim() || undefined })}
       >
         เกิดด้วยค่านี้
       </button>

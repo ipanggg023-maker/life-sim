@@ -34,6 +34,8 @@ export interface WorldInfo {
   /** อาชีพที่ออกภารกิจได้ */
   questJobs: string[];
   ranks: readonly string[];
+  /** โลกยุคปัจจุบัน: มีประเทศที่เกิด (ไทย/เกาหลี/ญี่ปุ่น) และระบบโรงเรียน */
+  modern?: boolean;
 }
 
 const baht = (n: number) => `${n < 0 ? "-" : ""}฿${Math.abs(n).toLocaleString("th-TH")}`;
@@ -79,6 +81,7 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
     },
     questJobs: ["hunter"],
     ranks: ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"],
+    modern: true,
   },
   murim: {
     id: "murim",
@@ -146,6 +149,50 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
     questJobs: ["knight", "court_mage", "adventurer"],
     ranks: ["ไร้วงเวท", "วงที่ 1", "วงที่ 2", "วงที่ 3", "วงที่ 4", "วงที่ 5", "วงที่ 6", "วงที่ 7", "วงที่ 8"],
   },
+  tower: {
+    id: "tower",
+    name: "หอคอย",
+    emoji: "🗼",
+    birthplace: "กรุงเทพฯ",
+    startYear: 2030,
+    yearLabel: "ปี",
+    currency: baht,
+    names: { male: MALE_NAMES, female: FEMALE_NAMES, nickM: NICKNAMES_M, nickF: NICKNAMES_F, last: LAST_NAMES },
+    parentJobs: {
+      poor: ["รับจ้างทั่วไป", "ขายของตลาดนัด", "พนักงานส่งของ", "คนงานก่อสร้าง", "แม่บ้าน"],
+      middle: ["พนักงานบริษัท", "ข้าราชการ", "ครู", "เจ้าของร้านอาหาร", "พยาบาล"],
+      rich: ["ผู้บริหาร", "แพทย์", "นักวิจัยหอคอย", "ทนายความ", "นักธุรกิจ"],
+      elite: ["ประธานเครือบริษัท", "ผู้ท้าชิงระดับตำนานที่เกษียณ", "นักการเมือง", "เจ้าของสถานีถ่ายทอดหอคอย"],
+    },
+    wealthLabel: { poor: "ครอบครัวยากจน", middle: "ครอบครัวชนชั้นกลาง", rich: "ครอบครัวมีฐานะ", elite: "ตระกูลมหาเศรษฐี" },
+    deathYoung: ["อุบัติเหตุรถชน", "จมน้ำ", "ไข้เลือดออก", "โดนไฟดูด"],
+    deathOld: ["หัวใจวาย", "เส้นเลือดในสมองแตก", "มะเร็ง", "ปอดบวม", "หลับไปอย่างสงบ"],
+    awakenAge: [18, 20],
+    awakenEarly: [10, 15],
+    awakenLate: [21, 50],
+    labels: {
+      rank: "ระดับ",
+      power: "พลังหอคอย",
+      guild: "ทีม",
+      raid: "บททดสอบหอคอย",
+      raidUnit: (r) => `บททดสอบระดับ ${r}`,
+      train: "ฝึกในห้องฝึก",
+      trainText: "ห้องฝึกชั้นปลอดภัยของหอคอย",
+    },
+    questJobs: ["climber"],
+    ranks: ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"],
+    modern: true,
+  },
 };
 
-export const worldOf = (id: WorldId | undefined) => WORLDS[id ?? "hunter"];
+export const worldOf =(id: WorldId | undefined) => WORLDS[id ?? "hunter"];
+
+/**
+ * ของที่ผูกกับโลก (อาชีพ/กิจกรรม/event) ใช้ได้ในโลกนี้ไหม
+ * ไม่ระบุ หรือ "modern" = ใช้ได้ทุกโลกยุคปัจจุบัน
+ */
+export function worldMatches(tag: WorldId | "modern" | undefined, world: WorldId | undefined): boolean {
+  const w = world ?? "hunter";
+  if (!tag || tag === "modern") return !!WORLDS[w].modern;
+  return tag === w;
+}

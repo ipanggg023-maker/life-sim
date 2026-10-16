@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { displayName } from "./util";
 import { loadHunterWorld } from "../content/hunter";
 import { loadMurimWorld } from "../content/murim";
 import { loadCourtWorld } from "../content/court";
+import { loadTowerWorld } from "../content/tower";
 import { loadSharedEvents } from "../content/shared";
 import { worldFacts } from "../content/hunter/worldFacts";
 import { exportCode, importCode } from "../save";
@@ -14,6 +16,7 @@ import type { Life } from "./types";
 loadHunterWorld();
 loadMurimWorld();
 loadCourtWorld();
+loadTowerWorld();
 loadSharedEvents();
 
 /** เล่นจนตาย (หรือถึงอายุ stopAt) โดยเก็บ snapshot ทุกปีไว้ใน Map แบบเดียวกับ UI */
@@ -72,7 +75,7 @@ describe("ระบบวิญญาณ", () => {
     const era = createLife(nextEraOptions(a));
     expect(era.worldSeed).toBe(a.worldSeed);
     expect(era.birthYear).toBeGreaterThan(a.birthYear + a.age);
-    expect(era.legacy?.founderName).toBe(`${a.firstName} ${a.lastName}`);
+    expect(era.legacy?.founderName).toBe(displayName(a));
     expect(worldFacts(era)).not.toEqual(worldFacts(a));
   });
 

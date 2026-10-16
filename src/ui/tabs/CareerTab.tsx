@@ -1,4 +1,5 @@
 import { CAREERS, careerById, facultyById } from "../../content/hunter/careers";
+import { worldMatches } from "../../content/worlds";
 import { applyJob, gradeToGpa, isStudent, jobChance, jobRequirementMissing, quitJob, salaryOf, studyHard, workHard } from "../../engine/game";
 import type { Life, SchoolStage } from "../../engine/types";
 import { money } from "../../engine/util";
@@ -66,7 +67,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
       {!job && (
         <>
           <div className="section-title">หางาน</div>
-          {CAREERS.filter((c) => (c.world ?? "hunter") === life.worldId).map((c) => {
+          {CAREERS.filter((c) => worldMatches(c.world, life.worldId)).map((c) => {
             const missing = jobRequirementMissing(life, c);
             const applied = life.doneThisYear.includes(`apply:${c.id}`);
             return (

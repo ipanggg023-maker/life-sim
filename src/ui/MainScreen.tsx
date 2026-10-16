@@ -7,7 +7,7 @@ import { titleById } from "../content/titles";
 import { secretQuestStatus } from "../content/shared/systemQuest";
 import { STAT_LABEL } from "../engine/game";
 import type { Life, LogEntry, StatKey } from "../engine/types";
-import { displayName, money } from "../engine/util";
+import { displayName, loc, money } from "../engine/util";
 
 export type TabId = "career" | "people" | "power" | "activities" | "soul";
 
@@ -151,7 +151,7 @@ export function MainScreen({
             {g.entries.map((e, i) => <LogLine e={e} key={i} />)}
           </div>
         ))}
-        {teaser && <p className="cliffhanger">{teaser}</p>}
+        {teaser && <p className="cliffhanger">{loc(life, teaser)}</p>}
       </div>
 
       <footer className="bottom">

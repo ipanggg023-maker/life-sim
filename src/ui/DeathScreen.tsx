@@ -9,7 +9,7 @@ import { talentById } from "../content/talents";
 import { SHOP, previewAward, regressTarget } from "../engine/soul";
 import type { Life, Soul, WorldId } from "../engine/types";
 import { WORLDS } from "../content/worlds";
-import { displayName, money, people } from "../engine/util";
+import { displayName, loc, money, people } from "../engine/util";
 
 export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}`;
 
@@ -67,7 +67,7 @@ export function DeathScreen({
           {life.birthYear} – {life.birthYear + life.age} · อายุ {life.age} ปี
           {(life.regressions ?? 0) > 0 && ` · ย้อนเวลา ${life.regressions} ครั้ง`}
         </p>
-        <p className="cause">{life.causeOfDeath}</p>
+        <p className="cause">{loc(life, life.causeOfDeath ?? "")}</p>
       </div>
 
       <SeriesCover series={series} world={life.worldId} author={displayName(life)} />
@@ -81,7 +81,7 @@ export function DeathScreen({
           {life.education.degree ? `ปริญญาตรี ${facultyById(life.education.degree).name}` : life.education.highSchoolDone ? "ม.6" : "ไม่จบ ม.6"}
         </p>
         <p>งานสุดท้าย: {job ? `${job.titles[life.job!.level - 1]} (${job.name})` : "-"}</p>
-        {life.power && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · {life.worldId === "murim" ? "ภารกิจ" : "Gate"} {life.power.gates}</p>}
+        {life.power && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · {life.worldId === "tower" ? `ชั้นที่ ${Number(life.flags.floor ?? 0)} ·` : ""}{life.worldId === "murim" ? "ภารกิจ" : life.worldId === "tower" ? "บททดสอบ" : "Gate"} {life.power.gates}</p>}
         <p>
           ครอบครัว: {spouse ? "แต่งงาน" : "โสด"} · ลูก {kids} คน · ชื่อเสียง {life.fame}
         </p>

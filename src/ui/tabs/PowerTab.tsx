@@ -4,11 +4,13 @@ import { RANKS, classById, combatPower, skillsOf, expToNext, fightOdds, guildByI
 import { breakLevel } from "../../content/murim/events";
 import { SECLUSION_YEARS, canSeclude, isSecluded, startSeclusion } from "../../content/shared/fate";
 import { TITLES, titlesOf } from "../../content/titles";
+import { TOP_FLOOR, floorCap, floorOf, tierOfFloor } from "../../content/tower/climb";
+import { sponsorOf } from "../../content/sponsors";
 import { SKILL_TYPE, skillEffectText } from "../../content/skills";
 import { skillReady } from "../../content/shared/skillUse";
 import { worldOf } from "../../content/worlds";
 import type { Life, WorldId } from "../../engine/types";
-import { displayName, hasTalent } from "../../engine/util";
+import { displayName, hasTalent, loc } from "../../engine/util";
 import type { Act } from "../App";
 
 /** คำเรียกในแท็บพลังของแต่ละโลก */
@@ -82,6 +84,23 @@ const UI: Record<
     before: () => "ยังไม่ถึงพิธีตรวจพลังเวท (อายุ 10 ปี)",
     none: "ไร้มานา — คุณเป็นคนธรรมดา (…หรือเปล่า?)",
     waiting: "รอพิธีตรวจพลังเวท…",
+  },
+  tower: {
+    style: "ตำแหน่ง",
+    noGuild: "ไม่มีทีม",
+    done: "บททดสอบที่ผ่าน",
+    boss: "ผู้คุมชั้น",
+    needJob: "ต้องลงทะเบียนเป็นผู้ท้าชิงหอคอยที่แท็บ 💼 อาชีพก่อน",
+    unit: "บททดสอบระดับ ",
+    enter: "ท้าทาย",
+    trainEmoji: "🏋️",
+    join: "เข้าร่วม",
+    joined: (g) => `คุณเข้าร่วม${g.name}`,
+    left: (g) => `คุณออกจาก${g.name}`,
+    slot: "เข้าหอคอย",
+    before: (f, t) => `ยังไม่ได้รับคำเชิญจากหอคอย (ส่วนใหญ่ได้ตอนอายุ ${f}–${t} ปี)`,
+    none: "หอคอยไม่เปิดประตูให้คุณ — คุณเป็นคนธรรมดา (…หรือเปล่า?)",
+    waiting: "รอคำเชิญจากหอคอย…",
   },
 };
 
@@ -209,7 +228,7 @@ function Dormant({ life }: { life: Life }) {
         {w.labels.rank}: <b>—</b>
       </p>
       <p className="muted">
-        {life.age < from ? ui.before(from, to) : life.flags.awakenDone || life.age > awakenAge ? ui.none : ui.waiting}
+        {life.age < from ? ui.before(from, to) : life.flags.awakenDone || life.age > awakenAge ? (life.flags.refusedTower ? "คุณปฏิเสธคำเชิญ — เลือกใช้ชีวิตบนโลก" : ui.none) : ui.waiting}
         {Number(life.flags.glitch ?? 0) > 0 && " · พบสัญญาณผิดปกติ " + life.flags.glitch + " ครั้ง"}
       </p>
     </div>
@@ -249,11 +268,22 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
           <span>พลังต่อสู้</span>
           <b>{combatPower(life)}</b>
           <span>{w.labels.guild}</span>
-          <b>{guild?.name ?? ui.noGuild}</b>
+          <b>{guild ? loc(life, guild.name) : ui.noGuild}</b>
           <span>{ui.done}</span>
           <b>
             {p.gates} ({ui.boss} {p.bossKills})
           </b>
+          {life.worldId === "tower" && (
+            <>
+              <span>ชั้นปัจจุบัน</span>
+              <b>
+                ชั้นที่ {floorOf(life)} / {TOP_FLOOR}
+                {life.flags.towerTop ? " 👑" : ""}
+              </b>
+              <span>ผู้สนับสนุน</span>
+              <b>{sponsorOf(life) ? `✨ ${sponsorOf(life)!.name} (${sponsorOf(life)!.desc})` : "ยังไม่มี"}</b>
+            </>
+          )}
         </div>
         <div className="exp">
           <div className="bar">
@@ -280,6 +310,7 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
                 <span className={`rank r${r}`}>{rankLabel(life, r)}</span>
               </div>
               <div className="job-sub">
+                {life.worldId === "tower" && <>{climbHint(life, r)} · </>}
                 ชนะ {Math.round(fightOdds(life, r) * 100)}% ·{" "}
                 <span className={survivalOdds(life, r) < 0.8 ? "danger-text" : ""}>รอด {Math.round(survivalOdds(life, r) * 100)}%</span>
               </div>
@@ -314,7 +345,7 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
       {guild ? (
         <div className="job">
           <div className="job-main">
-            <div className="job-name">{guild.name}</div>
+            <div className="job-name">{loc(life, guild.name)}</div>
             <div className="job-sub">{guild.desc}</div>
           </div>
           <button
@@ -336,8 +367,8 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
           return (
             <div className={`job ${locked ? "locked" : ""}`} key={g.id}>
               <div className="job-main">
-                <div className="job-name">{g.name}</div>
-                <div className="job-sub">{locked ? `🔒 ${w.labels.rank} ${rankLabel(life, g.minRank)}+` : g.desc}</div>
+                <div className="job-name">{loc(life, g.name)}</div>
+                <div className="job-sub">{locked ? `🔒 ${w.labels.rank} ${rankLabel(life, g.minRank)}+` : loc(life, g.desc)}</div>
               </div>
               <button
                 className="btn small"
@@ -390,4 +421,11 @@ function SkillList({ life }: { life: Life }) {
       ))}
     </div>
   );
+}
+
+/** บททดสอบระดับนี้พาขึ้นชั้นใหม่ได้ไหม */
+function climbHint(life: Life, r: number) {
+  const f = floorOf(life);
+  if (r < tierOfFloor(f + 1) || f >= floorCap(r)) return "ฝึกซ้อม (ไม่ขึ้นชั้น)";
+  return `ปีนได้ถึงชั้น ${floorCap(r)}`;
 }

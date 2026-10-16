@@ -12,10 +12,9 @@ let loaded = false;
 export function loadHunterWorld() {
   if (loaded) return;
   loaded = true;
+  // ชีวิตประจำวันใช้ได้ทุกโลกยุคปัจจุบัน (event ที่พูดถึง Hunter ระบุ world: "hunter" ไว้เอง)
+  registerEvents([...CHILDHOOD_EVENTS, ...SCHOOL_EVENTS, ...ADULT_EVENTS], "modern");
   registerEvents([
-    ...CHILDHOOD_EVENTS,
-    ...SCHOOL_EVENTS,
-    ...ADULT_EVENTS,
     ...WORLD_EVENTS,
     AWAKENING,
     GATE_RAID,

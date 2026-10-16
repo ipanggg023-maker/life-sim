@@ -1,6 +1,7 @@
 import { chance, randInt } from "./rng";
 import type { Outcome } from "./events";
 import type { Life, WorldId } from "./types";
+import { worldMatches } from "../content/worlds";
 import { addFame, addMoney, addStat, checkChance, createPerson, money, hasTalent, log, people, shortName } from "./util";
 
 export interface Activity {
@@ -147,10 +148,10 @@ export const ACTIVITIES: Activity[] = [
   },
 ];
 
-export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => (a.world ?? "hunter") === life.worldId);
+export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => worldMatches(a.world, life.worldId));
 
 export function activityLocked(life: Life, a: Activity): string | undefined {
-  if ((a.world ?? "hunter") !== life.worldId) return "ไม่มีในโลกนี้";
+  if (!worldMatches(a.world, life.worldId)) return "ไม่มีในโลกนี้";
   if (life.age < a.minAge) return `อายุ ${a.minAge}+`;
   if (a.available && !a.available(life)) return "ตอนนี้ทำไม่ได้";
   if (life.doneThisYear.includes(`act:${a.id}`)) return "ปีนี้ทำแล้ว";

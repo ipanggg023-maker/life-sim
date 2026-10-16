@@ -1,6 +1,6 @@
 import { activitiesFor, activityLocked, doActivity } from "../../engine/activities";
 import type { Life } from "../../engine/types";
-import { money } from "../../engine/util";
+import { loc, money } from "../../engine/util";
 import type { Act } from "../App";
 
 export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
@@ -12,9 +12,9 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
         return (
           <button key={a.id} className="activity" disabled={!!locked} onClick={() => act((l) => doActivity(l, a.id))}>
             <span className="act-emoji">{a.emoji}</span>
-            <span className="act-name">{a.name}</span>
+            <span className="act-name">{loc(life, a.name)}</span>
             <span className="act-desc">
-              {locked ?? a.desc}
+              {locked ?? loc(life, a.desc)}
               {!locked && a.cost && life.age >= 18 ? ` · ${money(life, a.cost)}` : ""}
               {!locked && odds !== undefined ? ` · ${Math.round(odds * 100)}%` : ""}
             </span>

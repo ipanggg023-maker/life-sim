@@ -3,6 +3,7 @@ import { ageUp, createLife, pastSelfOf, resolveChoice, toPastLife, type BirthOpt
 import { currentScene, labelOf, type Outcome } from "../engine/events";
 import { buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
 import type { Life, PastLife, Soul, WorldId } from "../engine/types";
+import { loc } from "../engine/util";
 import {
   addToGraveyard,
   applyBundle,
@@ -110,7 +111,7 @@ export function App() {
     (fn) => {
       if (!life) return;
       const out = fn(life);
-      feedback(out);
+      feedback(out && { ...out, text: loc(life, out.text) });
       commit(life);
     },
     [life, commit, feedback],
@@ -162,11 +163,11 @@ export function App() {
       if (!life) return;
       const q = life.queue[0];
       const scene = currentScene(q, life)!;
-      const prompt = scene.text(life, q.ctx);
-      const choice = labelOf(scene.choices[index], life, q.ctx);
+      const prompt = loc(life, scene.text(life, q.ctx));
+      const choice = loc(life, labelOf(scene.choices[index], life, q.ctx));
       const out = resolveChoice(life, index);
       if (out) {
-        setResolved({ title: scene.title, prompt, choice, out });
+        setResolved({ title: scene.title, prompt, choice, out: { ...out, text: loc(life, out.text) } });
         if (out.kind === "bad") flash();
       }
       commit(life);

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { loadCourtWorld } from "../content/court";
+import { loadTowerWorld } from "../content/tower";
 import { loadHunterWorld } from "../content/hunter";
 import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
@@ -13,10 +14,11 @@ import type { Life, WorldId } from "./types";
 loadHunterWorld();
 loadMurimWorld();
 loadCourtWorld();
+loadTowerWorld();
 loadSharedEvents();
 
-const QUEST_JOB: Record<WorldId, string> = { hunter: "hunter", murim: "wanderer", court: "adventurer" };
-const WORLDS: WorldId[] = ["hunter", "murim", "court"];
+const QUEST_JOB: Record<WorldId, string> = { hunter: "hunter", murim: "wanderer", court: "adventurer", tower: "climber" };
+const WORLDS: WorldId[] = ["hunter", "murim", "court", "tower"];
 
 /** บอทเลือกสุ่ม แต่ชอบตัวเลือก "ใช้สกิล" ถ้ามี */
 function play(life: Life, r: { rng: number }, onYear?: (l: Life) => void) {
@@ -42,7 +44,7 @@ describe("M9 ปรับระบบ", () => {
     let questsDone = 0, questsTaken = 0, skillUsers = 0, allies = 0, titled = 0;
     const N = 180;
     for (let s = 1; s <= N; s++) {
-      const life = createLife({ seed: s * 7919, worldId: WORLDS[s % 3] });
+      const life = createLife({ seed: s * 7919, worldId: WORLDS[s % 4] });
       const r = { rng: s };
       let hadAlly = false;
       play(life, r, (l) => {
@@ -73,9 +75,9 @@ describe("M9 ปรับระบบ", () => {
     let dreams = 0, crossSkill = 0, knowledge = 0;
     const N = 120;
     for (let s = 1; s <= N; s++) {
-      const prev = createLife({ seed: s * 31337, worldId: WORLDS[s % 3] });
+      const prev = createLife({ seed: s * 31337, worldId: WORLDS[s % 4] });
       play(prev, { rng: s });
-      const world = WORLDS[(s + 1) % 3];
+      const world = WORLDS[(s + 1) % 4];
       const life = createLife({ seed: s * 7331, worldId: world, pastLife: pastSelfOf(prev) });
       expect(life.flags.pastWorld).toBe(prev.worldId);
       play(life, { rng: s + 99 });

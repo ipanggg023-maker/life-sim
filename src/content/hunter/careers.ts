@@ -153,6 +153,7 @@ export const CAREERS: Career[] = [
 CAREERS.unshift(
   {
     id: "hunter",
+    world: "hunter",
     name: "Hunter",
     emoji: "🗡️",
     minAge: 18,
@@ -171,6 +172,7 @@ CAREERS.unshift(
   },
   {
     id: "porter",
+    world: "hunter",
     name: "คนแบกของในดันเจี้ยน",
     emoji: "🎒",
     minAge: 18,
@@ -182,6 +184,7 @@ CAREERS.unshift(
   },
   {
     id: "association",
+    world: "hunter",
     name: "เจ้าหน้าที่สมาคม Hunter",
     emoji: "🏛️",
     minAge: 21,
@@ -193,6 +196,7 @@ CAREERS.unshift(
   },
   {
     id: "mana_research",
+    world: "hunter",
     name: "นักวิจัยคริสตัลมานา",
     emoji: "🧪",
     minAge: 22,

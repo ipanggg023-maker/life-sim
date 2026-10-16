@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { worldMatches } from "../content/worlds";
 import { loadHunterWorld } from "../content/hunter";
 import { CAREERS } from "../content/hunter/careers";
 import { canEnterGate, enterGate, train } from "../content/hunter/events/gates";
 import { rankLabel, rankName } from "../content/hunter/power";
 import { loadMurimWorld } from "../content/murim";
 import { loadCourtWorld } from "../content/court";
+import { loadTowerWorld } from "../content/tower";
 import { loadSharedEvents } from "../content/shared";
 import { ACTIVITIES, activityLocked, doActivity } from "./activities";
 import { visibleChoices } from "./events";
@@ -15,6 +17,7 @@ import type { Life, WorldId } from "./types";
 loadHunterWorld();
 loadMurimWorld();
 loadCourtWorld();
+loadTowerWorld();
 loadSharedEvents();
 
 function drain(life: Life, r: { rng: number }) {
@@ -34,9 +37,9 @@ function playLife(seed: number, opts: { hunterBot?: boolean; world?: WorldId } =
     drain(life, r);
     if (!life.alive) break;
     for (const a of ACTIVITIES) if (!activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
-    const questJob = { hunter: "hunter", murim: "wanderer", court: "adventurer" }[life.worldId];
+    const questJob = { hunter: "hunter", murim: "wanderer", court: "adventurer", tower: "climber" }[life.worldId];
     if (life.power && opts.hunterBot && !["hunter", "disciple", "wanderer", "knight", "court_mage", "adventurer"].includes(life.job?.careerId ?? "")) applyJob(life, questJob);
-    const careers = CAREERS.filter((c) => (c.world ?? "hunter") === life.worldId);
+    const careers = CAREERS.filter((c) => worldMatches(c.world, life.worldId));
     if (!life.job && life.age >= 16) applyJob(life, careers[Math.floor(nextFloat(r) * careers.length)].id);
     if (opts.hunterBot && life.power) train(life);
     if (opts.hunterBot) {
