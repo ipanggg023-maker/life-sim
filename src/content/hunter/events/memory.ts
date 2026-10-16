@@ -4,7 +4,7 @@ import { memoryOdds, observe, remembers, useMemory } from "../../../engine/memor
 import { chance, randInt } from "../../../engine/rng";
 import type { HunterClass, Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, formatMoney, people, shortName } from "../../../engine/util";
-import { awaken, classById, fightOdds, gainExp, offerClasses, rankName, rankUp, rollAwakening, survivalOdds } from "../power";
+import { awaken, classById, fightOdds, gainExp, luckyRankUp, offerClasses, rankName, rollAwakening, survivalOdds } from "../power";
 import { worldFacts } from "../worldFacts";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
@@ -181,7 +181,7 @@ export const MEMORY_EVENTS: GameEvent[] = [
           if (ok) {
             addFame(l, 50);
             gainExp(l, 3000);
-            rankUp(l, "สังหารมังกรกระดูก");
+            luckyRankUp(l, "สังหารมังกรกระดูก");
             l.flags.savedFamily = true;
             return { text: "🐉 คุณปักดาบลงกลางกะโหลกมังกร! กรุงเทพฯ รอด และทั้งโลกรู้จักชื่อคุณในคืนเดียว", kind: "milestone" };
           }
@@ -246,8 +246,8 @@ export const MEMORY_EVENTS: GameEvent[] = [
             return bad("รูปปั้นเทพเจ้าลืมตาขึ้นเร็วกว่าที่จำได้…");
           }
           if (l.power) {
-            rankUp(l, "[ระบบ] ผ่านบททดสอบของดันเจี้ยนลับ");
-            rankUp(l, "[ระบบ] รางวัลผู้พิชิตคนแรก");
+            luckyRankUp(l, "[ระบบ] ผ่านบททดสอบของดันเจี้ยนลับ");
+            luckyRankUp(l, "[ระบบ] รางวัลผู้พิชิตคนแรก");
             return { text: "คุณพิชิตดันเจี้ยนลับก่อนใคร และชิงวาสนาของ 'ตัวเอกในชาติก่อน' มาได้", kind: "milestone" };
           }
           c.rank = Math.max(rollAwakening(l, 3), 3);

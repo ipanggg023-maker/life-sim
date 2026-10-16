@@ -14,8 +14,11 @@ import {
   guildsFor,
   offerClasses,
   rankLabel,
+  luckyRankUp,
   rankUp,
   rollAwakening,
+  settleNone,
+  trackOf,
   survivalOdds,
 } from "../hunter/power";
 import { worldFacts } from "../hunter/worldFacts";
@@ -54,7 +57,8 @@ function styleChoices(onPick: (l: Life, c: Ctx, id: HunterClass) => Outcome) {
 // ───────────────────────── คัดเลือกศิษย์ (เทียบเท่าวันตื่นพลัง) ─────────────────────────
 
 function assess(l: Life, c: Ctx, bonus: number) {
-  c.rank = rollAwakening(l, bonus);
+  // ตื่นช้า: ในพิธียังไม่ตื่น แต่ชะตายังไม่จบ
+  c.rank = trackOf(l) === "late" ? -1 : rollAwakening(l, bonus);
   const offer = offerClasses(l);
   c.offer = offer.join(",");
 }
@@ -64,7 +68,7 @@ export const ASSESSMENT: GameEvent = {
   minAge: 10,
   maxAge: 16,
   forced: true,
-  when: (l) => !l.power && !l.flags.awakenDone && l.age === Number(l.flags.awakenAge ?? 13),
+  when: (l) => !l.power && !l.flags.awakenDone && !l.flags.notYet && l.age === Number(l.flags.ceremonyAge ?? l.flags.awakenAge ?? 12),
   title: "วันคัดเลือกศิษย์",
   text: () =>
     "ผู้อาวุโสจากหลายสำนักลงเขามาคัดศิษย์ที่ลานหน้าศาลเจ้าประจำหมู่บ้าน เด็กทุกคนต้องวางมือบน 'ศิลาวัดรากฐาน' ทีละคน… ถึงตาคุณแล้ว",
@@ -91,8 +95,8 @@ export const ASSESSMENT: GameEvent = {
       title: "รากฐานธรรมดา",
       text: () => "ศิลาวัดรากฐานไม่เปล่งแสงแม้แต่น้อย ผู้อาวุโสส่ายหน้าแล้วเรียกคนถัดไป \"เส้นชีพจรอุดตัน ฝึกยุทธ์ไม่ได้\"",
       choices: [
-        { label: "ยอมรับชะตา ใช้ชีวิตแบบคนธรรมดา", run: (l) => { l.flags.awakenDone = true; addStat(l, "happiness", -8); return meh("คุณเดินกลับบ้านช้าๆ แม่ทำบะหมี่ให้กินทั้งที่ไม่ใช่วันเกิด"); } },
-        { label: "สาบานว่าสักวันจะทะลวงเส้นชีพจรเอง", run: (l) => { l.flags.awakenDone = true; l.flags.stubborn = true; return meh("คุณกำหมัดแน่นจนเล็บจิกฝ่ามือ"); } },
+        { label: "ยอมรับชะตา ใช้ชีวิตแบบคนธรรมดา", run: (l) => { settleNone(l); addStat(l, "happiness", -8); return meh("คุณเดินกลับบ้านช้าๆ แม่ทำบะหมี่ให้กินทั้งที่ไม่ใช่วันเกิด"); } },
+        { label: "สาบานว่าสักวันจะทะลวงเส้นชีพจรเอง", run: (l) => { settleNone(l); l.flags.stubborn = true; return meh("คุณกำหมัดแน่นจนเล็บจิกฝ่ามือ"); } },
       ],
     },
     sect: {
@@ -142,7 +146,10 @@ export const ASSESSMENT: GameEvent = {
 
 const pills = ["ยาเม็ดทะลวงชีพจร", "ยาเม็ดเก้าหยาง"];
 const pillIdx = (l: Life) => l.power?.items.findIndex((i) => pills.includes(i)) ?? -1;
-const breakOdds = (l: Life, bonus = 0) => clamp(0.58 - rank(l) * 0.05 + (l.stats.smarts - 50) / 200 + bonus, 0.08, 0.95);
+const breakOdds = (l: Life, bonus = 0) =>
+  rank(l) === 7
+    ? clamp(0.06 + (l.stats.smarts - 50) / 400 + bonus * 0.5, 0.03, 0.45) // ทัณฑ์สวรรค์: ประตูสู่เซียนแคบมาก
+    : clamp(0.58 - rank(l) * 0.05 + (l.stats.smarts - 50) / 200 + bonus, 0.08, 0.95);
 /** เลเวลที่ต้องถึงก่อนทะลวงขั้นถัดไป — ขั้นสูงยิ่งไกล */
 export const breakLevel = (r: number) => (r + 1) * 8 + r * r;
 const breakSurvival = (l: Life) => clamp(0.92 - rank(l) * 0.04 + (l.stats.health - 50) / 200, 0.4, 0.99);
@@ -153,7 +160,7 @@ export const BREAKTHROUGH: GameEvent = {
   maxAge: 200,
   forced: true,
   maxTimes: 0,
-  when: (l) => !!l.power && rank(l) < 8 && l.power.level >= breakLevel(rank(l)),
+  when: (l) => !!l.power && rank(l) < 8 && l.power.level >= breakLevel(rank(l)) && l.age >= Number(l.flags.btNext ?? 0),
   title: "ทะลวงขั้น",
   text: (l) =>
     rank(l) === 7
@@ -169,6 +176,7 @@ export const BREAKTHROUGH: GameEvent = {
         if (ok) { rankUp(l, rank(l) === 7 ? "ฝ่าทัณฑ์สวรรค์เก้าสายฟ้า" : "ทะลวงคอขวดสำเร็จ"); return { text: "ลมปราณหมุนวนครบรอบใหญ่ ร่างกายคุณเบาราวขนนก", kind: "milestone" }; }
         if (!chance(l, breakSurvival(l))) { kill(l, rank(l) === 7 ? "ถูกทัณฑ์สวรรค์ผ่าร่างแหลก" : "ธาตุไฟเข้าแทรกขณะทะลวงขั้น"); return bad("ลมปราณย้อนกลับพุ่งทะลวงเส้นชีพจรทุกเส้น…"); }
         l.power!.exp = 0;
+        l.flags.btNext = l.age + 3; // บาดเจ็บภายใน ต้องพักฟื้นก่อนลองใหม่
         l.power!.level = Math.max(1, l.power!.level - 3);
         return bad("ธาตุไฟเข้าแทรก! คุณกระอักเลือดและพลังถดถอยไปหลายระดับ" + damage(l, 15, 30, "ธาตุไฟเข้าแทรก"));
       },
@@ -746,7 +754,7 @@ const MEMORY: GameEvent[] = [
             openHiddenSlot(l, "ได้รับมรดกวิชา");
             return { text: `คุณมุดผ่านม่านน้ำเข้าไปเจอถ้ำของปรมาจารย์กระบี่ เส้นชีพจรทะลวงในคืนเดียว (ขั้น${RL(l, r)})`, kind: "milestone" };
           }
-          rankUp(l, "รับมรดกวิชาจากถ้ำหลังน้ำตก");
+          luckyRankUp(l, "รับมรดกวิชาจากถ้ำหลังน้ำตก");
           gainExp(l, 1000);
           return { text: "มรดกของปรมาจารย์ตกเป็นของคุณ — วาสนาที่ชาติก่อนไม่ใช่ของคุณ", kind: "milestone" };
         },
@@ -779,7 +787,7 @@ const MEMORY: GameEvent[] = [
         survival: (l) => survivalOdds(l, 5, l.flags.mReady ? 0.3 : 0),
         run: (l, _c, ok) => {
           observe(l, "cult_war", "ลัทธิมารเผาเมือง และคนในครอบครัวคุณไม่รอด");
-          if (ok) { addFame(l, 40); gainExp(l, 2000); rankUp(l, "สังหารแม่ทัพลัทธิมาร"); l.flags.savedFamily = true; return { text: "คุณยืนเฝ้าประตูเมืองสามวันสามคืน ศพสาวกมารกองสูงเป็นภูเขา เมืองรอด!", kind: "milestone" }; }
+          if (ok) { addFame(l, 40); gainExp(l, 2000); luckyRankUp(l, "สังหารแม่ทัพลัทธิมาร"); l.flags.savedFamily = true; return { text: "คุณยืนเฝ้าประตูเมืองสามวันสามคืน ศพสาวกมารกองสูงเป็นภูเขา เมืองรอด!", kind: "milestone" }; }
           familyLoss(l, 0.25);
           if (!chance(l, survivalOdds(l, 5, l.flags.mReady ? 0.3 : 0))) { kill(l, "สละชีพปกป้องประตูเมืองจากลัทธิมาร"); return bad("ประตูเมืองพังลงพร้อมร่างคุณ"); }
           return bad("ประตูเมืองแตก คุณรอดมาได้แต่ไม่อาจปกป้องทุกคน" + damage(l, 15, 30, "บาดแผลจากสงครามลัทธิมาร"));

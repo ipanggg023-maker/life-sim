@@ -19,6 +19,9 @@ export interface WorldInfo {
   deathOld: string[];
   /** อายุที่ตื่นพลัง/คัดศิษย์ */
   awakenAge: [number, number];
+  /** ช่วงอายุของคนตื่นเร็ว (อัจฉริยะ) และตื่นช้า */
+  awakenEarly: [number, number];
+  awakenLate: [number, number];
   labels: {
     rank: string;
     power: string;
@@ -63,6 +66,8 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
     deathYoung: ["อุบัติเหตุรถชน", "จมน้ำ", "ไข้เลือดออก", "โดนไฟดูด"],
     deathOld: ["หัวใจวาย", "เส้นเลือดในสมองแตก", "มะเร็ง", "ปอดบวม", "หลับไปอย่างสงบ", "ไตวาย"],
     awakenAge: [18, 20],
+    awakenEarly: [5, 15],
+    awakenLate: [21, 55],
     labels: {
       rank: "แรงก์",
       power: "มานา",
@@ -94,6 +99,8 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
     deathYoung: ["ไข้ป่า", "จมน้ำในแม่น้ำเหลือง", "ถูกโจรภูเขาปล้นฆ่า", "ม้าตื่นเหยียบ"],
     deathOld: ["ชราภาพ", "พิษสะสมในร่างกาย", "หลับไปอย่างสงบใต้ต้นท้อ", "ไข้หวัดลงปอด", "ลมปราณแตกซ่าน"],
     awakenAge: [12, 14],
+    awakenEarly: [5, 10],
+    awakenLate: [16, 50],
     labels: {
       rank: "ขั้นยุทธ์",
       power: "ลมปราณ",
@@ -125,6 +132,8 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
     deathYoung: ["ไข้หวัดใหญ่ระบาด", "ตกจากหลังม้า", "ถูกโจรปล้นรถม้า", "จมน้ำในทะเลสาบหลังคฤหาสน์"],
     deathOld: ["ชราภาพ", "โรคหัวใจ", "หลับไปอย่างสงบในสวนกุหลาบ", "ไข้หวัดลงปอด"],
     awakenAge: [10, 10],
+    awakenEarly: [5, 9],
+    awakenLate: [11, 45],
     labels: {
       rank: "วงเวท",
       power: "มานา",

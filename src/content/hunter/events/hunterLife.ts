@@ -26,7 +26,7 @@ const meh = (text: string, next?: string): Outcome => ({ text, next });
 const P = (l: Life) => l.power;
 const rank = (l: Life) => l.power?.rank ?? -1;
 const isHunter = (l: Life) => l.job?.careerId === "hunter";
-const mundaneAdult = (l: Life) => !l.power && !!l.flags.awakenDone;
+const mundaneAdult = (l: Life) => !l.power && (!!l.flags.awakenDone || !!l.flags.notYet);
 
 function damage(l: Life, min: number, max: number, cause: string): string {
   const d = randInt(l, min, max);

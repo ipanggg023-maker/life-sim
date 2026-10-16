@@ -3,7 +3,7 @@ import { kill, runEvent } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { addFame, addStat, checkChance, clamp } from "../../engine/util";
-import { fightOdds, gateRewards, rankLabel, rankUp, survivalOdds } from "../hunter/power";
+import { fightOdds, gateRewards, luckyRankUp, rankLabel, survivalOdds } from "../hunter/power";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
 const bad = (text: string, next?: string): Outcome => ({ text, kind: "bad", next });
@@ -132,7 +132,7 @@ export const COURT_QUEST: GameEvent = {
               if (l.stats.health <= 0) { kill(l, "ถูกวงเวทโบราณกลืนกิน"); return bad("วงเวทหมุนเร็วขึ้นจนร่างคุณสลายเป็นละอองแสง…"); }
               return bad("วงเวทปฏิเสธคุณ แรงกระแทกโยนคุณกระเด็นออกมา", "boss");
             }
-            rankUp(l, "ได้รับการยอมรับจากวงเวทของจอมเวทในตำนาน");
+            luckyRankUp(l, "ได้รับการยอมรับจากวงเวทของจอมเวทในตำนาน");
             return { text: "เสียงหนึ่งดังขึ้นในหัว \"ในที่สุดก็มีคนมาถึง\" — ความรู้เวทนับพันปีไหลเข้าสู่ร่างคุณ", kind: "milestone", next: "boss" };
           },
         },

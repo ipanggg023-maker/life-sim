@@ -5,6 +5,7 @@ import { chance, newSeed, nextFloat, pick, randInt, weightedPick } from "./rng";
 import type { Career } from "../content/hunter/careers";
 import type { Faculty, Gender, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
 import { worldOf } from "../content/worlds";
+import { rollAwakenTrack } from "../content/hunter/power";
 import {
   addFame,
   addMoney,
@@ -140,7 +141,7 @@ export function createLife(opts: BirthOptions = {}): Life {
     revealTalent(life, id);
   }
   life.talents.push({ id: rollTalent(life, opts.blessed ? BLESSED_HIDDEN : HIDDEN_RARITY_ODDS, ids, true), revealed: false });
-  life.flags.awakenAge = randInt(life, ...worldOf(life.worldId).awakenAge);
+  rollAwakenTrack(life);
 
   // ครอบครัว
   const dadAge = randInt(life, 24, 42);
@@ -194,6 +195,7 @@ function ageHealth(life: Life) {
   else if (a < 70) d = -randInt(life, 1, 4);
   else d = -randInt(life, 2, 6);
   if (d < 0 && hasTalent(life, "sturdy")) d = Math.ceil(d / 2);
+  if (life.flags.pact && a >= 20) d -= randInt(life, 1, 3); // ราคาของสัญญา: อายุขัยถูกกัดกิน
   if (a >= 30 && hasTalent(life, "cursed_body")) {
     d -= randInt(life, 4, 9);
     if (a === 30) log(life, "คำสาปในร่างกายเริ่มกัดกิน… เส้นเลือดดำปูดขึ้นตามแขน", "bad");
@@ -334,6 +336,7 @@ function progressPeople(life: Life) {
       if (["father", "mother", "spouse", "child", "sibling"].includes(p.relation)) {
         log(life, `💔 ${shortName(p)} (${p.relation === "father" ? "พ่อ" : p.relation === "mother" ? "แม่" : "คนในครอบครัว"}) เสียชีวิตแล้วในวัย ${p.age} ปี`, "bad");
         addStat(life, "happiness", -randInt(life, 10, 25));
+        life.flags.lossAge = life.age; // ตัวกระตุ้นพลังจากการสูญเสีย
       } else {
         log(life, `${shortName(p)} เสียชีวิตแล้วในวัย ${p.age} ปี`, "bad");
       }
@@ -421,7 +424,9 @@ export function ageUp(life: Life) {
     return;
   }
 
-  const count = life.age < 3 ? (chance(life, 0.6) ? 1 : 0) : chance(life, 0.45) ? 2 : 1;
+  // ปิดด่าน: ตัดขาดจากโลก — มีแต่เหตุการณ์บังคับ (forced) เท่านั้น
+  const secluded = Number(life.flags.secludeUntil ?? 0) > life.age;
+  const count = secluded ? 0 : life.age < 3 ? (chance(life, 0.6) ? 1 : 0) : chance(life, 0.45) ? 2 : 1;
   for (const e of pickEvents(life, count)) {
     if (!stillValid(life, e)) continue;
     const ctx = e.prepare?.(life) ?? {};

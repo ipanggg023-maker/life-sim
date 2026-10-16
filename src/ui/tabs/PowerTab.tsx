@@ -2,6 +2,7 @@ import { RARITY_LABEL, talentById } from "../../content/talents";
 import { canEnterGate, dailyQuest, enterGate, gatesLeft, train } from "../../content/hunter/events/gates";
 import { RANKS, classById, combatPower, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
 import { breakLevel } from "../../content/murim/events";
+import { SECLUSION_YEARS, canSeclude, isSecluded, startSeclusion } from "../../content/shared/fate";
 import { worldOf } from "../../content/worlds";
 import type { Life, WorldId } from "../../engine/types";
 import { displayName, hasTalent } from "../../engine/util";
@@ -261,6 +262,14 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
       <div className="row">
         <button className="btn" disabled={life.doneThisYear.includes("train")} onClick={() => act(train)}>
           {ui.trainEmoji} {w.labels.train}
+        </button>
+        <button
+          className="btn"
+          disabled={!!canSeclude(life)}
+          title={canSeclude(life)}
+          onClick={() => act((l) => startSeclusion(l))}
+        >
+          {isSecluded(life) ? `⛩️ ปิดด่านอยู่ (ถึงอายุ ${life.flags.secludeUntil})` : `⛩️ ปิดด่าน ${SECLUSION_YEARS} ปี`}
         </button>
         {hasTalent(life, "system_user") && (
           <button className="btn sys-btn" disabled={life.doneThisYear.includes("daily")} onClick={() => act(dailyQuest)}>

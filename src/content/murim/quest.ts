@@ -3,7 +3,7 @@ import { kill, runEvent } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { addFame, addStat, checkChance, clamp } from "../../engine/util";
-import { fightOdds, gateRewards, rankLabel, rankUp, survivalOdds } from "../hunter/power";
+import { fightOdds, gateRewards, luckyRankUp, rankLabel, survivalOdds } from "../hunter/power";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
 const bad = (text: string, next?: string): Outcome => ({ text, kind: "bad", next });
@@ -132,7 +132,7 @@ export const MURIM_QUEST: GameEvent = {
               if (l.stats.health <= 0) { kill(l, "ธาตุไฟเข้าแทรกขณะพิจารณาเคล็ดวิชาในถ้ำ"); return bad("ปราณกระบี่ในรอยสลักย้อนเข้าเส้นลมปราณของคุณ…"); }
               return bad("ปราณกระบี่ในรอยสลักพุ่งย้อนเข้าร่าง คุณกระอักเลือดแต่รอดมาได้", "boss");
             }
-            rankUp(l, "เข้าใจเคล็ดวิชาจากรอยกระบี่ของปรมาจารย์โบราณ");
+            luckyRankUp(l, "เข้าใจเคล็ดวิชาจากรอยกระบี่ของปรมาจารย์โบราณ");
             return { text: "คุณนั่งนิ่งสามวันสามคืน เมื่อลืมตาขึ้น เพลงกระบี่ทั้งหมดก็อยู่ในหัวคุณแล้ว", kind: "milestone", next: "boss" };
           },
         },

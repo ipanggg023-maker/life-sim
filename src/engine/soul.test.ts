@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { loadHunterWorld } from "../content/hunter";
 import { loadMurimWorld } from "../content/murim";
 import { loadCourtWorld } from "../content/court";
+import { loadSharedEvents } from "../content/shared";
 import { worldFacts } from "../content/hunter/worldFacts";
 import { exportCode, importCode } from "../save";
 import { visibleChoices } from "./events";
@@ -13,6 +14,7 @@ import type { Life } from "./types";
 loadHunterWorld();
 loadMurimWorld();
 loadCourtWorld();
+loadSharedEvents();
 
 /** เล่นจนตาย (หรือถึงอายุ stopAt) โดยเก็บ snapshot ทุกปีไว้ใน Map แบบเดียวกับ UI */
 function play(life: Life, snaps: Map<number, Life>, pickFirst = false, stopAt = 200) {

@@ -16,7 +16,7 @@ import {
   gateRewards,
   offerClasses,
   rankName,
-  rankUp,
+  luckyRankUp,
   rollAwakening,
   survivalOdds,
 } from "../power";
@@ -37,8 +37,8 @@ const offered = (c: Ctx, id: HunterClass) => String(c.offer ?? "").split(",").in
 
 export const AWAKENING: GameEvent = {
   id: "hunter.awakening",
-  minAge: 18,
-  maxAge: 20,
+  minAge: 4,
+  maxAge: 70,
   forced: true,
   when: (l) => !l.power && !l.flags.awakenDone && l.age === Number(l.flags.awakenAge ?? 19),
   title: "วันตื่นพลัง",
@@ -228,7 +228,7 @@ export const GATE_RAID: GameEvent = {
               kill(l, "ติดอยู่ในดันเจี้ยนลับใต้ Gate");
               return bad("ประตูปิดลงข้างหลัง รูปปั้นยักษ์นับร้อยลืมตาขึ้นพร้อมกัน…");
             }
-            rankUp(l, "[ระบบ] ผ่านการทดสอบของดันเจี้ยนลับ");
+            luckyRankUp(l, "[ระบบ] ผ่านการทดสอบของดันเจี้ยนลับ");
             l.flags.secretDungeon = true;
             return { text: "คุณเอาตัวรอดจากบททดสอบของรูปปั้นเทพเจ้ามาได้ และมีบางอย่างในตัวคุณเปลี่ยนไปตลอดกาล", kind: "milestone", next: "boss" };
           },
@@ -317,6 +317,7 @@ export function canEnterGate(life: Life, gateRank: number): string | undefined {
   if (!life.power) return msg.noPower;
   if (!worldOf(life.worldId).questJobs.includes(life.job?.careerId ?? "")) return msg.noJob;
   if (life.queue.length) return "กำลังมีเหตุการณ์อยู่";
+  if (Number(life.flags.secludeUntil ?? 0) > life.age) return "กำลังปิดด่าน";
   if (gatesLeft(life) <= 0) return msg.full;
   if (gateRank > life.power.rank + 1) return msg.tooHigh;
   if (life.stats.health < 15) return "บาดเจ็บหนักเกินไป";

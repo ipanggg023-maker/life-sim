@@ -5,6 +5,7 @@ import { canEnterGate, enterGate, train } from "../content/hunter/events/gates";
 import { rankLabel, rankName } from "../content/hunter/power";
 import { loadMurimWorld } from "../content/murim";
 import { loadCourtWorld } from "../content/court";
+import { loadSharedEvents } from "../content/shared";
 import { ACTIVITIES, activityLocked, doActivity } from "./activities";
 import { visibleChoices } from "./events";
 import { ageUp, applyJob, createLife, resolveChoice } from "./game";
@@ -14,6 +15,7 @@ import type { Life, WorldId } from "./types";
 loadHunterWorld();
 loadMurimWorld();
 loadCourtWorld();
+loadSharedEvents();
 
 function drain(life: Life, r: { rng: number }) {
   let guard = 0;
@@ -145,6 +147,37 @@ describe("จำลองชีวิต", () => {
     console.log("SIM ราชสำนัก อายุเฉลี่ย", avg.toFixed(1), "| บทบาท", JSON.stringify(roles), "| ถูกประหาร", executed, "| หักชะตา", defied, "| มีพลังเวท", mages);
     expect(executed + defied).toBeGreaterThan(0);
   });
+
+  it("M6: อายุตื่นพลังกระจายหลายช่วง และชีวิตที่ยาวพอมีจุดพลิก", () => {
+    const awakenAges: number[] = [];
+    let sssAtAwaken = 0;
+    let turned = 0;
+    let reachedTp = 0;
+    const tracks: Record<string, number> = {};
+    const worlds: WorldId[] = ["hunter", "murim", "court"];
+    for (let s = 1; s <= 600; s++) {
+      const world = worlds[s % 3];
+      const life = playLife(s * 49979687, { hunterBot: true, world });
+      expect(life.alive).toBe(false);
+      const t = String(life.flags.awakenTrack ?? "?");
+      tracks[t] = (tracks[t] ?? 0) + 1;
+      if (life.power) awakenAges.push(life.power.awakenedAt);
+      if (life.flags.sssAwakened) sssAtAwaken++;
+      if (life.age > Number(life.flags.tpAge ?? 99)) {
+        reachedTp++;
+        if (life.flags.turnDone) turned++;
+      }
+    }
+    awakenAges.sort((a, b) => a - b);
+    const pct = (p: number) => awakenAges[Math.floor(awakenAges.length * p)];
+    console.log(
+      "SIM M6 เส้นทาง", JSON.stringify(tracks), "| อายุตื่น p5/p50/p95", pct(0.05), pct(0.5), pct(0.95),
+      "| SSS", sssAtAwaken, "| ถึงอายุจุดพลิก", reachedTp, "มีจุดพลิก", turned,
+    );
+    expect(turned).toBe(reachedTp);
+    expect(pct(0.05)).toBeLessThan(12);
+    expect(pct(0.95)).toBeGreaterThan(20);
+  }, 120_000);
 
   it("seed เดียวกันได้ชีวิตเหมือนกัน (จำเป็นสำหรับการย้อนเวลา)", () => {
     const a = playLife(42, { hunterBot: true });

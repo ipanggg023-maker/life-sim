@@ -4,7 +4,7 @@ import { memoryOdds, observe, remembers, useMemory } from "../../engine/memory";
 import { chance, pick, randInt } from "../../engine/rng";
 import type { HunterClass, Life } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, displayName, firstPerson, money, people, shortName } from "../../engine/util";
-import { CLASSES, awaken, classById, fightOdds, gainExp, guildById, offerClasses, rankLabel, rankUp, rollAwakening, survivalOdds } from "../hunter/power";
+import { CLASSES, awaken, classById, fightOdds, gainExp, guildById, offerClasses, rankLabel, rankUp, rollAwakening, settleNone, survivalOdds, trackOf } from "../hunter/power";
 import { worldFacts } from "../hunter/worldFacts";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
@@ -81,7 +81,8 @@ const AWAKEN_MEMORY: GameEvent = {
 // ───────────────────────── พิธีตรวจพลังเวท (เทียบเท่าวันตื่นพลัง) ─────────────────────────
 
 function assess(l: Life, c: Ctx, bonus: number) {
-  c.rank = rollAwakening(l, bonus);
+  // ตื่นช้า: ในพิธียังไม่ตื่น แต่ชะตายังไม่จบ
+  c.rank = trackOf(l) === "late" ? -1 : rollAwakening(l, bonus);
   c.offer = offerClasses(l).join(",");
 }
 
@@ -90,7 +91,7 @@ const ASSESSMENT: GameEvent = {
   minAge: 9,
   maxAge: 12,
   forced: true,
-  when: (l) => !l.power && !l.flags.awakenDone && l.age === Number(l.flags.awakenAge ?? 10),
+  when: (l) => !l.power && !l.flags.awakenDone && !l.flags.notYet && l.age === Number(l.flags.ceremonyAge ?? l.flags.awakenAge ?? 12),
   title: "พิธีตรวจพลังเวท",
   text: () => "เด็กอายุสิบปีทุกคนในจักรวรรดิต้องมาวางมือบนลูกแก้วมานาที่วิหารใหญ่ บาทหลวงเรียกชื่อคุณแล้ว",
   choices: [
@@ -102,8 +103,8 @@ const ASSESSMENT: GameEvent = {
       title: "ไร้พลังเวท",
       text: () => "ลูกแก้วไม่เรืองแสงแม้แต่น้อย บาทหลวงจดลงสมุดว่า 'ไร้มานา' เสียงกระซิบดังไปทั่ววิหาร",
       choices: [
-        { label: "ไม่เป็นไร ในนิยายตัวละครที่เก่งที่สุดใช้สมอง", run: (l) => { l.flags.awakenDone = true; addStat(l, "smarts", 3); return meh("คุณเดินออกจากวิหารพร้อมรอยยิ้ม พ่อแม่มองคุณอย่างแปลกใจ"); } },
-        { label: "ร้องไห้ทั้งคืน", run: (l) => { l.flags.awakenDone = true; addStat(l, "happiness", -10); return bad("หมอนเปียกไปทั้งใบ"); } },
+        { label: "ไม่เป็นไร ในนิยายตัวละครที่เก่งที่สุดใช้สมอง", run: (l) => { settleNone(l); addStat(l, "smarts", 3); return meh("คุณเดินออกจากวิหารพร้อมรอยยิ้ม พ่อแม่มองคุณอย่างแปลกใจ"); } },
+        { label: "ร้องไห้ทั้งคืน", run: (l) => { settleNone(l); addStat(l, "happiness", -10); return bad("หมอนเปียกไปทั้งใบ"); } },
       ],
     },
     style: {

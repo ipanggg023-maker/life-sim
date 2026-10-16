@@ -201,22 +201,51 @@ export const POWER_TALENTS = ["mana_heart", "late_bloomer", "dragon_blood", "cur
 export const owns = (life: Life, id: string) => life.talents.some((t) => t.id === id);
 const ownsActive = (life: Life, id: string) => life.talents.some((t) => t.id === id && t.revealed);
 
+// ───────────────────────── เส้นทางการตื่นพลัง ─────────────────────────
+
+export type AwakenTrack = "early" | "normal" | "late" | "never";
+export const trackOf = (life: Life): AwakenTrack => (life.flags.awakenTrack as AwakenTrack | undefined) ?? "normal";
+
+/**
+ * ตั้งตอนเกิด: ตื่นเร็ว 5% · ปกติ 70% · ตื่นช้า 15% · ไม่ตื่น 10%
+ * มีพรสวรรค์สายพลังจะไม่ตกช่อง "ไม่ตื่น"
+ */
+export function rollAwakenTrack(life: Life) {
+  const w = worldOf(life.worldId);
+  const powerTalent = POWER_TALENTS.some((id) => owns(life, id));
+  const track = weightedPick(life, ["early", "normal", "late", "never"] as AwakenTrack[], (t) =>
+    ({ early: 5, normal: 70, late: 15, never: powerTalent ? 0 : 10 })[t],
+  )!;
+  life.flags.awakenTrack = track;
+  const [lo, hi] = track === "early" ? w.awakenEarly : track === "late" ? w.awakenLate : w.awakenAge;
+  life.flags.awakenAge = lo + Math.floor(nextFloat(life) * (hi - lo + 1));
+  // พิธีคัดเลือก/ตรวจพลังของโลกนั้นจัดตามอายุปกติเสมอ
+  life.flags.ceremonyAge = w.awakenAge[0] + Math.floor(nextFloat(life) * (w.awakenAge[1] - w.awakenAge[0] + 1));
+  // อายุของ "จุดพลิกที่การันตี" ถ้าถึงตอนนั้นแล้วชีวิตยังไม่เคยพลิก
+  life.flags.tpAge = 22 + Math.floor(nextFloat(life) * 17);
+}
+
+/** ผลพิธีตรวจพลังที่ "ยังไม่ตื่น": ช่องไม่ตื่นจบแค่นั้น ส่วนตื่นช้ายังรอวันของตัวเอง */
+export function settleNone(life: Life) {
+  if (trackOf(life) === "never") life.flags.awakenDone = true;
+  else life.flags.notYet = true;
+}
+
 /** สุ่มผลการตื่นพลัง: -1 = ไม่ตื่น */
 export function rollAwakening(life: Life, bonus: number): number {
-  const hasPowerTalent = POWER_TALENTS.some((id) => owns(life, id));
   const talentBonus = Object.entries(RANK_BONUS).reduce((s, [id, b]) => s + (owns(life, id) ? b : 0), 0);
+  const track = trackOf(life);
+  // ช่อง "ไม่ตื่น" — แต่ตัวกระตุ้น/วาสนาส่ง bonus มาเพื่อฝ่าชะตาได้
+  if (track === "never" && bonus < 2 && !life.flags.forceAwaken) return -1;
   // ผู้ใช้ระบบ / ผู้ตื่นช้า เริ่มจาก F เสมอ (บวกโบนัสจากพรสวรรค์อื่นถ้ามี) — แล้วค่อยโต
   if (owns(life, "system_user") || owns(life, "late_bloomer")) return talentBonus;
-  const outcomes = [-1, 0, 1, 2, 3, 4, 5, 6, 7];
-  const base = [35, 22, 19, 14, 10, 6, 3.5, 1.2, 0.3];
+  const outcomes = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  // F … SSS — SSS ตั้งแต่ตื่นเป็นของหายากที่สุด
+  const base = [22, 19, 14, 10, 6, 3.5, 1.2, 0.35, 0.15];
   const luck = 1 + (life.stats.luck - 50) / 80;
-  const r = weightedPick(life, outcomes, (o) => {
-    const w = base[o + 1];
-    if (o === -1) return hasPowerTalent ? 0 : w;
-    return o >= 2 ? w * Math.max(0.3, luck) : w;
-  })!;
-  if (r < 0) return -1;
-  return clamp(r + bonus + talentBonus, 0, MAX_RANK - 1); // SSS ได้จากการเติบโตเท่านั้น
+  const r = weightedPick(life, outcomes, (o) => (o >= 2 ? base[o] * Math.max(0.3, luck) : base[o]))!;
+  const trackBonus = track === "early" ? 1 : track === "late" ? -1 : 0;
+  return clamp(r + bonus + talentBonus + trackBonus, 0, MAX_RANK);
 }
 
 /** เสนอสายอาชีพ 2–3 สายตามสเตตัสเด่น */
@@ -262,16 +291,44 @@ export function awaken(life: Life, rank: number, cls: HunterClass) {
     items: [],
   };
   life.flags.awakenDone = true;
-  addFame(life, rank >= 5 ? 25 : rank >= 3 ? 8 : 1);
+  delete life.flags.notYet;
+  addFame(life, rank >= 8 ? 50 : rank >= 5 ? 25 : rank >= 3 ? 8 : 1);
   addStat(life, "happiness", rank >= 3 ? 20 : 8);
+  const track = trackOf(life);
+  // ตื่นช้ากว่าคนอื่น แต่โตเร็วกว่า
+  if (track === "late" || track === "never" || life.age > worldOf(life.worldId).awakenAge[1]) life.flags.lateBloom = true;
+  if (track !== "normal" || life.age !== Number(life.flags.awakenAge)) markTurn(life);
+  // วัดแรงก์ผิด: ตัวจริงสูงกว่าที่เครื่องวัดบอกมาก
+  if (rank < 5 && chance(life, 0.03)) life.flags.trueRank = Math.min(MAX_RANK, rank + 3 + Math.floor(nextFloat(life) * 3));
+  if (rank >= 8) life.flags.sssAwakened = true;
 }
 
-export function rankUp(life: Life, reason: string) {
+/**
+ * เลื่อนแรงก์จากวาสนา/ชะตา/เหตุการณ์ — มีเพดานอ่อน: ยิ่งสูงยิ่งยาก ไม่งั้น SSS จะเกลื่อน
+ * ไม่ผ่านเพดานก็ยังได้ EXP ก้อนใหญ่แทน
+ */
+export function luckyRankUp(life: Life, reason: string, steps = 1) {
+  const r = life.power?.rank ?? 0;
+  const p = r >= 7 ? 0.15 : r >= 6 ? 0.35 : r >= 5 ? 0.6 : 1;
+  if (chance(life, p)) {
+    rankUp(life, reason, r >= 5 ? 1 : steps);
+    return;
+  }
+  gainExp(life, 800);
+  log(life, `${reason} — พลังยังไม่ข้ามขั้น แต่ความเข้าใจลึกซึ้งขึ้นมาก`, "system");
+}
+
+/** จุดพลิกของชีวิตเกิดขึ้นแล้ว (ใช้กับการการันตีจุดพลิก) */
+export function markTurn(life: Life) {
+  life.flags.turnDone = true;
+}
+
+export function rankUp(life: Life, reason: string, steps = 1) {
   const p = life.power;
   if (!p || p.rank >= MAX_RANK) return;
-  p.rank++;
+  p.rank = Math.min(MAX_RANK, p.rank + steps);
   addFame(life, p.rank >= 6 ? 15 : 5);
-  log(life, `${reason} — แรงก์เพิ่มขึ้นเป็น 【${rankName(p.rank)}】`, "system");
+  log(life, `${reason} — ${worldOf(life.worldId).labels.rank}เพิ่มขึ้นเป็น 【${rankLabel(life, p.rank)}】`, "system");
 }
 
 function levelUp(life: Life) {
@@ -298,7 +355,9 @@ function levelUp(life: Life) {
 export function gainExp(life: Life, amount: number) {
   const p = life.power;
   if (!p) return;
-  p.exp += Math.round(amount);
+  // ตื่นช้าโตเร็ว · ความรู้วิธีฝึกจากชาติก่อน · สัญญากับสิ่งเหนือธรรมชาติ
+  const mult = (life.flags.lateBloom ? 1.4 : 1) * (life.flags.knowsMethod ? 1.25 : 1) * (life.flags.pact ? 1.2 : 1);
+  p.exp += Math.round(amount * mult);
   const before = p.level;
   while (p.exp >= expToNext(p.level)) {
     p.exp -= expToNext(p.level);
