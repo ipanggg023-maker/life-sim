@@ -81,7 +81,7 @@ export function DeathScreen({
           {life.education.degree ? `ปริญญาตรี ${facultyById(life.education.degree).name}` : life.education.highSchoolDone ? "ม.6" : "ไม่จบ ม.6"}
         </p>
         <p>งานสุดท้าย: {job ? `${job.titles[life.job!.level - 1]} (${job.name})` : "-"}</p>
-        {life.power && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · {life.worldId === "tower" ? `ชั้นที่ ${Number(life.flags.floor ?? 0)} ·` : ""}{life.worldId === "murim" ? "ภารกิจ" : life.worldId === "tower" ? "บททดสอบ" : "Gate"} {life.power.gates}</p>}
+        {life.power && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · {life.worldId === "tower" ? `ชั้นที่ ${Number(life.flags.floor ?? 0)} ·` : ""}{life.worldId === "murim" ? "ภารกิจ" : life.worldId === "tower" ? "บททดสอบ" : life.worldId === "apocalypse" ? "ฉากภารกิจ" : "Gate"} {life.power.gates}</p>}
         <p>
           ครอบครัว: {spouse ? "แต่งงาน" : "โสด"} · ลูก {kids} คน · ชื่อเสียง {life.fame}
         </p>

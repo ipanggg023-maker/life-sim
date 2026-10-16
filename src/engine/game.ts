@@ -299,6 +299,7 @@ export function salaryOf(life: Life, career: Career, level: number) {
   if (hasTalent(life, "merchant")) base *= 1.25;
   base *= 1 + titleBonus(life, "money") + sponsorBonus(life, "money");
   if (isStudent(life)) base *= 0.4;
+  if (life.flags.doomed && !life.flags.rebuilt && !career.needsPower) base *= 0.3;
   return Math.round(base / 1000) * 1000;
 }
 
@@ -349,7 +350,9 @@ function progressMoney(life: Life) {
   const kids = people(life, "child").filter((c) => c.age < 18).length;
   // รายได้มากขึ้น ใช้จ่ายมากขึ้น (ค่าเช่า กินเที่ยว ภาษี)
   const income = Number(life.flags.income ?? 0) + pension;
-  const living = 84_000 + kids * 60_000 + Math.round(income * 0.4);
+  // หลังวันสิ้นโลกไม่มีค่าเช่า ไม่มีห้าง — ใช้จ่ายแค่ของจำเป็น
+  const ruins = life.flags.doomed && !life.flags.rebuilt;
+  const living = ruins ? 30_000 + kids * 15_000 : 84_000 + kids * 60_000 + Math.round(income * 0.4);
   addMoney(life, -living);
   if (life.debt > 0 && life.money > 0) {
     const pay = Math.min(life.debt, Math.round(life.money * 0.3));
@@ -470,7 +473,9 @@ export function ageUp(life: Life) {
   }
 
   if (chance(life, mortality(life.age, life.stats.health))) {
-    kill(life, life.age < 50 ? pick(life, worldOf(life.worldId).deathYoung) : pick(life, worldOf(life.worldId).deathOld));
+    const w = worldOf(life.worldId);
+    const ruins = life.flags.doomed && !life.flags.rebuilt && w.deathRuins;
+    kill(life, ruins ? pick(life, ruins) : life.age < 50 ? pick(life, w.deathYoung) : pick(life, w.deathOld));
     return;
   }
 

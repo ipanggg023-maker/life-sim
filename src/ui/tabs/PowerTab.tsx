@@ -85,6 +85,23 @@ const UI: Record<
     none: "ไร้มานา — คุณเป็นคนธรรมดา (…หรือเปล่า?)",
     waiting: "รอพิธีตรวจพลังเวท…",
   },
+  apocalypse: {
+    style: "เส้นทาง",
+    noGuild: "ไม่มีกลุ่ม",
+    done: "ฉากที่ผ่าน",
+    boss: "ตัวคุมฉาก",
+    needJob: "ต้องเป็นผู้รอดชีวิตภาคสนามที่แท็บ 💼 อาชีพก่อน",
+    unit: "ฉากภารกิจระดับ ",
+    enter: "เข้าฉาก",
+    trainEmoji: "🏋️",
+    join: "เข้าร่วม",
+    joined: (g) => `คุณเข้าร่วม${g.name}`,
+    left: (g) => `คุณออกจาก${g.name}`,
+    slot: "ระบบมาถึง",
+    before: () => "โลกยังปกติดี… ตอนนี้",
+    none: "คุณเป็นคนธรรมดาในโลกที่พังแล้ว",
+    waiting: "โลกยังปกติดี… ตอนนี้",
+  },
   tower: {
     style: "ตำแหน่ง",
     noGuild: "ไม่มีทีม",
@@ -273,6 +290,16 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
           <b>
             {p.gates} ({ui.boss} {p.bossKills})
           </b>
+          {life.worldId === "apocalypse" && (
+            <>
+              <span>ฉากภารกิจหลัก</span>
+              <b>
+                {Number(life.flags.mainScenario ?? 0) >= 8 ? "จบแล้ว ☀️" : `#${Number(life.flags.mainScenario ?? 0)} / 8`}
+              </b>
+              <span>ผู้สนับสนุน</span>
+              <b>{sponsorOf(life) ? `✨ ${sponsorOf(life)!.name} (${sponsorOf(life)!.desc})` : "ยังไม่มี"}</b>
+            </>
+          )}
           {life.worldId === "tower" && (
             <>
               <span>ชั้นปัจจุบัน</span>

@@ -139,8 +139,9 @@ export function cliffhanger(life: Life): string | undefined {
   if (!life.alive) return;
   const next = life.age + 1;
   const f = life.flags;
-  if (!life.power && Number(f.awakenAge) === next && f.awakenTrack !== "never") return "…คืนนั้น ไข้ของคุณเริ่มขึ้นสูงผิดปกติ";
-  if (!life.power && Number(f.ceremonyAge) === next && life.worldId !== "hunter") return "…วันที่ทุกคนรอคอยกำลังจะมาถึง";
+  if (life.worldId === "apocalypse" && !f.doomed && Number(f.awakenAge) === next) return "…ไม่มีใครรู้เลยว่า ปีหน้าโลกจะไม่เหมือนเดิมอีกต่อไป";
+  if (life.worldId !== "apocalypse" && !life.power && Number(f.awakenAge) === next && f.awakenTrack !== "never") return "…คืนนั้น ไข้ของคุณเริ่มขึ้นสูงผิดปกติ";
+  if (!life.power && Number(f.ceremonyAge) === next && !["hunter", "tower", "apocalypse"].includes(life.worldId)) return "…วันที่ทุกคนรอคอยกำลังจะมาถึง";
   if (!f.turnDone && Number(f.tpAge) === next) return "…และแล้ว วันที่ชะตาจะเปลี่ยนก็ใกล้เข้ามา";
   if (f.role === "villain" && [12, 16, 18, 20].includes(next) && !f.fateDefied) return next === 20 ? "…ปีหน้า คือวันที่นิยายบอกว่าคุณจะตาย" : "…บทถัดไปของนิยายกำลังจะเริ่มขึ้น";
   const facts = worldFacts(life);
@@ -167,6 +168,7 @@ function titleOf(life: Life): string {
   if (f.arcWon && p) return `${r}ผู้ยืนอยู่เหนือทุกคน`;
   if (f.rankRevealed && p) return `แรงก์ต่ำที่จริงๆ แล้วคือ${r}`;
   if (f.towerTop) return "ผู้ยืนบนยอดหอคอย";
+  if (f.apocHero) return "ผู้ปิดฉากสุดท้ายของวันสิ้นโลก";
   if (f.sssAwakened) return life.worldId === "murim" ? "อัจฉริยะเซียนตั้งแต่กำเนิด" : life.worldId === "tower" ? "ผู้ท้าชิงระดับ SSS คนแรกในรอบสิบปี" : life.worldId === "court" ? "ผู้ใช้เวทวงที่ 8 คนแรกในรอบห้าร้อยปี" : "แรงก์ SSS ตั้งแต่วันแรก";
   if (reg >= 1) return `ย้อนเวลามาครั้งที่ ${reg} รอบนี้จะไม่ตายแบบเดิม`;
   if (life.talents.some((t) => t.id === "system_user" && t.revealed)) return "ผู้เล่นคนเดียวที่มีหน้าต่างระบบ";
@@ -188,7 +190,7 @@ function titleOf(life: Life): string {
 function tagsOf(life: Life): string[] {
   const f = life.flags;
   const tags = [`#${worldOf(life.worldId).name.replace(/^โลก /, "")}`];
-  if (life.power) tags.push(life.worldId === "murim" ? "#ฝึกยุทธ์" : life.worldId === "court" ? "#เวทมนตร์" : life.worldId === "tower" ? "#ปีนหอคอย" : "#ตื่นพลัง");
+  if (life.power) tags.push(life.worldId === "murim" ? "#ฝึกยุทธ์" : life.worldId === "court" ? "#เวทมนตร์" : life.worldId === "tower" ? "#ปีนหอคอย" : life.worldId === "apocalypse" ? "#วันสิ้นโลก" : "#ตื่นพลัง");
   else tags.push("#ไร้พลัง");
   if ((life.regressions ?? 0) > 0) tags.push("#ย้อนเวลา");
   if (f.revenge || f.vendetta) tags.push("#ล้างแค้น");

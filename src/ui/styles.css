@@ -90,6 +90,25 @@
 }
 :root[data-world="tower"] .age-badge { border-color: #e8b84a; }
 
+/* ── ธีมวันสิ้นโลก: เถ้าถ่าน / แดงเพลิง ── */
+:root[data-world="apocalypse"] {
+  --bg: #0c0a09;
+  --bg-2: #171210;
+  --surface: #1c1715;
+  --surface-2: #29211d;
+  --line: #45352c;
+  --text: #f0e6df;
+  --muted: #a8968a;
+  --accent: #ff6a3d;
+  --milestone: #ffb38a;
+  --body-bg: radial-gradient(1000px 600px at 50% -15%, #3d1a10 0%, var(--bg) 62%);
+  --glow: 0 0 14px rgba(255, 106, 61, 0.35);
+  --fill-grad: linear-gradient(90deg, #b23a1b, var(--accent));
+  --footer-bg: linear-gradient(180deg, rgba(12, 10, 9, 0.6), var(--bg));
+  --primary-grad: linear-gradient(90deg, #b23a1b, #ff6a3d);
+  --primary-shadow: 0 4px 20px rgba(255, 106, 61, 0.3);
+}
+
 /* ── ธีมราชสำนัก: ครีม / ทอง / ลวดลายหรูหรา ── */
 :root[data-world="court"] {
   --bg: #fbf6ec;
@@ -619,6 +638,7 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 }
 .cover-hunter { background: linear-gradient(160deg, #0b1530 0%, #1d3f8a 60%, #3ea8ff 130%); }
 .cover-murim { background: linear-gradient(160deg, #2a1e14 0%, #5b2a1e 55%, #b3261e 130%); }
+.cover-apocalypse { background: linear-gradient(160deg, #0c0a09 0%, #3d1a10 55%, #ff6a3d 140%); }
 .cover-tower { background: linear-gradient(160deg, #07060b 0%, #2a1f3d 55%, #e8b84a 140%); }
 .cover-court { background: linear-gradient(160deg, #3a2a10 0%, #8a5a14 55%, #e2bf62 130%); }
 .cover::after {

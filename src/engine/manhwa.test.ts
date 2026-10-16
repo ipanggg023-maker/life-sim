@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { loadCourtWorld } from "../content/court";
 import { loadTowerWorld } from "../content/tower";
+import { loadApocalypseWorld } from "../content/apocalypse";
 import { loadHunterWorld } from "../content/hunter";
 import { canEnterGate, enterGate } from "../content/hunter/events/gates";
 import { cliffhanger, seriesOf } from "../content/manhwa";
@@ -15,6 +16,7 @@ loadHunterWorld();
 loadMurimWorld();
 loadCourtWorld();
 loadTowerWorld();
+loadApocalypseWorld();
 loadSharedEvents();
 
 function play(seed: number, world: WorldId): Life {

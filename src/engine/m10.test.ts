@@ -5,6 +5,7 @@ import { canEnterGate, enterGate } from "../content/hunter/events/gates";
 import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
 import { loadTowerWorld } from "../content/tower";
+import { loadApocalypseWorld } from "../content/apocalypse";
 import { floorOf } from "../content/tower/climb";
 import { visibleChoices } from "./events";
 import { ageUp, applyJob, createLife, resolveChoice } from "./game";
@@ -16,6 +17,7 @@ loadHunterWorld();
 loadMurimWorld();
 loadCourtWorld();
 loadTowerWorld();
+loadApocalypseWorld();
 loadSharedEvents();
 
 function drain(life: Life, r: { rng: number }) {

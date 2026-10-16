@@ -132,6 +132,31 @@ export const CLASSES: ClassInfo[] = [
     id: "t_outsider", name: "ผู้บุกรุก", emoji: "🌀", key: "luck", desc: "สายหายาก — เข้าหอคอยโดยไม่ได้รับเชิญ กฎของหอคอยใช้กับคุณไม่ได้ทั้งหมด", cp: 7, survival: -0.03, world: "tower",
     skills: [[1, "ประตูต้องห้าม"], [10, "ฝ่ากฎหอคอย"], [25, "พลังจากภายนอก"], [45, "ผู้ทำลายหอคอย"]],
   },
+  // ── ผู้รอดชีวิตหลังวันสิ้นโลก ──
+  {
+    id: "a_blade", name: "นักสู้ระยะประชิด", emoji: "🪓", key: "health", desc: "ขวานดับเพลิงกับใจที่ไม่ถอย", cp: 3, survival: 0, world: "apocalypse",
+    skills: [[1, "ฟันสุดแรง"], [10, "ร่างเหล็ก"], [25, "พายุขวาน"], [45, "ผู้ยืนหยัดคนสุดท้าย"]],
+  },
+  {
+    id: "a_gunner", name: "มือปืน", emoji: "🔫", key: "luck", desc: "ยิงจากที่สูง กระสุนทุกนัดมีค่า", cp: 4, survival: -0.02, world: "apocalypse",
+    skills: [[1, "ยิงแม่นยำ"], [10, "กระสุนเจาะเกราะ"], [25, "ห่ากระสุน"], [45, "นัดเดียวจบฉาก"]],
+  },
+  {
+    id: "a_medic", name: "หมอสนาม", emoji: "🩹", key: "smarts", desc: "รักษาคนในฐาน — ทุกกลุ่มต้องการตัว", cp: -2, survival: 0.13, world: "apocalypse",
+    skills: [[1, "ปฐมพยาบาล"], [10, "ยาจากดวงดาว"], [25, "ห้องผ่าตัดสนาม"], [45, "มือที่ดึงคนจากความตาย"]],
+  },
+  {
+    id: "a_warden", name: "ผู้สร้างฐานที่มั่น", emoji: "🧱", key: "health", desc: "สร้างกำแพงและกับดัก ทำให้ทั้งกลุ่มรอด", cp: 0, survival: 0.12, world: "apocalypse",
+    skills: [[1, "กำแพงฉุกเฉิน"], [10, "กับดักรอบฐาน"], [25, "ป้อมเหล็ก"], [45, "เมืองที่ไม่มีวันล่ม"]],
+  },
+  {
+    id: "a_tamer", name: "ผู้ฝึกสัตว์อสูร", emoji: "🐺", key: "luck", desc: "ทำสัญญากับสัตว์ประหลาดที่บุกเข้ามา", cp: 5, survival: 0.04, world: "apocalypse",
+    skills: [[1, "สัตว์เลี้ยงอสูร"], [10, "ฝูงล่า"], [25, "ราชาสัตว์อสูร"], [45, "กองทัพสัตว์ร้าย"]],
+  },
+  {
+    id: "a_reader", name: "ผู้รู้ตอนจบ", emoji: "📖", key: "smarts", desc: "สายหายาก — คุณเคยอ่านนิยายที่เหมือนโลกนี้ทุกตัวอักษร", cp: 6, survival: 0.05, world: "apocalypse",
+    skills: [[1, "รู้เนื้อเรื่อง"], [10, "เขียนทับฉาก"], [25, "ผู้อ่านคนสุดท้าย"], [45, "ผู้เขียนตอนจบใหม่"]],
+  },
 ];
 
 export const classById = (id: HunterClass) => CLASSES.find((c) => c.id === id)!;
@@ -190,6 +215,12 @@ export const GUILDS: Guild[] = [
   { id: "t_pk", name: "กลุ่มล่าผู้ท้าชิง", minRank: 2, pay: 2.4, cp: 6, safety: -0.06, world: "tower", demonic: true, desc: "ฆ่าผู้ท้าชิงคนอื่นเพื่อชิงคะแนน — หอคอยไม่ห้าม แต่ทุกคนเกลียด" },
   { id: "t_family", name: "ตระกูลผู้ปกครองชั้นบน", minRank: 4, pay: 2.2, cp: 6, safety: 0.1, world: "tower", desc: "ตระกูลเก่าแก่ที่อยู่ในหอคอยมาหลายร้อยปี รับคนนอกยากมาก" },
   { id: "t_summit", name: "สมาพันธ์ผู้มุ่งยอดหอคอย", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "tower", desc: "รวมผู้ท้าชิงที่เก่งที่สุดจากทุกประเทศ มีเป้าหมายเดียวคือชั้น 100" },
+  // ── กลุ่มผู้รอดชีวิต ──
+  { id: "a_station", name: "ชุมชนใต้สถานีรถไฟฟ้า", minRank: 0, pay: 1, cp: 2, safety: 0.06, world: "apocalypse", desc: "คนธรรมดาหลายร้อยคนที่ช่วยกันเอาตัวรอดในอุโมงค์" },
+  { id: "a_army", name: "กองกำลังรัฐที่เหลืออยู่", minRank: 2, pay: 1.5, cp: 4, safety: 0.08, world: "apocalypse", desc: "ทหารที่ยังเชื่อว่ารัฐบาลจะกลับมา มีอาวุธแต่มีกฎเข้มงวด" },
+  { id: "a_raiders", name: "แก๊งปล้นผู้รอดชีวิต", minRank: 2, pay: 2.5, cp: 6, safety: -0.06, world: "apocalypse", demonic: true, desc: "ปล้นฐานอื่นเพื่อแลกเหรียญ ทุกกลุ่มเกลียด" },
+  { id: "a_cult", name: "ลัทธิบูชาดวงดาว", minRank: 3, pay: 2, cp: 4, safety: 0.04, world: "apocalypse", desc: "เชื่อว่าวันสิ้นโลกคือการคัดเลือกของพระเจ้า — ได้ของจากดวงดาวเยอะผิดปกติ" },
+  { id: "a_vanguard", name: "แนวหน้าผู้กอบกู้", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "apocalypse", desc: "ผู้รอดชีวิตที่แข็งแกร่งที่สุด มีเป้าหมายเดียวคือจบฉากสุดท้าย" },
   { id: "alliance", name: "พันธมิตรยุทธจักร", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "murim", desc: "รวมยอดฝีมือฝ่ายธรรมะ เป็นเหมือนรัฐบาลของยุทธภพ" },
 ];
 
@@ -311,6 +342,11 @@ export function offerClasses(life: Life): HunterClass[] {
       map: { health: ["m_sword", "m_spear"], smarts: ["m_palm", "m_medic"], luck: ["m_hidden"], looks: ["m_medic", "m_hidden"], happiness: ["m_medic"] },
       fallback: "m_sword",
       rare: "m_demon",
+    },
+    apocalypse: {
+      map: { health: ["a_blade", "a_warden"], smarts: ["a_medic", "a_warden"], luck: ["a_gunner", "a_tamer"], looks: ["a_medic", "a_gunner"], happiness: ["a_medic"] },
+      fallback: "a_blade",
+      rare: "a_reader",
     },
     tower: {
       map: { health: ["t_vanguard"], smarts: ["t_wave", "t_lantern"], luck: ["t_lancer", "t_scout"], looks: ["t_lantern", "t_lancer"], happiness: ["t_lantern"] },

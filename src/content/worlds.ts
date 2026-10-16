@@ -34,6 +34,8 @@ export interface WorldInfo {
   /** อาชีพที่ออกภารกิจได้ */
   questJobs: string[];
   ranks: readonly string[];
+  /** สาเหตุการตายตามธรรมชาติช่วงที่โลกพัง (วันสิ้นโลก) */
+  deathRuins?: string[];
   /** โลกยุคปัจจุบัน: มีประเทศที่เกิด (ไทย/เกาหลี/ญี่ปุ่น) และระบบโรงเรียน */
   modern?: boolean;
 }
@@ -183,9 +185,45 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
     ranks: ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"],
     modern: true,
   },
+  apocalypse: {
+    id: "apocalypse",
+    name: "วันสิ้นโลก",
+    emoji: "☄️",
+    birthplace: "กรุงเทพฯ",
+    startYear: 2010,
+    yearLabel: "ปี",
+    currency: baht,
+    names: { male: MALE_NAMES, female: FEMALE_NAMES, nickM: NICKNAMES_M, nickF: NICKNAMES_F, last: LAST_NAMES },
+    parentJobs: {
+      poor: ["รับจ้างทั่วไป", "ขายของตลาดนัด", "พนักงานส่งของ", "คนงานก่อสร้าง", "แม่บ้าน"],
+      middle: ["พนักงานบริษัท", "ข้าราชการ", "ครู", "เจ้าของร้านอาหาร", "พยาบาล"],
+      rich: ["ผู้บริหาร", "แพทย์", "เจ้าของโรงงาน", "ทนายความ", "นักธุรกิจ"],
+      elite: ["ประธานเครือบริษัท", "ทายาทตระกูลดัง", "นักการเมือง", "เจ้าของห้าง"],
+    },
+    wealthLabel: { poor: "ครอบครัวยากจน", middle: "ครอบครัวชนชั้นกลาง", rich: "ครอบครัวมีฐานะ", elite: "ตระกูลมหาเศรษฐี" },
+    deathYoung: ["อุบัติเหตุรถชน", "จมน้ำ", "ไข้เลือดออก", "โดนไฟดูด"],
+    deathOld: ["หัวใจวาย", "เส้นเลือดในสมองแตก", "มะเร็ง", "ปอดบวม", "หลับไปอย่างสงบ"],
+    deathRuins: ["แผลติดเชื้อเพราะไม่มียา", "ขาดสารอาหาร", "ป่วยจากฝนเถ้า", "ถูกสัตว์อสูรลากไปตอนกลางคืน", "หนาวตายในฤดูที่ไม่มีไฟฟ้า"],
+    // อายุตอน "วันสิ้นโลก" มาถึง (ใช้ระบบเส้นทางตื่นพลังเดิม: เร็ว/ปกติ/ช้า)
+    awakenAge: [16, 40],
+    awakenEarly: [8, 15],
+    awakenLate: [41, 60],
+    labels: {
+      rank: "ระดับ",
+      power: "พลังจากระบบ",
+      guild: "กลุ่มผู้รอดชีวิต",
+      raid: "ฉากภารกิจย่อย",
+      raidUnit: (r) => `ฉากภารกิจระดับ ${r}`,
+      train: "ฝึกเอาตัวรอด",
+      trainText: "ลานฝึกในฐานที่มั่น",
+    },
+    questJobs: ["survivor"],
+    ranks: ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"],
+    modern: true,
+  },
 };
 
-export const worldOf =(id: WorldId | undefined) => WORLDS[id ?? "hunter"];
+export const worldOf = (id: WorldId | undefined) => WORLDS[id ?? "hunter"];
 
 /**
  * ของที่ผูกกับโลก (อาชีพ/กิจกรรม/event) ใช้ได้ในโลกนี้ไหม

@@ -88,9 +88,13 @@ export function currentScene(q: QueuedEvent, life?: Life): Scene | undefined {
   return extra.length ? { ...s, choices: [...s.choices, ...extra] } : s;
 }
 
+/** โลกพังแล้ว: ชีวิตประจำวันแบบเดิม (event "modern") หายไปจนกว่าโลกจะฟื้น */
+const ruinsBlock = (life: Life, e: GameEvent) => e.world === "modern" && !!life.flags.doomed && !life.flags.rebuilt;
+
 function eligible(life: Life, e: GameEvent, takenThisYear: Set<string>): boolean {
   if (e.manual) return false;
   if (e.world && !worldMatches(e.world, life.worldId)) return false;
+  if (ruinsBlock(life, e)) return false;
   if (life.age < e.minAge || life.age > e.maxAge) return false;
   if (takenThisYear.has(e.id)) return false;
   const max = e.maxTimes ?? 1;
@@ -104,7 +108,7 @@ function weightOf(life: Life, e: GameEvent) {
 
 /** event ที่ถูกเลือกไว้ต้นปีอาจหมดเงื่อนไขเพราะ event ก่อนหน้าในปีเดียวกัน (เช่น เพื่อนเพิ่งตาย) */
 export function stillValid(life: Life, e: GameEvent) {
-  return (e.when ? e.when(life) : true) && weightOf(life, e) > 0;
+  return !ruinsBlock(life, e) && (e.when ? e.when(life) : true) && weightOf(life, e) > 0;
 }
 
 /** เลือก event ของปีนี้: forced ทั้งหมด + สุ่มอีก count อัน */

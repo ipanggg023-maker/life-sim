@@ -1,4 +1,4 @@
-export type WorldId = "hunter" | "murim" | "court" | "tower";
+export type WorldId = "hunter" | "murim" | "court" | "tower" | "apocalypse";
 
 /** ประเทศที่เกิด (เฉพาะโลกยุคปัจจุบัน) */
 export type Country = "th" | "kr" | "jp";
@@ -95,7 +95,9 @@ export type HunterClass =
   // สายเวทในราชสำนัก
   | "c_fire" | "c_ice" | "c_holy" | "c_aura" | "c_spirit" | "c_dark"
   // ตำแหน่งในหอคอย
-  | "t_vanguard" | "t_lancer" | "t_lantern" | "t_wave" | "t_scout" | "t_outsider";
+  | "t_vanguard" | "t_lancer" | "t_lantern" | "t_wave" | "t_scout" | "t_outsider"
+  // ผู้รอดชีวิตหลังวันสิ้นโลก
+  | "a_blade" | "a_gunner" | "a_medic" | "a_warden" | "a_tamer" | "a_reader";
 
 /** สถานะผู้ตื่นพลัง — rank: 0=F … 8=SSS */
 export interface Power {

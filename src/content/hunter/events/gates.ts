@@ -6,6 +6,7 @@ import { addFame, addStat, checkChance, clamp, hasTalent, log } from "../../../e
 import { startQuest } from "../../murim/quest";
 import { startCourtQuest } from "../../court/quest";
 import { startClimb } from "../../tower/climb";
+import { startScenario } from "../../apocalypse/scenario";
 import { worldOf } from "../../worlds";
 import {
   CLASSES,
@@ -305,6 +306,12 @@ const QUEST_MSG = {
     full: "ปีนี้ออกภารกิจครบแล้ว",
     tooHigh: "อันตรายเกินฝีมือ (สูงกว่าขั้นคุณเกิน 1 ขั้น)",
   },
+  apocalypse: {
+    noPower: "ระบบยังไม่มาถึง (โลกยังไม่สิ้น)",
+    noJob: "ต้องเป็นผู้รอดชีวิตภาคสนามก่อน (แท็บอาชีพ)",
+    full: "ปีนี้ออกฉากย่อยครบแล้ว",
+    tooHigh: "ระบบไม่เปิดฉากที่สูงกว่าระดับคุณเกิน 1 ขั้น",
+  },
   tower: {
     noPower: "ยังไม่ได้รับคำเชิญจากหอคอย",
     noJob: "ต้องลงทะเบียนเป็นผู้ท้าชิงหอคอยก่อน (แท็บอาชีพ)",
@@ -337,6 +344,7 @@ export function enterGate(life: Life, gateRank: number) {
   if (life.worldId === "murim") startQuest(life, gateRank);
   else if (life.worldId === "court") startCourtQuest(life, gateRank);
   else if (life.worldId === "tower") startClimb(life, gateRank);
+  else if (life.worldId === "apocalypse") startScenario(life, gateRank);
   else startGate(life, gateRank);
 }
 
@@ -354,7 +362,7 @@ export function train(life: Life): Outcome | undefined {
       ? `คุณนั่งสมาธิเดินลมปราณและฝึก${cls.name}ทั้งปีที่${worldOf(life.worldId).labels.trainText}`
       : life.worldId === "court"
         ? `คุณฝึก${cls.name}ทุกวันที่${worldOf(life.worldId).labels.trainText}`
-        : life.worldId === "tower"
+        : life.worldId === "tower" || life.worldId === "apocalypse"
           ? `คุณฝึก${cls.name}ทั้งปีที่${worldOf(life.worldId).labels.trainText}`
           : `คุณฝึกฝน${cls.name}อย่างหนักที่ศูนย์ฝึกของสมาคม`,
     kind: "good" as const,

@@ -4,6 +4,7 @@ import { loadHunterWorld } from "../content/hunter";
 import { loadMurimWorld } from "../content/murim";
 import { loadCourtWorld } from "../content/court";
 import { loadTowerWorld } from "../content/tower";
+import { loadApocalypseWorld } from "../content/apocalypse";
 import { loadSharedEvents } from "../content/shared";
 import { worldFacts } from "../content/hunter/worldFacts";
 import { exportCode, importCode } from "../save";
@@ -17,6 +18,7 @@ loadHunterWorld();
 loadMurimWorld();
 loadCourtWorld();
 loadTowerWorld();
+loadApocalypseWorld();
 loadSharedEvents();
 
 /** เล่นจนตาย (หรือถึงอายุ stopAt) โดยเก็บ snapshot ทุกปีไว้ใน Map แบบเดียวกับ UI */
