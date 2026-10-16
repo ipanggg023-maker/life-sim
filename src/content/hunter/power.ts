@@ -76,6 +76,31 @@ export const CLASSES: ClassInfo[] = [
     id: "m_demon", name: "วิชามาร", emoji: "🩸", key: "luck", desc: "สายหายาก รุนแรงที่สุด แต่ทุกสำนักฝ่ายธรรมะจะตามล่า", cp: 7, survival: -0.04, world: "murim",
     skills: [[1, "ฝ่ามือโลหิตมาร"], [10, "ดูดพลังมาร"], [25, "ร่างอสูรฟ้า"], [45, "จักรพรรดิมารสวรรค์"]],
   },
+  // ── สายเวทในราชสำนัก ──
+  {
+    id: "c_fire", name: "เวทธาตุไฟ", emoji: "🔥", key: "smarts", desc: "ทำลายล้างสูง เผาทุกอย่างที่ขวางหน้า", cp: 3, survival: -0.03, world: "court",
+    skills: [[1, "ลูกไฟ"], [10, "กำแพงเพลิง"], [25, "ฝนอุกกาบาต"], [45, "เพลิงกัลป์"]],
+  },
+  {
+    id: "c_ice", name: "เวทน้ำแข็ง", emoji: "❄️", key: "smarts", desc: "ควบคุมสนามรบ แช่แข็งศัตรู", cp: 2, survival: 0.05, world: "court",
+    skills: [[1, "หอกน้ำแข็ง"], [10, "โล่หิมะ"], [25, "พายุหิมะนิรันดร์"], [45, "ราชินีน้ำแข็ง"]],
+  },
+  {
+    id: "c_holy", name: "พลังศักดิ์สิทธิ์", emoji: "🕊️", key: "happiness", desc: "รักษาและปัดเป่าปีศาจ — สายของนักบุญ", cp: -1, survival: 0.15, world: "court",
+    skills: [[1, "แสงเยียวยา"], [10, "ม่านศักดิ์สิทธิ์"], [25, "ปาฏิหาริย์"], [45, "นักบุญแห่งยุค"]],
+  },
+  {
+    id: "c_aura", name: "ดาบออร่า", emoji: "⚔️", key: "health", desc: "ปลุกออร่าบนคมดาบ สายอัศวินผู้ยิ่งใหญ่", cp: 3, survival: 0.03, world: "court",
+    skills: [[1, "ออร่าจาง"], [10, "ดาบออร่า"], [25, "ออร่าทะลวงฟ้า"], [45, "ปรมาจารย์ดาบ"]],
+  },
+  {
+    id: "c_spirit", name: "ผู้ทำสัญญาภูต", emoji: "🧚", key: "luck", desc: "ทำสัญญากับภูตธาตุ หายากและคาดเดาไม่ได้", cp: 4, survival: 0.05, world: "court",
+    skills: [[1, "ภูตลมน้อย"], [10, "ภูตไฟ"], [25, "ราชาภูต"], [45, "สัญญาแห่งโลกภูต"]],
+  },
+  {
+    id: "c_dark", name: "เวทมืด", emoji: "🌑", key: "luck", desc: "สายต้องห้าม รุนแรงที่สุด แต่วิหารตามล่า", cp: 7, survival: -0.04, world: "court",
+    skills: [[1, "เงาสาป"], [10, "กลืนวิญญาณ"], [25, "ประตูนรก"], [45, "จอมราชันย์ปีศาจ"]],
+  },
 ];
 
 export const classById = (id: HunterClass) => CLASSES.find((c) => c.id === id)!;
@@ -107,6 +132,13 @@ export const GUILDS: Guild[] = [
   { id: "tang", name: "ตระกูลถังเรือนพิษ", minRank: 2, pay: 1.8, cp: 3, safety: 0.02, world: "murim", desc: "เชี่ยวชาญพิษและอาวุธลับ คนนอกเข้ายาก" },
   { id: "vajra", name: "วัดวัชระ", minRank: 3, pay: 1.2, cp: 5, safety: 0.12, world: "murim", desc: "สำนักพุทธที่เก่าแก่ที่สุด ศิษย์ตายยาก" },
   { id: "cult", name: "ลัทธิมารสวรรค์", minRank: 2, pay: 2.5, cp: 6, safety: -0.06, world: "murim", demonic: true, desc: "ฝ่ายอธรรม จ่ายหนัก ฆ่าไม่เลือก ทั้งใต้หล้าเกลียดชัง" },
+  // ── สังกัดในราชสำนัก ──
+  { id: "c_knights", name: "อัศวินแห่งจักรวรรดิ", minRank: 0, pay: 1.1, cp: 2, safety: 0.06, world: "court", desc: "ทหารรักษาดินแดน ภักดีต่อบัลลังก์ เกียรติยศสูงแต่เงินน้อย" },
+  { id: "c_tower", name: "หอคอยเวทเงิน", minRank: 1, pay: 1.6, cp: 3, safety: 0.04, world: "court", desc: "ที่รวมจอมเวทผู้ปราดเปรื่อง หมกมุ่นกับงานวิจัย" },
+  { id: "c_temple", name: "วิหารศักดิ์สิทธิ์", minRank: 1, pay: 1.2, cp: 2, safety: 0.12, world: "court", desc: "ศูนย์กลางศรัทธา มีอิทธิพลไม่แพ้ราชวงศ์" },
+  { id: "c_north", name: "กองอัศวินดยุกแห่งทิศเหนือ", minRank: 3, pay: 2, cp: 5, safety: 0.05, world: "court", desc: "ปกป้องชายแดนจากฝูงมอนสเตอร์ ดยุกเย็นชาที่สุดในจักรวรรดิ" },
+  { id: "c_shadow", name: "สมาคมจอมเวทมืด", minRank: 2, pay: 2.4, cp: 6, safety: -0.05, world: "court", demonic: true, desc: "เวทต้องห้าม ถ้าวิหารรู้ จะถูกเผาทั้งเป็น" },
+  { id: "c_guard", name: "หน่วยองครักษ์จักรพรรดิ", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "court", desc: "ยอดฝีมือที่ใกล้ชิดบัลลังก์ที่สุด" },
   { id: "alliance", name: "พันธมิตรยุทธจักร", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "murim", desc: "รวมยอดฝีมือฝ่ายธรรมะ เป็นเหมือนรัฐบาลของยุทธภพ" },
 ];
 
@@ -189,16 +221,30 @@ export function rollAwakening(life: Life, bonus: number): number {
 
 /** เสนอสายอาชีพ 2–3 สายตามสเตตัสเด่น */
 export function offerClasses(life: Life): HunterClass[] {
-  const murim = life.worldId === "murim";
-  const byKey: Record<StatKey, HunterClass[]> = murim
-    ? { health: ["m_sword", "m_spear"], smarts: ["m_palm", "m_medic"], luck: ["m_hidden"], looks: ["m_medic", "m_hidden"], happiness: ["m_medic"] }
-    : { health: ["sword", "tank"], smarts: ["mage", "healer"], luck: ["assassin"], looks: ["healer", "assassin"], happiness: ["healer"] };
+  const byWorld: Record<WorldId, { map: Record<StatKey, HunterClass[]>; fallback: HunterClass; rare: HunterClass }> = {
+    hunter: {
+      map: { health: ["sword", "tank"], smarts: ["mage", "healer"], luck: ["assassin"], looks: ["healer", "assassin"], happiness: ["healer"] },
+      fallback: "sword",
+      rare: "summoner",
+    },
+    murim: {
+      map: { health: ["m_sword", "m_spear"], smarts: ["m_palm", "m_medic"], luck: ["m_hidden"], looks: ["m_medic", "m_hidden"], happiness: ["m_medic"] },
+      fallback: "m_sword",
+      rare: "m_demon",
+    },
+    court: {
+      map: { health: ["c_aura"], smarts: ["c_fire", "c_ice"], luck: ["c_spirit"], looks: ["c_holy", "c_ice"], happiness: ["c_holy"] },
+      fallback: "c_aura",
+      rare: "c_dark",
+    },
+  };
+  const w = byWorld[life.worldId ?? "hunter"];
   const keys = (["health", "smarts", "luck", "looks"] as StatKey[]).sort((a, b) => life.stats[b] - life.stats[a]);
   const offer = new Set<HunterClass>();
-  offer.add(pick(life, byKey[keys[0]]));
-  for (const c of byKey[keys[1]]) if (offer.size < 2 && !offer.has(c)) offer.add(c);
-  if (offer.size < 2) offer.add(murim ? "m_sword" : "sword");
-  if (life.stats.luck >= 70 || owns(life, "system_user") || chance(life, 0.05)) offer.add(murim ? "m_demon" : "summoner");
+  offer.add(pick(life, w.map[keys[0]]));
+  for (const c of w.map[keys[1]]) if (offer.size < 2 && !offer.has(c)) offer.add(c);
+  if (offer.size < 2) offer.add(w.fallback);
+  if (life.stats.luck >= 70 || owns(life, "system_user") || chance(life, 0.05)) offer.add(w.rare);
   return [...offer];
 }
 

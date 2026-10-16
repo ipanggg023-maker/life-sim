@@ -4,6 +4,7 @@ import { CAREERS } from "../content/hunter/careers";
 import { canEnterGate, enterGate, train } from "../content/hunter/events/gates";
 import { rankLabel, rankName } from "../content/hunter/power";
 import { loadMurimWorld } from "../content/murim";
+import { loadCourtWorld } from "../content/court";
 import { ACTIVITIES, activityLocked, doActivity } from "./activities";
 import { visibleChoices } from "./events";
 import { ageUp, applyJob, createLife, resolveChoice } from "./game";
@@ -12,6 +13,7 @@ import type { Life, WorldId } from "./types";
 
 loadHunterWorld();
 loadMurimWorld();
+loadCourtWorld();
 
 function drain(life: Life, r: { rng: number }) {
   let guard = 0;
@@ -30,8 +32,8 @@ function playLife(seed: number, opts: { hunterBot?: boolean; world?: WorldId } =
     drain(life, r);
     if (!life.alive) break;
     for (const a of ACTIVITIES) if (!activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
-    const questJob = life.worldId === "murim" ? "wanderer" : "hunter";
-    if (life.power && opts.hunterBot && !["hunter", "disciple", "wanderer"].includes(life.job?.careerId ?? "")) applyJob(life, questJob);
+    const questJob = { hunter: "hunter", murim: "wanderer", court: "adventurer" }[life.worldId];
+    if (life.power && opts.hunterBot && !["hunter", "disciple", "wanderer", "knight", "court_mage", "adventurer"].includes(life.job?.careerId ?? "")) applyJob(life, questJob);
     const careers = CAREERS.filter((c) => (c.world ?? "hunter") === life.worldId);
     if (!life.job && life.age >= 16) applyJob(life, careers[Math.floor(nextFloat(r) * careers.length)].id);
     if (opts.hunterBot && life.power) train(life);
@@ -120,6 +122,28 @@ describe("จำลองชีวิต", () => {
     console.log("SIM ยุทธภพ อายุเฉลี่ย", avg.toFixed(1), "| ผู้ฝึกยุทธ์", cultivators, "| มีสำนัก", sect, "| ขั้นตอนจบ", JSON.stringify(ranks));
     console.log("SIM ยุทธภพ สาเหตุการตาย", JSON.stringify(Object.entries(causes).sort((a, b) => b[1] - a[1]).slice(0, 8)));
     expect(cultivators).toBeGreaterThan(100);
+  });
+
+  it("ราชสำนัก: เล่นจนจบได้ 300 ชีวิต และ Death Flag ทำงาน", () => {
+    const roles: Record<string, number> = {};
+    const ages: number[] = [];
+    let executed = 0;
+    let defied = 0;
+    let mages = 0;
+    for (let s = 1; s <= 300; s++) {
+      const life = playLife(s * 32452843, { hunterBot: true, world: "court" });
+      expect(life.alive).toBe(false);
+      expect(life.worldId).toBe("court");
+      ages.push(life.age);
+      const role = String(life.flags.role ?? "ตายก่อนรู้บท");
+      roles[role] = (roles[role] ?? 0) + 1;
+      if (/กิโยติน|ลานประหาร/.test(life.causeOfDeath ?? "")) executed++;
+      if (life.flags.fateDefied) defied++;
+      if (life.power) mages++;
+    }
+    const avg = ages.reduce((a, b) => a + b, 0) / ages.length;
+    console.log("SIM ราชสำนัก อายุเฉลี่ย", avg.toFixed(1), "| บทบาท", JSON.stringify(roles), "| ถูกประหาร", executed, "| หักชะตา", defied, "| มีพลังเวท", mages);
+    expect(executed + defied).toBeGreaterThan(0);
   });
 
   it("seed เดียวกันได้ชีวิตเหมือนกัน (จำเป็นสำหรับการย้อนเวลา)", () => {

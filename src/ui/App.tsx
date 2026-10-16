@@ -191,7 +191,7 @@ export function App() {
       }
       await clearCurrent();
       // เส้นเวลาใหม่: สุ่มโลกจากโลกที่ปลดล็อกแล้ว (ยุทธภพปลดล็อกหลังตายครั้งแรก)
-      const worlds: WorldId[] = ["hunter", "murim"];
+      const worlds: WorldId[] = ["hunter", "murim", "court"];
       await birth(choice === "nextEra" ? { ...nextEraOptions(life), worldId: life.worldId } : { worldId: worlds[Math.floor(Math.random() * worlds.length)] });
     },
     [life, soul, birth, commit, commitSoul],

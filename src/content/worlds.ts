@@ -1,6 +1,7 @@
 import type { Wealth, WorldId } from "../engine/types";
 import { FEMALE_NAMES, LAST_NAMES, MALE_NAMES, NICKNAMES_F, NICKNAMES_M } from "./hunter/names";
 import { MURIM_FEMALE, MURIM_LAST, MURIM_MALE, MURIM_NICK_F, MURIM_NICK_M } from "./murim/names";
+import { COURT_FEMALE, COURT_LAST, COURT_MALE, COURT_NICK_F, COURT_NICK_M } from "./court/names";
 
 export interface WorldInfo {
   id: WorldId;
@@ -33,6 +34,10 @@ export interface WorldInfo {
 }
 
 const baht = (n: number) => `${n < 0 ? "-" : ""}฿${Math.abs(n).toLocaleString("th-TH")}`;
+const goldCoins = (n: number) => {
+  const g = Math.abs(n) / 10_000;
+  return `${n < 0 ? "-" : ""}${g < 10 ? g.toFixed(1) : Math.round(g).toLocaleString("th-TH")} เหรียญทอง`;
+};
 const taels = (n: number) => {
   const t = Math.abs(n) / 1000;
   return `${n < 0 ? "-" : ""}${t < 10 ? t.toFixed(1) : Math.round(t).toLocaleString("th-TH")} ตำลึง`;
@@ -100,6 +105,37 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
     },
     questJobs: ["disciple", "wanderer", "m_assassin"],
     ranks: ["ผู้ฝึกหัด", "ชั้นสาม", "ชั้นสอง", "ชั้นหนึ่ง", "ยอดฝีมือ", "ปรมาจารย์", "ยอดยุทธ์", "เหนือธรรมชาติ", "เซียน"],
+  },
+  court: {
+    id: "court",
+    name: "ราชสำนัก",
+    emoji: "👑",
+    birthplace: "นครหลวงแห่งจักรวรรดิอัสเตรีย",
+    startYear: 812,
+    yearLabel: "ปีจักรวรรดิ",
+    currency: goldCoins,
+    names: { male: COURT_MALE, female: COURT_FEMALE, nickM: COURT_NICK_M, nickF: COURT_NICK_F, last: COURT_LAST },
+    parentJobs: {
+      poor: ["คนทำขนมปัง", "คนเลี้ยงม้า", "ช่างตัดเสื้อ", "คนรับใช้ในคฤหาสน์"],
+      middle: ["ขุนนางชั้นบารอน", "พ่อค้าผ้าไหม", "อัศวินชั้นผู้น้อย", "นักวิชาการ"],
+      rich: ["ขุนนางชั้นเคานต์", "ขุนนางชั้นมาร์ควิส", "ผู้บัญชาการอัศวิน", "จอมเวทราชสำนัก"],
+      elite: ["ประมุขตระกูลดยุก", "สมาชิกราชวงศ์สาขา", "อัครมหาเสนาบดี", "ผู้ดูแลคลังหลวง"],
+    },
+    wealthLabel: { poor: "ครอบครัวสามัญชน", middle: "ตระกูลบารอน", rich: "ตระกูลเคานต์", elite: "ตระกูลดยุก" },
+    deathYoung: ["ไข้หวัดใหญ่ระบาด", "ตกจากหลังม้า", "ถูกโจรปล้นรถม้า", "จมน้ำในทะเลสาบหลังคฤหาสน์"],
+    deathOld: ["ชราภาพ", "โรคหัวใจ", "หลับไปอย่างสงบในสวนกุหลาบ", "ไข้หวัดลงปอด"],
+    awakenAge: [10, 10],
+    labels: {
+      rank: "วงเวท",
+      power: "มานา",
+      guild: "สังกัด",
+      raid: "ภารกิจราชสำนัก",
+      raidUnit: (r) => `ภารกิจระดับ${r}`,
+      train: "ฝึกเวทและดาบ",
+      trainText: "หอฝึกของสถาบันจักรวรรดิ",
+    },
+    questJobs: ["knight", "court_mage", "adventurer"],
+    ranks: ["ไร้วงเวท", "วงที่ 1", "วงที่ 2", "วงที่ 3", "วงที่ 4", "วงที่ 5", "วงที่ 6", "วงที่ 7", "วงที่ 8"],
   },
 };
 

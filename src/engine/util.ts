@@ -65,7 +65,12 @@ export function createPerson(
   const person: Person = {
     id: uid(life),
     // ยุทธภพเรียกชื่อเต็มแบบแซ่นำหน้า (shortName จะได้ชื่อเต็ม ซึ่งเข้ากับสำนวนนิยายจีน)
-    name: life.worldId === "murim" ? `${opts.lastName ?? n.last}${n.first}` : `${n.first} (${n.nick}) ${opts.lastName ?? n.last}`,
+    name:
+      life.worldId === "murim"
+        ? `${opts.lastName ?? n.last}${n.first}`
+        : life.worldId === "court"
+          ? `${n.first} ${opts.lastName ?? n.last}` // ราชสำนักเรียกด้วยชื่อตัว (shortName = ชื่อตัว)
+          : `${n.first} (${n.nick}) ${opts.lastName ?? n.last}`,
     gender,
     relation,
     age: opts.age,

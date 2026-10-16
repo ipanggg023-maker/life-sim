@@ -1,4 +1,4 @@
-export type WorldId = "hunter" | "murim";
+export type WorldId = "hunter" | "murim" | "court";
 
 export type StatKey = "health" | "happiness" | "smarts" | "looks" | "luck";
 
@@ -82,7 +82,9 @@ export interface QueuedEvent {
 export type HunterClass =
   | "sword" | "mage" | "healer" | "assassin" | "tank" | "summoner"
   // วิชาในยุทธภพ
-  | "m_sword" | "m_palm" | "m_spear" | "m_hidden" | "m_medic" | "m_demon";
+  | "m_sword" | "m_palm" | "m_spear" | "m_hidden" | "m_medic" | "m_demon"
+  // สายเวทในราชสำนัก
+  | "c_fire" | "c_ice" | "c_holy" | "c_aura" | "c_spirit" | "c_dark";
 
 /** สถานะผู้ตื่นพลัง — rank: 0=F … 8=SSS */
 export interface Power {

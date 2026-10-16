@@ -26,6 +26,12 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "regressor", name: "ผู้ย้อนเวลา", desc: "ย้อนเวลาครั้งแรก", points: 10, check: (l) => (l.regressions ?? 0) >= 1 },
   { id: "saved_all", name: "เปลี่ยนชะตา", desc: "ปกป้องครอบครัวให้รอดจากมหันตภัยกรุงเทพฯ", points: 25, check: (l) => !!l.flags.savedFamily },
   { id: "system", name: "ผู้เล่นคนเดียว", desc: "เปิดพรสวรรค์หน้าต่างระบบส่วนตัว", points: 15, check: (l) => hasTalent(l, "system_user") },
+  { id: "fate_defied", name: "หักชะตาตัวร้าย", desc: "รอดพ้นวันประหารตามบทนิยาย", points: 25, check: (l) => !!l.flags.fateDefied },
+  { id: "crowned", name: "สวมมงกุฎ", desc: "ได้ครองบัลลังก์คู่กับราชวงศ์", points: 30, check: (l) => !!l.flags.crowned },
+  { id: "saint", name: "นักบุญแห่งยุค", desc: "ได้รับตำแหน่งผู้สมัครนักบุญ", points: 15, check: (l) => !!l.flags.saint },
+  { id: "extra_hero", name: "ตัวประกอบผู้เปลี่ยนบท", desc: "ตัวประกอบที่รอดจากเทศกาลดอกไม้", points: 10, check: (l) => !!l.flags.extraSurvived },
+  { id: "ascended", name: "เซียนเหาะ", desc: "เหาะขึ้นสวรรค์ในยุทธภพ", points: 60, check: (l) => !!l.flags.ascended },
+  { id: "champion", name: "ยอดฝีมือแห่งยุค", desc: "ชนะชุมนุมประลองยุทธ์", points: 20, check: (l) => Number(l.flags.champion ?? 0) > 0 },
   { id: "legacy", name: "ทายาทของตัวเอง", desc: "เกิดใหม่ในตระกูลที่ตัวเองสร้าง", points: 15, check: (l) => !!l.flags.descendant },
 ];
 

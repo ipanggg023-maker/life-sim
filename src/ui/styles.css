@@ -70,6 +70,44 @@
   --scrim: rgba(42, 33, 24, 0.45);
   --font: "Noto Serif Thai", "Noto Sans Thai", serif;
 }
+/* ── ธีมราชสำนัก: ครีม / ทอง / ลวดลายหรูหรา ── */
+:root[data-world="court"] {
+  --bg: #fbf6ec;
+  --bg-2: #fffaf1;
+  --surface: #fffdf8;
+  --surface-2: #f3e9d4;
+  --line: #e0c98f;
+  --text: #2b2340;
+  --muted: #7a6a8a;
+  --accent: #a8862b;
+  --good: #2e7d5b;
+  --bad: #a3304a;
+  --warn: #b0761a;
+  --milestone: #7b3fa8;
+
+  --sys-bg: #0f2347;
+  --sys-text: #d8ecff;
+
+  --r-common: #8f8299;
+  --r-rare: #3b6fb8;
+  --r-legendary: #b8891c;
+  --r-divine: #b03a7a;
+
+  --body-bg: radial-gradient(900px 500px at 50% -10%, #fff8e8 0%, var(--bg) 70%);
+  --glow: 0 0 0 2px #fffaf1, 0 0 0 4px #d6b46a;
+  --fill-grad: linear-gradient(90deg, #b8891c, #e2bf62);
+  --footer-bg: linear-gradient(180deg, rgba(251, 246, 236, 0.7), var(--bg));
+  --primary-grad: linear-gradient(90deg, #8a5a14, #c9a13e 50%, #8a5a14);
+  --primary-shadow: 0 4px 16px rgba(168, 134, 43, 0.35);
+  --scrim: rgba(43, 35, 64, 0.4);
+  --font: "Noto Serif Thai", "Noto Sans Thai", serif;
+}
+:root[data-world="court"] .card,
+:root[data-world="court"] .modal { border: 1px solid var(--line); box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4px #ecdcb2; }
+:root[data-world="court"] .name { font-family: var(--font); color: #5a3d0e; }
+:root[data-world="court"] .age-badge { border-color: #c9a13e; }
+:root[data-world="court"] .modal h3 { color: #8a5a14; }
+
 :root[data-world="murim"] .age-badge { border-radius: 6px; border-width: 3px; transform: rotate(-3deg); }
 :root[data-world="murim"] .age-num { font-family: var(--font); }
 :root[data-world="murim"] .name { font-family: var(--font); letter-spacing: 0.02em; }
@@ -424,7 +462,7 @@ p { margin: 0.25em 0; }
 .sys-window .rank.r5 { color: #c9a7ff; }
 .sys-window .rank.r6 { color: #ffb547; }
 .sys-window .rank.r7, .sys-window .rank.r8 { color: #ff6bd6; }
-.rank-badge.murim { font-size: 12px; padding: 0 8px; white-space: nowrap; }
+.rank-badge.murim, .rank-badge.court { font-size: 12px; padding: 0 8px; white-space: nowrap; }
 .rank-badge {
   flex: none;
   min-width: 42px;

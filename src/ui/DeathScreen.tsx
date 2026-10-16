@@ -171,7 +171,7 @@ export function DeathScreen({
       </button>
       <button className="path" disabled={busy} onClick={() => go("newTimeline")}>
         <span className="path-title">✨ เส้นเวลาใหม่</span>
-        <span className="path-desc">สุ่มเกิดในโลกใดโลกหนึ่งที่ปลดล็อกแล้ว: 🌀 โลก Hunter หรือ ⛰️ ยุทธภพ — ทุกอย่างเริ่มใหม่หมด (โลกราชสำนักจะมาในอนาคต)</span>
+        <span className="path-desc">สุ่มเกิดในโลกใดโลกหนึ่ง: 🌀 โลก Hunter · ⛰️ ยุทธภพ · 👑 ราชสำนัก — ทุกอย่างเริ่มใหม่หมด</span>
       </button>
     </div>
   );

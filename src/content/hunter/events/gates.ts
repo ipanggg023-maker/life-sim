@@ -4,6 +4,7 @@ import { chance, pick, randInt } from "../../../engine/rng";
 import type { HunterClass, Life } from "../../../engine/types";
 import { addFame, addStat, checkChance, clamp, hasTalent, log } from "../../../engine/util";
 import { startQuest } from "../../murim/quest";
+import { startCourtQuest } from "../../court/quest";
 import { worldOf } from "../../worlds";
 import {
   CLASSES,
@@ -290,14 +291,34 @@ export function gatesLeft(life: Life) {
   return GATES_PER_YEAR - life.doneThisYear.filter((x) => x === "gate").length;
 }
 
+const QUEST_MSG = {
+  hunter: {
+    noPower: "ยังไม่ตื่นพลัง",
+    noJob: "ต้องลงทะเบียนเป็น Hunter ก่อน (แท็บอาชีพ)",
+    full: "ปีนี้บุกครบแล้ว",
+    tooHigh: "สมาคมไม่อนุญาต (สูงกว่าแรงก์คุณเกิน 1 ขั้น)",
+  },
+  murim: {
+    noPower: "ยังไม่มีรากฐานยุทธ์",
+    noJob: "ต้องเป็นศิษย์สำนัก จอมยุทธ์พเนจร หรือนักฆ่ารับจ้างก่อน (แท็บอาชีพ)",
+    full: "ปีนี้ออกภารกิจครบแล้ว",
+    tooHigh: "อันตรายเกินฝีมือ (สูงกว่าขั้นคุณเกิน 1 ขั้น)",
+  },
+  court: {
+    noPower: "ยังไม่มีพลังเวท",
+    noJob: "ต้องเป็นอัศวิน จอมเวทราชสำนัก หรือนักผจญภัยก่อน (แท็บอาชีพ)",
+    full: "ปีนี้รับภารกิจครบแล้ว",
+    tooHigh: "ราชสำนักไม่มอบภารกิจที่สูงกว่าวงเวทของคุณเกิน 1 ขั้น",
+  },
+};
+
 export function canEnterGate(life: Life, gateRank: number): string | undefined {
-  const murim = life.worldId === "murim";
-  if (!life.power) return murim ? "ยังไม่มีรากฐานยุทธ์" : "ยังไม่ตื่นพลัง";
-  if (!worldOf(life.worldId).questJobs.includes(life.job?.careerId ?? ""))
-    return murim ? "ต้องเป็นศิษย์สำนัก จอมยุทธ์พเนจร หรือนักฆ่ารับจ้างก่อน (แท็บอาชีพ)" : "ต้องลงทะเบียนเป็น Hunter ก่อน (แท็บอาชีพ)";
+  const msg = QUEST_MSG[life.worldId ?? "hunter"];
+  if (!life.power) return msg.noPower;
+  if (!worldOf(life.worldId).questJobs.includes(life.job?.careerId ?? "")) return msg.noJob;
   if (life.queue.length) return "กำลังมีเหตุการณ์อยู่";
-  if (gatesLeft(life) <= 0) return murim ? "ปีนี้ออกภารกิจครบแล้ว" : "ปีนี้บุกครบแล้ว";
-  if (gateRank > life.power.rank + 1) return murim ? "อันตรายเกินฝีมือ (สูงกว่าขั้นคุณเกิน 1 ขั้น)" : "สมาคมไม่อนุญาต (สูงกว่าแรงก์คุณเกิน 1 ขั้น)";
+  if (gatesLeft(life) <= 0) return msg.full;
+  if (gateRank > life.power.rank + 1) return msg.tooHigh;
   if (life.stats.health < 15) return "บาดเจ็บหนักเกินไป";
   return;
 }
@@ -306,6 +327,7 @@ export function enterGate(life: Life, gateRank: number) {
   if (canEnterGate(life, gateRank)) return;
   life.doneThisYear.push("gate");
   if (life.worldId === "murim") startQuest(life, gateRank);
+  else if (life.worldId === "court") startCourtQuest(life, gateRank);
   else startGate(life, gateRank);
 }
 
@@ -319,7 +341,11 @@ export function train(life: Life): Outcome | undefined {
   addStat(life, "health", -1);
   const murim = life.worldId === "murim";
   const out = {
-    text: murim ? `คุณนั่งสมาธิเดินลมปราณและฝึก${cls.name}ทั้งปีที่${worldOf(life.worldId).labels.trainText}` : `คุณฝึกฝน${cls.name}อย่างหนักที่ศูนย์ฝึกของสมาคม`,
+    text: murim
+      ? `คุณนั่งสมาธิเดินลมปราณและฝึก${cls.name}ทั้งปีที่${worldOf(life.worldId).labels.trainText}`
+      : life.worldId === "court"
+        ? `คุณฝึก${cls.name}ทุกวันที่${worldOf(life.worldId).labels.trainText}`
+        : `คุณฝึกฝน${cls.name}อย่างหนักที่ศูนย์ฝึกของสมาคม`,
     kind: "good" as const,
   };
   log(life, out.text, out.kind);

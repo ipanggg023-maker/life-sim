@@ -171,6 +171,7 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
         <select value={world} onChange={(e) => setWorld(e.target.value as WorldId)}>
           <option value="hunter">🌀 โลก Hunter</option>
           <option value="murim">⛰️ ยุทธภพ</option>
+          <option value="court">👑 ราชสำนัก</option>
         </select>
         <select value={gender} onChange={(e) => setGender(e.target.value as Gender)}>
           <option value="m">ชาย</option>

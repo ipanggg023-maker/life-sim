@@ -57,8 +57,8 @@ export function MainScreen({ life, onAgeUp, onTab }: { life: Life; onAgeUp: () =
     : life.education.stage === "university"
       ? "นักศึกษา"
       : life.age >= 18
-        ? murim ? "ผู้ไร้สังกัด" : "ว่างงาน"
-        : murim ? "เด็กในหมู่บ้าน" : "นักเรียน";
+        ? murim ? "ผู้ไร้สังกัด" : life.worldId === "court" ? (life.wealth === "poor" ? "สามัญชน" : "ขุนนางไร้ตำแหน่ง") : "ว่างงาน"
+        : murim ? "เด็กในหมู่บ้าน" : life.worldId === "court" ? (life.flags.academy ? "นักเรียนสถาบันจักรวรรดิ" : life.wealth === "poor" ? "เด็กสามัญชน" : `${life.gender === "f" ? "คุณหนู" : "คุณชาย"}น้อย`) : "นักเรียน";
 
   return (
     <div className="main">
