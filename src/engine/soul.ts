@@ -1,4 +1,5 @@
 import { lifePoints, newAchievements, type Achievement } from "../content/achievements";
+import { maybeComment, startArc } from "../content/manhwa";
 import { createLife, type BirthOptions } from "./game";
 import { mergeMemories } from "./memory";
 import { randInt } from "./rng";
@@ -85,11 +86,10 @@ export function buildRegression(dead: Life, snapshot: Life | undefined, clarity:
   base.divergence = (dead.divergence ?? 0) + (clarity ? 6 : 12);
   base.memories = mergeMemories(dead.memories, dead.observed, [deathMemory(dead)]);
   base.observed = [];
-  log(
-    base,
-    `[ย้อนเวลา ครั้งที่ ${base.regressions}] …คุณสะดุ้งตื่นขึ้นในห้องนอนเก่า ร่างกายอายุ ${base.age} ปี แต่จำทุกอย่างในชาติก่อนได้ชัดเจน`,
-    "system",
-  );
+  startArc(base, `ผู้ย้อนเวลา ครั้งที่ ${base.regressions}`);
+  const text = `[ย้อนเวลา ครั้งที่ ${base.regressions}] …คุณสะดุ้งตื่นขึ้นในห้องนอนเก่า ร่างกายอายุ ${base.age} ปี แต่จำทุกอย่างในชาติก่อนได้ชัดเจน`;
+  log(base, text, "system");
+  maybeComment(base, text, "system", false);
   return base;
 }
 

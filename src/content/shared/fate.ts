@@ -19,6 +19,7 @@ import {
   trackOf,
 } from "../hunter/power";
 import { worldOf } from "../worlds";
+import { startArc } from "../manhwa";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
 const bad = (text: string, next?: string): Outcome => ({ text, kind: "bad", next });
@@ -505,7 +506,7 @@ const ARC: GameEvent = {
     {
       label: "รับคำท้า",
       tone: "danger",
-      run: () => sys("คุณใช้เวลาหนึ่งปีเตรียมตัว… และวันนั้นก็มาถึง", "battle"),
+      run: (l) => { startArc(l, "ศึกระดับตำนาน"); return sys("คุณใช้เวลาหนึ่งปีเตรียมตัว… และวันนั้นก็มาถึง", "battle"); },
     },
     { label: "หลีกเลี่ยงการปะทะ", run: (l) => { addFame(l, -25); addStat(l, "happiness", -10); return bad("ทั้งโลกผิดหวังในตัวคุณ และศัตรูยึดทุกอย่างไปโดยไม่ต้องสู้"); } },
   ],

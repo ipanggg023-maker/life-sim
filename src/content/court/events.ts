@@ -6,6 +6,7 @@ import type { HunterClass, Life } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, displayName, firstPerson, money, people, shortName } from "../../engine/util";
 import { CLASSES, awaken, classById, fightOdds, gainExp, guildById, offerClasses, rankLabel, rankUp, rollAwakening, settleNone, survivalOdds, trackOf } from "../hunter/power";
 import { worldFacts } from "../hunter/worldFacts";
+import { startArc } from "../manhwa";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
 const bad = (text: string, next?: string): Outcome => ({ text, kind: "bad", next });
@@ -66,6 +67,7 @@ const AWAKEN_MEMORY: GameEvent = {
       run: (l): Outcome => {
         const r = l.wealth === "elite" || l.wealth === "rich" ? "villain" : l.wealth === "middle" ? (chance(l, 0.4) ? "villain" : "extra") : chance(l, 0.3) ? "lead" : "extra";
         l.flags.role = r;
+        startArc(l, r === "villain" ? `${l.gender === "f" ? "คุณหนู" : "คุณชาย"}ตัวร้ายผู้ไม่อยากตาย` : r === "lead" ? "ตัวเอกของนิยายที่รู้ตอนจบ" : "ตัวประกอบที่ไม่มีชื่อในนิยาย");
         if (r === "villain") {
           return sys(
             `ใบหน้าในกระจกคือ ${displayName(l)} — ${l.gender === "f" ? "คุณหนูตัวร้าย" : "คุณชายตัวร้าย"}ในนิยาย ผู้ถูก${royal(l)}ถอนหมั้นต่อหน้าทุกคน แล้วถูกประหารด้วยกิโยตินในวันเกิดอายุ 20 ปี\n[Death Flag ×3 รออยู่ข้างหน้า]`,

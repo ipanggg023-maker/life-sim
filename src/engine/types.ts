@@ -63,7 +63,10 @@ export interface TalentState {
   revealed: boolean;
 }
 
-export type LogKind = "normal" | "good" | "bad" | "system" | "milestone";
+export type LogKind =
+  | "normal" | "good" | "bad" | "system" | "milestone"
+  // การนำเสนอแบบมังฮวา
+  | "chapter" | "arc" | "comments";
 
 export interface LogEntry {
   age: number;
@@ -190,6 +193,8 @@ export interface PastLife {
   regressed?: boolean;
   birthYear?: number;
   world?: WorldId;
+  /** มังฮวาของชีวิตนี้ (M7) */
+  series?: Series;
 }
 
 export interface Soul {
@@ -213,4 +218,13 @@ export interface Soul {
     memories: Memory[];
     legacy?: Legacy;
   };
+}
+
+/** ชีวิตหนึ่งชีวิต = มังฮวาหนึ่งเรื่องบนชั้นหนังสือของวิญญาณ */
+export interface Series {
+  title: string;
+  rating: number; // 1–5
+  views: number;
+  chapters: number;
+  tags: string[];
 }

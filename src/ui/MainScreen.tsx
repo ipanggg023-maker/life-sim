@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { careerById } from "../content/hunter/careers";
 import { rankLabel } from "../content/hunter/power";
 import { worldOf } from "../content/worlds";
+import { cliffhanger, formatLikes, parseComments } from "../content/manhwa";
 import { STAT_LABEL } from "../engine/game";
 import type { Life, LogEntry, StatKey } from "../engine/types";
 import { displayName, money } from "../engine/util";
@@ -44,8 +45,43 @@ function groupByAge(log: LogEntry[]) {
   return groups;
 }
 
+export function LogLine({ e }: { e: LogEntry }) {
+  if (e.kind === "system")
+    return (
+      <div className="sys-window inline">
+        <div className="sys-head">ระบบ</div>
+        <p>{e.text}</p>
+      </div>
+    );
+  if (e.kind === "chapter") return <div className="chapter-head">{e.text}</div>;
+  if (e.kind === "arc")
+    return (
+      <div className="arc-head">
+        <span>{e.text}</span>
+      </div>
+    );
+  if (e.kind === "comments") return <Comments items={parseComments(e)} />;
+  return <p className={`log-line ${e.kind}`}>{e.text}</p>;
+}
+
+export function Comments({ items }: { items: { user: string; text: string; likes: number }[] }) {
+  return (
+    <div className="comments">
+      <div className="comments-head">💬 ความคิดเห็นจากผู้อ่าน</div>
+      {items.map((c, i) => (
+        <div className="comment" key={i}>
+          <span className="c-user">{c.user}</span>
+          <span className="c-text">{c.text}</span>
+          <span className="c-likes">♥ {formatLikes(c.likes)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function MainScreen({ life, onAgeUp, onTab }: { life: Life; onAgeUp: () => void; onTab: (t: TabId) => void }) {
   const logRef = useRef<HTMLDivElement>(null);
+  const teaser = cliffhanger(life);
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
   }, [life.log.length]);
@@ -93,20 +129,10 @@ export function MainScreen({ life, onAgeUp, onTab }: { life: Life; onAgeUp: () =
         {groupByAge(life.log).map((g) => (
           <div className="log-group" key={g.age}>
             <div className="log-age">อายุ {g.age} ปี</div>
-            {g.entries.map((e, i) =>
-              e.kind === "system" ? (
-                <div className="sys-window inline" key={i}>
-                  <div className="sys-head">ระบบ</div>
-                  <p>{e.text}</p>
-                </div>
-              ) : (
-                <p className={`log-line ${e.kind}`} key={i}>
-                  {e.text}
-                </p>
-              ),
-            )}
+            {g.entries.map((e, i) => <LogLine e={e} key={i} />)}
           </div>
         ))}
+        {teaser && <p className="cliffhanger">{teaser}</p>}
       </div>
 
       <footer className="bottom">

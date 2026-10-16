@@ -6,6 +6,7 @@ import type { Career } from "../content/hunter/careers";
 import type { Faculty, Gender, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
 import { worldOf } from "../content/worlds";
 import { rollAwakenTrack } from "../content/hunter/power";
+import { awakenArc, birthArc, maybeComment, seriesOf, startChapter } from "../content/manhwa";
 import {
   addFame,
   addMoney,
@@ -154,6 +155,7 @@ export function createLife(opts: BirthOptions = {}): Life {
     createPerson(life, "sibling", { age: randInt(life, 1, maxSibAge), bond: randInt(life, 40, 80), lastName: life.lastName });
   }
 
+  birthArc(life);
   log(
     life,
     `คุณเกิดเป็น${life.gender === "m" ? "ผู้ชาย" : "ผู้หญิง"} ชื่อ ${displayName(life)} (ชื่อเรียกในบ้าน "${life.nickname}") ใน${wealthLabel(life.wealth, life.worldId)} ที่${worldOf(life.worldId).birthplace}`,
@@ -393,8 +395,12 @@ export function runEvent(life: Life, eventId: string, ctx: Ctx = {}) {
   if (e.choices?.length) {
     life.queue.push({ eventId, ctx });
   } else {
+    if (e.title) startChapter(life, e.title);
+    const hadPower = !!life.power;
     const kind = e.auto?.(life, ctx) ?? "normal";
-    log(life, e.text(life, ctx), e.system ? "system" : kind);
+    const text = e.text(life, ctx);
+    log(life, text, e.system ? "system" : kind);
+    if (e.title || kind === "milestone" || e.system) maybeComment(life, text, e.system ? "system" : kind, !hadPower && !!life.power);
   }
 }
 
@@ -446,6 +452,15 @@ export function resolveChoice(life: Life, choiceIndex: number): Outcome | undefi
   const q = life.queue[0];
   if (!q) return;
   const c = currentScene(q)!.choices[choiceIndex];
+  // ฉากแรกของ event ที่มีชื่อ = ตอนใหม่ของมังฮวา
+  const e = getEvent(q.eventId)!;
+  if (!q.scene && e.title && !e.manual) startChapter(life, e.title);
+  else if (!q.scene && e.manual && e.title) {
+    // ภารกิจ/Gate: ใช้ชื่อในวงเล็บ【】จากข้อความ เช่น "บุก Gate: ถ้ำน้ำแข็ง"
+    const name = e.text(life, q.ctx).match(/【(.+?)】/)?.[1];
+    startChapter(life, name ? `${e.title}: ${name}` : e.title);
+  }
+  const hadPower = !!life.power;
   const p = oddsOf(life, c, q.ctx);
   const success = p === undefined ? true : chance(life, p);
   const out = c.run(life, q.ctx, success);
@@ -456,6 +471,10 @@ export function resolveChoice(life: Life, choiceIndex: number): Outcome | undefi
     life.queue = life.queue.filter((x) => x.scene || stillValid(life, getEvent(x.eventId)!));
   }
   if (out.text) log(life, out.text, out.kind ?? "normal");
+  const awakenedNow = !hadPower && !!life.power;
+  if (awakenedNow) awakenArc(life);
+  // คอมเมนต์ผู้อ่านหลังจบฉาก (ไม่ใช่ระหว่างฉากต่อเนื่อง)
+  if (!out.next) maybeComment(life, out.text, out.kind ?? "normal", awakenedNow);
   checkHiddenTalent(life);
   return out;
 }
@@ -658,6 +677,7 @@ export function toPastLife(life: Life): PastLife {
     rank: life.power?.rank,
     regressed: (life.regressions ?? 0) > 0,
     birthYear: life.birthYear,
+    series: seriesOf(life),
   };
 }
 

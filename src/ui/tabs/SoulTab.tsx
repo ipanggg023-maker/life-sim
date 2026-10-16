@@ -11,6 +11,7 @@ import { displayName, money } from "../../engine/util";
 import { saveSnapshot, type Bundle } from "../../save";
 import type { Act } from "../App";
 import { SaveTransfer } from "../SaveTransfer";
+import { SeriesCover } from "../SeriesCover";
 
 export function SoulTab({
   life,
@@ -88,6 +89,19 @@ export function SoulTab({
           );
         })}
       </div>
+
+      {graveyard.some((g) => g.series) && (
+        <>
+          <div className="section-title">📚 ชั้นหนังสือของวิญญาณ</div>
+          <div className="shelf">
+            {graveyard
+              .filter((g) => g.series)
+              .map((g) => (
+                <SeriesCover key={g.id} series={g.series!} world={g.world} author={g.name} compact />
+              ))}
+          </div>
+        </>
+      )}
 
       {graveyard.length > 0 && (
         <>

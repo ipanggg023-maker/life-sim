@@ -2,6 +2,9 @@ import { useState } from "react";
 import { careerById, facultyById } from "../content/hunter/careers";
 import { rankLabel } from "../content/hunter/power";
 import { worldOf } from "../content/worlds";
+import { finaleComments, seriesOf } from "../content/manhwa";
+import { Comments } from "./MainScreen";
+import { SeriesCover } from "./SeriesCover";
 import { talentById } from "../content/talents";
 import { SHOP, previewAward, regressTarget } from "../engine/soul";
 import type { Life, Soul } from "../engine/types";
@@ -28,6 +31,7 @@ export function DeathScreen({
   const spouse = people(life, "spouse").length > 0;
   const claimed = soul.awarded.includes(life.id);
   const award = previewAward(soul, life);
+  const series = seriesOf(life);
   const achPoints = award.achievements.reduce((s, a) => s + a.points, 0);
   const target = regressTarget(life);
   // ใช้แต้มชาตินี้ซื้อของได้ก่อนเลือกทาง — นับแบบต่ำสุด (กรณีย้อนเวลาได้แต้มพื้นฐานครึ่งเดียว) กันแต้มติดลบ
@@ -64,6 +68,9 @@ export function DeathScreen({
         </p>
         <p className="cause">{life.causeOfDeath}</p>
       </div>
+
+      <SeriesCover series={series} world={life.worldId} author={displayName(life)} />
+      <Comments items={finaleComments(life)} />
 
       <div className="card">
         <div className="card-title">สรุปชีวิต</div>
