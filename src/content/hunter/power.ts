@@ -3,6 +3,7 @@ import type { HunterClass, Life, StatKey, WorldId } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, log, money as fmtMoney } from "../../engine/util";
 import { worldOf } from "../worlds";
 import { titleBonus } from "../titles";
+import { skillInfo, type SkillInfo } from "../skills";
 
 /** เพื่อนร่วมทีมที่ยังมีชีวิต (นับสูงสุด 3 คน) */
 export const partySize = (life: Life) => Math.min(3, life.people.filter((p) => p.relation === "ally" && p.alive).length);
@@ -109,6 +110,20 @@ export const CLASSES: ClassInfo[] = [
 
 export const classById = (id: HunterClass) => CLASSES.find((c) => c.id === id)!;
 
+/** ขั้นของสกิล (0–3) = ตำแหน่งในสายอาชีพ · สกิลจากวาสนาที่ไม่อยู่ในสายไหนนับเป็นขั้นสูงสุด */
+export function skillTier(name: string): number {
+  for (const c of CLASSES) {
+    const i = c.skills.findIndex(([, s]) => s === name);
+    if (i >= 0) return i;
+  }
+  return 3;
+}
+
+export const skillsOf = (life: Life): SkillInfo[] => (life.power?.skills ?? []).map((s) => skillInfo(life, s, skillTier(s)));
+const sumSkills = (life: Life, k: "cp" | "survival") => skillsOf(life).reduce((s, x) => s + x[k], 0);
+/** โบนัสชั่วคราวระหว่างใช้สกิลในฉาก (ดู content/shared/skillUse.ts) */
+const skillBoost = (life: Life) => Number(life.flags.skillBoost ?? 0);
+
 // ───────────────────────── กิลด์ ─────────────────────────
 
 export interface Guild {
@@ -171,21 +186,21 @@ export function combatPower(life: Life): number {
   const cls = classById(p.hunterClass);
   const g = guildById(p.guild);
   return Math.round(
-    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + p.skills.length * 2 + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp"),
+    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp"),
   );
 }
 
 export const gatePower = (gateRank: number) => gateRank * RANK_STEP + 10;
 
 export function fightOdds(life: Life, gateRank: number, mod = 0) {
-  return clamp(0.5 + (combatPower(life) - gatePower(gateRank)) / 40 + mod, 0.03, 0.97);
+  return clamp(0.5 + (combatPower(life) - gatePower(gateRank)) / 40 + mod + skillBoost(life), 0.03, 0.97);
 }
 
 export function survivalOdds(life: Life, gateRank: number, mod = 0) {
   const p = life.power;
   const cls = p ? classById(p.hunterClass) : undefined;
   const g = guildById(p?.guild);
-  return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300 + partySize(life) * 0.03 + titleBonus(life, "survival"), 0.05, 0.99);
+  return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300 + partySize(life) * 0.03 + titleBonus(life, "survival") + sumSkills(life, "survival"), 0.05, 0.99);
 }
 
 export const expToNext = (level: number) => 60 + level * 40;

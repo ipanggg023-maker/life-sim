@@ -24,7 +24,7 @@ function useTypewriter(text: string, speed = 18) {
 
 export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: number) => void }) {
   const q = life.queue[0];
-  const scene = currentScene(q)!;
+  const scene = currentScene(q, life)!;
   const text = scene.text(life, q.ctx);
   const { shown, done, skip } = useTypewriter(text);
   const choices = visibleChoices(life, q);

@@ -7,10 +7,11 @@ import { Comments } from "./MainScreen";
 import { SeriesCover } from "./SeriesCover";
 import { talentById } from "../content/talents";
 import { SHOP, previewAward, regressTarget } from "../engine/soul";
-import type { Life, Soul } from "../engine/types";
+import type { Life, Soul, WorldId } from "../engine/types";
+import { WORLDS } from "../content/worlds";
 import { displayName, money, people } from "../engine/util";
 
-export type RebirthChoice = "regress" | "nextEra" | "newTimeline";
+export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}`;
 
 export function DeathScreen({
   life,
@@ -176,10 +177,19 @@ export function DeathScreen({
         <span className="path-title">🌏 เกิดใหม่ในยุคถัดไป</span>
         <span className="path-desc">โลกเดิม หลายสิบปีต่อมา — ตระกูล{life.lastName}และสิ่งที่คุณทิ้งไว้ยังอยู่ อาจได้เกิดเป็นทายาทของตัวเอง</span>
       </button>
-      <button className="path" disabled={busy} onClick={() => go("newTimeline")}>
-        <span className="path-title">✨ เส้นเวลาใหม่</span>
-        <span className="path-desc">สุ่มเกิดในโลกใดโลกหนึ่ง: 🌀 โลก Hunter · ⛰️ ยุทธภพ · 👑 ราชสำนัก — ทุกอย่างเริ่มใหม่หมด</span>
-      </button>
+      <div className="section-title">✨ เกิดใหม่ในเส้นเวลาใหม่ — เลือกโลก</div>
+      {Object.values(WORLDS).map((w) => (
+        <button className="path" key={w.id} disabled={busy} onClick={() => go(`world:${w.id}`)}>
+          <span className="path-title">
+            {w.emoji} {w.name}
+          </span>
+          <span className="path-desc">
+            {w.id === life.worldId
+              ? "โลกเดิม แต่ทุกอย่างเริ่มใหม่หมด"
+              : `วิญญาณข้ามโลก — ความทรงจำของ${displayName(life)}อาจกลับมาในฝัน${life.power ? " พร้อมวิชาจากชาตินี้" : ""}`}
+          </span>
+        </button>
+      ))}
     </div>
   );
 }

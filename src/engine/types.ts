@@ -102,6 +102,8 @@ export interface Power {
   bossKills: number;
   awakenedAt: number;
   items: string[];
+  /** จำนวนครั้งที่ใช้แต่ละสกิลในฉากจริง (ความชำนาญ) */
+  mastery?: Record<string, number>;
 }
 
 export interface Life {

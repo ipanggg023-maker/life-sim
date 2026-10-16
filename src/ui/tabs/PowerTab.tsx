@@ -1,9 +1,11 @@
 import { RARITY_LABEL, talentById } from "../../content/talents";
 import { canEnterGate, dailyQuest, enterGate, gatesLeft, train } from "../../content/hunter/events/gates";
-import { RANKS, classById, combatPower, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
+import { RANKS, classById, combatPower, skillsOf, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
 import { breakLevel } from "../../content/murim/events";
 import { SECLUSION_YEARS, canSeclude, isSecluded, startSeclusion } from "../../content/shared/fate";
 import { TITLES, titlesOf } from "../../content/titles";
+import { SKILL_TYPE, skillEffectText } from "../../content/skills";
+import { skillReady } from "../../content/shared/skillUse";
 import { worldOf } from "../../content/worlds";
 import type { Life, WorldId } from "../../engine/types";
 import { displayName, hasTalent } from "../../engine/util";
@@ -261,13 +263,7 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
             EXP {p.exp}/{need}
           </span>
         </div>
-        <div className="skills">
-          {p.skills.map((s) => (
-            <span className="skill" key={s}>
-              {s}
-            </span>
-          ))}
-        </div>
+        <SkillList life={life} />
       </div>
 
       <div className="section-title">
@@ -362,5 +358,36 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
         })
       )}
     </>
+  );
+}
+
+/** สกิลทั้งหมด: กดเพื่อดูว่าทำอะไรได้ + สกิลที่ยังล็อกอยู่ */
+function SkillList({ life }: { life: Life }) {
+  const p = life.power!;
+  const locked = classById(p.hunterClass).skills.filter(([, n]) => !p.skills.includes(n));
+  return (
+    <div className="skill-list">
+      {skillsOf(life).map((s) => (
+        <details className="skill-card" key={s.name}>
+          <summary>
+            <span className="skill-name">
+              {SKILL_TYPE[s.type].emoji} {s.name}
+            </span>
+            <span className="skill-meta">
+              {SKILL_TYPE[s.type].name} · ชำนาญ Lv.{s.mastery}
+              {!skillReady(life, s.name) && " · ใช้แล้วปีนี้"}
+            </span>
+          </summary>
+          <p className="small">{s.desc}</p>
+          <p className="small muted">{skillEffectText(s)}</p>
+        </details>
+      ))}
+      {locked.map(([lv, n]) => (
+        <div className="skill-card locked" key={n}>
+          <span className="skill-name">🔒 {n}</span>
+          <span className="skill-meta">ปลดล็อกที่ Lv.{lv}</span>
+        </div>
+      ))}
+    </div>
   );
 }

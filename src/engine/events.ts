@@ -70,12 +70,20 @@ export function registerEvents(events: GameEvent[], world?: WorldId) {
 export const getEvent = (id: string) => registry.get(id);
 export const allEvents = () => [...registry.values()];
 
-/** ฉากปัจจุบันของ event ที่อยู่ในคิว */
-export function currentScene(q: QueuedEvent): Scene | undefined {
+/**
+ * ตัวเลือกเสริมที่ content เติมเข้าไปในทุกฉาก (เช่น "ใช้สกิล") — ต่อท้ายตัวเลือกเดิมเสมอ
+ * ต้องคำนวณจากสถานะชีวิตอย่างเดียว เพื่อให้ index ตรงกันระหว่างแสดงผลกับตอนเลือก
+ */
+export const sceneExtras: Array<(life: Life, scene: Scene, ctx: Ctx) => Choice[]> = [];
+
+/** ฉากปัจจุบันของ event ที่อยู่ในคิว (ส่ง life มาด้วยเพื่อรวมตัวเลือกเสริม) */
+export function currentScene(q: QueuedEvent, life?: Life): Scene | undefined {
   const e = getEvent(q.eventId);
   if (!e) return;
-  if (q.scene && q.scene !== "start") return e.scenes?.[q.scene];
-  return { title: e.title, system: e.system, text: e.text, choices: e.choices ?? [] };
+  const s = q.scene && q.scene !== "start" ? e.scenes?.[q.scene] : { title: e.title, system: e.system, text: e.text, choices: e.choices ?? [] };
+  if (!s || !life) return s;
+  const extra = sceneExtras.flatMap((f) => f(life, s, q.ctx));
+  return extra.length ? { ...s, choices: [...s.choices, ...extra] } : s;
 }
 
 function eligible(life: Life, e: GameEvent, takenThisYear: Set<string>): boolean {
@@ -88,20 +96,8 @@ function eligible(life: Life, e: GameEvent, takenThisYear: Set<string>): boolean
   return e.when ? e.when(life) : true;
 }
 
-/** Focus ประจำปีทำให้ event บางกลุ่มเกิดบ่อยขึ้น */
-const FOCUS_BOOST: Record<string, RegExp> = {
-  power: /gate|quest|tournament|guild|sect|master|devour|second_awakening|monster|bandit/,
-  money: /lottery|stock|recipe|sponsor|core|black|condo|car|business|plague/,
-  love: /crush|love|matchmaker|senior|royal|contract|letter|teammate|reunion|maid_life|festival|lantern/,
-  study: /exam|olympiad|library|scholar|homework|tutor|academy/,
-};
-
 function weightOf(life: Life, e: GameEvent) {
-  const w = typeof e.weight === "function" ? e.weight(life) : (e.weight ?? 10);
-  const focus = life.flags.focus as string | undefined;
-  if (!focus || w <= 0) return w;
-  if (focus === "secret" && e.title) return w * 1.8; // สืบความลับ: เหตุการณ์ใหญ่และวาสนา
-  return FOCUS_BOOST[focus]?.test(e.id) ? w * 1.7 : w;
+  return typeof e.weight === "function" ? e.weight(life) : (e.weight ?? 10);
 }
 
 /** event ที่ถูกเลือกไว้ต้นปีอาจหมดเงื่อนไขเพราะ event ก่อนหน้าในปีเดียวกัน (เช่น เพื่อนเพิ่งตาย) */
@@ -136,7 +132,7 @@ export function labelOf(c: Choice, life: Life, ctx: Ctx) {
 }
 
 export function visibleChoices(life: Life, q: QueuedEvent) {
-  const s = currentScene(q);
+  const s = currentScene(q, life);
   if (!s) return [];
   return s.choices
     .map((c, index) => ({ c, index }))

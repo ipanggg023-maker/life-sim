@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ageUp, createLife, resolveChoice, toPastLife, type BirthOptions } from "../engine/game";
+import { ageUp, createLife, pastSelfOf, resolveChoice, toPastLife, type BirthOptions } from "../engine/game";
 import { currentScene, labelOf, type Outcome } from "../engine/events";
 import { buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
 import type { Life, PastLife, Soul, WorldId } from "../engine/types";
@@ -30,7 +30,6 @@ import { CareerTab } from "./tabs/CareerTab";
 import { PeopleTab } from "./tabs/PeopleTab";
 import { PowerTab } from "./tabs/PowerTab";
 import { SoulTab } from "./tabs/SoulTab";
-import type { Focus } from "../content/shared/focus";
 
 export const DEV = new URLSearchParams(location.search).has("dev");
 
@@ -49,7 +48,6 @@ export function App() {
   const [resolved, setResolved] = useState<Resolved | null>(null);
   const [birthOpts, setBirthOpts] = useState<BirthOptions>({});
   const [pendingImport, setPendingImport] = useState<Bundle | null>(null);
-  const [busy, setBusy] = useState(false);
   const toastTimer = useRef<number>(undefined);
 
   useEffect(() => {
@@ -159,47 +157,11 @@ export function App() {
     if (life.log[life.log.length - 1]?.kind === "bad") flash();
   }, [life, commit, flash]);
 
-  /**
-   * อ่านต่อรวดเดียว: เล่นปีที่ไม่มีอะไรสำคัญให้อัตโนมัติ (สูงสุด 15 ปี)
-   * หยุดเมื่อมีฉากให้เลือก ตาย เปิดตอน/ภาคใหม่ หรือสุขภาพน่าเป็นห่วง
-   */
-  const onAutoRead = useCallback(async () => {
-    if (!life || busy) return;
-    setBusy(true);
-    try {
-      for (let i = 0; i < 15; i++) {
-        await saveSnapshot(life);
-        const from = life.log.length;
-        ageUp(life);
-        if (!life.alive || life.queue.length) break;
-        const fresh = life.log.slice(from);
-        if (fresh.some((e) => e.kind === "chapter" || e.kind === "arc" || e.kind === "milestone" || e.kind === "comments")) break;
-        if (life.stats.health < 25) break;
-        // ให้หน้าจอได้เห็นปีที่ผ่านไปทีละนิด
-        setLife({ ...life });
-        await new Promise((r) => setTimeout(r, 90));
-      }
-    } finally {
-      setBusy(false);
-      await commit(life);
-    }
-  }, [life, busy, commit]);
-
-  const onFocus = useCallback(
-    (f: Focus | undefined) => {
-      if (!life) return;
-      if (f) life.flags.focus = f;
-      else delete life.flags.focus;
-      commit(life);
-    },
-    [life, commit],
-  );
-
   const onChoose = useCallback(
     (index: number) => {
       if (!life) return;
       const q = life.queue[0];
-      const scene = currentScene(q)!;
+      const scene = currentScene(q, life)!;
       const prompt = scene.text(life, q.ctx);
       const choice = labelOf(scene.choices[index], life, q.ctx);
       const out = resolveChoice(life, index);
@@ -228,9 +190,12 @@ export function App() {
         return;
       }
       await clearCurrent();
-      // เส้นเวลาใหม่: สุ่มโลกจากโลกที่ปลดล็อกแล้ว (ยุทธภพปลดล็อกหลังตายครั้งแรก)
-      const worlds: WorldId[] = ["hunter", "murim", "court"];
-      await birth(choice === "nextEra" ? { ...nextEraOptions(life), worldId: life.worldId } : { worldId: worlds[Math.floor(Math.random() * worlds.length)] });
+      if (choice === "nextEra") {
+        await birth({ ...nextEraOptions(life), worldId: life.worldId });
+        return;
+      }
+      // เส้นเวลาใหม่: ผู้เล่นเลือกโลกเอง — ข้ามโลกได้ฟรี วิญญาณพาความทรงจำไปด้วย
+      await birth({ worldId: choice.slice(6) as WorldId, pastLife: pastSelfOf(life) });
     },
     [life, soul, birth, commit, commitSoul],
   );
@@ -300,7 +265,7 @@ export function App() {
 
   return (
     <div className={`app ${shake ? "shake" : ""}`}>
-      <MainScreen life={life} busy={busy} onAgeUp={onAgeUp} onAutoRead={onAutoRead} onFocus={onFocus} onTab={setTab} />
+      <MainScreen life={life} onAgeUp={onAgeUp} onTab={setTab} />
 
       {tab && !life.queue.length && !resolved && (
         <Sheet title={TAB_TITLES[tab]} onClose={() => setTab(null)}>

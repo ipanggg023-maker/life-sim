@@ -44,7 +44,26 @@ export interface BirthOptions {
   blessed?: boolean;
   /** พรสวรรค์ที่ผนึกติดตัวมาจากชาติก่อน */
   inheritTalent?: string;
+  /** วิญญาณข้ามโลก: ชาติก่อนมาจากโลกอื่น */
+  pastLife?: PastSelf;
 }
+
+export interface PastSelf {
+  world: WorldId;
+  name: string;
+  age: number;
+  rank?: number;
+  skill?: string;
+}
+
+/** สรุปตัวตนชาติก่อนสำหรับเกิดข้ามโลก */
+export const pastSelfOf = (l: Life): PastSelf => ({
+  world: l.worldId,
+  name: displayName(l),
+  age: l.age,
+  rank: l.power?.rank,
+  skill: l.power?.skills[l.power.skills.length - 1],
+});
 
 const BLESSED_ODDS: Record<Rarity, number> = { common: 0.35, rare: 0.42, legendary: 0.18, divine: 0.05 };
 const BLESSED_HIDDEN: Record<Rarity, number> = { common: 0.15, rare: 0.45, legendary: 0.3, divine: 0.1 };
@@ -168,6 +187,13 @@ export function createLife(opts: BirthOptions = {}): Life {
   if (opts.inheritTalent) log(life, `พรสวรรค์「${talentById(opts.inheritTalent)?.name}」ที่ผนึกไว้ติดตามวิญญาณคุณมาด้วย`, "system");
   if (life.flags.descendant && opts.legacy) {
     log(life, `คุณเกิดในตระกูล${opts.legacy.lastName} — ทายาทรุ่นที่ ${opts.legacy.generation + 1} ของ${opts.legacy.founderName}… ซึ่งก็คือตัวคุณเองในชาติก่อน`, "system");
+  }
+  if (opts.pastLife && opts.pastLife.world !== life.worldId) {
+    const p = opts.pastLife;
+    life.flags.pastWorld = p.world;
+    life.flags.pastName = p.name;
+    if (p.rank !== undefined) life.flags.pastRank = p.rank;
+    if (p.skill) life.flags.pastSkill = p.skill;
   }
   if (opts.stats || opts.talents || opts.wealth) life.devCreated = true;
   return life;
@@ -460,7 +486,7 @@ function oddsOf(life: Life, c: Choice, ctx: Ctx): number | undefined {
 export function resolveChoice(life: Life, choiceIndex: number): Outcome | undefined {
   const q = life.queue[0];
   if (!q) return;
-  const c = currentScene(q)!.choices[choiceIndex];
+  const c = currentScene(q, life)!.choices[choiceIndex];
   // ฉากแรกของ event ที่มีชื่อ = ตอนใหม่ของมังฮวา
   const e = getEvent(q.eventId)!;
   if (!q.scene && e.title && !e.manual) startChapter(life, e.title);
@@ -490,7 +516,7 @@ export function resolveChoice(life: Life, choiceIndex: number): Outcome | undefi
 }
 
 export function choiceChance(life: Life, q: QueuedEvent, index: number): number | undefined {
-  const c = currentScene(q)?.choices[index];
+  const c = currentScene(q, life)?.choices[index];
   return c ? oddsOf(life, c, q.ctx) : undefined;
 }
 
