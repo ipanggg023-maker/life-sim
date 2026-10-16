@@ -7,6 +7,7 @@ import type { Faculty, Gender, Legacy, Life, PastLife, Person, QueuedEvent, Rari
 import { worldOf } from "../content/worlds";
 import { rollAwakenTrack } from "../content/hunter/power";
 import { awakenArc, birthArc, maybeComment, seriesOf, startChapter } from "../content/manhwa";
+import { checkTitles, titleBonus } from "../content/titles";
 import {
   addFame,
   addMoney,
@@ -260,6 +261,7 @@ export function salaryOf(life: Life, career: Career, level: number) {
   let base = career.baseSalary * (1 + 0.35 * (level - 1));
   if (career.salary) base = career.salary(life, base);
   if (hasTalent(life, "merchant")) base *= 1.25;
+  base *= 1 + titleBonus(life, "money");
   if (isStudent(life)) base *= 0.4;
   return Math.round(base / 1000) * 1000;
 }
@@ -404,6 +406,9 @@ export function runEvent(life: Life, eventId: string, ctx: Ctx = {}) {
   }
 }
 
+/** ระบบที่ต้องทำงานทุกปี (เช่น Focus) ลงทะเบียนตรงนี้ — กัน import วนกับ content */
+export const yearHooks: Array<(life: Life) => void> = [];
+
 export function ageUp(life: Life) {
   if (!life.alive || life.queue.length) return;
   life.age++;
@@ -415,6 +420,9 @@ export function ageUp(life: Life) {
   progressJob(life);
   progressMoney(life);
   progressPeople(life);
+  for (const hook of yearHooks) hook(life);
+  const joy = titleBonus(life, "happiness");
+  if (joy) addStat(life, "happiness", joy);
 
   if (life.age === 18 && !life.flags.allowance) {
     life.flags.allowance = true;
@@ -440,6 +448,7 @@ export function ageUp(life: Life) {
     if (!life.alive) return;
   }
   checkHiddenTalent(life);
+  checkTitles(life);
 }
 
 function oddsOf(life: Life, c: Choice, ctx: Ctx): number | undefined {
@@ -476,6 +485,7 @@ export function resolveChoice(life: Life, choiceIndex: number): Outcome | undefi
   // คอมเมนต์ผู้อ่านหลังจบฉาก (ไม่ใช่ระหว่างฉากต่อเนื่อง)
   if (!out.next) maybeComment(life, out.text, out.kind ?? "normal", awakenedNow);
   checkHiddenTalent(life);
+  if (life.alive) checkTitles(life);
   return out;
 }
 

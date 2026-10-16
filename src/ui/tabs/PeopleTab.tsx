@@ -4,7 +4,7 @@ import type { Life, Person, Relation } from "../../engine/types";
 import { relationLabel } from "../../engine/util";
 import type { Act } from "../App";
 
-const ORDER: Relation[] = ["spouse", "partner", "child", "father", "mother", "sibling", "friend", "rival"];
+const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "father", "mother", "sibling", "friend", "rival"];
 
 export function PeopleTab({ life, act }: { life: Life; act: Act }) {
   const [open, setOpen] = useState<string | null>(null);

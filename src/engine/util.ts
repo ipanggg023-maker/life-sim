@@ -104,6 +104,8 @@ export function relationLabel(p: Person): string {
       return p.gender === "m" ? "สามี" : "ภรรยา";
     case "child":
       return p.gender === "m" ? "ลูกชาย" : "ลูกสาว";
+    case "ally":
+      return "เพื่อนร่วมทีม";
     case "rival":
       return "คู่ปรับ";
   }

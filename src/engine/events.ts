@@ -88,8 +88,20 @@ function eligible(life: Life, e: GameEvent, takenThisYear: Set<string>): boolean
   return e.when ? e.when(life) : true;
 }
 
+/** Focus ประจำปีทำให้ event บางกลุ่มเกิดบ่อยขึ้น */
+const FOCUS_BOOST: Record<string, RegExp> = {
+  power: /gate|quest|tournament|guild|sect|master|devour|second_awakening|monster|bandit/,
+  money: /lottery|stock|recipe|sponsor|core|black|condo|car|business|plague/,
+  love: /crush|love|matchmaker|senior|royal|contract|letter|teammate|reunion|maid_life|festival|lantern/,
+  study: /exam|olympiad|library|scholar|homework|tutor|academy/,
+};
+
 function weightOf(life: Life, e: GameEvent) {
-  return typeof e.weight === "function" ? e.weight(life) : (e.weight ?? 10);
+  const w = typeof e.weight === "function" ? e.weight(life) : (e.weight ?? 10);
+  const focus = life.flags.focus as string | undefined;
+  if (!focus || w <= 0) return w;
+  if (focus === "secret" && e.title) return w * 1.8; // สืบความลับ: เหตุการณ์ใหญ่และวาสนา
+  return FOCUS_BOOST[focus]?.test(e.id) ? w * 1.7 : w;
 }
 
 /** event ที่ถูกเลือกไว้ต้นปีอาจหมดเงื่อนไขเพราะ event ก่อนหน้าในปีเดียวกัน (เช่น เพื่อนเพิ่งตาย) */

@@ -3,6 +3,8 @@ import { careerById } from "../content/hunter/careers";
 import { rankLabel } from "../content/hunter/power";
 import { worldOf } from "../content/worlds";
 import { cliffhanger, formatLikes, parseComments } from "../content/manhwa";
+import { FOCUSES, focusOf, type Focus } from "../content/shared/focus";
+import { titleById } from "../content/titles";
 import { STAT_LABEL } from "../engine/game";
 import type { Life, LogEntry, StatKey } from "../engine/types";
 import { displayName, money } from "../engine/util";
@@ -79,7 +81,23 @@ export function Comments({ items }: { items: { user: string; text: string; likes
   );
 }
 
-export function MainScreen({ life, onAgeUp, onTab }: { life: Life; onAgeUp: () => void; onTab: (t: TabId) => void }) {
+export function MainScreen({
+  life,
+  busy,
+  onAgeUp,
+  onAutoRead,
+  onFocus,
+  onTab,
+}: {
+  life: Life;
+  busy: boolean;
+  onAgeUp: () => void;
+  onAutoRead: () => void;
+  onFocus: (f: Focus | undefined) => void;
+  onTab: (t: TabId) => void;
+}) {
+  const focus = focusOf(life);
+  const title = titleById(life.flags.title as string | undefined);
   const logRef = useRef<HTMLDivElement>(null);
   const teaser = cliffhanger(life);
   useEffect(() => {
@@ -103,6 +121,7 @@ export function MainScreen({ life, onAgeUp, onTab }: { life: Life; onAgeUp: () =
           <div className="name">
             {displayName(life)}
           </div>
+          {title && <div className="title-tag">「{title.name}」</div>}
           <div className="sub">
             {subtitle} · {money(life, life.money)}
             {life.debt > 0 && <span className="debt"> · หนี้ {money(life, life.debt)}</span>}
@@ -136,9 +155,28 @@ export function MainScreen({ life, onAgeUp, onTab }: { life: Life; onAgeUp: () =
       </div>
 
       <footer className="bottom">
-        <button className="age-btn" onClick={onAgeUp} disabled={life.queue.length > 0}>
-          ＋ อายุ 1 ปี
-        </button>
+        <div className="focus-row" role="radiogroup" aria-label="เป้าหมายปีนี้">
+          {FOCUSES.map((f) => (
+            <button
+              key={f.id}
+              className={`focus-chip ${focus === f.id ? "on" : ""}`}
+              title={`${f.name} — ${f.desc}`}
+              aria-pressed={focus === f.id}
+              onClick={() => onFocus(focus === f.id ? undefined : f.id)}
+            >
+              {f.emoji}
+              <span className="focus-name">{f.name}</span>
+            </button>
+          ))}
+        </div>
+        <div className="age-row">
+          <button className="age-btn" onClick={onAgeUp} disabled={life.queue.length > 0 || busy}>
+            ＋ อายุ 1 ปี
+          </button>
+          <button className="read-btn" onClick={onAutoRead} disabled={life.queue.length > 0 || busy} title="เล่นปีที่ไม่มีอะไรสำคัญให้อัตโนมัติ แล้วหยุดเมื่อถึงฉากสำคัญ">
+            ⏩ อ่านรวดเดียว
+          </button>
+        </div>
         <nav className="tabs">
           {TABS.map((t) => (
             <button key={t.id} className="tab" onClick={() => onTab(t.id)}>

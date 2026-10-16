@@ -201,7 +201,7 @@ export const HUNTER_LIFE_EVENTS: GameEvent[] = [
         odds: (l) => fightOdds(l, rank(l) + 1),
         survival: (l) => survivalOdds(l, rank(l) + 1),
         run: (l, _c, ok) => {
-          if (ok) { const r = gateRewards(l, rank(l) + 1, 1.5, true); addFame(l, 15); return { text: `คุณนำทีมออกจาก Red Gate ได้ทุกคน! ${r}`, kind: "milestone" }; }
+          if (ok) { l.flags.redGateSurvivor = true; const r = gateRewards(l, rank(l) + 1, 1.5, true); addFame(l, 15); return { text: `คุณนำทีมออกจาก Red Gate ได้ทุกคน! ${r}`, kind: "milestone" }; }
           if (!chance(l, survivalOdds(l, rank(l) + 1))) { kill(l, "ติดอยู่ใน Red Gate"); return bad("ประตูสีแดงไม่เคยเปิดออกอีกเลย"); }
           return bad("ประตูเปิดออกหลังผ่านไปหนึ่งสัปดาห์ คุณรอดมาได้แต่สภาพแทบจำไม่ได้" + damage(l, 25, 40, "บาดแผลจาก Red Gate"));
         },

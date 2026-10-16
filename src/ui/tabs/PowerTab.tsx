@@ -3,6 +3,7 @@ import { canEnterGate, dailyQuest, enterGate, gatesLeft, train } from "../../con
 import { RANKS, classById, combatPower, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
 import { breakLevel } from "../../content/murim/events";
 import { SECLUSION_YEARS, canSeclude, isSecluded, startSeclusion } from "../../content/shared/fate";
+import { TITLES, titlesOf } from "../../content/titles";
 import { worldOf } from "../../content/worlds";
 import type { Life, WorldId } from "../../engine/types";
 import { displayName, hasTalent } from "../../engine/util";
@@ -91,6 +92,8 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
 
       {life.worldId === "court" && life.flags.role && <NovelCard life={life} />}
 
+      <TitlesCard life={life} act={act} />
+
       <div className="section-title">พรสวรรค์</div>
       <div className="talent-row">
         {life.talents.map((t, i) => {
@@ -125,6 +128,39 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
         )}
       </ul>
     </div>
+  );
+}
+
+/** ฉายาที่ปลดล็อกแล้ว — ใส่ได้ทีละอัน */
+function TitlesCard({ life, act }: { life: Life; act: Act }) {
+  const owned = titlesOf(life);
+  const current = life.flags.title;
+  return (
+    <>
+      <div className="section-title">ฉายา ({owned.length}/{TITLES.length})</div>
+      {owned.length === 0 ? (
+        <p className="muted small">ยังไม่มีฉายา — ได้จากเหตุการณ์สำคัญ เช่น รอดจาก Red Gate, ชำระแค้น, หักกิโยติน</p>
+      ) : (
+        <div className="chips">
+          {owned.map((t) => (
+            <button
+              key={t.id}
+              className={`chip title-chip ${current === t.id ? "on" : ""}`}
+              title={t.desc}
+              onClick={() =>
+                act((l) => {
+                  l.flags.title = t.id;
+                  return { text: `ใส่ฉายา「${t.name}」(${t.desc})` };
+                })
+              }
+            >
+              {t.name}
+              <span className="chip-sub"> · {t.desc}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 

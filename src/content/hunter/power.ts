@@ -2,6 +2,10 @@ import { chance, nextFloat, pick, weightedPick } from "../../engine/rng";
 import type { HunterClass, Life, StatKey, WorldId } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, log, money as fmtMoney } from "../../engine/util";
 import { worldOf } from "../worlds";
+import { titleBonus } from "../titles";
+
+/** เพื่อนร่วมทีมที่ยังมีชีวิต (นับสูงสุด 3 คน) */
+export const partySize = (life: Life) => Math.min(3, life.people.filter((p) => p.relation === "ally" && p.alive).length);
 
 // ───────────────────────── แรงก์ ─────────────────────────
 
@@ -167,7 +171,7 @@ export function combatPower(life: Life): number {
   const cls = classById(p.hunterClass);
   const g = guildById(p.guild);
   return Math.round(
-    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + p.skills.length * 2 + cls.cp + (g?.cp ?? 0) + p.items.length,
+    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + p.skills.length * 2 + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp"),
   );
 }
 
@@ -181,7 +185,7 @@ export function survivalOdds(life: Life, gateRank: number, mod = 0) {
   const p = life.power;
   const cls = p ? classById(p.hunterClass) : undefined;
   const g = guildById(p?.guild);
-  return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300, 0.05, 0.99);
+  return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300 + partySize(life) * 0.03 + titleBonus(life, "survival"), 0.05, 0.99);
 }
 
 export const expToNext = (level: number) => 60 + level * 40;
@@ -356,7 +360,7 @@ export function gainExp(life: Life, amount: number) {
   const p = life.power;
   if (!p) return;
   // ตื่นช้าโตเร็ว · ความรู้วิธีฝึกจากชาติก่อน · สัญญากับสิ่งเหนือธรรมชาติ
-  const mult = (life.flags.lateBloom ? 1.4 : 1) * (life.flags.knowsMethod ? 1.25 : 1) * (life.flags.pact ? 1.2 : 1);
+  const mult = (life.flags.lateBloom ? 1.4 : 1) * (life.flags.knowsMethod ? 1.25 : 1) * (life.flags.pact ? 1.2 : 1) * (1 + titleBonus(life, "exp"));
   p.exp += Math.round(amount * mult);
   const before = p.level;
   while (p.exp >= expToNext(p.level)) {
@@ -367,7 +371,8 @@ export function gainExp(life: Life, amount: number) {
 }
 
 /** แจกรางวัลจาก Gate และคืนข้อความสรุป */
-export function gateRewards(life: Life, gateRank: number, mult: number, boss: boolean): string {
+export function gateRewards(life: Life, rawRank: number, mult: number, boss: boolean): string {
+  const gateRank = clamp(rawRank, 0, GATE_PAY.length - 1); // บาง event ใช้ "แรงก์ตัวเอง + 1" ซึ่งเกิน SSS ได้
   const p = life.power!;
   const g = guildById(p.guild);
   // กิลด์หักส่วนแบ่ง แต่ได้ภารกิจที่จ่ายดีกว่า

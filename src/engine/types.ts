@@ -14,7 +14,8 @@ export type Relation =
   | "partner"
   | "spouse"
   | "child"
-  | "rival";
+  | "rival"
+  | "ally"; // เพื่อนร่วมทีม (M8)
 
 export interface Person {
   id: string;

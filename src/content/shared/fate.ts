@@ -244,7 +244,7 @@ const RANKUP_EVENTS: GameEvent[] = [
         odds: (l) => clamp(0.55 + (l.stats.luck - 50) / 150, 0.25, 0.85),
         survival: (l) => clamp(0.8 + (l.stats.luck - 50) / 200, 0.5, 0.95),
         run: (l, _c, ok) => {
-          if (ok) { luckyRankUp(l, "ตื่นพลังครั้งที่สอง", chance(l, 0.3) ? 2 : 1); addStat(l, "health", 40); markTurn(l); return big("พลังใหม่ไหลเวียนทั่วร่าง บาดแผลปิดสนิทในพริบตา — คุณไม่ใช่คนเดิมอีกต่อไป"); }
+          if (ok) { luckyRankUp(l, "ตื่นพลังครั้งที่สอง", chance(l, 0.3) ? 2 : 1); l.flags.secondAwakened = true; addStat(l, "health", 40); markTurn(l); return big("พลังใหม่ไหลเวียนทั่วร่าง บาดแผลปิดสนิทในพริบตา — คุณไม่ใช่คนเดิมอีกต่อไป"); }
           if (chance(l, 0.25)) { kill(l, "ร่างกายรับพลังที่แตกสลายไม่ไหว"); return bad("พลังทะลักออกมาเกินกว่าร่างกายจะรับไหว…"); }
           return bad("พลังสงบลง… โอกาสผ่านไปแล้ว แต่อย่างน้อยคุณก็ยังหายใจ");
         },
