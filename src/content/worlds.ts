@@ -221,6 +221,41 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
     ranks: ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"],
     modern: true,
   },
+  ordinary: {
+    id: "ordinary",
+    name: "โลกธรรมดา",
+    emoji: "🏙️",
+    birthplace: "กรุงเทพฯ",
+    startYear: 2005,
+    yearLabel: "ปี",
+    currency: baht,
+    names: { male: MALE_NAMES, female: FEMALE_NAMES, nickM: NICKNAMES_M, nickF: NICKNAMES_F, last: LAST_NAMES },
+    parentJobs: {
+      poor: ["รับจ้างทั่วไป", "ขายของตลาดนัด", "วินมอเตอร์ไซค์", "คนงานก่อสร้าง", "แม่บ้าน"],
+      middle: ["พนักงานบริษัท", "ข้าราชการ", "ครู", "เจ้าของร้านอาหาร", "พยาบาล"],
+      rich: ["ผู้บริหาร", "แพทย์", "เจ้าของโรงงาน", "ทนายความ", "นักธุรกิจ"],
+      elite: ["ประธานเครือบริษัท", "ทายาทตระกูลดัง", "นักการเมือง", "เจ้าของห้าง"],
+    },
+    wealthLabel: { poor: "ครอบครัวยากจน", middle: "ครอบครัวชนชั้นกลาง", rich: "ครอบครัวมีฐานะ", elite: "ตระกูลมหาเศรษฐี" },
+    deathYoung: ["อุบัติเหตุรถชน", "จมน้ำ", "ไข้เลือดออก", "โดนไฟดูด"],
+    deathOld: ["หัวใจวาย", "เส้นเลือดในสมองแตก", "มะเร็ง", "ปอดบวม", "หลับไปอย่างสงบ", "ไตวาย"],
+    // อายุที่ "ระบบชีวิต" มาหา (เส้นทาง "ไม่ตื่น" = ไม่มีวันได้ระบบ)
+    awakenAge: [15, 25],
+    awakenEarly: [7, 14],
+    awakenLate: [26, 50],
+    labels: {
+      rank: "ระดับ",
+      power: "แต้มระบบ",
+      guild: "สังกัด",
+      raid: "ภารกิจระบบ",
+      raidUnit: (r) => `ภารกิจระดับ ${r}`,
+      train: "ฝึกทักษะ",
+      trainText: "พื้นที่ฝึกพิเศษที่ระบบเปิดให้",
+    },
+    questJobs: ["o_mma", "o_trainee", "doctor", "o_progamer", "o_chef_job", "o_heir"],
+    ranks: ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"],
+    modern: true,
+  },
 };
 
 export const worldOf = (id: WorldId | undefined) => WORLDS[id ?? "hunter"];

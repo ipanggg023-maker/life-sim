@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { loadCourtWorld } from "../content/court";
 import { loadTowerWorld } from "../content/tower";
 import { loadApocalypseWorld } from "../content/apocalypse";
+import { loadOrdinaryWorld } from "../content/ordinary";
 import { loadHunterWorld } from "../content/hunter";
 import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
@@ -17,9 +18,10 @@ loadMurimWorld();
 loadCourtWorld();
 loadTowerWorld();
 loadApocalypseWorld();
+loadOrdinaryWorld();
 loadSharedEvents();
 
-const QUEST_JOB: Record<WorldId, string> = { hunter: "hunter", murim: "wanderer", court: "adventurer", tower: "climber", apocalypse: "survivor" };
+const QUEST_JOB: Record<WorldId, string> = { hunter: "hunter", murim: "wanderer", court: "adventurer", tower: "climber", apocalypse: "survivor", ordinary: "o_mma" };
 const WORLDS: WorldId[] = ["hunter", "murim", "court", "tower"];
 
 /** บอทเลือกสุ่ม แต่ชอบตัวเลือก "ใช้สกิล" ถ้ามี */

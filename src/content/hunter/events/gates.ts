@@ -7,6 +7,7 @@ import { startQuest } from "../../murim/quest";
 import { startCourtQuest } from "../../court/quest";
 import { startClimb } from "../../tower/climb";
 import { startScenario } from "../../apocalypse/scenario";
+import { startChallenge } from "../../ordinary/system";
 import { worldOf } from "../../worlds";
 import {
   CLASSES,
@@ -306,6 +307,12 @@ const QUEST_MSG = {
     full: "ปีนี้ออกภารกิจครบแล้ว",
     tooHigh: "อันตรายเกินฝีมือ (สูงกว่าขั้นคุณเกิน 1 ขั้น)",
   },
+  ordinary: {
+    noPower: "คุณยังไม่มีระบบ",
+    noJob: "ต้องทำอาชีพตามเส้นทางของระบบก่อน (แท็บอาชีพ)",
+    full: "ปีนี้ทำภารกิจระบบครบแล้ว",
+    tooHigh: "ระบบไม่เปิดภารกิจที่สูงกว่าระดับคุณเกิน 1 ขั้น",
+  },
   apocalypse: {
     noPower: "ระบบยังไม่มาถึง (โลกยังไม่สิ้น)",
     noJob: "ต้องเป็นผู้รอดชีวิตภาคสนามก่อน (แท็บอาชีพ)",
@@ -345,6 +352,7 @@ export function enterGate(life: Life, gateRank: number) {
   else if (life.worldId === "court") startCourtQuest(life, gateRank);
   else if (life.worldId === "tower") startClimb(life, gateRank);
   else if (life.worldId === "apocalypse") startScenario(life, gateRank);
+  else if (life.worldId === "ordinary") startChallenge(life, gateRank);
   else startGate(life, gateRank);
 }
 
@@ -362,7 +370,7 @@ export function train(life: Life): Outcome | undefined {
       ? `คุณนั่งสมาธิเดินลมปราณและฝึก${cls.name}ทั้งปีที่${worldOf(life.worldId).labels.trainText}`
       : life.worldId === "court"
         ? `คุณฝึก${cls.name}ทุกวันที่${worldOf(life.worldId).labels.trainText}`
-        : life.worldId === "tower" || life.worldId === "apocalypse"
+        : life.worldId === "tower" || life.worldId === "apocalypse" || life.worldId === "ordinary"
           ? `คุณฝึก${cls.name}ทั้งปีที่${worldOf(life.worldId).labels.trainText}`
           : `คุณฝึกฝน${cls.name}อย่างหนักที่ศูนย์ฝึกของสมาคม`,
     kind: "good" as const,
@@ -374,7 +382,7 @@ export function train(life: Life): Outcome | undefined {
 }
 
 export function dailyQuest(life: Life): Outcome | undefined {
-  if (!life.power || !hasTalent(life, "system_user") || life.doneThisYear.includes("daily")) return;
+  if (!life.power || !(hasTalent(life, "system_user") || life.worldId === "ordinary") || life.doneThisYear.includes("daily")) return;
   life.doneThisYear.push("daily");
   addStat(life, "health", randInt(life, 2, 5));
   const out = { text: "[ภารกิจรายวัน] วิดพื้น 100 ครั้ง ซิทอัพ 100 ครั้ง วิ่ง 10 กิโลเมตร — ทำครบทุกวันตลอดปี", kind: "system" as const };

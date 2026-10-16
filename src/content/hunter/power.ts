@@ -157,6 +157,31 @@ export const CLASSES: ClassInfo[] = [
     id: "a_reader", name: "ผู้รู้ตอนจบ", emoji: "📖", key: "smarts", desc: "สายหายาก — คุณเคยอ่านนิยายที่เหมือนโลกนี้ทุกตัวอักษร", cp: 6, survival: 0.05, world: "apocalypse",
     skills: [[1, "รู้เนื้อเรื่อง"], [10, "เขียนทับฉาก"], [25, "ผู้อ่านคนสุดท้าย"], [45, "ผู้เขียนตอนจบใหม่"]],
   },
+  // ── เส้นทางของระบบชีวิต (โลกธรรมดา) ──
+  {
+    id: "o_fighter", name: "นักสู้ข้างถนน", emoji: "👊", key: "health", desc: "จากนักเลงโรงเรียน สู่สังเวียนระดับโลก", cp: 3, survival: 0.02, world: "ordinary",
+    skills: [[1, "หมัดตรงไร้เงา"], [10, "หลบพริบตา"], [25, "คอมโบสิบสามจังหวะ"], [45, "ราชาแห่งถนน"]],
+  },
+  {
+    id: "o_idol", name: "ไอดอล/นักแสดง", emoji: "🎤", key: "looks", desc: "เวที กล้อง และแฟนคลับนับล้าน", cp: 2, survival: 0.05, world: "ordinary",
+    skills: [[1, "เสียงร้องสวรรค์"], [10, "เต้นไร้ที่ติ"], [25, "ออร่าบนเวที"], [45, "ซูเปอร์สตาร์ระดับโลก"]],
+  },
+  {
+    id: "o_doctor", name: "หมออัจฉริยะ", emoji: "🩺", key: "smarts", desc: "ระบบบอกจุดผิดปกติในร่างกายคนไข้ได้ทันที", cp: 2, survival: 0.08, world: "ordinary",
+    skills: [[1, "ตาวินิจฉัย"], [10, "มือผ่าตัดไม่สั่น"], [25, "ผ่าตัดที่เป็นไปไม่ได้"], [45, "หัตถ์เทวดา"]],
+  },
+  {
+    id: "o_gamer", name: "โปรเกมเมอร์ VR", emoji: "🎮", key: "luck", desc: "ในโลกเสมือน คุณคือคนที่ทุกกิลด์อยากได้", cp: 3, survival: 0.04, world: "ordinary",
+    skills: [[1, "รีแอคชันเหนือมนุษย์"], [10, "อ่านเกมขาด"], [25, "คลาสลับในเกม"], [45, "ตำนานแห่งโลกเสมือน"]],
+  },
+  {
+    id: "o_chef", name: "เชฟ", emoji: "🍳", key: "happiness", desc: "อาหารของคุณทำให้คนร้องไห้ได้", cp: 2, survival: 0.05, world: "ordinary",
+    skills: [[1, "มีดไร้ที่ติ"], [10, "ลิ้นเทวดา"], [25, "เมนูที่ทำให้คนร้องไห้"], [45, "เชฟสามดาว"]],
+  },
+  {
+    id: "o_chaebol", name: "ทายาทแชโบลย้อนเวลา", emoji: "💼", key: "smarts", desc: "สายหายาก (ผู้ย้อนเวลาเท่านั้น) — คุณรู้อนาคตของตลาดทั้งหมด", cp: 5, survival: 0.05, world: "ordinary",
+    skills: [[1, "อ่านตลาด"], [10, "รู้ข่าวก่อนใคร"], [25, "ยึดอำนาจบริษัท"], [45, "จักรวรรดิแชโบล"]],
+  },
 ];
 
 export const classById = (id: HunterClass) => CLASSES.find((c) => c.id === id)!;
@@ -221,6 +246,12 @@ export const GUILDS: Guild[] = [
   { id: "a_raiders", name: "แก๊งปล้นผู้รอดชีวิต", minRank: 2, pay: 2.5, cp: 6, safety: -0.06, world: "apocalypse", demonic: true, desc: "ปล้นฐานอื่นเพื่อแลกเหรียญ ทุกกลุ่มเกลียด" },
   { id: "a_cult", name: "ลัทธิบูชาดวงดาว", minRank: 3, pay: 2, cp: 4, safety: 0.04, world: "apocalypse", desc: "เชื่อว่าวันสิ้นโลกคือการคัดเลือกของพระเจ้า — ได้ของจากดวงดาวเยอะผิดปกติ" },
   { id: "a_vanguard", name: "แนวหน้าผู้กอบกู้", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "apocalypse", desc: "ผู้รอดชีวิตที่แข็งแกร่งที่สุด มีเป้าหมายเดียวคือจบฉากสุดท้าย" },
+  // ── สังกัดในโลกธรรมดา ──
+  { id: "o_gym", name: "ค่ายมวยเก่าย่านเมืองเก่า", minRank: 0, pay: 1, cp: 2, safety: 0.05, world: "ordinary", desc: "โค้ชแก่ปากร้ายที่เคยปั้นแชมป์มาแล้วสามคน" },
+  { id: "o_agency", name: "ค่ายบันเทิงยักษ์ใหญ่", minRank: 2, pay: 1.8, cp: 3, safety: 0.05, world: "ordinary", desc: "ค่ายที่ปั้นซูเปอร์สตาร์มานับไม่ถ้วน — สัญญาทาสก็นับไม่ถ้วนเช่นกัน" },
+  { id: "o_hospital", name: "โรงพยาบาลมหาวิทยาลัย", minRank: 1, pay: 1.4, cp: 3, safety: 0.08, world: "ordinary", desc: "การเมืองในโรงพยาบาลโหดกว่าห้องผ่าตัด" },
+  { id: "o_team", name: "ทีมอีสปอร์ตระดับโลก", minRank: 3, pay: 2, cp: 4, safety: 0.05, world: "ordinary", desc: "แชมป์โลกสามสมัย ซ้อมวันละสิบสี่ชั่วโมง" },
+  { id: "o_mafia", name: "เครือข่ายมาเฟีย", minRank: 2, pay: 2.6, cp: 6, safety: -0.06, world: "ordinary", demonic: true, desc: "เงินดี งานสกปรก ออกยาก" },
   { id: "alliance", name: "พันธมิตรยุทธจักร", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "murim", desc: "รวมยอดฝีมือฝ่ายธรรมะ เป็นเหมือนรัฐบาลของยุทธภพ" },
 ];
 
@@ -343,6 +374,11 @@ export function offerClasses(life: Life): HunterClass[] {
       fallback: "m_sword",
       rare: "m_demon",
     },
+    ordinary: {
+      map: { health: ["o_fighter"], smarts: ["o_doctor", "o_gamer"], luck: ["o_gamer", "o_chef"], looks: ["o_idol"], happiness: ["o_chef", "o_idol"] },
+      fallback: "o_fighter",
+      rare: "o_chaebol",
+    },
     apocalypse: {
       map: { health: ["a_blade", "a_warden"], smarts: ["a_medic", "a_warden"], luck: ["a_gunner", "a_tamer"], looks: ["a_medic", "a_gunner"], happiness: ["a_medic"] },
       fallback: "a_blade",
@@ -365,7 +401,9 @@ export function offerClasses(life: Life): HunterClass[] {
   offer.add(pick(life, w.map[keys[0]]));
   for (const c of w.map[keys[1]]) if (offer.size < 2 && !offer.has(c)) offer.add(c);
   if (offer.size < 2) offer.add(w.fallback);
-  if (life.stats.luck >= 70 || owns(life, "system_user") || chance(life, 0.05)) offer.add(w.rare);
+  // แชโบลย้อนเวลา: เฉพาะคนที่ย้อนเวลามาแล้วเท่านั้น
+  const rareOk = w.rare !== "o_chaebol" || (life.regressions ?? 0) > 0;
+  if (rareOk && (life.stats.luck >= 70 || owns(life, "system_user") || chance(life, 0.05))) offer.add(w.rare);
   return [...offer];
 }
 

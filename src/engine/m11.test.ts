@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { loadApocalypseWorld } from "../content/apocalypse";
+import { loadOrdinaryWorld } from "../content/ordinary";
 import { LAST_SCENARIO, scenarioNo } from "../content/apocalypse/scenario";
 import { loadCourtWorld } from "../content/court";
 import { loadHunterWorld } from "../content/hunter";
@@ -17,6 +18,7 @@ loadMurimWorld();
 loadCourtWorld();
 loadTowerWorld();
 loadApocalypseWorld();
+loadOrdinaryWorld();
 loadSharedEvents();
 
 describe("M11 วันสิ้นโลก", () => {

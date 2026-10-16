@@ -140,8 +140,9 @@ export function cliffhanger(life: Life): string | undefined {
   const next = life.age + 1;
   const f = life.flags;
   if (life.worldId === "apocalypse" && !f.doomed && Number(f.awakenAge) === next) return "…ไม่มีใครรู้เลยว่า ปีหน้าโลกจะไม่เหมือนเดิมอีกต่อไป";
-  if (life.worldId !== "apocalypse" && !life.power && Number(f.awakenAge) === next && f.awakenTrack !== "never") return "…คืนนั้น ไข้ของคุณเริ่มขึ้นสูงผิดปกติ";
-  if (!life.power && Number(f.ceremonyAge) === next && !["hunter", "tower", "apocalypse"].includes(life.worldId)) return "…วันที่ทุกคนรอคอยกำลังจะมาถึง";
+  if (life.worldId === "ordinary" && !life.power && Number(f.awakenAge) === next && f.awakenTrack !== "never") return "…คืนนั้น คุณได้ยินเสียง \"ติ๊ง\" เบาๆ ในหัวเป็นครั้งแรก";
+  if (life.worldId !== "apocalypse" && life.worldId !== "ordinary" && !life.power && Number(f.awakenAge) === next && f.awakenTrack !== "never") return "…คืนนั้น ไข้ของคุณเริ่มขึ้นสูงผิดปกติ";
+  if (!life.power && Number(f.ceremonyAge) === next && !["hunter", "tower", "apocalypse", "ordinary"].includes(life.worldId)) return "…วันที่ทุกคนรอคอยกำลังจะมาถึง";
   if (!f.turnDone && Number(f.tpAge) === next) return "…และแล้ว วันที่ชะตาจะเปลี่ยนก็ใกล้เข้ามา";
   if (f.role === "villain" && [12, 16, 18, 20].includes(next) && !f.fateDefied) return next === 20 ? "…ปีหน้า คือวันที่นิยายบอกว่าคุณจะตาย" : "…บทถัดไปของนิยายกำลังจะเริ่มขึ้น";
   const facts = worldFacts(life);
@@ -190,7 +191,7 @@ function titleOf(life: Life): string {
 function tagsOf(life: Life): string[] {
   const f = life.flags;
   const tags = [`#${worldOf(life.worldId).name.replace(/^โลก /, "")}`];
-  if (life.power) tags.push(life.worldId === "murim" ? "#ฝึกยุทธ์" : life.worldId === "court" ? "#เวทมนตร์" : life.worldId === "tower" ? "#ปีนหอคอย" : life.worldId === "apocalypse" ? "#วันสิ้นโลก" : "#ตื่นพลัง");
+  if (life.power) tags.push(life.worldId === "murim" ? "#ฝึกยุทธ์" : life.worldId === "court" ? "#เวทมนตร์" : life.worldId === "tower" ? "#ปีนหอคอย" : life.worldId === "apocalypse" ? "#วันสิ้นโลก" : life.worldId === "ordinary" ? "#ระบบชีวิต" : "#ตื่นพลัง");
   else tags.push("#ไร้พลัง");
   if ((life.regressions ?? 0) > 0) tags.push("#ย้อนเวลา");
   if (f.revenge || f.vendetta) tags.push("#ล้างแค้น");

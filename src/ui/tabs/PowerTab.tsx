@@ -85,6 +85,23 @@ const UI: Record<
     none: "ไร้มานา — คุณเป็นคนธรรมดา (…หรือเปล่า?)",
     waiting: "รอพิธีตรวจพลังเวท…",
   },
+  ordinary: {
+    style: "เส้นทาง",
+    noGuild: "อิสระ",
+    done: "ภารกิจที่สำเร็จ",
+    boss: "ชนะคู่แข่ง",
+    needJob: "ต้องทำอาชีพตามเส้นทางของระบบที่แท็บ 💼 อาชีพก่อน",
+    unit: "ภารกิจระดับ ",
+    enter: "รับ",
+    trainEmoji: "🏋️",
+    join: "เซ็นสัญญา",
+    joined: (g) => `คุณเซ็นสัญญากับ${g.name}`,
+    left: (g) => `คุณยกเลิกสัญญากับ${g.name}`,
+    slot: "ได้ระบบ",
+    before: () => "คุณยังเป็นคนธรรมดา… ตอนนี้",
+    none: "ระบบไม่เคยมาหาคุณ — คุณสู้ชีวิตด้วยตัวเองมาตลอด",
+    waiting: "คุณยังเป็นคนธรรมดา… ตอนนี้",
+  },
   apocalypse: {
     style: "เส้นทาง",
     noGuild: "ไม่มีกลุ่ม",
@@ -361,7 +378,7 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
         >
           {isSecluded(life) ? `⛩️ ปิดด่านอยู่ (ถึงอายุ ${life.flags.secludeUntil})` : `⛩️ ปิดด่าน ${SECLUSION_YEARS} ปี`}
         </button>
-        {hasTalent(life, "system_user") && (
+        {(hasTalent(life, "system_user") || life.worldId === "ordinary") && (
           <button className="btn sys-btn" disabled={life.doneThisYear.includes("daily")} onClick={() => act(dailyQuest)}>
             📋 ภารกิจรายวัน
           </button>

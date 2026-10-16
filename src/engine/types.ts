@@ -1,4 +1,4 @@
-export type WorldId = "hunter" | "murim" | "court" | "tower" | "apocalypse";
+export type WorldId = "hunter" | "murim" | "court" | "tower" | "apocalypse" | "ordinary";
 
 /** ประเทศที่เกิด (เฉพาะโลกยุคปัจจุบัน) */
 export type Country = "th" | "kr" | "jp";
@@ -97,7 +97,9 @@ export type HunterClass =
   // ตำแหน่งในหอคอย
   | "t_vanguard" | "t_lancer" | "t_lantern" | "t_wave" | "t_scout" | "t_outsider"
   // ผู้รอดชีวิตหลังวันสิ้นโลก
-  | "a_blade" | "a_gunner" | "a_medic" | "a_warden" | "a_tamer" | "a_reader";
+  | "a_blade" | "a_gunner" | "a_medic" | "a_warden" | "a_tamer" | "a_reader"
+  // เส้นทางของระบบชีวิต (โลกธรรมดา)
+  | "o_fighter" | "o_idol" | "o_doctor" | "o_gamer" | "o_chef" | "o_chaebol";
 
 /** สถานะผู้ตื่นพลัง — rank: 0=F … 8=SSS */
 export interface Power {

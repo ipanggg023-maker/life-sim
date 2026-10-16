@@ -191,6 +191,7 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
           <option value="court">👑 ราชสำนัก</option>
           <option value="tower">🗼 หอคอย</option>
           <option value="apocalypse">☄️ วันสิ้นโลก</option>
+          <option value="ordinary">🏙️ โลกธรรมดา</option>
         </select>
         {worldOf(world).modern && (
           <select value={country} onChange={(e) => setCountry(e.target.value as Country | "")}>

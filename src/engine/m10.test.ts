@@ -6,6 +6,7 @@ import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
 import { loadTowerWorld } from "../content/tower";
 import { loadApocalypseWorld } from "../content/apocalypse";
+import { loadOrdinaryWorld } from "../content/ordinary";
 import { floorOf } from "../content/tower/climb";
 import { visibleChoices } from "./events";
 import { ageUp, applyJob, createLife, resolveChoice } from "./game";
@@ -18,6 +19,7 @@ loadMurimWorld();
 loadCourtWorld();
 loadTowerWorld();
 loadApocalypseWorld();
+loadOrdinaryWorld();
 loadSharedEvents();
 
 function drain(life: Life, r: { rng: number }) {

@@ -109,6 +109,25 @@
   --primary-shadow: 0 4px 20px rgba(255, 106, 61, 0.3);
 }
 
+/* ── ธีมโลกธรรมดา: เมืองกลางคืน / ฟ้าอมเขียว ── */
+:root[data-world="ordinary"] {
+  --bg: #0b0f14;
+  --bg-2: #111820;
+  --surface: #151d27;
+  --surface-2: #1d2836;
+  --line: #2b3a4d;
+  --text: #e8f1f8;
+  --muted: #8ea2b6;
+  --accent: #2fd3c4;
+  --milestone: #9ff0e7;
+  --body-bg: radial-gradient(1000px 600px at 50% -15%, #13323a 0%, var(--bg) 62%);
+  --glow: 0 0 14px rgba(47, 211, 196, 0.35);
+  --fill-grad: linear-gradient(90deg, #1a8c84, var(--accent));
+  --footer-bg: linear-gradient(180deg, rgba(11, 15, 20, 0.6), var(--bg));
+  --primary-grad: linear-gradient(90deg, #1a8c84, #2fd3c4);
+  --primary-shadow: 0 4px 20px rgba(47, 211, 196, 0.3);
+}
+
 /* ── ธีมราชสำนัก: ครีม / ทอง / ลวดลายหรูหรา ── */
 :root[data-world="court"] {
   --bg: #fbf6ec;
@@ -638,6 +657,7 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 }
 .cover-hunter { background: linear-gradient(160deg, #0b1530 0%, #1d3f8a 60%, #3ea8ff 130%); }
 .cover-murim { background: linear-gradient(160deg, #2a1e14 0%, #5b2a1e 55%, #b3261e 130%); }
+.cover-ordinary { background: linear-gradient(160deg, #0b0f14 0%, #13323a 55%, #2fd3c4 140%); }
 .cover-apocalypse { background: linear-gradient(160deg, #0c0a09 0%, #3d1a10 55%, #ff6a3d 140%); }
 .cover-tower { background: linear-gradient(160deg, #07060b 0%, #2a1f3d 55%, #e8b84a 140%); }
 .cover-court { background: linear-gradient(160deg, #3a2a10 0%, #8a5a14 55%, #e2bf62 130%); }
