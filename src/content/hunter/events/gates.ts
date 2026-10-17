@@ -23,6 +23,7 @@ import {
   rollAwakening,
   survivalOdds,
 } from "../power";
+import { dropCores } from "../m16";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
 const bad = (text: string, next?: string): Outcome => ({ text, kind: "bad", next });
@@ -250,7 +251,7 @@ export const GATE_RAID: GameEvent = {
           survival: (l, c) => survivalOdds(l, R(c), Number(c.score) * 0.06),
           run: (l, c, ok) => {
             if (ok) {
-              const r = gateRewards(l, R(c), Number(c.share), true);
+              const r = gateRewards(l, R(c), Number(c.share), true) + dropCores(l, R(c));
               addFame(l, R(c) >= 4 ? 4 : 1);
               return { text: `💥 คุณปราบ${monster(c)}ได้! ${r}`, kind: "good" };
             }
@@ -270,7 +271,7 @@ export const GATE_RAID: GameEvent = {
           run: (l, c, ok) => {
             const item = l.power!.items.shift();
             if (ok) {
-              const r = gateRewards(l, R(c), Number(c.share), true);
+              const r = gateRewards(l, R(c), Number(c.share), true) + dropCores(l, R(c));
               return { text: `💥 「${item}」พลิกสถานการณ์! คุณปราบ${monster(c)}ได้ ${r}`, kind: "good" };
             }
             return bad(`แม้แต่「${item}」ก็ไม่พอ คุณหนีออกมาได้หวุดหวิด` + hurt(l, R(c), 10, 20));
