@@ -114,6 +114,9 @@ const QUESTS: SecretQuest[] = [
 
 const questById = (id: unknown) => QUESTS.find((q) => q.id === id);
 const active = (l: Life) => questById(l.flags.sqId);
+/** ภารกิจที่สำเร็จไปแล้วจะไม่ถูกเสนออีก */
+const doneIds = (l: Life) => String(l.flags.sqDoneIds ?? "").split(",").filter(Boolean);
+const offerable = (l: Life) => QUESTS.filter((q) => q.fits(l) && !doneIds(l).includes(q.id));
 
 /** รางวัลภารกิจ — ยิ่งยากยิ่งดี และมีลุ้นของใหญ่ */
 function reward(l: Life) {
@@ -156,6 +159,7 @@ export function checkSecretQuest(l: Life) {
   if (!q || !l.alive) return;
   if (q.now(l) >= Number(l.flags.sqGoal)) {
     log(l, `[ระบบ] ภารกิจลับสำเร็จ: ${q.text(l, Number(l.flags.sqGoal))}`, "system");
+    l.flags.sqDoneIds = [...doneIds(l), q.id].join(",");
     clearQuest(l);
     l.flags.sqDone = Number(l.flags.sqDone ?? 0) + 1;
     reward(l);
@@ -193,9 +197,9 @@ export const SECRET_QUEST_EVENTS: GameEvent[] = [
     maxAge: 70,
     maxTimes: 0,
     system: true,
-    weight: (l) => (!active(l) && l.age - Number(l.flags.sqLast ?? 0) >= 3 && QUESTS.some((q) => q.fits(l)) ? (l.power ? 9 : 5) : 0),
+    weight: (l) => (!active(l) && l.age - Number(l.flags.sqLast ?? 0) >= 3 && offerable(l).length ? (l.power ? 9 : 5) : 0),
     prepare: (l) => {
-      const q = pick(l, QUESTS.filter((x) => x.fits(l)));
+      const q = pick(l, offerable(l));
       const goal = q.goal(l, q.start(l));
       return { id: q.id, goal };
     },

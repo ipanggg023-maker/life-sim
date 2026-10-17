@@ -4,18 +4,24 @@ import { chance, pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { addFame, addStat, checkChance, clamp } from "../../engine/util";
 import { fightOdds, gateRewards, luckyRankUp, rankLabel, survivalOdds } from "../hunter/power";
+import { atPlace, freshQuest } from "../shared/questPool";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
 const bad = (text: string, next?: string): Outcome => ({ text, kind: "bad", next });
 const meh = (text: string, next?: string): Outcome => ({ text, next });
 
 export const COURT_QUESTS = [
-  { name: "ปราบฝูงมอนสเตอร์ที่ชายแดนเหนือ", desc: "หิมะยังไม่ทันละลาย ฝูงหมาป่าน้ำแข็งก็บุกหมู่บ้านชายแดนอีกแล้ว", bosses: ["ราชาหมาป่าน้ำแข็ง", "ยักษ์หิมะตาเดียว", "ไวเวิร์นแห่งหุบเขาขาว"] },
-  { name: "สืบคดีวางยาพิษในงานเลี้ยง", desc: "เคานต์คนหนึ่งล้มลงกลางงานเลี้ยงของมาร์ควิส คนร้ายยังอยู่ในคฤหาสน์", bosses: ["พ่อบ้านผู้เป็นนักฆ่า", "บารอนเนสผู้ปรุงยาพิษ", "นักฆ่าจากสมาคมเงา"] },
-  { name: "คุ้มกันองค์หญิงข้ามเขาแดนศัตรู", desc: "ขบวนรถม้าหลวงต้องผ่านป่าที่ข่าวว่ามีกลุ่มกบฏซุ่มอยู่", bosses: ["หัวหน้ากบฏหน้ากากเงิน", "อัศวินทรยศแห่งราชวงศ์เก่า", "จอมเวทรับจ้างตาเดียว"] },
-  { name: "ปิดประตูมิติปีศาจในป่าต้องสาป", desc: "รอยแยกสีม่วงเปิดขึ้นกลางป่า ปีศาจระดับล่างไหลออกมาไม่หยุด", bosses: ["อัศวินปีศาจเขาแพะ", "ซัคคิวบัสแห่งความฝัน", "ผู้คุมประตูนรก"] },
-  { name: "ล่าแม่มดแห่งหนองน้ำดำ", desc: "เด็กในหมู่บ้านหายไปเจ็ดคน ทุกคนชี้ไปที่กระท่อมกลางหนองน้ำ", bosses: ["แม่มดหนองน้ำดำ", "ตุ๊กตาต้องสาปยักษ์", "ภูตหนองน้ำคลั่ง"] },
+  { name: "ปราบฝูงมอนสเตอร์ที่{p}", desc: "หิมะยังไม่ทันละลาย ฝูงมอนสเตอร์ก็บุกหมู่บ้านอีกแล้ว", bosses: ["ราชาหมาป่าน้ำแข็ง", "ยักษ์หิมะตาเดียว", "ไวเวิร์นแห่งหุบเขาขาว"] },
+  { name: "สืบคดีวางยาพิษที่{p}", desc: "เคานต์คนหนึ่งล้มลงกลางงานเลี้ยง คนร้ายยังอยู่ในที่นี้", bosses: ["พ่อบ้านผู้เป็นนักฆ่า", "บารอนเนสผู้ปรุงยาพิษ", "นักฆ่าจากสมาคมเงา"] },
+  { name: "คุ้มกันองค์หญิงผ่าน{p}", desc: "ขบวนรถม้าหลวงต้องผ่านเส้นทางที่ข่าวว่ามีกลุ่มกบฏซุ่มอยู่", bosses: ["หัวหน้ากบฏหน้ากากเงิน", "อัศวินทรยศแห่งราชวงศ์เก่า", "จอมเวทรับจ้างตาเดียว"] },
+  { name: "ปิดประตูมิติปีศาจที่{p}", desc: "รอยแยกสีม่วงเปิดขึ้น ปีศาจระดับล่างไหลออกมาไม่หยุด", bosses: ["อัศวินปีศาจเขาแพะ", "ซัคคิวบัสแห่งความฝัน", "ผู้คุมประตูนรก"] },
+  { name: "ล่าแม่มดแห่ง{p}", desc: "เด็กในหมู่บ้านหายไปเจ็ดคน ทุกคนชี้ไปที่กระท่อมกลางป่า", bosses: ["แม่มดหนองน้ำดำ", "ตุ๊กตาต้องสาปยักษ์", "ภูตหนองน้ำคลั่ง"] },
+  { name: "ตามหาสมบัติราชวงศ์ที่หายไปที่{p}", desc: "มงกุฎสำรองของราชินีองค์ก่อนหายไปพร้อมคนรับใช้คนสนิท", bosses: ["นักล่าสมบัติจากแดนใต้", "โกเลมผู้เฝ้าห้องนิรภัย", "ผีของคนรับใช้ผู้ซื่อสัตย์"] },
+  { name: "ปราบมังกรน้อยที่{p}", desc: "มังกรวัยรุ่นตัวหนึ่งเผายุ้งข้าวไปสามหลัง ชาวบ้านเริ่มอดอยาก", bosses: ["มังกรแดงวัยรุ่น", "ไวเวิร์นคู่ของมังกร", "นักบวชลัทธิบูชามังกร"] },
+  { name: "จับสายลับจักรวรรดิศัตรูที่{p}", desc: "แผนที่ป้อมปราการรั่วไหลออกไป สายลับยังไม่ทันข้ามพรมแดน", bosses: ["สายลับหน้ากากพันหน้า", "ทูตผู้เป็นนักฆ่า", "อัศวินรับจ้างไร้ชื่อ"] },
 ] as const;
+
+export const COURT_PLACES = ["ชายแดนเหนือ", "ป่าต้องสาป", "หนองน้ำดำ", "เมืองท่าเวสต์มาร์ช", "คฤหาสน์มาร์ควิสโรเดล", "หุบเขาขาว", "เหมืองคริสตัลร้าง", "แคว้นดยุกแห่งตะวันออก", "เกาะหมอกสีเงิน", "ซากวิหารเทพจันทรา"];
 
 const MIDS = ["ambush", "treasure", "victim", "ambush", "treasure", "ruin"] as const;
 const R = (c: Ctx) => Number(c.rank);
@@ -33,10 +39,11 @@ function hurt(l: Life, qRank: number, min: number, max: number): string {
 }
 
 export function startCourtQuest(life: Life, qRank: number) {
-  const t = randInt(life, 0, COURT_QUESTS.length - 1);
+  const { t, p } = freshQuest(life, "court", COURT_QUESTS.length, COURT_PLACES.length);
   runEvent(life, "court.quest", {
     rank: qRank,
     t,
+    p,
     b: pick(life, COURT_QUESTS[t].bosses),
     mid: !life.flags.ancientRuin && chance(life, 0.015) ? "ruin" : pick(life, MIDS.slice(0, 5)),
     score: 0,
@@ -53,7 +60,7 @@ export const COURT_QUEST: GameEvent = {
   title: "ภารกิจราชสำนัก",
   text: (l, c) => {
     const q = COURT_QUESTS[Number(c.t)];
-    return `ภารกิจระดับ${rankLabel(l, R(c))}:【${q.name}】— ${q.desc}`;
+    return `ภารกิจระดับ${rankLabel(l, R(c))}:【${atPlace(q.name, COURT_PLACES[Number(c.p ?? 0)])}】— ${q.desc}`;
   },
   choices: [
     {

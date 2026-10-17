@@ -695,6 +695,50 @@ export function breakUp(life: Life, p: Person): Outcome {
   return out;
 }
 
+export function giveGift(life: Life, p: Person): Outcome {
+  const key = `gift:${p.id}`;
+  if (life.doneThisYear.includes(key)) return { text: "ปีนี้ให้ของขวัญไปแล้ว" };
+  life.doneThisYear.push(key);
+  const cost = { poor: 500, middle: 3_000, rich: 30_000, elite: 300_000 }[life.wealth];
+  addMoney(life, -cost);
+  const liked = chance(life, 0.75);
+  p.bond = clamp(p.bond + (liked ? randInt(life, 8, 16) : 2), 0, 100);
+  addStat(life, "happiness", 2);
+  const out = liked
+    ? { text: `🎁 ${shortName(p)}ชอบของขวัญมาก เก็บไว้อย่างดี`, kind: "good" as const }
+    : { text: `🎁 ${shortName(p)}ยิ้มรับ แต่คุณเห็นของชิ้นนั้นวางอยู่มุมห้องตลอดทั้งปี` };
+  log(life, out.text, "kind" in out ? out.kind : "normal");
+  return out;
+}
+
+/** สารภาพรักกับเพื่อน/คู่แข่ง/เพื่อนร่วมทีม */
+export function confess(life: Life, p: Person): Outcome {
+  if (life.doneThisYear.includes("confess")) return { text: "ปีนี้หัวใจคุณเหนื่อยพอแล้ว" };
+  life.doneThisYear.push("confess");
+  const odds = clamp((p.bond - 35) / 55 + (life.stats.looks - 50) / 200, 0.05, 0.9);
+  if (chance(life, odds)) {
+    p.relation = "partner";
+    p.bond = clamp(p.bond + 10, 0, 100);
+    addStat(life, "happiness", 15);
+    const out = { text: `💕 ${shortName(p)}เงียบไปนาน แล้วยิ้ม "นึกว่าจะไม่พูดสักที" — คุณสองคนเริ่มคบกัน`, kind: "milestone" as const };
+    log(life, out.text, out.kind);
+    return out;
+  }
+  p.bond = clamp(p.bond - 12, 0, 100);
+  addStat(life, "happiness", -10);
+  const out = { text: `${shortName(p)}ขอโทษ "เราเป็นเพื่อนกันแบบนี้ดีแล้ว" — บรรยากาศอึดอัดไปหลายเดือน`, kind: "bad" as const };
+  log(life, out.text, out.kind);
+  return out;
+}
+
+export function cutTies(life: Life, p: Person): Outcome {
+  life.people = life.people.filter((x) => x.id !== p.id);
+  addStat(life, "happiness", p.bond < 30 ? 4 : -4);
+  const out = { text: p.bond < 30 ? `คุณตัดขาดกับ${shortName(p)} — โล่งอกอย่างบอกไม่ถูก` : `คุณตัดขาดกับ${shortName(p)} บางคืนก็ยังนึกถึง` };
+  log(life, out.text);
+  return out;
+}
+
 export function tryForBaby(life: Life, p: Person): Outcome {
   if (life.doneThisYear.includes("baby")) return { text: "ปีนี้ลองไปแล้ว" };
   life.doneThisYear.push("baby");

@@ -74,6 +74,9 @@ export function registerEvents(events: GameEvent[], world?: WorldId | "modern") 
 export const getEvent = (id: string) => registry.get(id);
 export const allEvents = () => [...registry.values()];
 
+/** event เรื่องราว (เกิดได้จำกัดครั้ง ไม่ใช่กลไกบังคับ/ปุ่ม) — ใช้จำข้ามชาติว่าเคยเจอแล้ว */
+export const isStoryEvent = (e: GameEvent) => !e.forced && !e.manual && (e.maxTimes ?? 1) !== 0;
+
 /**
  * ตัวเลือกเสริมที่ content เติมเข้าไปในทุกฉาก (เช่น "ใช้สกิล") — ต่อท้ายตัวเลือกเดิมเสมอ
  * ต้องคำนวณจากสถานะชีวิตอย่างเดียว เพื่อให้ index ตรงกันระหว่างแสดงผลกับตอนเลือก
@@ -123,11 +126,15 @@ export function pickEvents(life: Life, count: number): GameEvent[] {
       taken.add(e.id);
     }
   }
+  const past = new Set(life.pastSeen ?? []);
   for (let i = 0; i < count; i++) {
     const pool: (GameEvent | null)[] = [...registry.values()].filter((e) => !e.forced && eligible(life, e, taken));
+    // เรื่องที่เคยเจอในชาติก่อน: แทบไม่กลับมา ยกเว้นเรื่องใหม่ในช่วงวัยนี้เหลือน้อยแล้ว
+    const fresh = pool.reduce((s, x) => s + (x && !past.has(x.id) ? weightOf(life, x) : 0), 0);
+    const staleMul = fresh >= 30 ? 0.02 : 0.2;
     // "ปีที่ไม่มีอะไรเกิดขึ้น" — กันไม่ให้ event น้ำหนักต่ำถูกเลือกแน่ๆ ตอนที่ event อื่นหมดแล้ว
     pool.push(null);
-    const e = weightedPick(life, pool, (x) => (x ? weightOf(life, x) : QUIET_WEIGHT));
+    const e = weightedPick(life, pool, (x) => (x ? weightOf(life, x) * (past.has(x.id) ? staleMul : 1) : QUIET_WEIGHT));
     if (!e) continue;
     picked.push(e);
     taken.add(e.id);

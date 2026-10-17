@@ -40,7 +40,7 @@ function playLife(seed: number, opts: { hunterBot?: boolean; world?: WorldId } =
   while (life.alive && guard++ < 200) {
     drain(life, r);
     if (!life.alive) break;
-    for (const a of ACTIVITIES) if (!activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
+    for (const a of ACTIVITIES) if (!a.id.startsWith("free_") && !activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
     const questJob = { hunter: "hunter", murim: "wanderer", court: "adventurer", tower: "climber", apocalypse: "survivor", ordinary: "o_mma" }[life.worldId];
     if (life.power && opts.hunterBot && !["hunter", "disciple", "wanderer", "knight", "court_mage", "adventurer"].includes(life.job?.careerId ?? "")) applyJob(life, questJob);
     const careers = CAREERS.filter((c) => worldMatches(c.world, life.worldId));

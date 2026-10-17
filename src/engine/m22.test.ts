@@ -42,7 +42,7 @@ describe("M22 คลาส ความสำเร็จ เควสต่อ�
           resolveChoice(life, o[Math.floor(nextFloat(r) * o.length)].index);
         }
         if (!life.alive) break;
-        for (const a of ACTIVITIES) if (!activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
+        for (const a of ACTIVITIES) if (!a.id.startsWith("free_") && !activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
         if (life.power && life.job?.careerId !== QJ[life.worldId]) applyJob(life, QJ[life.worldId]);
         ageUp(life);
       }

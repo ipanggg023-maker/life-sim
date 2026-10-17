@@ -9,6 +9,7 @@ import { startClimb } from "../../tower/climb";
 import { startScenario } from "../../apocalypse/scenario";
 import { startChallenge } from "../../ordinary/system";
 import { worldOf } from "../../worlds";
+import { freshQuest } from "../../shared/questPool";
 import {
   CLASSES,
   GATE_TYPES,
@@ -120,14 +121,17 @@ function hurt(l: Life, gateRank: number, min: number, max: number): string {
   return ` (สุขภาพ -${dmg})`;
 }
 
+/** จุดที่ Gate เปิด — ไม่ซ้ำกันจนกว่าจะครบทุกแบบ */
+const GATE_SPOTS = ["ใต้สะพานแม่น้ำ", "กลางลานจอดรถห้าง", "ในสถานีรถไฟใต้ดิน", "หลังโรงเรียนประถม", "บนดาดฟ้าตึกสำนักงาน", "ในสวนสาธารณะ", "กลางตลาดสด", "ในอุโมงค์ทางด่วน", "ริมท่าเรือ", "ในโรงงานร้าง"];
 const R = (c: Ctx) => Number(c.rank);
 const monster = (c: Ctx) => String(c.m);
 
 export function startGate(life: Life, gateRank: number) {
-  const t = randInt(life, 0, GATE_TYPES.length - 1);
+  const { t, p } = freshQuest(life, "gate", GATE_TYPES.length, GATE_SPOTS.length);
   const ctx: Ctx = {
     rank: gateRank,
     t,
+    p,
     m: pick(life, GATE_TYPES[t].monsters),
     mid: !life.flags.secretDungeon && chance(life, 0.015) ? "hidden" : pick(life, MIDS.slice(0, 5)),
     score: 0,
@@ -145,7 +149,7 @@ export const GATE_RAID: GameEvent = {
   title: "บุก Gate",
   text: (_l, c) => {
     const g = GATE_TYPES[Number(c.t)];
-    return `คุณก้าวผ่านวงแหวนแสงของ Gate แรงก์ ${rankName(R(c))} เข้าสู่【${g.name}】— ${g.desc}`;
+    return `Gate แรงก์ ${rankName(R(c))} เปิด${c.p !== undefined ? GATE_SPOTS[Number(c.p)] : ""} — คุณก้าวผ่านวงแหวนแสงเข้าสู่【${g.name}】— ${g.desc}`;
   },
   choices: [
     {

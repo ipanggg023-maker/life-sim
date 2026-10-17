@@ -9,6 +9,7 @@ import { visibleChoices } from "../../engine/events";
 import { memoryOdds } from "../../engine/memory";
 import type { Country, Gender, Life, PastLife, Soul, Stats, Wealth, WorldId } from "../../engine/types";
 import { worldOf } from "../../content/worlds";
+import { COLLECTIBLES, SET_BONUS, completedSets, foundThisLife } from "../../content/shared/collection";
 import { displayName, money } from "../../engine/util";
 import { saveSnapshot, type Bundle } from "../../save";
 import type { Act } from "../App";
@@ -141,6 +142,8 @@ export function SoulTab({
         </>
       )}
 
+      <CollectionCard life={life} soul={soul} />
+
       <div className="section-title">ย้ายเซฟไปอีกเครื่อง</div>
       <SaveTransfer life={life} soul={soul} graveyard={graveyard} onImport={onImport} />
 
@@ -161,6 +164,39 @@ export function SoulTab({
       )}
 
       {dev && <DevPanel act={act} onNewLife={onNewLife} />}
+    </div>
+  );
+}
+
+/** ตู้สะสม: ของที่วิญญาณมี (รวมที่เพิ่งเจอชาตินี้) แยกตามโลก */
+function CollectionCard({ life, soul }: { life: Life; soul: Soul }) {
+  const have = new Set([...(soul.collection ?? []), ...foundThisLife(life)]);
+  const done = completedSets(have);
+  return (
+    <div className="card">
+      <div className="card-title">
+        🏺 ตู้สะสม · {have.size}/{COLLECTIBLES.length}
+      </div>
+      <p className="muted small">ของหายากที่เจอระหว่างใช้ชีวิต ติดตัววิญญาณทุกชาติ — ครบชุดของโลกไหน เกิดใหม่ได้โบนัสถาวร</p>
+      {(Object.keys(SET_BONUS) as WorldId[]).map((w) => (
+        <div key={w} className="collect-row">
+          <div className="small">
+            {worldOf(w).name} · {done.includes(w) ? <b>ครบชุด ✓ {SET_BONUS[w].label}</b> : <span className="muted">ครบชุดได้ {SET_BONUS[w].label}</span>}
+          </div>
+          <div className="collect-items">
+            {COLLECTIBLES.filter((c) => c.world === w).map((c) => (
+              <span key={c.id} className={have.has(c.id) ? "collect on" : "collect"} title={have.has(c.id) ? c.name : "ยังไม่เคยเจอ"}>
+                {have.has(c.id) ? c.emoji : "❔"}
+              </span>
+            ))}
+          </div>
+          <div className="muted small">
+            {COLLECTIBLES.filter((c) => c.world === w && have.has(c.id))
+              .map((c) => c.name)
+              .join(" · ")}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

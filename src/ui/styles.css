@@ -791,3 +791,9 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .base-policy { display: grid; grid-template-columns: 84px 1fr; align-items: center; gap: 6px; }
 .base-policy .chips { margin: 4px 0; }
 @media (max-width: 380px) { .base-res { grid-template-columns: repeat(3, 1fr); } }
+
+/* ── ตู้สะสม (M23) ── */
+.collect-row { padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.collect-items { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.collect { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--surface-2); opacity: 0.45; font-size: 18px; }
+.collect.on { opacity: 1; border: 1px solid var(--line); }

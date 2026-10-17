@@ -1,7 +1,9 @@
 import { lifePoints, newAchievements, type Achievement } from "../content/achievements";
 import { maybeComment, startArc } from "../content/manhwa";
 import { createLife, type BirthOptions } from "./game";
+import { getEvent, isStoryEvent } from "./events";
 import { mergeMemories } from "./memory";
+import { applySetBonus, foundThisLife } from "../content/shared/collection";
 import { randInt } from "./rng";
 import type { Legacy, Life, Memory, Soul, Wealth } from "./types";
 import { clamp, displayName, log, money, people, shortName } from "./util";
@@ -46,7 +48,26 @@ export function claimAward(soul: Soul, life: Life, regress: boolean): number {
   soul.lives += 1;
   soul.achievements.push(...a.achievements.map((x) => x.id));
   soul.awarded = [...soul.awarded, life.id].slice(-300);
+  rememberSeen(soul, life);
+  soul.collection = [...new Set([...(soul.collection ?? []), ...foundThisLife(life)])];
   return gained;
+}
+
+/** ส่งความทรงจำของวิญญาณให้ชีวิตใหม่ (เรื่องที่เคยเจอ ตู้สะสม) — newBirth = เกิดใหม่จริง ได้โบนัสครบชุด */
+export function applySoul(life: Life, soul: Soul, newBirth: boolean) {
+  life.pastSeen = soul.seenEver;
+  life.ownedItems = soul.collection;
+  if (newBirth) applySetBonus(life, soul.collection ?? []);
+}
+
+/** จำ event เรื่องราวที่ชาตินี้เจอแล้ว เพื่อให้ชาติหน้าได้เจอเรื่องใหม่ */
+export function rememberSeen(soul: Soul, life: Life) {
+  const all = new Set(soul.seenEver ?? []);
+  for (const id of Object.keys(life.seen)) {
+    const e = getEvent(id);
+    if (e && isStoryEvent(e)) all.add(id);
+  }
+  soul.seenEver = [...all];
 }
 
 // ───────────────────────── ร้านวิญญาณ ─────────────────────────

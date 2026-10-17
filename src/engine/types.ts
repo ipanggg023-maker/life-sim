@@ -173,6 +173,10 @@ export interface Life {
   flags: Record<string, string | number | boolean>;
   /** event ที่เคยเกิดแล้ว (นับครั้ง) */
   seen: Record<string, number>;
+  /** event เรื่องราวที่วิญญาณเคยเจอในชาติก่อนๆ — ชาตินี้จะเลี่ยงไปเจอเรื่องใหม่ก่อน */
+  pastSeen?: string[];
+  /** ของสะสมที่วิญญาณมีอยู่แล้วตอนเกิด */
+  ownedItems?: string[];
   /** กิจกรรมที่ทำไปแล้วในปีนี้ */
   doneThisYear: string[];
 
@@ -248,6 +252,10 @@ export interface Soul {
   achievements: string[];
   /** life id ที่ให้แต้มไปแล้ว (กันได้ซ้ำ) */
   awarded: string[];
+  /** event เรื่องราวที่เคยเจอแล้วในทุกชาติ (ไม่นับกลไกที่วนซ้ำได้) */
+  seenEver?: string[];
+  /** ตู้สะสม: ของที่เคยเจอในทุกชาติ */
+  collection?: string[];
   perks: {
     blessing: number; // ใช้ครั้งเดียวต่อการเกิด
     reroll: number;

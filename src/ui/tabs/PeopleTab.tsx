@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { argue, askMoney, breakUp, propose, spendTime, tryForBaby } from "../../engine/game";
+import { argue, askMoney, breakUp, propose, spendTime, tryForBaby, confess, cutTies, giveGift } from "../../engine/game";
 import type { Life, Person, Relation } from "../../engine/types";
 import { relationLabel } from "../../engine/util";
 import type { Act } from "../App";
@@ -68,6 +68,21 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
       {(p.relation === "partner" || p.relation === "spouse") && (
         <button className="btn small ghost" onClick={() => act((l) => breakUp(l, p))}>
           {p.relation === "spouse" ? "หย่า" : "เลิก"}
+        </button>
+      )}
+      {life.age >= 6 && (
+        <button className="btn small" disabled={life.doneThisYear.includes(`gift:${p.id}`)} onClick={() => act((l) => giveGift(l, p))}>
+          🎁 ให้ของขวัญ
+        </button>
+      )}
+      {["friend", "rival", "ally"].includes(p.relation) && life.age >= 15 && !life.people.some((x) => x.alive && (x.relation === "partner" || x.relation === "spouse")) && (
+        <button className="btn small" disabled={life.doneThisYear.includes("confess")} onClick={() => act((l) => confess(l, p))}>
+          💌 สารภาพรัก
+        </button>
+      )}
+      {["friend", "rival", "ally"].includes(p.relation) && (
+        <button className="btn small ghost" onClick={() => act((l) => cutTies(l, p))}>
+          ตัดขาด
         </button>
       )}
       <button className="btn small ghost" onClick={() => act((l) => argue(l, p))}>

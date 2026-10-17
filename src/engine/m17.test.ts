@@ -37,7 +37,7 @@ function play(seed: number, seen: Set<string>, grinder: boolean): Life {
   while (life.alive && guard++ < 200) {
     drain(life, r, seen);
     if (!life.alive) break;
-    for (const a of ACTIVITIES) if (!activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
+    for (const a of ACTIVITIES) if (!a.id.startsWith("free_") && !activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
     if (grinder && life.power && !["disciple", "wanderer"].includes(life.job?.careerId ?? "")) applyJob(life, "wanderer");
     const careers = CAREERS.filter((c) => worldMatches(c.world, life.worldId));
     if (!life.job && life.age >= 16) applyJob(life, careers[Math.floor(nextFloat(r) * careers.length)].id);

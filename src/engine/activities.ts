@@ -10,8 +10,8 @@ export interface Activity {
   name: string;
   desc: string;
   minAge: number;
-  /** ไม่ใส่ = โลก Hunter */
-  world?: WorldId;
+  /** ไม่ใส่ = ทุกโลกยุคปัจจุบัน · "all" = ทุกโลก */
+  world?: WorldId | "all";
   cost?: number;
   /** % สำเร็จที่แสดงให้ผู้เล่นเห็น */
   odds?: (life: Life) => number;
@@ -148,10 +148,15 @@ export const ACTIVITIES: Activity[] = [
   },
 ];
 
-export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => worldMatches(a.world, life.worldId));
+const inWorld = (a: Activity, w: WorldId) => a.world === "all" || worldMatches(a.world, w);
+/** ระหว่างติดคุกทำได้แค่ไม่กี่อย่าง */
+const JAIL_OK = /^(gym|read|free_create|.*_rest)$/;
+
+export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => inWorld(a, life.worldId));
 
 export function activityLocked(life: Life, a: Activity): string | undefined {
-  if (!worldMatches(a.world, life.worldId)) return "ไม่มีในโลกนี้";
+  if (!inWorld(a, life.worldId)) return "ไม่มีในโลกนี้";
+  if (Number(life.flags.jailUntil ?? -1) > life.age && !JAIL_OK.test(a.id)) return "ติดคุกอยู่";
   if (life.age < a.minAge) return `อายุ ${a.minAge}+`;
   if (a.available && !a.available(life)) return "ตอนนี้ทำไม่ได้";
   if (life.doneThisYear.includes(`act:${a.id}`)) return "ปีนี้ทำแล้ว";
@@ -165,6 +170,7 @@ export function doActivity(life: Life, id: string): Outcome | undefined {
   life.doneThisYear.push(`act:${a.id}`);
   life.flags[`act_${a.id}`] = Number(life.flags[`act_${a.id}`] ?? 0) + 1; // นับไว้ปลดล็อกสกิลติดตัว
   const out = a.run(life);
-  log(life, out.text, out.kind ?? "normal");
+  // ปุ่มที่เปิดฉากให้เลือก (runEvent) คืนข้อความว่าง — ผลจะมาตอนเลือก
+  if (out.text) log(life, out.text, out.kind ?? "normal");
   return out;
 }

@@ -19,7 +19,7 @@ export const DUAL_CLASS: GameEvent = {
   id: "dual.awaken",
   minAge: 14,
   maxAge: 70,
-  weight: (l) => (l.power && l.power.level >= 20 && !l.flags.subClass ? 4 : 0),
+  weight: (l) => (l.power && l.power.level >= 20 && !l.flags.subClass ? 10 : 0),
   title: "พลังสายที่สอง",
   system: true,
   prepare: (l: Life) => {

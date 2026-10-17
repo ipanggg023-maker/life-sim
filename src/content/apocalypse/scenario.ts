@@ -7,6 +7,7 @@ import { addFame, addMoney, addStat, checkChance, clamp, log, shortName } from "
 import { startArc } from "../manhwa";
 import { addRes, defMod, getBase, mainMod } from "./base";
 import { CLASSES, awaken, classById, fightOdds, gateRewards, luckyRankUp, markTurn, offerClasses, rankName, rollAwakening, survivalOdds } from "../hunter/power";
+import { atPlace, freshQuest } from "../shared/questPool";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
 const bad = (text: string, next?: string): Outcome => ({ text, kind: "bad", next });
@@ -261,12 +262,16 @@ export const MAIN_SCENARIO: GameEvent = {
 // ───────────────────────── ฉากภารกิจย่อย ─────────────────────────
 
 const SIDE = [
-  { name: "ล่าสัตว์อสูรในห้างร้าง", desc: "ห้างสรรพสินค้าที่เคยไปทุกสุดสัปดาห์ กลายเป็นรังของสัตว์อสูร" },
-  { name: "เก็บยาในโรงพยาบาลร้าง", desc: "ฐานต้องการยาปฏิชีวนะ — และโรงพยาบาลไม่เคยว่างจริงๆ" },
-  { name: "คุ้มกันรถไฟขบวนสุดท้าย", desc: "รถไฟที่ยังวิ่งได้ขบวนเดียวต้องข้ามสะพานที่สัตว์อสูรยึดไว้" },
-  { name: "ไล่ล่าแก๊งปล้น", desc: "แก๊งปล้นผู้รอดชีวิตจับคนในฐานเพื่อนบ้านไปเป็นตัวประกัน" },
-  { name: "ฉากพิเศษของดวงดาว", desc: "ดวงดาวดวงหนึ่งเบื่อ จึงเปิดฉากเกมโชว์ — ชนะได้ของ แพ้ได้แผล" },
+  { name: "ล่าสัตว์อสูรใน{p}", desc: "ที่ที่เคยไปทุกสุดสัปดาห์ กลายเป็นรังของสัตว์อสูร" },
+  { name: "เก็บยาจาก{p}", desc: "ฐานต้องการยาปฏิชีวนะ — ข่าวว่าที่นั่นยังมีของเหลือ และไม่เคยว่างจริงๆ" },
+  { name: "คุ้มกันขบวนเสบียงผ่าน{p}", desc: "รถบรรทุกที่ยังวิ่งได้คันสุดท้ายต้องผ่านเส้นทางที่สัตว์อสูรยึดไว้" },
+  { name: "ไล่ล่าแก๊งปล้นที่ซ่อนตัวใน{p}", desc: "แก๊งปล้นผู้รอดชีวิตจับคนในฐานเพื่อนบ้านไปเป็นตัวประกัน" },
+  { name: "ฉากพิเศษของดวงดาวที่{p}", desc: "ดวงดาวดวงหนึ่งเบื่อ จึงเปิดฉากเกมโชว์ — ชนะได้ของ แพ้ได้แผล" },
+  { name: "กู้สัญญาณวิทยุบน{p}", desc: "มีเสียงขอความช่วยเหลือดังมาทุกคืน ต้องมีคนขึ้นไปซ่อมเสาสัญญาณ" },
+  { name: "ตามหาผู้รอดชีวิตที่ติดอยู่ใน{p}", desc: "เด็กนักเรียนกลุ่มหนึ่งส่งข้อความว่ายังรอดอยู่ — เมื่อสามวันก่อน" },
+  { name: "ทำลายรังไข่สัตว์อสูรใต้{p}", desc: "ถ้าไข่ฟักครบรอบนี้ ทั้งเขตจะไม่เหลือที่ให้คนอยู่" },
 ] as const;
+const SIDE_PLACES = ["ห้างสรรพสินค้าร้าง", "โรงพยาบาลกลางเมือง", "สะพานแขวน", "สถานีรถไฟใต้ดิน", "โรงเรียนมัธยมเก่า", "ตึกระฟ้าที่เอียง", "สนามบินที่ถูกทิ้ง", "โกดังท่าเรือ", "สวนสนุกร้าง", "ศูนย์วิจัยใต้ดิน"];
 const BOSSES = ["หมาป่าอสูรสามหัว", "หัวหน้าแก๊งปล้นที่ได้สกิลหายาก", "ตั๊กแตนยักษ์ราชินี", "ซากศพเดินได้ระดับผู้นำ", "ไคเมร่าจากห้องแล็บ"];
 const MIDS = ["survivors", "cache", "survivors", "cache", "hidden"] as const;
 const R = (c: Ctx) => Number(c.rank);
@@ -275,7 +280,7 @@ const boss = (c: Ctx) => String(c.b);
 export function startScenario(life: Life, r: number) {
   runEvent(life, "apoc.side", {
     rank: r,
-    t: randInt(life, 0, SIDE.length - 1),
+    ...freshQuest(life, "apoc", SIDE.length, SIDE_PLACES.length),
     b: pick(life, BOSSES),
     mid: !life.flags.hiddenScenario && chance(life, 0.02) ? "hidden" : pick(life, MIDS.slice(0, 4)),
     score: 0,
@@ -292,7 +297,7 @@ export const SIDE_SCENARIO: GameEvent = {
   title: "ฉากภารกิจย่อย",
   text: (_l, c) => {
     const s = SIDE[Number(c.t)];
-    return `[ฉากภารกิจย่อย ระดับ ${rankName(R(c))}]【${s.name}】— ${s.desc}`;
+    return `[ฉากภารกิจย่อย ระดับ ${rankName(R(c))}]【${atPlace(s.name, SIDE_PLACES[Number(c.p ?? 0)])}】— ${s.desc}`;
   },
   choices: [
     {

@@ -830,4 +830,5 @@ const MODERN: GameEvent[] = [
   },
 ];
 
-export const CHAIN_EVENTS: GameEvent[] = [...MURIM, ...COURT, ...MODERN];
+/** ตอนต่อของเส้นเรื่อง: น้ำหนักสูงพิเศษ — เรื่องที่เริ่มแล้วควรได้เดินต่อ ไม่จมหายไปในกอง event ทั่วไป */
+export const CHAIN_EVENTS: GameEvent[] = [...MURIM, ...COURT, ...MODERN].map((e) => ({ ...e, weight: typeof e.weight === "number" ? e.weight * 3 : e.weight }));

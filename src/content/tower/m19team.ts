@@ -33,7 +33,7 @@ export const M19_TEAM: GameEvent[] = [
     id: "t19.team.found",
     minAge: 10,
     maxAge: 70,
-    weight: 30,
+    weight: 40,
     when: (l) => climbing(l) && !teamName(l) && floor(l) >= 2,
     title: "ตั้งทีม",
     prepare: (l) => {

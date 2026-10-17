@@ -4,18 +4,24 @@ import { chance, pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { addFame, addStat, checkChance, clamp } from "../../engine/util";
 import { fightOdds, gateRewards, luckyRankUp, rankLabel, survivalOdds } from "../hunter/power";
+import { atPlace, freshQuest } from "../shared/questPool";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
 const bad = (text: string, next?: string): Outcome => ({ text, kind: "bad", next });
 const meh = (text: string, next?: string): Outcome => ({ text, next });
 
 export const QUEST_TYPES = [
-  { name: "ปราบโจรภูเขาเฮยเฟิง", desc: "โจรหลายร้อยคนยึดช่องเขา ปล้นขบวนสินค้ามาสามเดือนแล้ว", bosses: ["หัวหน้าโจรขวานคู่", "ยอดโจรพยัคฆ์ดำ", "เจ้าป้อมโจรสามแขน"] },
-  { name: "คุ้มกันขบวนสินค้าข้ามทะเลทราย", desc: "อูฐสามสิบตัวบรรทุกหยกล้ำค่า ข่าวว่ามีคนจ้องปล้นตลอดทาง", bosses: ["มือดาบเร่ร่อนหน้าบาก", "สามพี่น้องอสูรทราย", "นางพญางูทะเลทราย"] },
-  { name: "ล่าพยัคฆ์อสูรแห่งป่าไผ่", desc: "เสือขาวตาแดงกินคนไปแล้วสิบสองคน ชาวบ้านไม่กล้าออกจากบ้าน", bosses: ["พยัคฆ์ขาวตาโลหิต", "ราชาลิงเพลิง", "งูเหลือมหงอนทอง"] },
-  { name: "ตามล่าโจรเด็ดดอกไม้", desc: "จอมโจรผู้ลักพาตัวหญิงสาวหลบอยู่ในเมืองนี้", bosses: ["โจรเด็ดดอกไม้หน้าหยก", "จอมขโมยไร้เงา", "บุรุษพันหน้า"] },
-  { name: "บุกรังลับลัทธิมาร", desc: "สาวกลัทธิมารใช้ศาลเจ้าร้างเป็นที่ทำพิธีบูชายัญ", bosses: ["ผู้พิทักษ์ธงโลหิต", "นักบวชมารหกแขน", "ทูตปีศาจเสื้อแดง"] },
+  { name: "ปราบโจรที่{p}", desc: "โจรหลายร้อยคนยึดเส้นทาง ปล้นขบวนสินค้ามาสามเดือนแล้ว", bosses: ["หัวหน้าโจรขวานคู่", "ยอดโจรพยัคฆ์ดำ", "เจ้าป้อมโจรสามแขน"] },
+  { name: "คุ้มกันขบวนสินค้าผ่าน{p}", desc: "หีบหยกล้ำค่าสามสิบหีบ ข่าวว่ามีคนจ้องปล้นตลอดทาง", bosses: ["มือดาบเร่ร่อนหน้าบาก", "สามพี่น้องอสูรทราย", "นางพญางูพิษ"] },
+  { name: "ล่าอสูรกินคนแห่ง{p}", desc: "สัตว์อสูรตาแดงกินคนไปแล้วสิบสองคน ชาวบ้านไม่กล้าออกจากบ้าน", bosses: ["พยัคฆ์ขาวตาโลหิต", "ราชาลิงเพลิง", "งูเหลือมหงอนทอง"] },
+  { name: "ตามล่าโจรเด็ดดอกไม้ที่{p}", desc: "จอมโจรผู้ลักพาตัวหญิงสาวหลบซ่อนอยู่แถวนี้", bosses: ["โจรเด็ดดอกไม้หน้าหยก", "จอมขโมยไร้เงา", "บุรุษพันหน้า"] },
+  { name: "บุกรังลับลัทธิมารที่{p}", desc: "สาวกลัทธิมารใช้ศาลเจ้าร้างเป็นที่ทำพิธีบูชายัญ", bosses: ["ผู้พิทักษ์ธงโลหิต", "นักบวชมารหกแขน", "ทูตปีศาจเสื้อแดง"] },
+  { name: "ชิงคัมภีร์ที่ถูกขโมยคืนที่{p}", desc: "คัมภีร์ประจำสำนักพันธมิตรถูกขโมย คนร้ายหนีมาทางนี้", bosses: ["จอมขโมยมือเทวดา", "ศิษย์ทรยศสำนักบู๊ตึ๊ง", "นักพรตชุดดำ"] },
+  { name: "ช่วยตัวประกันจากโจรสลัดที่{p}", desc: "ลูกสาวพ่อค้าเกลือถูกจับเรียกค่าไถ่ เส้นตายคือรุ่งเช้า", bosses: ["หัวหน้าโจรสลัดตาเดียว", "มือมีดบินพันเล่ม", "นางโจรสลัดแส้เหล็ก"] },
+  { name: "สืบคดีฆาตกรรมปริศนาที่{p}", desc: "ศพชาวยุทธ์ห้าศพ บาดแผลเดียวกันหมด — วิชาที่ควรสาบสูญไปแล้ว", bosses: ["นักฆ่าวิชานิ้วมรณะ", "ผู้อาวุโสที่แสร้งตาย", "คนเฝ้าสุสานไร้หน้า"] },
 ] as const;
+
+export const QUEST_PLACES = ["ภูเขาเฮยเฟิง", "ช่องเขาอินซาน", "ท่าเรือหยางโจว", "ป่าไผ่ซูโจว", "ทะเลสาบไท่หู", "ด่านเจียอวี้กวน", "เมืองลั่วหยาง", "หุบเขาวิญญาณร้าย", "ทุ่งหญ้าแดนเหนือ", "ริมแม่น้ำแยงซี"];
 
 const MIDS = ["ambush", "treasure", "victim", "ambush", "treasure", "cave"] as const;
 const R = (c: Ctx) => Number(c.rank);
@@ -33,10 +39,11 @@ function hurt(l: Life, qRank: number, min: number, max: number): string {
 }
 
 export function startQuest(life: Life, qRank: number) {
-  const t = randInt(life, 0, QUEST_TYPES.length - 1);
+  const { t, p } = freshQuest(life, "murim", QUEST_TYPES.length, QUEST_PLACES.length);
   runEvent(life, "murim.quest", {
     rank: qRank,
     t,
+    p,
     b: pick(life, QUEST_TYPES[t].bosses),
     mid: !life.flags.secretCave && chance(life, 0.015) ? "cave" : pick(life, MIDS.slice(0, 5)),
     score: 0,
@@ -53,7 +60,7 @@ export const MURIM_QUEST: GameEvent = {
   title: "ภารกิจยุทธภพ",
   text: (l, c) => {
     const q = QUEST_TYPES[Number(c.t)];
-    return `ภารกิจระดับ${rankLabel(l, R(c))}:【${q.name}】— ${q.desc}`;
+    return `ภารกิจระดับ${rankLabel(l, R(c))}:【${atPlace(q.name, QUEST_PLACES[Number(c.p ?? 0)])}】— ${q.desc}`;
   },
   choices: [
     {

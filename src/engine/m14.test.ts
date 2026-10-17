@@ -35,7 +35,7 @@ function play(life: Life, r: { rng: number }) {
       resolveChoice(life, o[Math.floor(nextFloat(r) * o.length)].index);
     }
     if (!life.alive) break;
-    for (const a of ACTIVITIES) if (!activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
+    for (const a of ACTIVITIES) if (!a.id.startsWith("free_") && !activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
     if (life.age >= 25 && life.age <= 40 && !life.people.some((p) => p.relation === "spouse")) createPerson(life, "spouse", { age: life.age, bond: 80 });
     const sp = life.people.find((p) => p.relation === "spouse" && p.alive);
     if (sp && life.age <= 40) tryForBaby(life, sp);

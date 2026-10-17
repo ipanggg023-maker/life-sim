@@ -43,7 +43,7 @@ function play(seed: number, seen: Set<string>): Life {
   while (life.alive && guard++ < 200) {
     drain(life, r, seen);
     if (!life.alive) break;
-    for (const a of ACTIVITIES) if (!activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
+    for (const a of ACTIVITIES) if (!a.id.startsWith("free_") && !activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
     if (life.power && life.job?.careerId !== "hunter") applyJob(life, "hunter");
     const careers = CAREERS.filter((c) => worldMatches(c.world, life.worldId));
     if (!life.job && life.age >= 16) applyJob(life, careers[Math.floor(nextFloat(r) * careers.length)].id);

@@ -36,7 +36,7 @@ function play(life: Life, r: { rng: number }, onYear?: (l: Life) => void) {
     }
     if (!life.alive) break;
     if (life.power && life.job?.careerId !== QUEST_JOB[life.worldId]) applyJob(life, QUEST_JOB[life.worldId]);
-    for (const a of ACTIVITIES) if (!activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
+    for (const a of ACTIVITIES) if (!a.id.startsWith("free_") && !activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
     onYear?.(life);
     ageUp(life);
   }

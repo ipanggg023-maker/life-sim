@@ -13,6 +13,10 @@ import { PHONE_EVENTS } from "../phone";
 import { DUAL_CLASS } from "./dualClass";
 import { CHAIN_EVENTS } from "./chains";
 import { COUNTRY_EVENTS } from "./countryEvents"; // M21: เหตุการณ์เฉพาะประเทศ ไทย/เกาหลี/ญี่ปุ่น
+import { FREE_EVENTS } from "./freedom"; // M23: อิสระในการเล่น
+import { MODERN23_EVENTS } from "./modern23";
+import { LIFE23_EVENTS } from "./life23";
+import "./collection"; // M23: ตู้สะสมของวิญญาณ
 
 let loaded = false;
 
@@ -21,5 +25,6 @@ export function loadSharedEvents() {
   if (loaded) return;
   loaded = true;
   registerEvents(COUNTRY_EVENTS, "modern");
-  registerEvents([...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, ...PHONE_EVENTS, DUAL_CLASS, ...CHAIN_EVENTS]);
+  registerEvents(MODERN23_EVENTS, "modern");
+  registerEvents([...LIFE23_EVENTS, ...FREE_EVENTS, ...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, ...PHONE_EVENTS, DUAL_CLASS, ...CHAIN_EVENTS]);
 }

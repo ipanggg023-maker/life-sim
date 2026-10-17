@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ageUp, createLife, pastSelfOf, resolveChoice, toPastLife, type BirthOptions } from "../engine/game";
 import { currentScene, labelOf, type Outcome } from "../engine/events";
-import { buildHeir, buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
+import { applySoul, buildHeir, buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
 import type { Life, PastLife, Soul, WorldId } from "../engine/types";
 import { loc } from "../engine/util";
 import { WORLDS } from "../content/worlds";
@@ -137,6 +137,7 @@ export function App() {
       s.perks.lockedTalent = undefined;
       await commitSoul(s);
       const l = createLife(full);
+      applySoul(l, s, true);
       setBirthOpts(full);
       setStarted(false);
       setTab(null);
@@ -152,6 +153,7 @@ export function App() {
     soul.perks.reroll--;
     await commitSoul(soul);
     const l = createLife({ ...birthOpts, seed: undefined });
+    applySoul(l, soul, true);
     await pruneSnapshots();
     await saveSnapshot(l);
     await commit(l);
@@ -191,6 +193,7 @@ export function App() {
       if (choice === "regress") {
         const snap = await loadSnapshot(life.id, regressTarget(life));
         const next = buildRegression(life, snap, soul.perks.clarity);
+        applySoul(next, soul, false);
         await pruneSnapshots();
         setTab(null);
         setStarted(true);
@@ -201,6 +204,7 @@ export function App() {
       if (choice.startsWith("heir:")) {
         // ภาคต่อ: เล่นต่อเป็นลูก — เริ่มทันทีโดยไม่ผ่านหน้าสุ่มเกิด
         const next = buildHeir(life, choice.slice(5));
+        applySoul(next, soul, true);
         await clearCurrent();
         await pruneSnapshots();
         await saveSnapshot(next);

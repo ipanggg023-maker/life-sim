@@ -39,7 +39,7 @@ export const NEMESIS_EVENTS: GameEvent[] = [
     id: "nemesis.meet",
     minAge: 7,
     maxAge: 11,
-    weight: 30,
+    weight: 40,
     when: (l) => !l.flags.nemesisId,
     title: "คู่ปรับ",
     prepare: (l) => {
