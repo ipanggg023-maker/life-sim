@@ -6,6 +6,8 @@ import { HUNTER_LIFE_EVENTS } from "./events/hunterLife";
 import { LEGACY_EVENTS, MEMORY_EVENTS } from "./events/memory";
 import { SCHOOL_EVENTS } from "./events/school";
 import { WORLD_EVENTS } from "./events/world";
+import { M16_EVENTS } from "./events/m16";
+import "./m16"; // M16: ตลาดคอร์ · กิลด์ของตัวเอง · Gate Break (yearHook)
 
 let loaded = false;
 
@@ -22,4 +24,5 @@ export function loadHunterWorld() {
     ...MEMORY_EVENTS,
     ...LEGACY_EVENTS,
   ], "hunter");
+  registerEvents(M16_EVENTS, "hunter");
 }

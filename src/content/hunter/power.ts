@@ -342,6 +342,9 @@ export const GUILDS: Guild[] = [
 
 export const guildById = (id?: string) => GUILDS.find((g) => g.id === id);
 export const guildsFor = (life: Pick<Life, "worldId">) => GUILDS.filter((g) => (g.world ?? "hunter") === life.worldId);
+/** M16: ระบบประจำโลกเติมกิลด์ที่ไม่อยู่ในรายชื่อได้ (เช่น กิลด์ที่ผู้เล่นก่อตั้งเอง) */
+export const guildHooks: Array<(life: Life) => Guild | undefined> = [];
+const guildOf = (life: Life) => guildById(life.power?.guild) ?? guildHooks.reduce<Guild | undefined>((g, f) => g ?? f(life), undefined);
 
 // ───────────────────────── ประเภท Gate ─────────────────────────
 
@@ -365,7 +368,7 @@ export function combatPower(life: Life): number {
   if (!p && life.sys) return Math.round(((effSys(life, "str") + effSys(life, "agi") + effSys(life, "sta")) / 3) * 0.4 + sumSkills(life, "cp") + passiveBonus(life, "cp"));
   if (!p) return 0;
   const cls = classById(p.hunterClass);
-  const g = guildById(p.guild);
+  const g = guildOf(life);
   const sub = subClassOf(life);
   return Math.round((sub ? Math.max(0, sub.cp) * 0.5 + 2 : 0) +
     p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp") + sponsorBonus(life, "cp") + passiveBonus(life, "cp"),
@@ -381,7 +384,7 @@ export function fightOdds(life: Life, gateRank: number, mod = 0) {
 export function survivalOdds(life: Life, gateRank: number, mod = 0) {
   const p = life.power;
   const cls = p ? classById(p.hunterClass) : undefined;
-  const g = guildById(p?.guild);
+  const g = guildOf(life);
   return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300 + partySize(life) * 0.03 + titleBonus(life, "survival") + sponsorBonus(life, "survival") + passiveBonus(life, "survival") + sumSkills(life, "survival"), 0.05, 0.99);
 }
 
@@ -597,7 +600,7 @@ export function gainExp(life: Life, amount: number) {
 export function gateRewards(life: Life, rawRank: number, mult: number, boss: boolean): string {
   const gateRank = clamp(rawRank, 0, GATE_PAY.length - 1); // บาง event ใช้ "แรงก์ตัวเอง + 1" ซึ่งเกิน SSS ได้
   const p = life.power!;
-  const g = guildById(p.guild);
+  const g = guildOf(life);
   // กิลด์หักส่วนแบ่ง แต่ได้ภารกิจที่จ่ายดีกว่า
   const money = Math.round((GATE_PAY[gateRank] * mult * (0.6 + nextFloat(life) * 0.8) * (g ? g.pay * 0.8 : 1)) / 1000) * 1000;
   const exp = Math.pow(gateRank + 1, 1.5) * 60 * mult * (boss ? 1.5 : 1);
