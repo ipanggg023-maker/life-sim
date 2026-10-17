@@ -18,6 +18,8 @@ import type { Act } from "../App";
 import { SystemWindow } from "./SystemWindow";
 import { HunterGuildCard } from "./HunterGuildCard";
 
+import { MurimCard } from "./MurimCard";
+
 /** คำเรียกในแท็บพลังของแต่ละโลก */
 const UI: Record<
   WorldId,
@@ -153,6 +155,8 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
       {life.worldId === "court" && life.flags.role && <NovelCard life={life} />}
       {life.worldId === "court" && life.flags.academy && <AcademyCard life={life} />}
       {life.worldId === "hunter" && <HunterGuildCard life={life} act={act} />}
+
+      {life.worldId === "murim" && <MurimCard life={life} act={act} />}
 
       <TitlesCard life={life} act={act} />
       <PassivesCard life={life} />
