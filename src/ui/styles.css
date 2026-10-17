@@ -719,3 +719,15 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .sys-stat { display: grid; grid-template-columns: 74px 1fr 34px auto; align-items: center; gap: 8px; font-size: 13px; }
 .sys-stat .bar { height: 8px; }
 .sys-stat .plus { min-width: 30px; padding: 2px 8px; }
+
+/* M20 */
+.base-card .sys-head { margin-bottom: 4px; }
+.base-res { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0; }
+.base-res-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 13px; min-width: 0; }
+.base-res-item b { font-size: 15px; }
+.base-res-item.short { border-color: var(--bad); color: var(--bad); }
+.base-morale { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; margin-bottom: 4px; }
+.base-lv { font-size: 12px; color: var(--warn); font-weight: 700; }
+.base-policy { display: grid; grid-template-columns: 84px 1fr; align-items: center; gap: 6px; }
+.base-policy .chips { margin: 4px 0; }
+@media (max-width: 380px) { .base-res { grid-template-columns: repeat(3, 1fr); } }

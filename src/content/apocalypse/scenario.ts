@@ -5,6 +5,7 @@ import { chance, pick, randInt } from "../../engine/rng";
 import type { HunterClass, Life } from "../../engine/types";
 import { addFame, addMoney, addStat, checkChance, clamp, log, shortName } from "../../engine/util";
 import { startArc } from "../manhwa";
+import { addRes, defMod, getBase, mainMod } from "./base";
 import { CLASSES, awaken, classById, fightOdds, gateRewards, luckyRankUp, markTurn, offerClasses, rankName, rollAwakening, survivalOdds } from "../hunter/power";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
@@ -215,29 +216,30 @@ export const MAIN_SCENARIO: GameEvent = {
     {
       label: "ออกไปแนวหน้า",
       tone: "danger",
-      odds: (l, c) => fightOdds(l, MAIN_RANK[Number(c.n)]),
-      survival: (l, c) => survivalOdds(l, MAIN_RANK[Number(c.n)]),
+      odds: (l, c) => fightOdds(l, MAIN_RANK[Number(c.n)], mainMod(l)),
+      survival: (l, c) => survivalOdds(l, MAIN_RANK[Number(c.n)], mainMod(l)),
       run: (l, c, ok) => {
         const n = Number(c.n);
         const m = mainOf(n);
         if (ok) {
-          const r = gateRewards(l, MAIN_RANK[n], 1.5, true);
+          // ฐานที่แข็งแรงส่งคนตามไปเก็บของจากสนามรบ (M20)
+          const r = gateRewards(l, MAIN_RANK[n], 1.5 + mainMod(l), true) + addRes(l, { mat: 6 + n * 2, pop: randInt(l, 2, 5), morale: 8 });
           addFame(l, 4 + n);
           if (n >= 4 && chance(l, 0.35)) luckyRankUp(l, `[ฉากภารกิจหลัก #${n} สำเร็จ] รางวัลพิเศษ`);
           advanceMain(l, true);
           return { text: `คุณล้ม${m.foe}ได้! ฉากภารกิจหลัก #${n} สำเร็จ ${r}`, kind: n >= LAST_SCENARIO ? "milestone" : "good" };
         }
-        if (!chance(l, survivalOdds(l, MAIN_RANK[n]))) {
+        if (!chance(l, survivalOdds(l, MAIN_RANK[n], mainMod(l)))) {
           kill(l, `สิ้นชีพในฉากภารกิจหลัก #${n}: ${m.name}`);
           return bad(`${m.foe}แข็งแกร่งเกินไป…`);
         }
         advanceMain(l, false);
-        return bad(`คุณแพ้ แต่รอดมาได้ — ผู้รอดชีวิตคนอื่นจบฉากนี้แทน${hurt(l, 12, 25)}`);
+        return bad(`คุณแพ้ แต่รอดมาได้ — ผู้รอดชีวิตคนอื่นจบฉากนี้แทน${hurt(l, 12, 25)}${addRes(l, { pop: -randInt(l, 1, 4), morale: -6 })}`);
       },
     },
     {
-      label: "อยู่แนวหลัง ปกป้องคนในฐาน",
-      odds: (l, c) => survivalOdds(l, Math.max(0, MAIN_RANK[Number(c.n)] - 2)),
+      label: (l) => (getBase(l) ? `อยู่แนวหลัง ปกป้อง${getBase(l)!.name}` : "อยู่แนวหลัง ปกป้องคนในฐาน"),
+      odds: (l, c) => survivalOdds(l, Math.max(0, MAIN_RANK[Number(c.n)] - 2), defMod(l)),
       run: (l, c, ok) => {
         const n = Number(c.n);
         if (!ok) {
@@ -249,7 +251,8 @@ export const MAIN_SCENARIO: GameEvent = {
         }
         addStat(l, "happiness", 2);
         advanceMain(l, false);
-        return meh(ok ? "ฐานของคุณรอดทั้งฐาน — ไม่มีใครจำชื่อคุณในฉากนี้ แต่ทุกคนในฐานจำได้" : "ฐานถูกตีแตกไปครึ่งหนึ่ง คุณรอดมาได้พร้อมบาดแผลเต็มตัว");
+        const d = ok ? addRes(l, { morale: 6 }) : addRes(l, { pop: -randInt(l, 2, 6), food: -10, mat: -8, morale: -8 });
+        return meh((ok ? "ฐานของคุณรอดทั้งฐาน — ไม่มีใครจำชื่อคุณในฉากนี้ แต่ทุกคนในฐานจำได้" : "ฐานถูกตีแตกไปครึ่งหนึ่ง คุณรอดมาได้พร้อมบาดแผลเต็มตัว") + d);
       },
     },
   ],

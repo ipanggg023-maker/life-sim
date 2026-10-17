@@ -2,6 +2,7 @@ import { registerEvents } from "../../engine/events";
 import { APOCALYPSE_EVENTS } from "./events";
 import { DOOM, MAIN_SCENARIO, SIDE_SCENARIO } from "./scenario";
 import "./careers"; // อาชีพและกิจกรรมของโลกวันสิ้นโลก
+import { M20_EVENTS } from "./m20"; // ฐานของคุณ (M20)
 
 let loaded = false;
 
@@ -9,5 +10,5 @@ let loaded = false;
 export function loadApocalypseWorld() {
   if (loaded) return;
   loaded = true;
-  registerEvents([DOOM, MAIN_SCENARIO, SIDE_SCENARIO, ...APOCALYPSE_EVENTS], "apocalypse");
+  registerEvents([DOOM, MAIN_SCENARIO, SIDE_SCENARIO, ...APOCALYPSE_EVENTS, ...M20_EVENTS], "apocalypse");
 }
