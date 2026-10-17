@@ -773,3 +773,10 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .court-pol .pol-schemes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .bad-text { color: var(--bad); }
 @media (max-width: 420px) { .court-pol .pol-row { grid-template-columns: 92px 1fr; } .court-pol .pol-row > :last-child { grid-column: 1 / -1; } }
+/* M19 */
+.t19-card .t19-rule { border-left: 3px solid var(--accent, #c9a227); padding: 4px 8px; margin: 6px 0 10px; background: rgba(201, 162, 39, 0.08); border-radius: 4px; }
+.t19-card .t19-rule-head { font-weight: 600; }
+.t19-card .t19-sub { font-weight: 600; margin-top: 10px; }
+.t19-card .t19-roster { list-style: none; padding: 0; margin: 4px 0; }
+.t19-card .t19-roster li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px dashed rgba(127, 127, 127, 0.25); flex-wrap: wrap; }
+.t19-card .t19-bet { margin: 2px 0; }
