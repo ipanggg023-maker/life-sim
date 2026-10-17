@@ -33,6 +33,7 @@ export const TITLES: Title[] = [
   { id: "lucky", name: "ลูกรักของโชคชะตา", desc: "รายได้ +5%", bonus: "money", value: 0.05, has: (l) => !!l.flags.jackpot },
   { id: "top", name: "ระดับสูงสุดของประเทศ", desc: "พลังต่อสู้ +3", bonus: "cp", value: 3, has: (l) => rank(l) >= 6 },
   { id: "underdog", name: "ผู้ไม่เคยยอมแพ้", desc: "EXP +12%", bonus: "exp", value: 0.12, has: (l) => !!l.power && l.power.rank <= 1 && l.power.level >= 20 },
+  { id: "academy_top", name: "ผู้สำเร็จการศึกษาอันดับหนึ่ง", desc: "EXP +10%", bonus: "exp", value: 0.1, has: (l) => !!l.flags.acaTop },
   { id: "ordinary", name: "คนธรรมดาผู้ยิ่งใหญ่", desc: "ความสุขเพิ่มทุกปี", bonus: "happiness", value: 2, has: (l) => !l.power && l.age >= 40 && l.fame >= 30 },
 ];
 

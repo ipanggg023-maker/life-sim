@@ -6,6 +6,7 @@ import { SECLUSION_YEARS, canSeclude, isSecluded, startSeclusion } from "../../c
 import { TITLES, titlesOf } from "../../content/titles";
 import { TOP_FLOOR, floorCap, floorOf, tierOfFloor } from "../../content/tower/climb";
 import { sponsorOf } from "../../content/sponsors";
+import { STUDENTS, acaYear, houseOf, inAcademy } from "../../content/court/academy";
 import { SKILL_TYPE, skillEffectText } from "../../content/skills";
 import { skillReady } from "../../content/shared/skillUse";
 import { worldOf } from "../../content/worlds";
@@ -146,6 +147,7 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
       {p ? <StatusWindow life={life} act={act} /> : <Dormant life={life} />}
 
       {life.worldId === "court" && life.flags.role && <NovelCard life={life} />}
+      {life.worldId === "court" && life.flags.academy && <AcademyCard life={life} />}
 
       <TitlesCard life={life} act={act} />
 
@@ -472,4 +474,27 @@ function climbHint(life: Life, r: number) {
   const f = floorOf(life);
   if (r < tierOfFloor(f + 1) || f >= floorCap(r)) return "ฝึกซ้อม (ไม่ขึ้นชั้น)";
   return `ปีนได้ถึงชั้น ${floorCap(r)}`;
+}
+
+/** สถาบันจักรวรรดิ: ปี หอ อันดับ */
+function AcademyCard({ life }: { life: Life }) {
+  const f = life.flags;
+  const h = houseOf(life);
+  const status = f.acaGrad ? (f.acaTop ? "จบการศึกษาอันดับหนึ่ง 🎓" : "จบการศึกษาแล้ว 🎓") : f.acaExpelled ? "ถูกให้ออก" : inAcademy(life) ? `กำลังเรียนปี ${acaYear(life)}` : "รอเข้าเรียน";
+  return (
+    <div className="card">
+      <div className="card-title">🏛️ สถาบันจักรวรรดิ</div>
+      <p>
+        {status}
+        {h ? ` · ${h.emoji} ${h.name}` : ""}
+        {f.scholarship ? " · นักเรียนทุน" : ""}
+      </p>
+      {f.acaRank && (
+        <p className="small muted">
+          อันดับล่าสุด {String(f.acaRank)} / {STUDENTS} · ดีที่สุด {String(f.acaBest ?? f.acaRank)}
+          {f.houseCup ? " · 🏆 ถ้วยประจำหอ" : ""}
+        </p>
+      )}
+    </div>
+  );
 }
