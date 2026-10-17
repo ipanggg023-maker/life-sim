@@ -108,6 +108,7 @@ const CHILD: GameEvent[] = [
       {
         label: "กระโดดลงไปช่วย",
         tone: "danger",
+        skill: ["heal", "escape"],
         check: { stat: "health", dc: 55 },
         run: (l, _c, ok) => {
           if (ok) {
@@ -190,6 +191,7 @@ const YOUTH: GameEvent[] = [
       { label: "เก็บของที่หล่นอย่างเงียบๆ", run: (l) => { addStat(l, "happiness", -5); l.flags.grudge = true; return meh("คุณกัดฟันจนได้กลิ่นเลือด — วันหนึ่ง วันหนึ่งแน่นอน"); } },
       {
         label: "ยิ้มแล้วตอบกลับด้วยวาจา",
+        skill: ["social"],
         check: { stat: "smarts", dc: 55 },
         run: (l, _c, ok) => {
           if (ok) { addFame(l, 3); return good("คำพูดของคุณทำให้คุณชายหน้าแดงจนพูดไม่ออก คนทั้งตลาดหัวเราะ — คราวนี้หัวเราะเยาะเขา"); }

@@ -5,6 +5,7 @@ import { worldOf } from "../worlds";
 import { titleBonus } from "../titles";
 import { skillInfo, type SkillInfo } from "../skills";
 import { sponsorBonus } from "../sponsors";
+import { passiveBonus } from "../passives";
 
 /** เพื่อนร่วมทีมที่ยังมีชีวิต (นับสูงสุด 3 คน) */
 export const partySize = (life: Life) => Math.min(3, life.people.filter((p) => p.relation === "ally" && p.alive).length);
@@ -280,7 +281,7 @@ export function combatPower(life: Life): number {
   const cls = classById(p.hunterClass);
   const g = guildById(p.guild);
   return Math.round(
-    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp") + sponsorBonus(life, "cp"),
+    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp") + sponsorBonus(life, "cp") + passiveBonus(life, "cp"),
   );
 }
 
@@ -294,7 +295,7 @@ export function survivalOdds(life: Life, gateRank: number, mod = 0) {
   const p = life.power;
   const cls = p ? classById(p.hunterClass) : undefined;
   const g = guildById(p?.guild);
-  return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300 + partySize(life) * 0.03 + titleBonus(life, "survival") + sponsorBonus(life, "survival") + sumSkills(life, "survival"), 0.05, 0.99);
+  return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300 + partySize(life) * 0.03 + titleBonus(life, "survival") + sponsorBonus(life, "survival") + passiveBonus(life, "survival") + sumSkills(life, "survival"), 0.05, 0.99);
 }
 
 export const expToNext = (level: number) => 60 + level * 40;
@@ -423,7 +424,8 @@ export function awaken(life: Life, rank: number, cls: HunterClass) {
   life.flags.awakenDone = true;
   delete life.flags.notYet;
   if (life.worldId === "tower" && !life.flags.floor) life.flags.floor = 1; // เริ่มที่ชั้น 1
-  addFame(life, rank >= 8 ? 50 : rank >= 5 ? 25 : rank >= 3 ? 8 : 1);
+  // โลกธรรมดา: ไม่มีใครเห็นหน้าต่างระบบ จึงไม่ดังขึ้นเอง
+  if (life.worldId !== "ordinary") addFame(life, rank >= 8 ? 50 : rank >= 5 ? 25 : rank >= 3 ? 8 : 1);
   addStat(life, "happiness", rank >= 3 ? 20 : 8);
   const track = trackOf(life);
   // ตื่นช้ากว่าคนอื่น แต่โตเร็วกว่า
@@ -458,7 +460,7 @@ export function rankUp(life: Life, reason: string, steps = 1) {
   const p = life.power;
   if (!p || p.rank >= MAX_RANK) return;
   p.rank = Math.min(MAX_RANK, p.rank + steps);
-  addFame(life, p.rank >= 6 ? 15 : 5);
+  if (life.worldId !== "ordinary") addFame(life, p.rank >= 6 ? 15 : 5);
   log(life, `${reason} — ${worldOf(life.worldId).labels.rank}เพิ่มขึ้นเป็น 【${rankLabel(life, p.rank)}】`, "system");
 }
 
@@ -487,7 +489,7 @@ export function gainExp(life: Life, amount: number) {
   const p = life.power;
   if (!p) return;
   // ตื่นช้าโตเร็ว · ความรู้วิธีฝึกจากชาติก่อน · สัญญากับสิ่งเหนือธรรมชาติ
-  const mult = (life.flags.lateBloom ? 1.4 : 1) * (life.flags.knowsMethod ? 1.25 : 1) * (life.flags.pact ? 1.2 : 1) * (1 + titleBonus(life, "exp") + sponsorBonus(life, "exp"));
+  const mult = (life.flags.lateBloom ? 1.4 : 1) * (life.flags.knowsMethod ? 1.25 : 1) * (life.flags.pact ? 1.2 : 1) * (1 + titleBonus(life, "exp") + sponsorBonus(life, "exp") + passiveBonus(life, "exp"));
   p.exp += Math.round(amount * mult);
   const before = p.level;
   while (p.exp >= expToNext(p.level)) {

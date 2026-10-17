@@ -6,12 +6,12 @@ import { finaleComments, seriesOf } from "../content/manhwa";
 import { Comments } from "./MainScreen";
 import { SeriesCover } from "./SeriesCover";
 import { talentById } from "../content/talents";
-import { SHOP, previewAward, regressTarget } from "../engine/soul";
+import { SHOP, heirsOf, previewAward, regressTarget } from "../engine/soul";
 import type { Life, Soul, WorldId } from "../engine/types";
 import { WORLDS } from "../content/worlds";
 import { displayName, loc, money, people } from "../engine/util";
 
-export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}`;
+export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}` | `heir:${string}`;
 
 export function DeathScreen({
   life,
@@ -173,6 +173,14 @@ export function DeathScreen({
           {life.divergence ?? 0} → {(life.divergence ?? 0) + (soul.perks.clarity ? 6 : 12)})
         </span>
       </button>
+      {heirsOf(life).map((c) => (
+        <button className="path" key={c.id} disabled={busy} onClick={() => go(`heir:${c.id}`)}>
+          <span className="path-title">👶 เล่นต่อเป็น{c.gender === "m" ? "ลูกชาย" : "ลูกสาว"} — {c.name}</span>
+          <span className="path-desc">
+            ภาคต่อของเรื่องเดิม · อายุ {c.age} ปี · รับมรดก{heirsOf(life).length > 1 ? `ส่วนแบ่ง 1/${heirsOf(life).length}` : "ทั้งหมด"} และชื่อเสียงตระกูล
+          </span>
+        </button>
+      ))}
       <button className="path" disabled={busy} onClick={() => go("nextEra")}>
         <span className="path-title">🌏 เกิดใหม่ในยุคถัดไป</span>
         <span className="path-desc">โลกเดิม หลายสิบปีต่อมา — ตระกูล{life.lastName}และสิ่งที่คุณทิ้งไว้ยังอยู่ อาจได้เกิดเป็นทายาทของตัวเอง</span>

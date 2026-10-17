@@ -163,6 +163,7 @@ export function doActivity(life: Life, id: string): Outcome | undefined {
   const a = ACTIVITIES.find((x) => x.id === id);
   if (!a || activityLocked(life, a)) return;
   life.doneThisYear.push(`act:${a.id}`);
+  life.flags[`act_${a.id}`] = Number(life.flags[`act_${a.id}`] ?? 0) + 1; // นับไว้ปลดล็อกสกิลติดตัว
   const out = a.run(life);
   log(life, out.text, out.kind ?? "normal");
   return out;

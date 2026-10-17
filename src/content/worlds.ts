@@ -34,6 +34,8 @@ export interface WorldInfo {
   /** อาชีพที่ออกภารกิจได้ */
   questJobs: string[];
   ranks: readonly string[];
+  /** คำโปรยหนึ่งบรรทัด ใช้ในหน้าเลือกโลก */
+  tagline?: string;
   /** สาเหตุการตายตามธรรมชาติช่วงที่โลกพัง (วันสิ้นโลก) */
   deathRuins?: string[];
   /** โลกยุคปัจจุบัน: มีประเทศที่เกิด (ไทย/เกาหลี/ญี่ปุ่น) และระบบโรงเรียน */
@@ -54,6 +56,7 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
   hunter: {
     id: "hunter",
     name: "โลก Hunter",
+    tagline: "ประตูมิติเปิดทั่วเมือง ตื่นพลังแล้วไต่แรงก์ F → SSS",
     emoji: "🌀",
     birthplace: "กรุงเทพฯ",
     startYear: 2008,
@@ -88,6 +91,7 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
   murim: {
     id: "murim",
     name: "ยุทธภพ",
+    tagline: "สำนัก กระบี่ ลมปราณ และความแค้นที่ต้องชำระ",
     emoji: "⛰️",
     birthplace: "หมู่บ้านเชิงเขาในแคว้นเหอหนาน",
     startYear: 1120,
@@ -121,6 +125,7 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
   court: {
     id: "court",
     name: "ราชสำนัก",
+    tagline: "เข้าร่างตัวละครในนิยาย หนี Death Flag ในวังหลวง",
     emoji: "👑",
     birthplace: "นครหลวงแห่งจักรวรรดิอัสเตรีย",
     startYear: 812,
@@ -154,6 +159,7 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
   tower: {
     id: "tower",
     name: "หอคอย",
+    tagline: "ได้รับคำเชิญ แล้วปีนชั้น 1–100 พร้อมดวงดาวจับตามอง",
     emoji: "🗼",
     birthplace: "กรุงเทพฯ",
     startYear: 2030,
@@ -188,6 +194,7 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
   apocalypse: {
     id: "apocalypse",
     name: "วันสิ้นโลก",
+    tagline: "ชีวิตปกติ จนวันที่โลกพัง แล้วฉากภารกิจก็เริ่มขึ้น",
     emoji: "☄️",
     birthplace: "กรุงเทพฯ",
     startYear: 2010,
@@ -224,6 +231,7 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
   ordinary: {
     id: "ordinary",
     name: "โลกธรรมดา",
+    tagline: "โลกปกติ — มีแค่คุณคนเดียวที่มีระบบ",
     emoji: "🏙️",
     birthplace: "กรุงเทพฯ",
     startYear: 2005,

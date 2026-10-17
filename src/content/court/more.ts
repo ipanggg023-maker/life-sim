@@ -142,6 +142,7 @@ const YOUTH: GameEvent[] = [
     choices: [
       {
         label: "เดินลงบันไดอย่างสง่างาม",
+        skill: ["social", "perform"],
         check: { stat: "looks", dc: 55 },
         run: (l, _c, ok) => {
           if (ok) { addFame(l, 8); addStat(l, "happiness", 8); return good("ห้องโถงเงียบไปสามวินาที แล้วเสียงกระซิบดังทั่วงาน — บัตรเชิญเต้นรำของคุณเต็มภายในสิบนาที"); }

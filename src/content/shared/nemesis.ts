@@ -168,6 +168,7 @@ export const NEMESIS_EVENTS: GameEvent[] = [
       {
         label: "ไปเผชิญหน้าให้รู้เรื่อง",
         show: (l) => nemesisOf(l)!.bond < 50,
+        skill: ["social"],
         check: { stat: "smarts", dc: 55 },
         run: (l, c, ok) => {
           const p = nemesisOf(l)!;

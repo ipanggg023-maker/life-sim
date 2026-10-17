@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ageUp, createLife, pastSelfOf, resolveChoice, toPastLife, type BirthOptions } from "../engine/game";
 import { currentScene, labelOf, type Outcome } from "../engine/events";
-import { buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
+import { buildHeir, buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
 import type { Life, PastLife, Soul, WorldId } from "../engine/types";
 import { loc } from "../engine/util";
+import { WORLDS } from "../content/worlds";
+
+const pickWorld = () => {
+  const ids = Object.keys(WORLDS) as WorldId[];
+  return ids[Math.floor(Math.random() * ids.length)];
+};
 import {
   addToGraveyard,
   applyBundle,
@@ -191,6 +197,17 @@ export function App() {
         return;
       }
       await clearCurrent();
+      if (choice.startsWith("heir:")) {
+        // ภาคต่อ: เล่นต่อเป็นลูก — เริ่มทันทีโดยไม่ผ่านหน้าสุ่มเกิด
+        const next = buildHeir(life, choice.slice(5));
+        await clearCurrent();
+        await pruneSnapshots();
+        await saveSnapshot(next);
+        setTab(null);
+        setStarted(true);
+        await commit(next);
+        return;
+      }
       if (choice === "nextEra") {
         await birth({ ...nextEraOptions(life), worldId: life.worldId });
         return;
@@ -240,8 +257,17 @@ export function App() {
             <div className="sys-head">ระบบ</div>
             <p>{soul.lives ? `วิญญาณของคุณผ่านมาแล้ว ${soul.lives} ชาติ — พร้อมเกิดใหม่หรือไม่?` : "ตรวจพบวิญญาณใหม่ — พร้อมเริ่มต้นชีวิตแรกหรือไม่?"}</p>
           </div>
-          <button className="btn primary big" onClick={() => birth()}>
-            เกิด
+          <div className="section-title">เลือกโลกที่จะเกิด</div>
+          {Object.values(WORLDS).map((w) => (
+            <button className="path" key={w.id} onClick={() => birth({ worldId: w.id })}>
+              <span className="path-title">
+                {w.emoji} {w.name}
+              </span>
+              <span className="path-desc">{w.tagline}</span>
+            </button>
+          ))}
+          <button className="btn primary big" onClick={() => birth({ worldId: pickWorld() })}>
+            🎲 สุ่มโลก
           </button>
         </div>
       </div>
@@ -283,7 +309,12 @@ export function App() {
               act={act}
               onNewLife={async (opts) => {
                 await clearCurrent();
-                birth(opts);
+                // ปุ่ม "เริ่มชีวิตใหม่" กลับไปหน้าเลือกโลก · Admin สร้างตัวละครได้ทันที
+                if (opts) birth(opts);
+                else {
+                  setTab(null);
+                  setLife(null);
+                }
               }}
               onImport={setPendingImport}
             />

@@ -210,7 +210,9 @@ export function seriesOf(life: Life): Series {
   if (life.age < 12) rating -= 0.6;
   rating = Math.round(Math.max(1, Math.min(5, rating)) * 10) / 10;
   const views = Math.round((chapters * 8000 + Math.max(0, life.fame) * 30_000 + life.age * 500) * (0.7 + rating / 5));
-  return { title: loc(life, titleOf(life)), rating, views, chapters, tags: tagsOf(life) };
+  const gen = Number(life.flags.generation ?? 1);
+  const title = life.flags.seriesTitle ? `${life.flags.seriesTitle} ภาค ${gen}` : loc(life, titleOf(life));
+  return { title, rating, views, chapters, tags: tagsOf(life) };
 }
 
 export const formatViews = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}K` : String(n));

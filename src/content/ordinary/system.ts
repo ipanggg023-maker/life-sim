@@ -133,6 +133,7 @@ const STAGE: Record<PathId, { names: string[]; foe: string[]; go: string; safe: 
 };
 
 const R = (c: Ctx) => Number(c.rank);
+const PATH_TAG: Record<PathId, string> = { o_fighter: "combat", o_idol: "perform", o_doctor: "medical", o_gamer: "game", o_chef: "cook", o_chaebol: "business" };
 const pathOf = (l: Life) => (l.power?.hunterClass ?? "o_fighter") as PathId;
 const stageOf = (l: Life) => STAGE[pathOf(l)] ?? STAGE.o_fighter;
 
@@ -187,13 +188,14 @@ export const CHALLENGE: GameEvent = {
         {
           label: (l) => stageOf(l).go,
           tone: "danger",
+          skill: (l) => [PATH_TAG[pathOf(l)]],
           odds: (l, c) => fightOdds(l, R(c), Number(c.score) * 0.06),
           survival: (l, c) => (stageOf(l).danger ? survivalOdds(l, R(c), Number(c.score) * 0.06) : 1),
           run: (l, c, ok) => {
             const s = stageOf(l);
             if (ok) {
               const r = gateRewards(l, R(c), Number(c.share) * 0.8, true);
-              addFame(l, R(c) >= 2 ? Math.ceil(R(c) / 2) : 0);
+              if (R(c) >= 4) addFame(l, 1); // งานประจำไม่ทำให้ดัง — ต้องเป็นเวทีใหญ่
               addStat(l, "happiness", 4);
               return { text: `🏆 ${s.win} ${r}`, kind: "good" };
             }

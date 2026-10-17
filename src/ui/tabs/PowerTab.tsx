@@ -6,6 +6,7 @@ import { SECLUSION_YEARS, canSeclude, isSecluded, startSeclusion } from "../../c
 import { TITLES, titlesOf } from "../../content/titles";
 import { TOP_FLOOR, floorCap, floorOf, tierOfFloor } from "../../content/tower/climb";
 import { sponsorOf } from "../../content/sponsors";
+import { PASSIVES, passivesOf } from "../../content/passives";
 import { STUDENTS, acaYear, houseOf, inAcademy } from "../../content/court/academy";
 import { SKILL_TYPE, skillEffectText } from "../../content/skills";
 import { skillReady } from "../../content/shared/skillUse";
@@ -150,6 +151,7 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
       {life.worldId === "court" && life.flags.academy && <AcademyCard life={life} />}
 
       <TitlesCard life={life} act={act} />
+      <PassivesCard life={life} />
 
       <div className="section-title">พรสวรรค์</div>
       <div className="talent-row">
@@ -496,5 +498,34 @@ function AcademyCard({ life }: { life: Life }) {
         </p>
       )}
     </div>
+  );
+}
+
+/** สกิลติดตัว: ที่ได้แล้ว + วิธีปลดล็อกที่เหลือ */
+function PassivesCard({ life }: { life: Life }) {
+  const owned = passivesOf(life);
+  const ids = owned.map((p) => p.id);
+  return (
+    <>
+      <div className="section-title">
+        สกิลติดตัว ({owned.length}/{PASSIVES.length})
+      </div>
+      <div className="skill-list">
+        {owned.map((p) => (
+          <div className="skill-card" key={p.id}>
+            <span className="skill-name">
+              {p.emoji} {p.name}
+            </span>
+            <p className="small muted">{p.desc}</p>
+          </div>
+        ))}
+        {PASSIVES.filter((p) => !ids.includes(p.id)).map((p) => (
+          <div className="skill-card locked" key={p.id}>
+            <span className="skill-name">🔒 {p.name}</span>
+            <span className="skill-meta">{p.how}</span>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

@@ -94,6 +94,7 @@ const RANKING: GameEvent = {
   choices: [
     {
       label: "ข้อเขียน: อ่านหนังสือทั้งเดือน",
+      skill: ["study"],
       check: { stat: "smarts", dc: 55 },
       run: (l, _c, ok) => {
         addStat(l, "smarts", 1);
@@ -103,6 +104,7 @@ const RANKING: GameEvent = {
     {
       label: "สอบปฏิบัติ: ประลองเวท/ดาบต่อหน้ากรรมการ",
       show: (l) => !!l.power,
+      skill: ["combat"],
       odds: (l) => fightOdds(l, clamp(rank(l), 0, 8), 0.05),
       run: (l, _c, ok) => {
         if (ok) gainExp(l, 200);

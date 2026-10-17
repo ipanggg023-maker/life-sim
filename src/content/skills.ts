@@ -6,6 +6,30 @@ import type { Life } from "../engine/types";
 
 export type SkillType = "attack" | "defense" | "heal" | "mobility" | "summon" | "stealth" | "curse";
 
+/** บริบทที่สกิลใช้ได้ — ฉากในเหตุการณ์ประกาศแท็กของตัวเอง */
+export type SkillTag = "combat" | "escape" | "heal" | "medical" | "social" | "perform" | "stealth" | "game" | "cook" | "business" | "study";
+
+export const TAG_NAME: Record<SkillTag, string> = {
+  combat: "ต่อสู้", escape: "หลบหนี", heal: "ช่วยชีวิต", medical: "การแพทย์", social: "เข้าสังคม", perform: "การแสดง",
+  stealth: "ลอบเร้น", game: "เกม", cook: "ทำอาหาร", business: "ธุรกิจ", study: "การเรียน",
+};
+
+const TYPE_TAGS: Record<SkillType, SkillTag[]> = {
+  attack: ["combat"], defense: ["combat"], heal: ["heal", "medical"], mobility: ["combat", "escape"],
+  summon: ["combat"], stealth: ["stealth", "escape"], curse: ["combat"],
+};
+
+/** สกิลที่ไม่ใช่การต่อสู้ (ส่วนใหญ่ในโลกธรรมดา) */
+const TAG_OVERRIDE: Record<string, SkillTag[]> = {
+  เสียงร้องสวรรค์: ["perform"], เต้นไร้ที่ติ: ["perform"], ออร่าบนเวที: ["perform", "social"], ซูเปอร์สตาร์ระดับโลก: ["perform", "social"],
+  ตาวินิจฉัย: ["medical", "study"], มือผ่าตัดไม่สั่น: ["medical"], ผ่าตัดที่เป็นไปไม่ได้: ["medical", "heal"], หัตถ์เทวดา: ["medical", "heal"],
+  รีแอคชันเหนือมนุษย์: ["game", "combat"], อ่านเกมขาด: ["game", "study"], คลาสลับในเกม: ["game"], ตำนานแห่งโลกเสมือน: ["game"],
+  มีดไร้ที่ติ: ["cook"], ลิ้นเทวดา: ["cook"], เมนูที่ทำให้คนร้องไห้: ["cook", "social"], เชฟสามดาว: ["cook"],
+  อ่านตลาด: ["business"], รู้ข่าวก่อนใคร: ["business", "social"], ยึดอำนาจบริษัท: ["business"], จักรวรรดิแชโบล: ["business", "social"],
+  รู้เนื้อเรื่อง: ["stealth", "escape", "study"], ปฐมพยาบาล: ["heal", "medical"], โคมสอดแนม: ["combat", "stealth"],
+  พรคุ้มครอง: ["combat", "heal"], แสงเยียวยา: ["heal", "medical"],
+};
+
 export const SKILL_TYPE: Record<SkillType, { emoji: string; name: string }> = {
   attack: { emoji: "⚔️", name: "โจมตี" },
   defense: { emoji: "🛡️", name: "ป้องกัน" },
@@ -221,6 +245,7 @@ export interface SkillInfo {
   /** โอกาสที่เพิ่มขึ้นเมื่อใช้งาน (รวมความชำนาญแล้ว) */
   boost: number;
   mastery: number;
+  tags: SkillTag[];
 }
 
 /** tier มาจากตำแหน่งสกิลในสายอาชีพ — ส่งมาจาก power.ts (กัน import วน) */
@@ -239,6 +264,7 @@ export function skillInfo(life: Life, name: string, tier: number): SkillInfo {
     regen: p.regen[t],
     boost: ACTIVE[t] + (type === "attack" || type === "curse" ? 0.02 : 0) + (m - 1) * 0.01,
     mastery: m,
+    tags: TAG_OVERRIDE[name] ?? TYPE_TAGS[type],
   };
 }
 
@@ -254,5 +280,5 @@ export function skillEffectText(s: SkillInfo): string {
   if (s.cp) parts.push(`พลังต่อสู้ +${s.cp}`);
   if (s.survival) parts.push(`โอกาสรอด +${Math.round(s.survival * 100)}%`);
   if (s.regen) parts.push(`สุขภาพ +${s.regen}/ปี`);
-  return `ติดตัว: ${parts.join(" · ")} · ใช้งาน: ตัวเลือกพิเศษในฉากเสี่ยงตาย โอกาส +${Math.round(s.boost * 100)}% (ปีละครั้ง)`;
+  return `ติดตัว: ${parts.join(" · ") || "-"} · ใช้งานในฉาก${s.tags.map((t) => TAG_NAME[t]).join("/")}: โอกาส +${Math.round(s.boost * 100)}% (ปีละครั้ง)`;
 }

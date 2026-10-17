@@ -1,6 +1,7 @@
 import { nextFloat, pick } from "./rng";
 import { worldOf } from "../content/worlds";
 import { countryMoney, countryOf, localize } from "../content/countries";
+import { passiveCheck } from "../content/passives";
 import type { Country, Gender, Life, LogKind, Person, Relation, StatKey, WorldId } from "./types";
 
 /** ประเทศที่มีผลกับชีวิตนี้ (โลกแฟนตาซีไม่มีประเทศ) */
@@ -139,7 +140,7 @@ export function relationLabel(p: Person): string {
  * dc คือค่าสเตตัสที่ถือว่า 50/50 · โชคมีผลเล็กน้อยกับทุกการเช็ก
  */
 export function checkChance(life: Life, stat: StatKey, dc: number, bonus = 0): number {
-  const base = 0.5 + (life.stats[stat] - dc) / 60 + (life.stats.luck - 50) / 400 + bonus;
+  const base = 0.5 + (life.stats[stat] - dc) / 60 + (life.stats.luck - 50) / 400 + bonus + passiveCheck(life, stat);
   return clamp(base, 0.05, 0.95);
 }
 

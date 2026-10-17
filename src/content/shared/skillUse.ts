@@ -23,19 +23,25 @@ function baseOdds(l: Life, c: Choice, ctx: Ctx, boost: number): number {
   return 1;
 }
 
-/** ตัวเลือกต่อสู้หลักของฉาก = ตัวเลือกเสี่ยงตายตัวแรกที่มองเห็นและมีโอกาสสำเร็จ */
-function fightChoice(l: Life, scene: Scene, ctx: Ctx) {
-  return scene.choices.find((c) => c.tone === "danger" && c.odds && (!c.show || c.show(l, ctx)));
+/** ตัวเลือกหลักของฉากที่สกิลเสริมได้ + แท็กของฉาก
+ *  1) ตัวเลือกที่ประกาศแท็กไว้เอง  2) ตัวเลือกเสี่ยงตายที่มี % = ฉากต่อสู้ */
+function baseChoice(l: Life, scene: Scene, ctx: Ctx): { c: Choice; tags: string[] } | undefined {
+  const visible = scene.choices.filter((c) => !c.show || c.show(l, ctx));
+  const tagged = visible.find((c) => c.skill && (c.odds || c.check));
+  if (tagged) return { c: tagged, tags: typeof tagged.skill === "function" ? tagged.skill(l, ctx) : tagged.skill! };
+  const fight = visible.find((c) => c.tone === "danger" && c.odds);
+  return fight && { c: fight, tags: ["combat"] };
 }
 
 export const skillReady = (l: Life, name: string) => !l.doneThisYear.includes(`skill:${name}`);
 
 sceneExtras.push((l, scene, ctx) => {
   if (!l.power || !l.alive) return [];
-  const base = fightChoice(l, scene, ctx);
-  if (!base) return [];
+  const found = baseChoice(l, scene, ctx);
+  if (!found) return [];
+  const base = found.c;
   const ready = skillsOf(l)
-    .filter((s) => skillReady(l, s.name))
+    .filter((s) => skillReady(l, s.name) && s.tags.some((t) => found.tags.includes(t)))
     .sort((a, b) => b.boost - a.boost)
     .slice(0, 2);
   return ready.map(

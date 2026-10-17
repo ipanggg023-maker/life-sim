@@ -10,6 +10,7 @@ import { rollAwakenTrack } from "../content/hunter/power";
 import { awakenArc, birthArc, maybeComment, seriesOf, startChapter } from "../content/manhwa";
 import { checkTitles, titleBonus } from "../content/titles";
 import { sponsorBonus } from "../content/sponsors";
+import { passiveBonus } from "../content/passives";
 import {
   addFame,
   addMoney,
@@ -297,7 +298,7 @@ export function salaryOf(life: Life, career: Career, level: number) {
   let base = career.baseSalary * (1 + 0.35 * (level - 1));
   if (career.salary) base = career.salary(life, base);
   if (hasTalent(life, "merchant")) base *= 1.25;
-  base *= 1 + titleBonus(life, "money") + sponsorBonus(life, "money");
+  base *= 1 + titleBonus(life, "money") + sponsorBonus(life, "money") + passiveBonus(life, "money");
   if (isStudent(life)) base *= 0.4;
   if (life.flags.doomed && !life.flags.rebuilt && !career.needsPower) base *= 0.3;
   return Math.round(base / 1000) * 1000;
@@ -425,7 +426,10 @@ export function openHiddenSlot(life: Life, reason: string) {
 
 function checkHiddenTalent(life: Life) {
   if (!life.alive) return;
-  if (life.stats.health <= 10) openHiddenSlot(life, "ตรวจพบภาวะใกล้ตาย");
+  if (life.stats.health <= 10) {
+    life.flags.nearDeath = true;
+    openHiddenSlot(life, "ตรวจพบภาวะใกล้ตาย");
+  }
   else if (life.age === 21 && !life.power) openHiddenSlot(life, "ครบเงื่อนไขอายุ");
 }
 

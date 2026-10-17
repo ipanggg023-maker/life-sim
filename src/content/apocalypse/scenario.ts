@@ -94,7 +94,7 @@ export const DOOM: GameEvent = {
       check: { stat: "health", dc: 55 },
       run: (l, c, ok) => {
         doomfall(l);
-        if (!ok && chance(l, 0.4)) {
+        if (!ok && chance(l, 0.2)) {
           kill(l, "ถูกฆ่าในฉากภารกิจแรกของวันสิ้นโลก");
           return bad("คมมีดเร็วกว่าที่คิด…");
         }
@@ -107,12 +107,17 @@ export const DOOM: GameEvent = {
       label: "ไม่ฆ่าใคร — กอดเด็กที่ร้องไห้อยู่ข้างๆ ไว้",
       tone: "special",
       check: { stat: "luck", dc: 50 },
-      survival: (l) => checkChance(l, "luck", 50),
+      survival: (l) => 1 - (1 - checkChance(l, "luck", 50)) * 0.45,
       run: (l, c, ok) => {
         doomfall(l);
         if (!ok) {
-          kill(l, "ล้มเหลวในฉากภารกิจแรก — เลือกที่จะไม่ฆ่า");
-          return bad("เวลาหมดลง… แต่เด็กคนนั้นรอด");
+          // ระบบลงโทษหนัก แต่ไม่ถึงตายเสมอไป
+          if (chance(l, 0.45)) {
+            kill(l, "ล้มเหลวในฉากภารกิจแรก — เลือกที่จะไม่ฆ่า");
+            return bad("เวลาหมดลง… แต่เด็กคนนั้นรอด");
+          }
+          rollInto(l, c, 0);
+          return bad(`[บทลงโทษ] ไฟฟ้าแล่นทั่วร่างจนคุณหมดสติ — ตื่นมาอีกทีคุณยังมีชีวิต และเด็กคนนั้นนั่งเฝ้าอยู่ข้างๆ${hurt(l, 20, 30)}`, "awaken");
         }
         rollInto(l, c, 2);
         markTurn(l);

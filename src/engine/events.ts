@@ -20,6 +20,8 @@ export interface Choice {
   show?: (life: Life, ctx: Ctx) => boolean;
   /** special = ตัวเลือกจากพรสวรรค์/ความทรงจำ/ระบบ · danger = เสี่ยงตาย */
   tone?: "special" | "danger";
+  /** แท็กของฉากนี้ — สกิลที่มีแท็กตรงกันจะขึ้นเป็นตัวเลือก "ใช้สกิล" (ไม่ใส่ + เสี่ยงตายแบบมี % = ต่อสู้) */
+  skill?: string[] | ((life: Life, ctx: Ctx) => string[]);
   /** โอกาสรอดชีวิตที่จะแสดงเป็นคำเตือน (0-1) */
   survival?: (life: Life, ctx: Ctx) => number;
   run: (life: Life, ctx: Ctx, success: boolean) => Outcome;

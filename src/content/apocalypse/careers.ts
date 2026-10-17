@@ -2,6 +2,7 @@ import { ACTIVITIES } from "../../engine/activities";
 import { chance, randInt } from "../../engine/rng";
 import { addMoney, addStat } from "../../engine/util";
 import { CAREERS } from "../hunter/careers";
+import { yearHooks } from "../../engine/game";
 import { RETAINER, guildById } from "../hunter/power";
 
 // อาชีพทั่วไปของโลกยุคปัจจุบันใช้ร่วมกันก่อนวันสิ้นโลก (หลังโลกพัง รายได้เหลือ 30%)
@@ -23,6 +24,11 @@ CAREERS.push({
     if (!p) return 0;
     return RETAINER[p.rank] * 0.5 * (guildById(p.guild)?.pay ?? 1) * (1 + 0.25 * ((life.job?.level ?? 1) - 1));
   },
+});
+
+yearHooks.push((l) => {
+  if (l.worldId !== "apocalypse" || !l.flags.doomed || l.flags.rebuilt || !l.power) return;
+  addStat(l, "health", l.power.guild ? 4 : 2);
 });
 
 ACTIVITIES.push(

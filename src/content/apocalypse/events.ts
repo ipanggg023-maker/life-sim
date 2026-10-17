@@ -253,7 +253,7 @@ const RUINS: GameEvent[] = [
     maxTimes: 2,
     when: inRuins,
     text: () => "ฝนเถ้าสีดำตกทั้งสัปดาห์ น้ำทุกแหล่งปนเปื้อน คนในฐานเริ่มป่วย",
-    auto: (l) => { addStat(l, "health", -randInt(l, 3, 8)); return "bad"; },
+    auto: (l) => { addStat(l, "health", -randInt(l, 2, 5)); return "bad"; },
   },
 ];
 

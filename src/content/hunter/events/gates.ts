@@ -361,6 +361,7 @@ export function enterGate(life: Life, gateRank: number) {
 export function train(life: Life): Outcome | undefined {
   if (!life.power || life.doneThisYear.includes("train")) return;
   life.doneThisYear.push("train");
+  life.flags.trainCount = Number(life.flags.trainCount ?? 0) + 1;
   const cls = classById(life.power.hunterClass);
   addStat(life, cls.key, randInt(life, 1, 3));
   addStat(life, "health", -1);

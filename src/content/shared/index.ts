@@ -7,6 +7,7 @@ import { SECRET_QUEST_EVENTS } from "./systemQuest";
 import { SPONSOR_EVENTS } from "./sponsorEvents";
 import "./activities"; // งานพิเศษ / พักผ่อน (แทน Focus)
 import "./skillUse"; // ใช้สกิลในฉาก + สกิลรักษาฟื้นสุขภาพ
+import "./passiveHook"; // สกิลติดตัว
 
 let loaded = false;
 
