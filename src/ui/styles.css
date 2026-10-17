@@ -728,6 +728,7 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .m16-up { color: var(--good, #2fbf71); }
 .m16-down { color: var(--bad); }
 .m16-tier { gap: 6px; }
+.m16-tier .btn { white-space: nowrap; flex-shrink: 0; }
 .m16-tier .job-main { min-width: 0; }
 .m16-input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: inherit; font: inherit; }
 .m16-rep { margin: 8px 0; }
