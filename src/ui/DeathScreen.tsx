@@ -76,10 +76,12 @@ export function DeathScreen({
       <div className="card">
         <div className="card-title">สรุปชีวิต</div>
         <p>ทรัพย์สินสุทธิ: {money(life, life.money - life.debt)}</p>
-        <p>
-          การศึกษา:{" "}
-          {life.education.degree ? `ปริญญาตรี ${facultyById(life.education.degree).name}` : life.education.highSchoolDone ? "ม.6" : "ไม่จบ ม.6"}
-        </p>
+        {worldOf(life.worldId).modern && (
+          <p>
+            การศึกษา:{" "}
+            {life.education.degree ? `ปริญญาตรี ${facultyById(life.education.degree).name}` : life.education.highSchoolDone ? "ม.6" : "ไม่จบ ม.6"}
+          </p>
+        )}
         <p>งานสุดท้าย: {job ? `${job.titles[life.job!.level - 1]} (${job.name})` : "-"}</p>
         {life.power && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · {life.worldId === "tower" ? `ชั้นที่ ${Number(life.flags.floor ?? 0)} ·` : ""}{life.worldId === "murim" ? "ภารกิจ" : life.worldId === "tower" ? "บททดสอบ" : life.worldId === "apocalypse" ? "ฉากภารกิจ" : life.worldId === "ordinary" ? "ภารกิจระบบ" : "Gate"} {life.power.gates}</p>}
         <p>

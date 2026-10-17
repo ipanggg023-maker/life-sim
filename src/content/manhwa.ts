@@ -179,7 +179,7 @@ function titleOf(life: Life): string {
   if (f.role === "lead" && f.saint) return "นักบุญที่ไม่ได้อยากเป็นตัวเอก";
   if (f.jackpot) return "ถูกรางวัลที่ 1 แล้วชีวิตไม่เหมือนเดิม";
   if (f.revenge) return "การล้างแค้นที่รอมาทั้งชีวิต";
-  if (p && p.rank >= 6) return `${r}ที่แข็งแกร่งที่สุดใน${w.name}`;
+  if (p && p.rank >= 6) return `${r}${/\d$/.test(r) ? " " : ""}ที่แข็งแกร่งที่สุดใน${w.name}`;
   if (p && p.rank <= 1) return `${classById(p.hunterClass).name}${w.labels.rank}${r}ผู้ไม่เคยยอมแพ้`;
   if (life.age < 18) return "ดอกไม้ที่ร่วงก่อนบาน";
   if (!p && life.age >= 80) return "ชีวิตธรรมดาที่ไม่ธรรมดา";
