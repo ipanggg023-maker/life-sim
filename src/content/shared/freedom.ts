@@ -66,6 +66,7 @@ ACTIVITIES.push(
     name: "เล่นการพนัน",
     desc: "รวยหรือหมดตัว",
     minAge: 18,
+    cost: 2_000,
     world: "all",
     available: (l) => !jailed(l),
     run: (l) => { runEvent(l, "free.gamble"); return meh(""); },
@@ -86,6 +87,7 @@ ACTIVITIES.push(
     name: "ลงเรียนคอร์สใหม่",
     desc: "ฝึกทักษะที่อยากได้",
     minAge: 10,
+    cost: 25_000,
     world: "all",
     available: (l) => !jailed(l),
     run: (l) => { runEvent(l, "free.course"); return meh(""); },
@@ -144,6 +146,7 @@ ACTIVITIES.push(
     name: "รับอุปการะเด็ก",
     desc: "สร้างครอบครัวด้วยใจ",
     minAge: 25,
+    cost: 50_000,
     world: "all",
     available: (l) => !jailed(l) && once(l, "adoptAt", 3),
     run: (l) => { runEvent(l, "free.adopt"); return meh(""); },
@@ -172,6 +175,10 @@ ACTIVITIES.push(
 
 // ───────────────────────── ฉากของแต่ละปุ่ม ─────────────────────────
 
+/** ค่าเรียน: เด็กพ่อแม่จ่ายให้ */
+const pay = (l: Life, n: number) => { if (l.age >= 18) addMoney(l, -n); };
+/** เจ้ามือมีเงินจำกัด — ชนะได้ไม่เกินนี้ต่อครั้ง */
+const WIN_CAP = 20_000_000;
 const stake = (l: Life, frac: number, min: number) => Math.max(min, Math.round(Math.max(0, l.money) * frac));
 
 const FREE_EVENTS: GameEvent[] = [
@@ -205,7 +212,7 @@ const FREE_EVENTS: GameEvent[] = [
         check: { stat: "luck", dc: 60 },
         run: (l, _c, ok) => {
           const s = stake(l, 0.25, 20_000);
-          if (ok) { addMoney(l, s * 2); addStat(l, "happiness", 10); return good(`ไพ่ออกตามใจทุกตา! ได้มา ${money(l, s * 2)} คนทั้งโต๊ะเงียบกริบ`); }
+          if (ok) { const w = Math.min(s, WIN_CAP); addMoney(l, w); addStat(l, "happiness", 10); return good(`ไพ่ออกตามใจทุกตา! ได้มา ${money(l, w)} คนทั้งโต๊ะเงียบกริบ`); }
           addMoney(l, -s); addStat(l, "happiness", -8);
           return bad(`หมดไป ${money(l, s)} ในชั่วโมงเดียว คุณเดินออกมามือเปล่าตอนตีสาม`);
         },
@@ -213,11 +220,11 @@ const FREE_EVENTS: GameEvent[] = [
       {
         label: "หมดหน้าตัก!",
         tone: "danger",
-        check: { stat: "luck", dc: 80 },
+        check: { stat: "luck", dc: 85 },
         show: (l) => l.money > 10_000,
         run: (l, _c, ok) => {
           const s = l.money;
-          if (ok) { addMoney(l, s * 3); addStat(l, "happiness", 20); addFame(l, 3); return big(`🎰 แจ็กพอต! เงินทั้งหมดคูณสาม — ${money(l, s * 3)} — ข่าวลือเรื่องคุณกระจายไปทั้งเมือง`); }
+          if (ok) { const w = Math.min(s, WIN_CAP); addMoney(l, w); addStat(l, "happiness", 20); addFame(l, 3); return big(`🎰 แจ็กพอต! ได้มาอีก ${money(l, w)} — ข่าวลือเรื่องคุณกระจายไปทั้งเมือง`); }
           addMoney(l, -s); addStat(l, "happiness", -20);
           l.flags.gambleRuin = Number(l.flags.gambleRuin ?? 0) + 1;
           return bad("คุณหมดตัว เงินทั้งชีวิตหายไปกับไพ่ใบเดียว");
@@ -309,13 +316,13 @@ const FREE_EVENTS: GameEvent[] = [
       court: "สมาคมช่างและหอสมุดหลวงเปิดรับลูกศิษย์ใหม่ปีนี้",
     }),
     choices: [
-      { label: (l) => T(l, { modern: "ภาษาต่างประเทศ", ruins: "ภาษามือของหน่วยลาดตระเวน", murim: "อักษรโบราณ", court: "ภาษาของจักรวรรดิเพื่อนบ้าน" }), run: (l) => { addMoney(l, -15_000); addStat(l, "smarts", randInt(l, 3, 6)); l.flags.c_lang = Number(l.flags.c_lang ?? 0) + 1; return good("หลังจากผ่านไปหนึ่งปี คุณเริ่มฝันเป็นภาษาใหม่"); } },
-      { label: "ทำอาหาร", run: (l) => { addMoney(l, -10_000); addStat(l, "happiness", 4); addStat(l, "health", 2); l.flags.c_cook = Number(l.flags.c_cook ?? 0) + 1; return good("จานแรกไหม้ จานที่ร้อยทำให้เพื่อนร้องไห้ (ในทางที่ดี)"); } },
-      { label: (l) => T(l, { modern: "ดนตรี", ruins: "เล่นกีตาร์รอบกองไฟ", murim: "พิณกู่เจิง", court: "ไวโอลินและเปียโน" }), check: { stat: "smarts", dc: 40 }, run: (l, _c, ok) => { addMoney(l, -20_000); addStat(l, "looks", ok ? 3 : 1); addStat(l, "happiness", 5); l.flags.c_music = Number(l.flags.c_music ?? 0) + 1; return ok ? good("ครูบอกว่าคุณมีหูดี — เพลงแรกที่เล่นจบทำให้ทั้งห้องปรบมือ") : meh("นิ้วคุณช้ากว่าใจ แต่ก็สนุกดี"); } },
-      { label: (l) => T(l, { modern: "ป้องกันตัว", ruins: "ยิงปืนและต่อสู้ระยะประชิด", murim: "มวยพื้นฐานของสำนักเล็ก", court: "ดาบสั้นแบบอัศวิน" }), run: (l) => { addMoney(l, -12_000); addStat(l, "health", randInt(l, 3, 6)); l.flags.c_fight = Number(l.flags.c_fight ?? 0) + 1; return good("ร่างกายคุณจำท่าได้ก่อนสมองจะสั่ง"); } },
-      { label: (l) => T(l, { modern: "การลงทุนและบัญชี", ruins: "การจัดการเสบียง", murim: "การค้าและบัญชีโรงเตี๊ยม", court: "การบริหารที่ดินและภาษี" }), run: (l) => { addMoney(l, -25_000); addStat(l, "smarts", randInt(l, 2, 4)); l.flags.c_biz = Number(l.flags.c_biz ?? 0) + 1; if (l.job) l.job.performance = Math.min(100, l.job.performance + 8); return good("คุณเริ่มเห็นตัวเลขเป็นเรื่องราว"); } },
-      { label: (l) => T(l, { modern: "การแสดง", ruins: "เล่าเรื่องให้เด็กๆ ในฐานฟัง", murim: "งิ้ว", court: "การละครของราชสำนัก" }), run: (l) => { addMoney(l, -15_000); addStat(l, "looks", randInt(l, 2, 5)); addFame(l, 1); l.flags.c_act = Number(l.flags.c_act ?? 0) + 1; return good("คุณพบว่าการเป็นคนอื่นสักพักก็ช่วยให้รู้จักตัวเองมากขึ้น"); } },
-      { label: (l) => T(l, { modern: "ปฐมพยาบาล", ruins: "เย็บแผลสนาม", murim: "ฝังเข็มและสมุนไพร", court: "เวทรักษาขั้นต้น" }), run: (l) => { addMoney(l, -10_000); addStat(l, "health", 3); addStat(l, "smarts", 2); l.flags.c_med = Number(l.flags.c_med ?? 0) + 1; return good("ไม่กี่เดือนต่อมา คุณช่วยชีวิตคนแปลกหน้าที่ล้มกลางถนนได้"); } },
+      { label: (l) => T(l, { modern: "ภาษาต่างประเทศ", ruins: "ภาษามือของหน่วยลาดตระเวน", murim: "อักษรโบราณ", court: "ภาษาของจักรวรรดิเพื่อนบ้าน" }), run: (l) => { pay(l, 15_000); addStat(l, "smarts", randInt(l, 3, 6)); l.flags.c_lang = Number(l.flags.c_lang ?? 0) + 1; return good("หลังจากผ่านไปหนึ่งปี คุณเริ่มฝันเป็นภาษาใหม่"); } },
+      { label: "ทำอาหาร", run: (l) => { pay(l, 10_000); addStat(l, "happiness", 4); addStat(l, "health", 2); l.flags.c_cook = Number(l.flags.c_cook ?? 0) + 1; return good("จานแรกไหม้ จานที่ร้อยทำให้เพื่อนร้องไห้ (ในทางที่ดี)"); } },
+      { label: (l) => T(l, { modern: "ดนตรี", ruins: "เล่นกีตาร์รอบกองไฟ", murim: "พิณกู่เจิง", court: "ไวโอลินและเปียโน" }), check: { stat: "smarts", dc: 40 }, run: (l, _c, ok) => { pay(l, 20_000); addStat(l, "looks", ok ? 3 : 1); addStat(l, "happiness", 5); l.flags.c_music = Number(l.flags.c_music ?? 0) + 1; return ok ? good("ครูบอกว่าคุณมีหูดี — เพลงแรกที่เล่นจบทำให้ทั้งห้องปรบมือ") : meh("นิ้วคุณช้ากว่าใจ แต่ก็สนุกดี"); } },
+      { label: (l) => T(l, { modern: "ป้องกันตัว", ruins: "ยิงปืนและต่อสู้ระยะประชิด", murim: "มวยพื้นฐานของสำนักเล็ก", court: "ดาบสั้นแบบอัศวิน" }), run: (l) => { pay(l, 12_000); addStat(l, "health", randInt(l, 3, 6)); l.flags.c_fight = Number(l.flags.c_fight ?? 0) + 1; return good("ร่างกายคุณจำท่าได้ก่อนสมองจะสั่ง"); } },
+      { label: (l) => T(l, { modern: "การลงทุนและบัญชี", ruins: "การจัดการเสบียง", murim: "การค้าและบัญชีโรงเตี๊ยม", court: "การบริหารที่ดินและภาษี" }), run: (l) => { pay(l, 25_000); addStat(l, "smarts", randInt(l, 2, 4)); l.flags.c_biz = Number(l.flags.c_biz ?? 0) + 1; if (l.job) l.job.performance = Math.min(100, l.job.performance + 8); return good("คุณเริ่มเห็นตัวเลขเป็นเรื่องราว"); } },
+      { label: (l) => T(l, { modern: "การแสดง", ruins: "เล่าเรื่องให้เด็กๆ ในฐานฟัง", murim: "งิ้ว", court: "การละครของราชสำนัก" }), run: (l) => { pay(l, 15_000); addStat(l, "looks", randInt(l, 2, 5)); addFame(l, 1); l.flags.c_act = Number(l.flags.c_act ?? 0) + 1; return good("คุณพบว่าการเป็นคนอื่นสักพักก็ช่วยให้รู้จักตัวเองมากขึ้น"); } },
+      { label: (l) => T(l, { modern: "ปฐมพยาบาล", ruins: "เย็บแผลสนาม", murim: "ฝังเข็มและสมุนไพร", court: "เวทรักษาขั้นต้น" }), run: (l) => { pay(l, 10_000); addStat(l, "health", 3); addStat(l, "smarts", 2); l.flags.c_med = Number(l.flags.c_med ?? 0) + 1; return good("ไม่กี่เดือนต่อมา คุณช่วยชีวิตคนแปลกหน้าที่ล้มกลางถนนได้"); } },
     ],
   },
   {
@@ -332,7 +339,7 @@ const FREE_EVENTS: GameEvent[] = [
       court: "สถานสงเคราะห์ของโบสถ์กำลังจะปิดเพราะขาดเงิน",
     }),
     choices: [
-      { label: (l) => `บริจาคเงิน (${money(l, stake(l, 0.1, 5_000))})`, run: (l) => { const s = stake(l, 0.1, 5_000); addMoney(l, -s); addStat(l, "happiness", 8); addFame(l, s >= 1_000_000 ? 5 : 1); l.flags.karma = Number(l.flags.karma ?? 0) + 2; return good(`คุณบริจาค ${money(l, s)} — จดหมายขอบคุณลายมือเด็กๆ มาถึงในเดือนถัดมา`); } },
+      { label: (l) => `บริจาคเงิน (${money(l, stake(l, 0.1, 5_000))})`, show: (l) => l.money >= 5_000, run: (l) => { const s = stake(l, 0.1, 5_000); addMoney(l, -s); addStat(l, "happiness", 8); addFame(l, s >= 1_000_000 ? 5 : 1); l.flags.karma = Number(l.flags.karma ?? 0) + 2; return good(`คุณบริจาค ${money(l, s)} — จดหมายขอบคุณลายมือเด็กๆ มาถึงในเดือนถัดมา`); } },
       { label: "ไปเป็นอาสาสมัคร", run: (l) => { addStat(l, "happiness", 6); addStat(l, "health", -2); l.flags.karma = Number(l.flags.karma ?? 0) + 2; if (chance(l, 0.4)) { const p = createPerson(l, "friend", { age: l.age + randInt(l, -8, 8), bond: 60 }); return good(`คุณเหนื่อยทั้งปี แต่ได้เพื่อนแท้มาหนึ่งคน — ${shortName(p)}`); } return good("คุณยกของ ล้างจาน และฟังเรื่องเล่าของคนแปลกหน้าจนจำได้ทุกคน"); } },
       { label: (l) => T(l, { modern: "บริจาคเลือด", ruins: "แบ่งเสบียงของตัวเอง", murim: "ตั้งโรงทาน", court: "เปิดคฤหาสน์ให้ผู้ลี้ภัยพัก" }), run: (l) => { addStat(l, "happiness", 5); addStat(l, "luck", chance(l, 0.3) ? 1 : 0); l.flags.karma = Number(l.flags.karma ?? 0) + 1; return good("ไม่มีใครรู้ว่าเป็นคุณ และนั่นแหละที่ทำให้มันดี"); } },
       { label: "ทำความดีแล้วโพสต์อวด", run: (l) => { addFame(l, 2); addStat(l, "happiness", 2); if (chance(l, 0.3)) { addFame(l, -4); return bad("ชาวเน็ตจับได้ว่าคุณจัดฉาก ดราม่าลุกลามสามวัน"); } return meh("ยอดไลก์ดี แต่ในใจลึกๆ คุณรู้สึกว่างเปล่านิดหน่อย"); } },

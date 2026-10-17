@@ -14,6 +14,18 @@ self.addEventListener("activate", (e) => {
   );
 });
 
+/** ลบไฟล์ใน assets/ ของเวอร์ชันเก่าที่หน้าเว็บเวอร์ชันใหม่ไม่ได้ใช้แล้ว (กันแคชบวมทุกครั้งที่อัปเดต) */
+async function pruneAssets(html) {
+  const used = new Set(html.match(/assets\/[\w.-]+/g) ?? []);
+  if (!used.size) return;
+  const c = await caches.open(CACHE);
+  for (const req of await c.keys()) {
+    const m = new URL(req.url).pathname.match(/assets\/[\w.-]+$/);
+    // ไฟล์ที่โหลดต่อจากไฟล์หลัก (ไม่อยู่ใน HTML) จะถูกแคชใหม่เองเมื่อใช้งาน
+    if (m && !used.has(m[0])) await c.delete(req);
+  }
+}
+
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
@@ -28,6 +40,7 @@ self.addEventListener("fetch", (e) => {
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put("./", copy));
+          res.clone().text().then(pruneAssets).catch(() => {});
           return res;
         })
         .catch(() => caches.match("./")),
