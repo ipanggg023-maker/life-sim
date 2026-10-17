@@ -62,7 +62,7 @@ export const HUNTER16_EVENTS: GameEvent[] = [
     weight: (l) => w(isHunter(l) && rank(l) >= 1 && rank(l) <= 5, 4),
     text: (l) => `สมาคมเรียกตรวจแรงก์ซ้ำประจำห้าปี คุณยังขึ้น ${rankName(rank(l))} เท่าเดิม แต่เครื่องวัดสั่นแปลกๆ ตอนคุณวางมือ เจ้าหน้าที่ขอให้ "ลองอีกครั้งแบบตั้งใจ"`,
     choices: [
-      { label: "ปล่อยพลังสุดตัว", check: { stat: "health", dc: 55 }, skill: ["combat"], run: (l, _c, ok) => { if (ok && chance(l, 0.3)) { luckyRankUp(l, "เครื่องวัดแรงก์ระเบิดเป็นเสี่ยงๆ"); return big("ทั้งห้องตรวจเงียบ เจ้าหน้าที่ยกโทรศัพท์โทรหาผู้อำนวยการ"); } gainExp(l, 150); return meh("เครื่องวัดสั่นแรงขึ้น แล้วหยุด ตัวเลขเดิม แต่เจ้าหน้าที่จดบางอย่างลงในแฟ้มสีแดง"); } },
+      { label: "ปล่อยพลังสุดตัว", check: { stat: "health", dc: 55 }, skill: ["combat"], run: (l, _c, ok) => { if (ok && chance(l, 0.45)) { luckyRankUp(l, "เครื่องวัดแรงก์ระเบิดเป็นเสี่ยงๆ"); return big("ทั้งห้องตรวจเงียบ เจ้าหน้าที่ยกโทรศัพท์โทรหาผู้อำนวยการ"); } gainExp(l, 150); return meh("เครื่องวัดสั่นแรงขึ้น แล้วหยุด ตัวเลขเดิม แต่เจ้าหน้าที่จดบางอย่างลงในแฟ้มสีแดง"); } },
       { label: "ซ่อนพลังไว้", run: (l) => { l.flags.hiddenStrength = true; return meh("คุณวางมือเบาๆ เหมือนจับแก้วน้ำ ตัวเลขเท่าเดิม ไม่มีใครต้องรู้"); } },
     ],
   },
@@ -182,7 +182,7 @@ export const HUNTER16_EVENTS: GameEvent[] = [
         odds: (l, c) => fightOdds(l, GR(c)),
         survival: (l, c) => survivalOdds(l, GR(c), 0.05),
         run: (l, c, ok) => {
-          if (ok) { const r = gateRewards(l, GR(c), 1.5, true); addCores(l, tierOf(GR(c)), 2); l.flags.doubleGate = true; return big(`คุณออกมาจาก Gate ซ้อนเป็นคนแรกในประเทศ! ${r} · ได้${CORE_TIERS[tierOf(GR(c))].name} 2 ก้อน`); }
+          if (ok) { const r = gateRewards(l, GR(c), 1.5, true); addCores(l, tierOf(GR(c)), 2); l.flags.doubleGate = true; if (chance(l, 0.35)) luckyRankUp(l, "[ระบบ] ผู้พิชิต Gate ซ้อนคนแรก"); return big(`คุณออกมาจาก Gate ซ้อนเป็นคนแรกในประเทศ! ${r} · ได้${CORE_TIERS[tierOf(GR(c))].name} 2 ก้อน`); }
           return lost(l, GR(c), "ติดอยู่ใน Gate ซ้อน", "มอนสเตอร์ในประตูที่สองไม่ใช่ระดับที่ระบบบอก", 15, 30);
         },
       },

@@ -4,7 +4,7 @@ import { pick, randInt, chance } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, money, people, shortName } from "../../../engine/util";
 import { CORE_TIERS, addCores, addRep, coresOf, corePrice, guildLv, myGuild, sellCores, tierOf } from "../m16";
-import { fightOdds, gateRewards, rankName, survivalOdds } from "../power";
+import { fightOdds, gateRewards, luckyRankUp, rankName, survivalOdds } from "../power";
 import { awake, bad, big, good, hurt, lost, meh, rank, w } from "./m16kit";
 
 const BR = (c: Ctx) => Number(c.br);
@@ -83,6 +83,7 @@ export const BREAK_EVENTS: GameEvent[] = [
                 addFame(l, BR(c) >= 5 ? 14 : 8);
                 addRep(l, 10);
                 l.flags.breakHero = Number(l.flags.breakHero ?? 0) + 1;
+                if (BR(c) >= rank(l) && chance(l, 0.3)) luckyRankUp(l, "[ระบบ] ปกป้องเมืองจาก Gate Break สำเร็จ");
                 return big(`💥 คุณล้ม${c.m}กลางถนน! เสียงปรบมือดังมาจากตึกทุกชั้น ${r} · ได้${CORE_TIERS[t].name} 2 ก้อน${myGuild(l) ? ` — สมาชิก「${myGuild(l)}」ช่วยกันกั้นแนวไว้ทั้งคืน` : ""}`);
               }
               return lost(l, BR(c), `เสียชีวิตขณะสกัด Gate Break ที่${c.place}`, `${c.m}ฟาดคุณกระเด็นทะลุกระจกร้านสะดวกซื้อ`, 15, 30);

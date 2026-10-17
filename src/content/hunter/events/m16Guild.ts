@@ -20,7 +20,7 @@ import {
   setRoster,
   tierOf,
 } from "../m16";
-import { GATE_PAY, RETAINER, fightOdds, gateRewards, rankName, survivalOdds } from "../power";
+import { GATE_PAY, RETAINER, fightOdds, gateRewards, luckyRankUp, rankName, survivalOdds } from "../power";
 import { bad, big, good, isHunter, lost, meh, rank, w } from "./m16kit";
 
 const G = (l: Life) => myGuild(l) ?? "กิลด์";
@@ -239,7 +239,7 @@ export const GUILD_EVENTS: GameEvent[] = [
         odds: (l, c) => fightOdds(l, Number(c.gr), 0.05 + guildLv(l) * 0.03 + members(l) * 0.01),
         survival: (l, c) => survivalOdds(l, Number(c.gr), 0.15 + guildLv(l) * 0.03),
         run: (l, c, ok) => {
-          if (ok) { const r = gateRewards(l, Number(c.gr), 1.3, true); addCores(l, tierOf(Number(c.gr)), 2); addRep(l, 12); return big(`「${G(l)}」เคลียร์ Gate สูงกว่าแรงก์หัวหน้าได้! ${r} · ได้คอร์ 2 ก้อน`); }
+          if (ok) { const r = gateRewards(l, Number(c.gr), 1.3, true); addCores(l, tierOf(Number(c.gr)), 2); addRep(l, 12); if (chance(l, 0.25)) luckyRankUp(l, "[ระบบ] นำกิลด์ข้ามขีดจำกัด"); return big(`「${G(l)}」เคลียร์ Gate สูงกว่าแรงก์หัวหน้าได้! ${r} · ได้คอร์ 2 ก้อน`); }
           const dead = roster(l)[0];
           if (dead && chance(l, 0.5)) removeMember(l, dead.n);
           addRep(l, -6);
