@@ -757,3 +757,19 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .m17-ledger li.favor b { color: var(--good); }
 .m17-sect-rep { display: grid; grid-template-columns: auto 1fr 28px; gap: 8px; align-items: center; margin-top: 8px; }
 .m17-input { flex: 1; min-width: 0; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--text); font: inherit; }
+/* M18 */
+.court-pol .pol-balance { display: flex; height: 22px; margin: 6px 0 4px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); font-size: 11px; }
+.court-pol .pol-seg { display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; color: #fff; transition: width 0.4s; }
+.court-pol .pol-royal { background: #b8860b; }
+.court-pol .pol-temple { background: #5a7fd6; }
+.court-pol .pol-noble { background: #8a3f6e; }
+.court-pol .pol-row { display: grid; grid-template-columns: 112px 1fr 120px; align-items: center; gap: 8px; margin: 6px 0; font-size: 13px; }
+.court-pol .pol-meter { position: relative; height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.court-pol .pol-mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--muted); }
+.court-pol .pol-fill { position: absolute; top: 0; bottom: 0; }
+.court-pol .pol-fill.pos { background: var(--good); }
+.court-pol .pol-fill.neg { background: var(--bad); }
+.court-pol .pol-rumors { margin: 4px 0; padding-left: 4px; list-style: none; font-size: 12px; display: grid; gap: 4px; }
+.court-pol .pol-schemes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.bad-text { color: var(--bad); }
+@media (max-width: 420px) { .court-pol .pol-row { grid-template-columns: 92px 1fr; } .court-pol .pol-row > :last-child { grid-column: 1 / -1; } }
