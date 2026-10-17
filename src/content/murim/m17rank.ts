@@ -7,7 +7,7 @@ import { addFame, addMoney, addStat, clamp, createPerson, money, people, shortNa
 import { gainExp } from "../hunter/power";
 import {
   EPITHETS, type Master, addFavor, givePill, addGrudge, alignment, bad, big, challengeTarget, dropPlace, good, hurt, masterAt, masterLabel,
-  masterOdds, masterSurvival, masters, mayDie, meh, myPlace, npcName, rankOf, removeMaster, shiftAlign, sys, takePlace, wasRanked,
+  masterOdds, masterSurvival, masters, mayDie, meh, myPlace, npcName, openEntries, settle, rankOf, removeMaster, shiftAlign, sys, takePlace, wasRanked,
 } from "./m17core";
 
 const hasPower = (l: Life) => !!l.power;
@@ -427,6 +427,20 @@ export const M17_RANK: GameEvent[] = [
     choices: [
       { label: "\"ทำเนียบมีสิบชื่อ แต่ใต้หล้ามีคนนับล้าน\"", run: (l) => { addStat(l, "happiness", 10); return good("หลานพยักหน้าแบบไม่เข้าใจ แล้วขอให้คุณสอนกระบี่ — ที่จริงแค่นั้นก็พอแล้ว"); } },
       { label: "แอบร้องไห้ในห้อง แล้วออกมาซ้อมกระบี่ต่อ", run: (l) => { gainExp(l, 100); addStat(l, "happiness", -2); return meh("เสียงกระบี่ดังจนดึก หลานแอบดูจากหน้าต่าง แล้วจำท่านั้นไปตลอดชีวิต"); } },
+    ],
+  },
+  {
+    id: "m17.r.tribulation_eve",
+    minAge: 30,
+    maxAge: 200,
+    maxTimes: 2,
+    weight: (l) => (rankOf(l) === 7 ? 14 : 0),
+    title: "คืนก่อนทัณฑ์สวรรค์",
+    text: (l) => `เมฆดำเริ่มก่อตัวเหนือยอดเขาที่คุณเลือกรับทัณฑ์สวรรค์ ${myPlace(l) ? "ยอดฝีมือในทำเนียบหลายคน" : "คนที่รู้จักคุณ"}เดินทางมาถึงตีนเขาโดยไม่ได้นัดหมาย — บางคนมาช่วย บางคนมาดูว่าคุณจะตายอย่างไร`,
+    choices: [
+      { label: "ขอยาจากคนที่เคยติดหนี้บุญคุณ", show: (l) => openEntries(l, "f").length > 0, run: (l) => { const e = openEntries(l, "f")[0]; settle(l, e.id, "ส่งยาวิเศษมาช่วยรับทัณฑ์สวรรค์"); l.power!.items.push("ยาเม็ดเก้าหยาง"); return good(`${e.n}ปีนเขามาทั้งคืนพร้อมกล่องยาที่เก็บไว้ทั้งชีวิต "วันที่ท่าน${e.w} ข้าสาบานว่าจะตอบแทนในวันที่สำคัญที่สุด" — ได้「ยาเม็ดเก้าหยาง」`); } },
+      { label: "แลกหมัดกับยอดฝีมือที่มาดู เพื่อขัดเกลาลมปราณครั้งสุดท้าย", odds: (l) => clamp(0.4 + (l.stats.health - 50) / 100, 0.15, 0.85), run: (l, _c, ok) => { if (ok) { gainExp(l, 600); return good(`สามวันสามคืนบนลานหิน คุณรู้จักจุดอ่อนของลมปราณตัวเองครบทุกจุด${givePill(l, 7)}`); } return bad("คุณเจ็บก่อนทัณฑ์สวรรค์จะมาเสียอีก" + hurt(l, 8, 16, "บาดเจ็บก่อนรับทัณฑ์สวรรค์")); } },
+      { label: "ไล่ทุกคนกลับ — ฟ้าจะผ่าก็ผ่าข้าคนเดียว", run: (l) => { addStat(l, "happiness", 6); gainExp(l, 200); return meh(`ตีนเขาเงียบลง เหลือแต่คุณกับเสียงฟ้าร้องไกลๆ — ใจที่นิ่งอาจเป็นยาที่ดีที่สุด${shiftAlign(l, 2)}`); } },
     ],
   },
   {

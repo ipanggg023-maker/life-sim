@@ -83,6 +83,8 @@ describe("M17 ยุทธภพ", () => {
     let cultivators = 0;
     let xian = 0;
     const cps: number[] = [];
+    const causes: Record<string, number> = {};
+    let rank7 = 0;
     for (let s = 1; s <= 200; s++) {
       const grinder = s % 4 !== 0;
       const life = play(s * 2654435761, seen, grinder);
@@ -96,6 +98,8 @@ describe("M17 ยุทธภพ", () => {
         const k = rankLabel(life, life.power.rank);
         ranks[k] = (ranks[k] ?? 0) + 1;
         if (life.power.rank === 8) xian++;
+        if (life.power.rank >= 7) rank7++;
+        if (life.power.rank >= 6) causes[life.causeOfDeath ?? "?"] = (causes[life.causeOfDeath ?? "?"] ?? 0) + 1;
         cps.push(combatPower(life));
       }
       if (wasRanked(life)) {
@@ -117,6 +121,7 @@ describe("M17 ยุทธภพ", () => {
     cps.sort((a, b) => a - b);
     const missing = M17_EVENTS.map((e) => e.id).filter((id) => !seen.has(id));
     console.log("SIM M17 ขั้นตอนจบ (บอทสายบู๊)", JSON.stringify(ranks), "| เซียน", xian, "/", cultivators, `(${((xian / Math.max(1, cultivators)) * 100).toFixed(1)}%)`);
+    console.log("SIM M17 ขั้น≥เหนือธรรมชาติ", rank7, "| สาเหตุการตายของขั้น≥ยอดยุทธ์", JSON.stringify(Object.entries(causes).sort((a, b) => b[1] - a[1]).slice(0, 10)));
     console.log("SIM M17 พลังต่อสู้ตอนจบ p25/p50/p90", cps[cps.length >> 2], cps[cps.length >> 1], cps[Math.floor(cps.length * 0.9)]);
     console.log("SIM M17 ติดทำเนียบ", ranked, "/200 | อันดับหนึ่ง", top, "| อันดับดีที่สุด", JSON.stringify(best));
     console.log("SIM M17 สำนักของตัวเอง", sects, "| สำนักใหญ่ 100 ศิษย์", bigSect, "| ธรรมะ≥60", saints, "| มาร≤-60", demons);
