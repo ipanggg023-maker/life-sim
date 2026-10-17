@@ -120,7 +120,9 @@ export type HunterClass =
   // ผู้รอดชีวิตหลังวันสิ้นโลก
   | "a_blade" | "a_gunner" | "a_medic" | "a_warden" | "a_tamer" | "a_reader"
   // เส้นทางของระบบชีวิต (โลกธรรมดา)
-  | "o_fighter" | "o_idol" | "o_doctor" | "o_gamer" | "o_chef" | "o_chaebol";
+  | "o_fighter" | "o_idol" | "o_doctor" | "o_gamer" | "o_chef" | "o_chaebol"
+  // คลาสเพิ่มเติม (M22)
+  | "archer" | "crafter" | "psychic" | "berserker" | "m_qin" | "m_light" | "m_staff" | "m_poison" | "c_alchemist" | "c_shadow" | "c_paladin" | "c_wind" | "t_shield" | "t_puppet" | "t_bard" | "a_engineer" | "a_hunter" | "a_psyker";
 
 /** สถานะผู้ตื่นพลัง — rank: 0=F … 8=SSS */
 export interface Power {

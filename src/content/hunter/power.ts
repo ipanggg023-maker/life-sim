@@ -159,6 +159,79 @@ export const CLASSES: ClassInfo[] = [
     id: "a_reader", name: "ผู้รู้ตอนจบ", emoji: "📖", key: "smarts", desc: "สายหายาก — คุณเคยอ่านนิยายที่เหมือนโลกนี้ทุกตัวอักษร", cp: 6, survival: 0.05, world: "apocalypse",
     skills: [[1, "รู้เนื้อเรื่อง"], [10, "เขียนทับฉาก"], [25, "ผู้อ่านคนสุดท้าย"], [45, "ผู้เขียนตอนจบใหม่"]],
   },
+  // ── คลาสเพิ่มเติม (M22) ──
+  {
+    id: "archer", name: "นักธนู", emoji: "🏹", key: "luck", desc: "ยิงจากระยะไกล ไม่เคยให้ศัตรูเข้าใกล้", cp: 3, survival: 0.02,
+    skills: [[1, "ธนูมานา"], [10, "ศรสามดอก"], [25, "ฝนธนูเหล็ก"], [45, "ศรทะลุมิติ"]],
+  },
+  {
+    id: "crafter", name: "ช่างตีอาวุธ", emoji: "⚒️", key: "smarts", desc: "สร้างและเสริมพลังอาวุธจากแกนมอนสเตอร์", cp: 1, survival: 0.05,
+    skills: [[1, "ตีอาวุธฉุกเฉิน"], [10, "เสริมพลังอาวุธ"], [25, "สร้างอาร์ติแฟกต์"], [45, "ช่างผู้สร้างตำนาน"]],
+  },
+  {
+    id: "psychic", name: "ผู้ใช้พลังจิต", emoji: "🧠", key: "smarts", desc: "ยกวัตถุ อ่านใจ และบดขยี้ศัตรูด้วยจิต", cp: 4, survival: 0,
+    skills: [[1, "ยกวัตถุด้วยจิต"], [10, "กำแพงจิต"], [25, "ควบคุมจิตใจ"], [45, "พายุจิต"]],
+  },
+  {
+    id: "berserker", name: "เบอร์เซิร์กเกอร์", emoji: "🪓", key: "health", desc: "ยิ่งบาดเจ็บยิ่งแข็งแกร่ง แต่ห้ามใจตัวเองไม่ได้", cp: 5, survival: -0.04,
+    skills: [[1, "คลั่งเลือด"], [10, "ไม่รู้สึกเจ็บ"], [25, "คลั่งสุดขีด"], [45, "ราชาแห่งความคลั่ง"]],
+  },
+  {
+    id: "m_qin", name: "วิชาเพลงพิณ", emoji: "🪕", key: "looks", desc: "คลื่นเสียงพิณที่ทั้งสะกดและสังหาร", cp: 3, survival: 0.04, world: "murim",
+    skills: [[1, "เสียงพิณสะกดจิต"], [10, "คลื่นเสียงตัดใบไม้"], [25, "เพลงสังหารสิบทิศ"], [45, "พิณสวรรค์สะเทือนฟ้า"]],
+  },
+  {
+    id: "m_light", name: "วิชาตัวเบา", emoji: "🍃", key: "luck", desc: "เบาดุจขนนก ไม่มีใครจับได้", cp: 2, survival: 0.08, world: "murim",
+    skills: [[1, "ก้าวเหยียบน้ำ"], [10, "เงาลมไล่"], [25, "ไร้ร่องรอย"], [45, "เหินฟ้าไร้ขอบ"]],
+  },
+  {
+    id: "m_staff", name: "วิชากระบองพรรคกระยาจก", emoji: "🦯", key: "health", desc: "กระบองไม้ไผ่ธรรมดาที่ปราบมาได้ทั้งยุทธภพ", cp: 2, survival: 0.06, world: "murim",
+    skills: [[1, "กระบองตีสุนัข"], [10, "กระบองพันสาย"], [25, "กระบองปิดฟ้า"], [45, "กระบองยาจกเทวะ"]],
+  },
+  {
+    id: "m_poison", name: "วิชาพิษ", emoji: "🐍", key: "smarts", desc: "พิษร้อยชนิดในแขนเสื้อ — ตระกูลถังยังต้องเกรง", cp: 4, survival: 0.02, world: "murim",
+    skills: [[1, "เข็มพิษงูเห่า"], [10, "หมอกพิษ"], [25, "ร่างพิษพันปี"], [45, "ราชาแห่งพิษ"]],
+  },
+  {
+    id: "c_alchemist", name: "นักเล่นแร่แปรธาตุ", emoji: "⚗️", key: "smarts", desc: "แปรสภาพสสาร ปรุงยา สร้างของที่วิหารเรียกว่านอกรีต", cp: 2, survival: 0.06, world: "court",
+    skills: [[1, "ยาฟื้นฟู"], [10, "ระเบิดแปรธาตุ"], [25, "หินนักปราชญ์จำลอง"], [45, "ศิลานักปราชญ์"]],
+  },
+  {
+    id: "c_shadow", name: "นักดาบเงา", emoji: "🗡️", key: "luck", desc: "องครักษ์ลับที่ไม่มีชื่อในทะเบียนราชสำนัก", cp: 3, survival: 0.03, world: "court",
+    skills: [[1, "ก้าวเงา"], [10, "ดาบในความมืด"], [25, "เงาพันร่าง"], [45, "ราชันแห่งรัตติกาล"]],
+  },
+  {
+    id: "c_paladin", name: "อัศวินศักดิ์สิทธิ์", emoji: "🛡️", key: "health", desc: "ดาบของวิหาร — ปกป้องผู้อ่อนแอด้วยศรัทธา", cp: 2, survival: 0.1, world: "court",
+    skills: [[1, "โล่แสง"], [10, "ดาบพิพากษา"], [25, "เกราะศรัทธา"], [45, "ผู้พิทักษ์แห่งเทพ"]],
+  },
+  {
+    id: "c_wind", name: "เวทลม", emoji: "🌪️", key: "luck", desc: "ลมพัดตามคำสั่ง เร็วและคาดเดาไม่ได้", cp: 3, survival: 0.04, world: "court",
+    skills: [[1, "ใบมีดลม"], [10, "ปีกลม"], [25, "พายุหมุน"], [45, "ราชาแห่งวายุ"]],
+  },
+  {
+    id: "t_shield", name: "ผู้ถือโล่", emoji: "🛡️", key: "health", desc: "ยืนหน้าสุดของทีม รับทุกอย่างแทนเพื่อน", cp: 1, survival: 0.12, world: "tower",
+    skills: [[1, "โล่พลังงาน"], [10, "กำแพงเคลื่อนที่"], [25, "ป้อมเดินได้"], [45, "โล่ที่ไม่เคยแตก"]],
+  },
+  {
+    id: "t_puppet", name: "ผู้เชิดหุ่น", emoji: "🪆", key: "smarts", desc: "หุ่นเชิดจากพลังงานหอคอยที่สู้แทนคุณ", cp: 4, survival: 0.03, world: "tower",
+    skills: [[1, "หุ่นเชิดตัวแรก"], [10, "กองทัพหุ่น"], [25, "หุ่นยักษ์"], [45, "ผู้เชิดโชคชะตา"]],
+  },
+  {
+    id: "t_bard", name: "นักดนตรีสงคราม", emoji: "🎻", key: "looks", desc: "เพลงที่ปลุกใจทีมและทำลายใจศัตรู", cp: 1, survival: 0.07, world: "tower",
+    skills: [[1, "เพลงปลุกใจ"], [10, "เพลงกล่อมศัตรู"], [25, "ซิมโฟนีสนามรบ"], [45, "บทเพลงของหอคอย"]],
+  },
+  {
+    id: "a_engineer", name: "วิศวกร", emoji: "🔧", key: "smarts", desc: "ซ่อมทุกอย่าง สร้างทุกอย่าง จากซากเมือง", cp: 2, survival: 0.06, world: "apocalypse",
+    skills: [[1, "ซ่อมทุกอย่าง"], [10, "ป้อมปืนอัตโนมัติ"], [25, "ยานเกราะดัดแปลง"], [45, "เมืองจักรกล"]],
+  },
+  {
+    id: "a_hunter", name: "นักล่าสัตว์อสูร", emoji: "🏹", key: "luck", desc: "ตามรอยสัตว์อสูรแล้วล่ากลับมาเป็นอาหาร", cp: 4, survival: 0.02, world: "apocalypse",
+    skills: [[1, "ตามรอย"], [10, "กับดักเหยื่อ"], [25, "ล่าข้ามคืน"], [45, "ราชันนักล่า"]],
+  },
+  {
+    id: "a_psyker", name: "ผู้รับสัญญาณดวงดาว", emoji: "📡", key: "luck", desc: "ได้ยินเสียงดวงดาวคุยกัน — รู้ล่วงหน้าว่าฉากต่อไปคืออะไร", cp: 3, survival: 0.04, world: "apocalypse",
+    skills: [[1, "ได้ยินเสียงดาว"], [10, "คำทำนาย"], [25, "ขอพรจากฟ้า"], [45, "ผู้สื่อสารแห่งดวงดาว"]],
+  },
   // ── เส้นทางของระบบชีวิต (โลกธรรมดา) ──
   {
     id: "o_fighter", name: "นักสู้ข้างถนน", emoji: "👊", key: "health", desc: "จากนักเลงโรงเรียน สู่สังเวียนระดับโลก", cp: 3, survival: 0.02, world: "ordinary",
@@ -199,7 +272,15 @@ export function skillTier(name: string): number {
   return 3;
 }
 
-export const skillsOf = (life: Life): SkillInfo[] => (life.power?.skills ?? sysSkillsOf(life)).map((s) => skillInfo(life, s, skillTier(s)));
+/** สายรอง (คลาสที่สอง): สกิลปลดล็อกช้ากว่าสายหลัก 10 เลเวล */
+export const subClassOf = (life: Life): ClassInfo | undefined => (life.flags.subClass ? CLASSES.find((c) => c.id === life.flags.subClass) : undefined);
+function subSkills(life: Life): string[] {
+  const sub = subClassOf(life);
+  const lv = life.power?.level ?? 0;
+  return sub ? sub.skills.filter(([at]) => lv >= at + 10).map(([, n]) => n) : [];
+}
+export const skillsOf = (life: Life): SkillInfo[] =>
+  [...new Set([...(life.power?.skills ?? sysSkillsOf(life)), ...subSkills(life)])].map((s) => skillInfo(life, s, skillTier(s)));
 const sumSkills = (life: Life, k: "cp" | "survival") => skillsOf(life).reduce((s, x) => s + x[k], 0);
 /** โบนัสชั่วคราวระหว่างใช้สกิลในฉาก (ดู content/shared/skillUse.ts) */
 const skillBoost = (life: Life) => Number(life.flags.skillBoost ?? 0);
@@ -285,7 +366,8 @@ export function combatPower(life: Life): number {
   if (!p) return 0;
   const cls = classById(p.hunterClass);
   const g = guildById(p.guild);
-  return Math.round(
+  const sub = subClassOf(life);
+  return Math.round((sub ? Math.max(0, sub.cp) * 0.5 + 2 : 0) +
     p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp") + sponsorBonus(life, "cp") + passiveBonus(life, "cp"),
   );
 }
@@ -371,12 +453,12 @@ export function rollAwakening(life: Life, bonus: number): number {
 export function offerClasses(life: Life): HunterClass[] {
   const byWorld: Record<WorldId, { map: Record<StatKey, HunterClass[]>; fallback: HunterClass; rare: HunterClass }> = {
     hunter: {
-      map: { health: ["sword", "tank"], smarts: ["mage", "healer"], luck: ["assassin"], looks: ["healer", "assassin"], happiness: ["healer"] },
+      map: { health: ["sword", "tank", "berserker"], smarts: ["mage", "healer", "psychic", "crafter"], luck: ["assassin", "archer"], looks: ["healer", "assassin", "archer"], happiness: ["healer", "crafter"] },
       fallback: "sword",
       rare: "summoner",
     },
     murim: {
-      map: { health: ["m_sword", "m_spear"], smarts: ["m_palm", "m_medic"], luck: ["m_hidden"], looks: ["m_medic", "m_hidden"], happiness: ["m_medic"] },
+      map: { health: ["m_sword", "m_spear", "m_staff"], smarts: ["m_palm", "m_medic", "m_poison"], luck: ["m_hidden", "m_light"], looks: ["m_medic", "m_hidden", "m_qin"], happiness: ["m_medic", "m_qin"] },
       fallback: "m_sword",
       rare: "m_demon",
     },
@@ -386,17 +468,17 @@ export function offerClasses(life: Life): HunterClass[] {
       rare: "o_chaebol",
     },
     apocalypse: {
-      map: { health: ["a_blade", "a_warden"], smarts: ["a_medic", "a_warden"], luck: ["a_gunner", "a_tamer"], looks: ["a_medic", "a_gunner"], happiness: ["a_medic"] },
+      map: { health: ["a_blade", "a_warden"], smarts: ["a_medic", "a_warden", "a_engineer"], luck: ["a_gunner", "a_tamer", "a_hunter", "a_psyker"], looks: ["a_medic", "a_gunner"], happiness: ["a_medic", "a_psyker"] },
       fallback: "a_blade",
       rare: "a_reader",
     },
     tower: {
-      map: { health: ["t_vanguard"], smarts: ["t_wave", "t_lantern"], luck: ["t_lancer", "t_scout"], looks: ["t_lantern", "t_lancer"], happiness: ["t_lantern"] },
+      map: { health: ["t_vanguard", "t_shield"], smarts: ["t_wave", "t_lantern", "t_puppet"], luck: ["t_lancer", "t_scout"], looks: ["t_lantern", "t_lancer", "t_bard"], happiness: ["t_lantern", "t_bard"] },
       fallback: "t_vanguard",
       rare: "t_outsider",
     },
     court: {
-      map: { health: ["c_aura"], smarts: ["c_fire", "c_ice"], luck: ["c_spirit"], looks: ["c_holy", "c_ice"], happiness: ["c_holy"] },
+      map: { health: ["c_aura", "c_paladin"], smarts: ["c_fire", "c_ice", "c_alchemist"], luck: ["c_spirit", "c_shadow", "c_wind"], looks: ["c_holy", "c_ice", "c_wind"], happiness: ["c_holy", "c_paladin"] },
       fallback: "c_aura",
       rare: "c_dark",
     },
@@ -405,7 +487,14 @@ export function offerClasses(life: Life): HunterClass[] {
   const keys = (["health", "smarts", "luck", "looks"] as StatKey[]).sort((a, b) => life.stats[b] - life.stats[a]);
   const offer = new Set<HunterClass>();
   offer.add(pick(life, w.map[keys[0]]));
-  for (const c of w.map[keys[1]]) if (offer.size < 2 && !offer.has(c)) offer.add(c);
+  // สายที่สอง/สาม สุ่มจากสเตตัสเด่นอันดับรอง (ทุกสายในรายการมีโอกาสถูกเสนอ)
+  const addFrom = (list: HunterClass[], max: number) => {
+    const left = list.filter((c) => !offer.has(c));
+    if (offer.size < max && left.length) offer.add(pick(life, left));
+  };
+  addFrom(w.map[keys[1]], 2);
+  // สายที่สามจากสเตตัสเด่นอันดับสาม (มีคลาสให้เลือกมากขึ้น)
+  addFrom(w.map[keys[2]], 3);
   if (offer.size < 2) offer.add(w.fallback);
   // แชโบลย้อนเวลา: เฉพาะคนที่ย้อนเวลามาแล้วเท่านั้น
   const rareOk = w.rare !== "o_chaebol" || (life.regressions ?? 0) > 0;

@@ -8,7 +8,10 @@ import { SPONSOR_EVENTS } from "./sponsorEvents";
 import "./activities"; // งานพิเศษ / พักผ่อน (แทน Focus)
 import "./skillUse"; // ใช้สกิลในฉาก + สกิลรักษาฟื้นสุขภาพ
 import "./passiveHook"; // สกิลติดตัว
+import "./achieveHook"; // แจ้งความสำเร็จระหว่างเล่น
 import { PHONE_EVENTS } from "../phone";
+import { DUAL_CLASS } from "./dualClass";
+import { CHAIN_EVENTS } from "./chains";
 
 let loaded = false;
 
@@ -16,5 +19,5 @@ let loaded = false;
 export function loadSharedEvents() {
   if (loaded) return;
   loaded = true;
-  registerEvents([...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, ...PHONE_EVENTS]);
+  registerEvents([...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, ...PHONE_EVENTS, DUAL_CLASS, ...CHAIN_EVENTS]);
 }

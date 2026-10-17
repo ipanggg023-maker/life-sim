@@ -2,9 +2,9 @@ import type { Ctx, GameEvent, Outcome } from "../../../engine/events";
 import { kill } from "../../../engine/game";
 import { memoryOdds, observe, remembers, useMemory } from "../../../engine/memory";
 import { chance, randInt } from "../../../engine/rng";
-import type { HunterClass, Life } from "../../../engine/types";
+import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, formatMoney, people, shortName } from "../../../engine/util";
-import { awaken, classById, fightOdds, gainExp, luckyRankUp, offerClasses, rankName, rollAwakening, survivalOdds } from "../power";
+import { CLASSES, awaken, classById, fightOdds, gainExp, luckyRankUp, offerClasses, rankName, rollAwakening, survivalOdds } from "../power";
 import { worldFacts } from "../worldFacts";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
@@ -262,7 +262,7 @@ export const MEMORY_EVENTS: GameEvent[] = [
         system: true,
         title: "ผู้พิชิตคนแรก",
         text: (_l, c) => `[ระบบ] ยินดีด้วย ผู้พิชิตดันเจี้ยนลับคนแรก — แรงก์: 【${rankName(Number(c.rank))}】 กรุณาเลือกสายอาชีพ`,
-        choices: (["sword", "mage", "healer", "assassin", "tank", "summoner"] as HunterClass[]).map((id) => ({
+        choices: CLASSES.filter((c) => !c.world).map((c) => c.id).map((id) => ({
           label: `${classById(id).emoji} ${classById(id).name}`,
           tone: id === "summoner" ? ("special" as const) : undefined,
           show: (_l: Life, c: Ctx) => String(c.offer).split(",").includes(id),

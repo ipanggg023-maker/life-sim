@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { COUNTRIES } from "../../content/countries";
-import { ACHIEVEMENTS } from "../../content/achievements";
+import { ACHIEVEMENTS, ACH_CATEGORY, catOf, type AchCategory } from "../../content/achievements";
 import { TALENTS, RARITY_LABEL, talentById } from "../../content/talents";
 import { facultyById } from "../../content/hunter/careers";
 import { rankLabel } from "../../content/hunter/power";
@@ -78,19 +78,34 @@ export function SoulTab({
       <div className="section-title">
         ความสำเร็จ {soul.achievements.length}/{ACHIEVEMENTS.length}
       </div>
-      <div className="ach-grid">
-        {ACHIEVEMENTS.map((a) => {
-          const got = soul.achievements.includes(a.id);
-          return (
-            <div className={`ach ${got ? "got" : ""}`} key={a.id} title={a.desc}>
-              <div className="ach-name">{got ? "🏆" : "🔒"} {a.name}</div>
-              <div className="ach-desc">
-                {a.desc} · +{a.points}
-              </div>
+      {(Object.keys(ACH_CATEGORY) as AchCategory[]).map((cat) => {
+        const list = ACHIEVEMENTS.filter((a) => catOf(a) === cat);
+        if (!list.length) return null;
+        const got = list.filter((a) => soul.achievements.includes(a.id)).length;
+        return (
+          <details className="ach-cat" key={cat} open={cat === "life"}>
+            <summary>
+              {ACH_CATEGORY[cat]} · {got}/{list.length}
+            </summary>
+            <div className="ach-grid">
+              {list.map((a) => {
+                const have = soul.achievements.includes(a.id);
+                const secret = a.hidden && !have;
+                return (
+                  <div className={`ach ${have ? "got" : ""}`} key={a.id} title={secret ? "ความสำเร็จลับ" : a.desc}>
+                    <div className="ach-name">
+                      {have ? "🏆" : "🔒"} {secret ? "???" : a.name}
+                    </div>
+                    <div className="ach-desc">
+                      {secret ? "ความสำเร็จลับ" : a.desc} · +{a.points}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
+          </details>
+        );
+      })}
 
       {graveyard.some((g) => g.series) && (
         <>

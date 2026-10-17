@@ -719,3 +719,7 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .sys-stat { display: grid; grid-template-columns: 74px 1fr 34px auto; align-items: center; gap: 8px; font-size: 13px; }
 .sys-stat .bar { height: 8px; }
 .sys-stat .plus { min-width: 30px; padding: 2px 8px; }
+
+/* ── ความสำเร็จแยกหมวด (M22) ── */
+.ach-cat { margin-bottom: 8px; }
+.ach-cat summary { cursor: pointer; font-weight: 700; padding: 6px 0; }

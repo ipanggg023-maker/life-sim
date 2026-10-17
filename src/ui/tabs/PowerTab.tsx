@@ -1,12 +1,13 @@
 import { RARITY_LABEL, talentById } from "../../content/talents";
 import { canEnterGate, dailyQuest, enterGate, gatesLeft, train } from "../../content/hunter/events/gates";
-import { RANKS, classById, combatPower, skillsOf, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
+import { RANKS, classById, combatPower, skillsOf, subClassOf, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
 import { breakLevel } from "../../content/murim/events";
 import { SECLUSION_YEARS, canSeclude, isSecluded, startSeclusion } from "../../content/shared/fate";
 import { TITLES, titlesOf } from "../../content/titles";
 import { TOP_FLOOR, floorCap, floorOf, tierOfFloor } from "../../content/tower/climb";
 import { sponsorOf } from "../../content/sponsors";
 import { PASSIVES, passivesOf } from "../../content/passives";
+import { openStories } from "../../content/shared/chains";
 import { STUDENTS, acaYear, houseOf, inAcademy } from "../../content/court/academy";
 import { SKILL_TYPE, skillEffectText } from "../../content/skills";
 import { skillReady } from "../../content/shared/skillUse";
@@ -153,6 +154,7 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
 
       <TitlesCard life={life} act={act} />
       <PassivesCard life={life} />
+      <StoriesCard life={life} />
 
       <div className="section-title">พรสวรรค์</div>
       <div className="talent-row">
@@ -298,6 +300,7 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
           <span>{ui.style}</span>
           <b>
             {cls.emoji} {cls.name}
+            {subClassOf(life) && <span className="muted small"> + {subClassOf(life)!.emoji} {subClassOf(life)!.name}</span>}
           </b>
           <span>เลเวล</span>
           <b>
@@ -524,6 +527,25 @@ function PassivesCard({ life }: { life: Life }) {
           <div className="skill-card locked" key={p.id}>
             <span className="skill-name">🔒 {p.name}</span>
             <span className="skill-meta">{p.how}</span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/** เส้นเรื่องที่ยังค้างอยู่ (เควสต่อเนื่อง) */
+function StoriesCard({ life }: { life: Life }) {
+  const open = openStories(life);
+  if (!open.length) return null;
+  return (
+    <>
+      <div className="section-title">📜 เรื่องที่ยังค้างอยู่ ({open.length})</div>
+      <div className="skill-list">
+        {open.map((s) => (
+          <div className="skill-card" key={s.id}>
+            <span className="skill-name">{s.title}</span>
+            <p className="small muted">{s.hint}</p>
           </div>
         ))}
       </div>

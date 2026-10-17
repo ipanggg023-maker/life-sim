@@ -170,6 +170,7 @@ const YOUTH: GameEvent[] = [
             return { text: `💕 พอถอดหน้ากาก ${shortName(p)}ยิ้มให้คุณ "ข้าตามหาเจ้ามาทั้งคืน"`, kind: "milestone" };
           }
           addStat(l, "happiness", 5);
+          l.flags.maskGlove = true; // เส้นเรื่องต่อ: q.glove (shared/chains.ts)
           return meh("ระฆังเที่ยงคืนดังขึ้น อีกฝ่ายรีบหายไปในฝูงชน ทิ้งไว้แค่ถุงมือหนึ่งข้าง");
         },
       },

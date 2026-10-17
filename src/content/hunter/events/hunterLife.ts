@@ -5,6 +5,7 @@ import { chance, pick, randInt } from "../../../engine/rng";
 import type { HunterClass, Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, formatMoney, hasTalent, people, shortName } from "../../../engine/util";
 import {
+  CLASSES,
   GUILDS,
   awaken,
   classById,
@@ -40,7 +41,7 @@ function damage(l: Life, min: number, max: number, cause: string): string {
 
 /** สร้างตัวเลือกปลุกพลังแบบเลือกสายจาก ctx.offer */
 function classChoices(onPick: (l: Life, c: Ctx, cls: HunterClass) => Outcome) {
-  return (["sword", "mage", "healer", "assassin", "tank", "summoner"] as HunterClass[]).map((id) => ({
+  return CLASSES.filter((c) => !c.world).map((c) => c.id).map((id) => ({
     label: `${classById(id).emoji} ${classById(id).name}`,
     tone: id === "summoner" ? ("special" as const) : undefined,
     show: (_l: Life, c: Ctx) => String(c.offer ?? "").split(",").includes(id),
