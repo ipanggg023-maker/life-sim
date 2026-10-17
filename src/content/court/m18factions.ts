@@ -1,0 +1,411 @@
+// M18 — สามขั้วอำนาจ: ราชวงศ์ · วิหาร · สภาขุนนาง
+import type { GameEvent } from "../../engine/events";
+import { kill } from "../../engine/game";
+import { chance } from "../../engine/rng";
+import { addFame, addMoney, addStat, money } from "../../engine/util";
+import { W, bad, big, good, hero, hurt, isVillain, lady, meh, noble, royal, sys } from "./m18common";
+import { FACTION_INFO, addFac, addRumor, addSoc, ally, dominant, fac, pow, shiftPow, type Faction } from "./politics";
+
+const breakFlag = (l: Parameters<typeof isVillain>[0]) => { l.flags.dfBroken = Number(l.flags.dfBroken ?? 0) + 1; };
+const enemyOfDominant = (l: Parameters<typeof isVillain>[0]) => fac(l, dominant(l)) <= -45 && pow(l, dominant(l)) >= 42;
+
+export const M18_FACTIONS: GameEvent[] = [
+  // ───────── ราชวงศ์ ─────────
+  {
+    id: "c18.f.royal_summons",
+    minAge: 18,
+    maxAge: 55,
+    weight: (l) => (fac(l, "royal") >= 15 ? W + 3 : W - 2),
+    title: "หมายเรียกจากวังหลวง",
+    text: () => "ราชเลขาธิการส่งหมายเรียกคุณเข้าวังกลางดึก จักรพรรดิต้องการ 'คนที่ไม่มีใครสงสัย' ไปส่งจดหมายลับถึงแม่ทัพชายแดน",
+    choices: [
+      { label: "รับภารกิจ", check: { stat: "smarts", dc: 50 }, skill: ["stealth"], run: (l, _c, ok) => { if (ok) { addFac(l, "royal", 12); shiftPow(l, "royal", 3); addMoney(l, 30_000); return good("จดหมายถึงมือแม่ทัพทันเวลา กองทัพเคลื่อนพลก่อนสภาขุนนางจะรู้ตัว จักรพรรดิจำชื่อคุณได้แล้ว"); } addFac(l, "royal", -5); return bad("จดหมายถูกขโมยระหว่างทาง สภาขุนนางรู้แผนทั้งหมด จักรพรรดิไม่ทรงตำหนิ แต่ก็ไม่ทรงมองคุณอีก"); } },
+      { label: "ปฏิเสธด้วยข้ออ้างว่าป่วย", run: (l) => { addFac(l, "royal", -6); addStat(l, "health", 1); return meh("ราชเลขาธิการส่งยาบำรุงมาให้หนึ่งหีบ พร้อมการ์ดเขียนว่า 'หายไวๆ นะ' — น่ากลัวกว่าคำขู่"); } },
+      { label: "รับปาก แล้วแอบเปิดอ่านก่อน", check: { stat: "luck", dc: 55 }, run: (l, _c, ok) => { if (ok) { l.flags.c18Secret = "royal_war"; addFac(l, "royal", 6); return meh("จดหมายเรื่องแผนยึดที่ดินของแกรนด์ดยุก — คุณผนึกครั่งกลับคืนได้อย่างแนบเนียน และรู้สิ่งที่ไม่มีใครรู้"); } addFac(l, "royal", -15); return bad("ครั่งแตกเป็นสองท่อน แม่ทัพเห็นทันที — รายงานส่งกลับวังภายในคืนเดียว"); } },
+    ],
+  },
+  {
+    id: "c18.f.royal_tax",
+    minAge: 20,
+    maxAge: 70,
+    weight: (l) => (noble(l) ? W : 0),
+    text: () => "จักรพรรดิออกพระราชกฤษฎีกาเก็บ 'ภาษีสงคราม' จากที่ดินขุนนางร้อยละสิบ สภาขุนนางเรียกประชุมฉุกเฉิน ทุกตระกูลต้องเลือกจะจ่ายหรือต่อต้าน",
+    choices: [
+      { label: "จ่ายเต็มจำนวน แล้วประกาศให้ทุกคนรู้", run: (l) => { const d = Math.round(Math.max(0, l.money) * 0.1); addMoney(l, -d); addFac(l, "royal", 10); addFac(l, "noble", -8); return meh(`คุณจ่าย ${money(l, d)} ตราหลวงถูกติดหน้าประตูคฤหาสน์ — ขุนนางคนอื่นมองมันเหมือนป้ายคนทรยศ`); } },
+      { label: "ร่วมลงชื่อต่อต้านในสภา", run: (l) => { addFac(l, "noble", 10); addFac(l, "royal", -10); shiftPow(l, "noble", 2); return meh("ชื่อคุณอยู่บรรทัดที่เจ็ดของคำร้อง — สูงพอให้วังเห็น ต่ำพอให้ไม่โดนคนแรก"); } },
+      { label: "ซ่อนทรัพย์สินไว้ในชื่อวิหาร", check: { stat: "smarts", dc: 55 }, run: (l, _c, ok) => { if (ok) { addFac(l, "temple", 6); addMoney(l, -5000); return good("ที่ดินของคุณกลายเป็น 'ที่ธรณีสงฆ์' ชั่วคราว ไม่ต้องจ่ายภาษีเลยแม้แต่เหรียญเดียว"); } addFac(l, "royal", -12); addMoney(l, -20_000); return bad("ข้าหลวงคลังตรวจพบ ค่าปรับสองเท่าพร้อมชื่อในบัญชีดำ"); } },
+    ],
+  },
+  {
+    id: "c18.f.royal_succession",
+    minAge: 22,
+    maxAge: 60,
+    weight: W,
+    title: "วิกฤตการสืบราชสันตติวงศ์",
+    text: () => "จักรพรรดิประชวรหนัก องค์ชายใหญ่ (หนุนโดยสภาขุนนาง) กับองค์หญิงรอง (หนุนโดยวิหาร) ต่างส่งคนมาทาบทามคุณในคืนเดียวกัน",
+    choices: [
+      { label: "สนับสนุนองค์ชายใหญ่", run: (l) => { addFac(l, "noble", 10); addFac(l, "temple", -6); if (chance(l, 0.5)) { shiftPow(l, "noble", 6); addFac(l, "royal", 8); return good("องค์ชายใหญ่ขึ้นครองราชย์ ชื่อของคุณถูกจารึกในรายชื่อผู้ภักดีกลุ่มแรก"); } shiftPow(l, "temple", 6); addFac(l, "royal", -10); return bad("องค์หญิงรองชนะด้วยพรของสังฆราช รายชื่อผู้สนับสนุนฝ่ายแพ้ถูกส่งต่อกันในวัง"); } },
+      { label: "สนับสนุนองค์หญิงรอง", run: (l) => { addFac(l, "temple", 10); addFac(l, "noble", -6); if (chance(l, 0.5)) { shiftPow(l, "temple", 6); addFac(l, "royal", 8); return good("องค์หญิงรองสวมมงกุฎในวิหารใหญ่ คุณยืนแถวหน้าในพิธี"); } shiftPow(l, "noble", 6); addFac(l, "royal", -10); return bad("องค์ชายใหญ่ชนะ คุณถูกถอดจากตำแหน่งในราชสำนักโดยไม่มีคำอธิบาย"); } },
+      { label: "ไปเยี่ยมจักรพรรดิด้วยยาจากความรู้โลกเก่า", tone: "special", show: (l) => !!l.flags.role, check: { stat: "smarts", dc: 55 }, skill: ["medical", "heal"], run: (l, _c, ok) => { if (ok) { addFac(l, "royal", 20); shiftPow(l, "royal", 8); addFame(l, 10); return sys("ไข้ของจักรพรรดิลดลงในสามวัน วิกฤตสืบราชบัลลังก์จบลงก่อนเริ่ม — ทั้งสองฝ่ายเกลียดคุณเท่ากัน แต่จักรพรรดิรักคุณ"); } addFac(l, "royal", -8); return bad("ยาไม่ได้ผล หมอหลวงไล่คุณออกจากห้องบรรทม"); } },
+      { label: "วางตัวเป็นกลาง", run: (l) => { addSoc(l, -2); return meh("ผู้ชนะไม่ให้รางวัลคุณ ผู้แพ้ไม่ล้างแค้นคุณ — ความเป็นกลางมีราคาถูกที่สุดในราชสำนัก"); } },
+    ],
+  },
+  {
+    id: "c18.f.royal_hunt",
+    minAge: 17,
+    maxAge: 50,
+    weight: (l) => (fac(l, "royal") >= 25 ? W + 2 : 0),
+    text: () => "คุณได้รับเชิญไปงานล่าสัตว์ส่วนพระองค์ — ระหว่างล่า ม้าของจักรพรรดิตื่นตกใจวิ่งเข้าป่าลึก มีแค่คุณที่อยู่ใกล้พอจะตามไป",
+    choices: [
+      { label: "ควบม้าตามไป", tone: "danger", check: { stat: "health", dc: 55 }, skill: ["combat"], run: (l, _c, ok) => { if (ok) { addFac(l, "royal", 15); addFame(l, 6); return good("คุณคว้าบังเหียนได้ก่อนถึงหน้าผา จักรพรรดิหัวเราะทั้งที่หน้ายังซีด 'คืนนี้เจ้านั่งข้างข้า'"); } addFac(l, "royal", 4); return bad("คุณตกม้ากลิ้งลงเนิน แต่ก็ทำให้ม้าของพระองค์หยุดได้" + hurt(l, 10, 20, "ตกม้าในงานล่าสัตว์หลวง")); } },
+      { label: "เป่าแตรเรียกองครักษ์", run: (l) => { addFac(l, "royal", 3); return meh("องครักษ์ตามไปทัน จักรพรรดิปลอดภัย และไม่มีใครจำได้ว่าใครเป่าแตร"); } },
+    ],
+  },
+  {
+    id: "c18.f.royal_purge",
+    minAge: 20,
+    maxAge: 75,
+    weight: (l) => (fac(l, "royal") <= -45 && pow(l, "royal") >= 40 ? 22 : 0),
+    title: "การกวาดล้างของวังหลวง",
+    text: () => "องครักษ์หลวงล้อมคฤหาสน์ของคุณยามเช้า ข้อกล่าวหา: 'สมคบคิดต่อต้านราชบัลลังก์' — ราชวงศ์กำลังเป็นใหญ่ และคุณอยู่ผิดฝั่งมานานเกินไป",
+    choices: [
+      { label: "หนีทางอุโมงค์ใต้ห้องเก็บไวน์", tone: "danger", check: { stat: "luck", dc: 55 }, skill: ["escape", "stealth"], run: (l, _c, ok) => { if (ok) { l.flags.exiled = true; addMoney(l, -Math.round(Math.max(0, l.money) / 2)); addFac(l, "royal", 10); return bad("คุณโผล่ขึ้นมาที่โรงเตี๊ยมนอกเมืองพร้อมเงินครึ่งเดียวและชื่อในประกาศจับ"); } if (chance(l, 0.4)) { kill(l, "ถูกองครักษ์หลวงสังหารระหว่างหลบหนีการกวาดล้าง"); return bad("ปลายอุโมงค์มีคนรออยู่แล้ว…"); } addFac(l, "royal", 15); addMoney(l, -Math.round(Math.max(0, l.money) * 0.6)); return bad("คุณถูกจับ ทรัพย์สินถูกยึดกว่าครึ่ง ก่อนได้รับพระราชทานอภัยโทษเพราะ 'ไม่มีหลักฐานพอ'" + hurt(l, 8, 18, "ถูกทรมานระหว่างสอบสวน")); } },
+      { label: "ขอความคุ้มครองจากวิหาร", show: (l) => fac(l, "temple") >= 25, tone: "special", run: (l) => { addFac(l, "temple", -15); addFac(l, "royal", 10); return sys("สังฆราชประกาศว่าคุณอยู่ภายใต้ 'พรแห่งเทพธิดา' องครักษ์หลวงถอยกลับ — แต่วิหารจะทวงหนี้นี้ในวันหนึ่ง"); } },
+      { label: "เปิดประตูต้อนรับ แล้วยื่นทรัพย์สินถวาย", run: (l) => { addMoney(l, -Math.round(Math.max(0, l.money) * 0.7)); addFac(l, "royal", 25); addStat(l, "happiness", -10); return bad("คุณรอดชีวิต เหลือเพียงบ้านหลังเล็กและชื่อเสียงที่ไม่มีใครอยากเอ่ยถึง"); } },
+    ],
+  },
+  // ───────── วิหาร ─────────
+  {
+    id: "c18.f.temple_confession",
+    minAge: 15,
+    maxAge: 70,
+    weight: W,
+    text: () => "บาทหลวงในห้องสารภาพบาปถามคำถามแปลกๆ — ไม่ใช่เรื่องบาปของคุณ แต่เป็นเรื่องที่พ่อของคุณคุยกับแขกในห้องทำงาน",
+    choices: [
+      { label: "สารภาพทุกอย่างที่รู้", run: (l) => { addFac(l, "temple", 10); addFac(l, "noble", -8); return meh("บาทหลวงอวยพรคุณยาวกว่าปกติ สามสัปดาห์ต่อมา ข้อมูลนั้นปรากฏในคำเทศน์โจมตีสภาขุนนาง"); } },
+      { label: "แต่งเรื่องเท็จที่ฟังดูน่าเชื่อ", check: { stat: "smarts", dc: 55 }, run: (l, _c, ok) => { if (ok) { addFac(l, "temple", 4); addStat(l, "happiness", 4); return good("วิหารส่งคนไปเฝ้าโกดังร้างทางใต้สองเดือนเต็ม เพื่อรอ 'การส่งมอบอาวุธ' ที่ไม่มีวันมาถึง"); } addFac(l, "temple", -12); return bad("เรื่องของคุณขัดกับคำสารภาพของคนรับใช้ วิหารรู้ว่าคุณโกหกในห้องสารภาพบาป — บาปซ้อนบาป"); } },
+      { label: "ลุกออกจากห้องสารภาพบาป", run: (l) => { addFac(l, "temple", -5); return meh("ม่านไหวเบาๆ ข้างหลังคุณ — บาทหลวงจดอะไรบางอย่างลงในสมุด"); } },
+    ],
+  },
+  {
+    id: "c18.f.temple_miracle",
+    minAge: 16,
+    maxAge: 70,
+    weight: (l) => (fac(l, "temple") >= 10 ? W + 2 : W - 2),
+    title: "ปาฏิหาริย์ที่จัดฉาก",
+    text: () => "คุณพบว่า 'น้ำตาของรูปปั้นเทพธิดา' ที่ผู้คนแห่มาดูทุกวัน มาจากท่อน้ำที่บาทหลวงซ่อนไว้หลังรูปปั้น — และบาทหลวงก็เห็นว่าคุณเห็น",
+    choices: [
+      { label: "ยิ้มแล้วบอกว่า 'ข้าไม่เห็นอะไรเลย'", run: (l) => { addFac(l, "temple", 12); l.flags.c18Secret = "miracle"; return good("บาทหลวงจับมือคุณแน่น วิหารมีผู้สนับสนุนเงียบคนใหม่ — และคุณมีไพ่ใบใหม่"); } },
+      { label: "เปิดโปงต่อหน้าฝูงชน", check: { stat: "looks", dc: 55 }, run: (l, _c, ok) => { if (ok) { addFac(l, "temple", -20); addFac(l, "royal", 8); shiftPow(l, "temple", -6); addFame(l, 8); return good("ฝูงชนเห็นท่อน้ำกับตา ศรัทธาสั่นคลอนทั่วนครหลวง วังหลวงส่งของขวัญมาขอบคุณ"); } addFac(l, "temple", -25); addSoc(l, -8); return bad("ฝูงชนไม่เชื่อคุณ พวกเขาเชื่อน้ำตาของเทพธิดา คุณถูกขว้างด้วยดอกไม้ที่พวกเขาเตรียมมาถวาย"); } },
+      { label: "ขอส่วนแบ่งเงินบริจาค", run: (l) => { addMoney(l, 50_000); addFac(l, "temple", -4); return meh(`ถุงเงิน ${money(l, 50_000)} มาถึงทุกปีในวันเทพธิดา — ความเงียบมีราคาเสมอ`); } },
+    ],
+  },
+  {
+    id: "c18.f.inquisition",
+    minAge: 18,
+    maxAge: 75,
+    weight: (l) => (fac(l, "temple") <= -40 && pow(l, "temple") >= 38 ? 22 : 0),
+    title: "ศาลไต่สวนศรัทธา",
+    text: () => "อัศวินศักดิ์สิทธิ์เคาะประตูพร้อมหมายเรียก: 'ท่านถูกกล่าวหาว่าเป็นพวกนอกรีต' — วิหารกำลังมีอำนาจ และคุณทำให้พวกเขาโกรธมานานเกินไป",
+    choices: [
+      { label: "ไปขึ้นศาลแล้วโต้แย้งด้วยคัมภีร์", check: { stat: "smarts", dc: 65 }, skill: ["study", "social"], run: (l, _c, ok) => { if (ok) { addFac(l, "temple", 15); addFame(l, 6); return good("คุณอ้างคัมภีร์บทที่สิบสี่ซึ่งตุลาการลืมไปแล้ว ทั้งห้องพิจารณาเงียบกริบ — ยกฟ้อง"); } if (chance(l, 0.35)) { kill(l, "ถูกศาลไต่สวนศรัทธาตัดสินเผาทั้งเป็นข้อหานอกรีต"); return bad("คำตัดสินคือกองไฟ…"); } addMoney(l, -Math.round(Math.max(0, l.money) * 0.5)); addFac(l, "temple", 10); return bad("คุณถูกตัดสินให้ 'ชดใช้บาป' ด้วยทรัพย์สินครึ่งหนึ่ง และเดินเท้าเปล่าแสวงบุญหนึ่งปี" + hurt(l, 10, 20, "ตรากตรำระหว่างแสวงบุญไถ่บาป")); } },
+      { label: "ขอให้วังหลวงคุ้มครอง", show: (l) => fac(l, "royal") >= 25, tone: "special", run: (l) => { addFac(l, "royal", -12); addFac(l, "temple", 5); shiftPow(l, "royal", 2); return sys("จักรพรรดิส่งองครักษ์มายืนหน้าบ้านคุณ 'คนของข้า วิหารไม่มีสิทธิ์แตะ' — คุณรอด แต่กลายเป็นหมากในเกมของสองขั้ว"); } },
+      { label: "บริจาคก้อนใหญ่ให้วิหาร", run: (l) => { addMoney(l, -Math.round(Math.max(0, l.money) * 0.4)); addFac(l, "temple", 30); return meh("ข้อกล่าวหาถูกถอนอย่างเงียบๆ ในวันเดียวกับที่ระฆังใหม่ของวิหารถูกแขวน — มีชื่อคุณสลักอยู่"); } },
+    ],
+  },
+  {
+    id: "c18.f.temple_vote",
+    minAge: 25,
+    maxAge: 75,
+    weight: (l) => (fac(l, "temple") >= 30 ? W + 2 : 0),
+    text: () => "สังฆราชองค์เก่าสิ้นพระชนม์ คณะพระคาร์ดินัลแตกเป็นสองสาย: สายปฏิรูปที่อยากลดอำนาจวิหาร และสายเคร่งที่อยากให้วิหารอยู่เหนือบัลลังก์ ทั้งสองสายต้องการเงินของคุณ",
+    choices: [
+      { label: "สนับสนุนสายเคร่ง", run: (l) => { addMoney(l, -20_000); shiftPow(l, "temple", 7); addFac(l, "temple", 8); addFac(l, "royal", -6); return meh("สังฆราชองค์ใหม่สวมมงกุฎสามชั้น และเริ่มเทศน์ว่าจักรพรรดิต้องคุกเข่าต่อเทพธิดา"); } },
+      { label: "สนับสนุนสายปฏิรูป", run: (l) => { addMoney(l, -20_000); shiftPow(l, "temple", -5); addFac(l, "temple", 4); addFac(l, "royal", 5); addFac(l, "noble", 4); return good("สังฆราชองค์ใหม่ขายทรัพย์สินของวิหารครึ่งหนึ่งให้คนจน — ทั้งเมืองรัก ขุนนางเก่าเกลียด"); } },
+      { label: "ไม่ยุ่ง", run: () => meh("ควันสีขาวลอยขึ้นจากปล่องวิหารหลังสามสัปดาห์ — สังฆราชคนใหม่คือคนที่ไม่มีใครคาดคิด") },
+    ],
+  },
+  {
+    id: "c18.f.holy_war",
+    minAge: 18,
+    maxAge: 50,
+    weight: (l) => (pow(l, "temple") >= 40 ? W + 3 : 0),
+    title: "สงครามศักดิ์สิทธิ์",
+    text: () => "สังฆราชประกาศสงครามศักดิ์สิทธิ์กับอาณาจักรทางตะวันออก ทุกตระกูลต้องส่งคนหรือส่งเงิน — ไม่เช่นนั้นถือว่า 'ไม่มีศรัทธา'",
+    choices: [
+      { label: "ไปรบเอง", tone: "danger", check: { stat: "health", dc: 55 }, skill: ["combat"], run: (l, _c, ok) => { if (ok) { addFac(l, "temple", 18); addFame(l, 10); return good("คุณกลับมาพร้อมเหรียญกางเขนทองคำและแผลเป็นที่ไหล่ วิหารประกาศชื่อคุณในพิธีมิสซา"); } if (chance(l, 0.3)) { kill(l, "เสียชีวิตในสงครามศักดิ์สิทธิ์ทางตะวันออก"); return bad("ทะเลทรายทางตะวันออกกลืนกองทัพไปครึ่งหนึ่ง — รวมทั้งคุณ"); } addFac(l, "temple", 8); return bad("คุณกลับมาได้ แต่ไม่ใช่คนเดิม" + hurt(l, 15, 30, "บาดเจ็บสาหัสจากสงครามศักดิ์สิทธิ์")); } },
+      { label: "ส่งเงินแทน", run: (l) => { addMoney(l, -30_000); addFac(l, "temple", 6); return meh(`${money(l, 30_000)} ซื้อชื่อของคุณออกจากรายชื่อคนไร้ศรัทธา`); } },
+      { label: "ร่วมกับสภาขุนนางคัดค้านสงคราม", run: (l) => { addFac(l, "temple", -12); addFac(l, "noble", 10); shiftPow(l, "temple", -4); return meh("สงครามถูกเลื่อนออกไป วิหารเรียกคุณว่า 'ผู้หลงทาง' ในคำเทศน์ แต่ลูกชายของคนทั้งหมู่บ้านยังอยู่บ้าน"); } },
+    ],
+  },
+  {
+    id: "c18.f.saint_tutor",
+    minAge: 15,
+    maxAge: 22,
+    weight: (l) => (l.power?.hunterClass === "c_holy" ? W + 6 : 0),
+    text: () => "วิหารเสนอให้คุณเป็น 'ผู้ถือคทาศักดิ์สิทธิ์' ประจำตัวสังฆราช — เกียรติสูงสุดของผู้มีพลังศักดิ์สิทธิ์ แต่หมายถึงต้องตัดขาดจากราชวงศ์และสภาขุนนาง",
+    choices: [
+      { label: "รับตำแหน่ง", run: (l) => { addFac(l, "temple", 25); addFac(l, "royal", -8); addFac(l, "noble", -8); shiftPow(l, "temple", 4); return big("คุณสวมเสื้อคลุมขาวปักทอง ทุกครั้งที่สังฆราชเดิน คุณเดินข้างหลังหนึ่งก้าว — และได้ยินทุกอย่าง"); } },
+      { label: "ปฏิเสธ — พลังนี้ควรเป็นของทุกคน", run: (l) => { addFac(l, "temple", -10); addSoc(l, 6); addFame(l, 5); return meh("คุณตั้งคลินิกรักษาฟรีที่ตลาด วิหารไม่พอใจ แต่ประชาชนเรียกคุณว่า 'นักบุญแห่งตลาดปลา'"); } },
+    ],
+  },
+  // ───────── สภาขุนนาง ─────────
+  {
+    id: "c18.f.council_seat",
+    minAge: 25,
+    maxAge: 65,
+    weight: (l) => (noble(l) && fac(l, "noble") >= 20 ? W + 4 : 0),
+    title: "ที่นั่งในสภาขุนนาง",
+    text: () => "สมาชิกสภาขุนนางคนหนึ่งเสียชีวิตกะทันหัน ที่นั่งของเขาว่าง แกรนด์ดยุกส่งจดหมายถามว่าคุณสนใจหรือไม่ — 'แน่นอนว่าเสียงของท่านจะเป็นเสียงของเรา'",
+    choices: [
+      { label: "รับที่นั่ง", run: (l) => { l.flags.c18Council = true; addFac(l, "noble", 15); addFame(l, 8); shiftPow(l, "noble", 3); return big("คุณนั่งลงบนเก้าอี้หนังแดงในห้องประชุมสภา ไม้เคาะของประธานดังสามครั้ง — ยินดีต้อนรับสู่สนามรบที่แท้จริง"); } },
+      { label: "รับที่นั่ง แต่ประกาศว่าจะลงคะแนนตามมโนธรรม", check: { stat: "smarts", dc: 55 }, run: (l, _c, ok) => { l.flags.c18Council = true; if (ok) { addFame(l, 12); addSoc(l, 6); addFac(l, "noble", 4); return big("สุนทรพจน์ครั้งแรกของคุณถูกตีพิมพ์ทั่วนครหลวง ประชาชนเริ่มเรียกคุณว่า 'เสียงแห่งเหตุผล'"); } addFac(l, "noble", -6); return meh("แกรนด์ดยุกยิ้มบางๆ 'มโนธรรมเป็นของฟุ่มเฟือยนะ' — ที่นั่งของคุณถูกย้ายไปติดหน้าต่างที่ลมโกรก"); } },
+      { label: "ปฏิเสธ", run: (l) => { addFac(l, "noble", -4); return meh("ที่นั่งนั้นตกเป็นของ" + "คู่แข่งของคุณ ผู้ที่ส่งจดหมายขอบคุณมาแบบประชดประชัน"); } },
+    ],
+  },
+  {
+    id: "c18.f.council_vote",
+    minAge: 26,
+    maxAge: 75,
+    weight: (l) => (l.flags.c18Council ? 25 : 0),
+    maxTimes: 4,
+    title: "การลงมติในสภา",
+    text: (l) => `ญัตติวันนี้: ${l.age % 3 === 0 ? "'ลดงบกองทัพหลวงลงครึ่งหนึ่ง'" : l.age % 3 === 1 ? "'ยกเลิกภาษีทศางค์ที่ขุนนางจ่ายให้วิหาร'" : "'ให้สามัญชนที่มีพลังเวทเป็นอัศวินได้'"} — คะแนนเสมอกัน เสียงของคุณคือเสียงชี้ขาด`,
+    choices: [
+      { label: "เห็นชอบ", run: (l) => { const k = l.age % 3; if (k === 0) { addFac(l, "royal", -10); addFac(l, "noble", 8); shiftPow(l, "royal", -5); } else if (k === 1) { addFac(l, "temple", -10); addFac(l, "noble", 8); shiftPow(l, "temple", -5); } else { addFac(l, "noble", -8); addSoc(l, 6); addFame(l, 6); } return meh("ไม้เคาะดังขึ้น ญัตติผ่าน ห้องประชุมแตกเป็นเสียงโห่และเสียงปรบมือพร้อมกัน"); } },
+      { label: "คัดค้าน", run: (l) => { const k = l.age % 3; if (k === 0) addFac(l, "royal", 8); else if (k === 1) addFac(l, "temple", 8); else addFac(l, "noble", 6); addFac(l, "noble", -2); return meh("ญัตติตกไป ผู้เสนอญัตติจ้องคุณตลอดการประชุมที่เหลือ"); } },
+      { label: "ขายเสียงให้ฝ่ายที่จ่ายมากกว่า", run: (l) => { addMoney(l, 80_000); addSoc(l, -4); addRumor(l, `c18.r.vote_sold_${l.age}`, "ลือกันว่ามีสมาชิกสภาคนหนึ่งรับถุงทองก่อนการลงมติชี้ขาด", true, false, 3); return bad(`ถุง ${money(l, 80_000)} อยู่ใต้โต๊ะคุณ — และสายตาของสมาชิกสภาอีกห้าสิบคนอยู่บนตัวคุณ`); } },
+    ],
+  },
+  {
+    id: "c18.f.noble_feud",
+    minAge: 20,
+    maxAge: 70,
+    weight: (l) => (noble(l) ? W : 0),
+    text: () => "ตระกูลกุหลาบดำกับตระกูลสิงโตทองบาดหมางกันเรื่องเขตแดนที่ดิน ลูกหลานทั้งสองฝ่ายดวลดาบกันกลางถนน — ทั้งสองตระกูลขอให้คุณเป็นพยานฝั่งตัวเอง",
+    choices: [
+      { label: "เป็นพยานให้กุหลาบดำ", run: (l) => { addFac(l, "noble", 4); addSoc(l, 2); return meh("ศาลตัดสินให้กุหลาบดำชนะ สิงโตทองไม่เชิญคุณไปงานไหนอีกสามปี"); } },
+      { label: "เป็นพยานให้สิงโตทอง", run: (l) => { addFac(l, "noble", 4); addFac(l, "royal", 3); return meh("สิงโตทองชนะ และกระซิบว่าราชวงศ์ 'จำบุญคุณได้' — ตระกูลนี้คือญาติห่างๆ ของจักรพรรดินี"); } },
+      { label: "เสนอให้แต่งงานกันยุติความบาดหมาง", check: { stat: "smarts", dc: 55 }, skill: ["social"], run: (l, _c, ok) => { if (ok) { addFac(l, "noble", 12); addSoc(l, 6); return good("งานแต่งงานยุติความบาดหมางสามชั่วคน ทั้งสองตระกูลเรียกคุณว่า 'แม่สื่อ/พ่อสื่อผู้ศักดิ์สิทธิ์'"); } addFac(l, "noble", -6); return bad("ทั้งสองตระกูลโกรธคุณพร้อมกัน — เป็นครั้งแรกในรอบสามชั่วคนที่พวกเขาเห็นตรงกัน"); } },
+    ],
+  },
+  {
+    id: "c18.f.grand_duke_plot",
+    minAge: 22,
+    maxAge: 60,
+    weight: (l) => (fac(l, "noble") >= 30 || l.flags.c18Radical ? W + 4 : 0),
+    title: "ห้องลับของแกรนด์ดยุก",
+    text: () => "แกรนด์ดยุกพาคุณลงห้องใต้ดินที่มีแผนที่นครหลวงพร้อมหมุดสีแดงสิบสองจุด 'เราจะเปลี่ยนจักรวรรดิ เจ้าจะอยู่ข้างไหน'",
+    choices: [
+      { label: "เข้าร่วมแผนการ", run: (l) => { l.flags.c18Conspirator = true; addFac(l, "noble", 15); addFac(l, "royal", -10); return bad("คุณลงชื่อด้วยเลือด — ชื่อของคุณอยู่ในเอกสารที่ถ้าหลุดออกไป จะเป็นใบสั่งประหาร"); } },
+      { label: "แอบรายงานวังหลวง", check: { stat: "smarts", dc: 55 }, skill: ["stealth"], run: (l, _c, ok) => { if (ok) { addFac(l, "royal", 25); addFac(l, "noble", -20); shiftPow(l, "noble", -10); l.flags.coupFoiled = true; addFame(l, 10); return big("องครักษ์หลวงบุกห้องใต้ดินก่อนแผนเริ่มสามวัน แกรนด์ดยุกถูกจับ จักรพรรดิพระราชทานเหรียญสิงโตทองคำให้คุณ"); } addFac(l, "noble", -30); return bad("จดหมายของคุณถูกดักกลางทาง — ตอนนี้แกรนด์ดยุกรู้ว่าใครคือหนอน" + hurt(l, 10, 25, "ถูกนักฆ่าของแกรนด์ดยุกลอบทำร้าย")); } },
+      { label: "บอกว่าขอคิดดูก่อน แล้วหายตัวไปจากเมืองหนึ่งเดือน", run: (l) => { addFac(l, "noble", -5); return meh("พอคุณกลับมา หมุดสีแดงถูกดึงออกหมดแล้ว ไม่มีใครพูดถึงห้องใต้ดินอีก"); } },
+    ],
+  },
+  {
+    id: "c18.f.conspiracy_exposed",
+    minAge: 23,
+    maxAge: 70,
+    weight: (l) => (l.flags.c18Conspirator ? 25 : 0),
+    title: "แผนการแตก",
+    text: () => "สายลับของวังหลวงได้เอกสารลงชื่อด้วยเลือดไปแล้ว รายชื่อของผู้สมคบคิดกำลังถูกอ่านต่อหน้าจักรพรรดิ — ทีละคน",
+    choices: [
+      { label: "หนีข้ามพรมแดนทันที", tone: "danger", check: { stat: "luck", dc: 50 }, skill: ["escape"], run: (l, _c, ok) => { l.flags.c18Conspirator = false; if (ok) { l.flags.exiled = true; addFac(l, "royal", -20); return bad("คุณข้ามแม่น้ำชายแดนกลางดึกพร้อมกระเป๋าใบเดียว — ไม่มีวันได้กลับบ้านอีก"); } kill(l, "ถูกประหารข้อหากบฏหลังแผนการของแกรนด์ดยุกแตก"); return bad("ทหารหลวงรออยู่ที่สะพาน…"); } },
+      { label: "ซัดทอดแกรนด์ดยุกเพื่อแลกกับการอภัยโทษ", check: { stat: "smarts", dc: 50 }, run: (l, _c, ok) => { l.flags.c18Conspirator = false; if (ok) { addFac(l, "noble", -40); addFac(l, "royal", 10); shiftPow(l, "noble", -10); return meh("คุณรอดด้วยคำให้การที่ส่งคนสิบเอ็ดคนขึ้นตะแลงแกง — ขุนนางทั้งจักรวรรดิจะไม่มีวันให้อภัย"); } kill(l, "ถูกประหารข้อหากบฏ แม้จะพยายามซัดทอดผู้อื่น"); return bad("จักรพรรดิฟังจบแล้วตรัสว่า 'คนทรยศสองครั้ง ไม่ควรมีโอกาสครั้งที่สาม'"); } },
+      { label: "ใช้ความโปรดปรานของวังหลวงขอชีวิต", show: (l) => fac(l, "royal") >= 30, tone: "special", run: (l) => { l.flags.c18Conspirator = false; addFac(l, "royal", -30); addMoney(l, -Math.round(Math.max(0, l.money) / 2)); return sys("จักรพรรดิมองคุณนาน แล้วฉีกหน้าที่มีชื่อคุณทิ้ง 'ครั้งเดียว' — ทรัพย์สินครึ่งหนึ่งของคุณถูกยึดเป็นค่าความเมตตา"); } },
+    ],
+  },
+  {
+    id: "c18.f.noble_assassin",
+    minAge: 20,
+    maxAge: 75,
+    weight: (l) => (fac(l, "noble") <= -45 && pow(l, "noble") >= 40 ? 22 : 0),
+    title: "มีดในความมืด",
+    text: () => "คนรับใช้คนใหม่ที่สภาขุนนาง 'แนะนำ' มา ยืนอยู่ข้างเตียงคุณตอนตีสาม ใบมีดสะท้อนแสงจันทร์",
+    choices: [
+      { label: "สู้", tone: "danger", check: { stat: "health", dc: 55 }, skill: ["combat"], run: (l, _c, ok) => { if (ok) { addFac(l, "noble", 10); return meh("นักฆ่าหนีออกทางหน้าต่าง ทิ้งแหวนตราเหยี่ยวเงินไว้ — สภาขุนนางส่งจดหมายขอโทษที่ 'ไม่ได้ตรวจประวัติคนรับใช้ให้ดี'"); } if (chance(l, 0.45)) { kill(l, "ถูกนักฆ่าของสภาขุนนางลอบสังหารในห้องนอน"); return bad("ใบมีดเร็วกว่าเสียงร้อง…"); } return bad("คุณรอด แต่รอยแผลยาวบนแขนจะอยู่ตลอดชีวิต" + hurt(l, 15, 30, "ถูกนักฆ่าแทงในห้องนอน")); } },
+      { label: "เสนอเงินมากกว่าที่เขาได้รับ", check: { stat: "smarts", dc: 50 }, run: (l, _c, ok) => { if (ok) { addMoney(l, -50_000); l.flags.c18Secret = "assassin"; return good("นักฆ่าลังเล แล้วเก็บมีด 'ท่านคุยรู้เรื่องกว่านายจ้างข้า' — และบอกชื่อผู้จ้างก่อนจากไป"); } return bad("\"ข้ามีจรรยาบรรณ\" นักฆ่าพูด" + hurt(l, 15, 30, "ถูกนักฆ่าแทงในห้องนอน")); } },
+    ],
+  },
+  // ───────── ผลของดุลอำนาจ ─────────
+  {
+    id: "c18.f.ally_rises",
+    minAge: 20,
+    maxAge: 80,
+    maxTimes: 2,
+    weight: (l) => { const a = ally(l); return a && dominant(l) === a && pow(l, a) >= 45 ? 15 : 0; },
+    title: "ขั้วของคุณขึ้นเป็นใหญ่",
+    prepare: (l) => ({ f: ally(l) ?? "royal" }),
+    text: (_l, c) => `${FACTION_INFO[c.f as Faction].emoji}${FACTION_INFO[c.f as Faction].name}กุมอำนาจในราชสำนักแล้ว และพวกเขาไม่ลืมคนที่ยืนข้างพวกเขามาตลอด`,
+    choices: [
+      { label: "ขอตำแหน่งในราชสำนัก", run: (l, c) => { addFac(l, c.f as Faction, 5); addFame(l, 12); addMoney(l, 100_000); return big(`คุณได้รับตำแหน่งที่ปรึกษาประจำ${FACTION_INFO[c.f as Faction].head} พร้อมเงินเดือน ${money(l, 100_000)} ต่อปีแรก`); } },
+      { label: "ขอให้ช่วยคนที่ถูกกดขี่แทน", run: (l, c) => { addFac(l, c.f as Faction, 2); addSoc(l, 10); addStat(l, "happiness", 6); return good("คุณใช้อิทธิพลปล่อยนักโทษการเมืองสามสิบคน — บางคนคือศัตรูเก่าของคุณเอง"); } },
+      { label: "ขอให้จัดการศัตรูของคุณ", run: (l) => { addSoc(l, -4); addStat(l, "happiness", 4); addRumor(l, `c18.r.revenge_${l.age}`, "ลือกันว่าใครขวางทางคุณ ตอนนี้ต้องย้ายไปอยู่ชายแดน", true, false, 3); return meh("ศัตรูเก่าทั้งสามคนได้รับ 'ตำแหน่งใหม่' ที่ป้อมชายแดนพร้อมกัน"); } },
+    ],
+  },
+  {
+    id: "c18.f.ally_falls",
+    minAge: 20,
+    maxAge: 80,
+    maxTimes: 2,
+    weight: (l) => { const a = ally(l); return a && pow(l, a) <= 18 ? 15 : 0; },
+    title: "ขั้วของคุณกำลังล่มสลาย",
+    prepare: (l) => ({ f: ally(l) ?? "noble" }),
+    text: (_l, c) => `${FACTION_INFO[c.f as Faction].emoji}${FACTION_INFO[c.f as Faction].name}เสียอำนาจจนแทบไม่เหลือที่ยืน คนที่เคยอยู่ข้างพวกเขาเริ่มถูกเรียกสอบสวนทีละคน`,
+    choices: [
+      { label: "ยืนหยัดข้างเดิม", run: (l, c) => { addFac(l, c.f as Faction, 15); addSoc(l, -6); addMoney(l, -Math.round(Math.max(0, l.money) * 0.2)); shiftPow(l, c.f as Faction, 4); return meh("คุณเสียเงินและเพื่อนไปมาก แต่ความภักดีของคุณถูกเล่าขานไปทั่ว — และพวกเขาจะจำได้ถ้าวันหนึ่งกลับมา"); } },
+      { label: "เปลี่ยนข้างไปหาขั้วที่ชนะ", run: (l, c) => { addFac(l, c.f as Faction, -30); addFac(l, dominant(l), 15); addRumor(l, `c18.r.turncoat_${l.age}`, "ลือกันว่าคุณเปลี่ยนข้างเร็วกว่ากังหันลม", true, false, 3); return meh("ประตูของขั้วใหม่เปิดรับคุณ แต่ไม่มีใครยื่นมือให้จับ"); } },
+    ],
+  },
+  {
+    id: "c18.f.balance_broker",
+    minAge: 30,
+    maxAge: 80,
+    weight: (l) => (Math.min(fac(l, "royal"), fac(l, "temple"), fac(l, "noble")) >= 25 ? 18 : 0),
+    title: "ผู้ถือตาชั่ง",
+    text: () => "ทั้งสามขั้วไว้ใจคุณพร้อมกัน — สิ่งที่ไม่เคยเกิดขึ้นในประวัติศาสตร์จักรวรรดิ ตัวแทนทั้งสามขอให้คุณเป็นประธานการประชุมสามฝ่ายเพื่อแบ่งอำนาจใหม่",
+    choices: [
+      { label: "ร่างกฎบัตรแบ่งอำนาจที่เป็นธรรม", check: { stat: "smarts", dc: 65 }, skill: ["social", "study"], run: (l, _c, ok) => { if (ok) { l.flags.pow_royal = 34; l.flags.pow_temple = 33; l.flags.pow_noble = 33; addFame(l, 25); l.flags.c18Charter = true; return big("กฎบัตรสามเสาถูกลงนามในห้องโถงกระจก — ประวัติศาสตร์จะเรียกยุคนี้ว่า 'สันติภาพแห่งตาชั่ง' และชื่อของคุณอยู่บรรทัดแรก"); } addFac(l, "royal", -8); addFac(l, "temple", -8); addFac(l, "noble", -8); return bad("การประชุมล่มในวันที่เจ็ด ทั้งสามฝ่ายต่างคิดว่าคุณเข้าข้างอีกฝ่าย"); } },
+      { label: "เอนเอียงให้ขั้วที่ให้ประโยชน์คุณมากที่สุด", run: (l) => { const a = ally(l) ?? "royal"; shiftPow(l, a, 10); addFac(l, a, 10); addMoney(l, 200_000); return meh("กฎบัตรออกมาเอียงเล็กน้อย — เล็กพอที่ไม่มีใครพิสูจน์ได้ ใหญ่พอที่คุณได้คฤหาสน์หลังใหม่"); } },
+    ],
+  },
+  {
+    id: "c18.f.doom_dominant",
+    minAge: 25,
+    maxAge: 80,
+    weight: (l) => (enemyOfDominant(l) && !l.flags.exiled ? 10 : 0),
+    title: "ศัตรูของผู้มีอำนาจ",
+    prepare: (l) => ({ f: dominant(l) }),
+    text: (_l, c) => `${FACTION_INFO[c.f as Faction].name}กุมราชสำนักไว้ได้ทั้งหมด และคุณอยู่ในบัญชีศัตรูอันดับต้น เพื่อนเก่าเลิกทักทาย ร้านค้าเริ่มปฏิเสธขายของให้บ้านคุณ`,
+    choices: [
+      { label: "ไปคุกเข่าขอคืนดี", run: (l, c) => { addFac(l, c.f as Faction, 30); addStat(l, "happiness", -8); addSoc(l, -4); return meh("คุณคุกเข่าต่อหน้าคนที่คุณเกลียดที่สุด ใบหน้าของเขาดูพึงใจมากเกินไป"); } },
+      { label: "รวบรวมขั้วที่เหลือต่อต้าน", check: { stat: "smarts", dc: 60 }, skill: ["social"], run: (l, c, ok) => { const others = (["royal", "temple", "noble"] as Faction[]).filter((x) => x !== c.f); if (ok) { shiftPow(l, c.f as Faction, -10); for (const o of others) addFac(l, o, 8); return good("พันธมิตรสองขั้วของคุณกดดันจนผู้มีอำนาจต้องถอย — ดุลอำนาจกลับมาสมดุลอีกครั้ง"); } addFac(l, c.f as Faction, -10); return bad("ไม่มีใครกล้ายืนข้างคุณ คุณยิ่งโดดเดี่ยวกว่าเดิม"); } },
+      { label: "ย้ายไปอยู่คฤหาสน์ชนบทจนกว่าลมจะเปลี่ยน", run: (l) => { addSoc(l, -6); addStat(l, "happiness", 2); l.flags.c18Retreat = l.age; return meh("ไร่องุ่นของคุณให้ผลดีที่สุดในรอบสิบปี — อย่างน้อยไวน์ไม่เล่นการเมือง"); } },
+    ],
+  },
+  // ───────── Death Flag + ขั้วอำนาจ ─────────
+  {
+    id: "c18.df.royal_favor",
+    minAge: 14,
+    maxAge: 19,
+    forced: true,
+    when: (l) => isVillain(l) && !l.flags.fateDefied && fac(l, "royal") >= 40 && Number(l.flags.dfBroken ?? 0) < 3,
+    title: "ความโปรดปรานของจักรพรรดิ",
+    text: (l) => `จักรพรรดิเรียก${lady(l)}ตัวร้ายเข้าเฝ้า 'มีคนส่งฎีกามาว่าเจ้าจะทำร้าย${hero(l)} แต่ข้ารู้จักเจ้าดีกว่ากระดาษพวกนี้' พระองค์โยนฎีกาเข้ากองไฟ`,
+    choices: [
+      { label: "ทูลขอบพระทัยอย่างจริงใจ", run: (l) => { breakFlag(l); addFac(l, "royal", 5); return sys("ฎีกากล่าวหาที่ในนิยายใช้เป็นหลักฐานมัดตัวคุณ กลายเป็นเถ้าถ่าน [Death Flag ถูกหักด้วยความโปรดปรานของราชวงศ์]"); } },
+      { label: "ทูลถามว่าใครเป็นคนส่งฎีกา", check: { stat: "smarts", dc: 50 }, run: (l, _c, ok) => { breakFlag(l); if (ok) { l.flags.c18Secret = "petition"; return sys("จักรพรรดิกระซิบชื่อหนึ่ง — ไม่ใช่ตัวเอก แต่เป็นคนที่คุณไว้ใจที่สุด [Death Flag ถูกหัก]"); } return sys("'อย่าถามมาก' พระองค์ตรัส แต่ฎีกาก็มอดไหม้ไปแล้ว [Death Flag ถูกหัก]"); } },
+    ],
+  },
+  {
+    id: "c18.df.temple_witness",
+    minAge: 18,
+    maxAge: 19,
+    forced: true,
+    when: (l) => isVillain(l) && !l.flags.fateDefied && Number(l.flags.dfBroken ?? 0) < 2 && fac(l, "temple") >= 35,
+    title: "พยานจากวิหาร",
+    text: () => "ก่อนวันพิจารณาคดี บาทหลวงชราผู้เคยรับศีลสารภาพของคุณมาทั้งชีวิต ขอขึ้นให้การต่อหน้าศาลหลวง",
+    choices: [
+      { label: "ยอมให้เขาให้การ", run: (l) => { breakFlag(l); addFac(l, "temple", 5); return sys("'ข้าได้ยินบาปทุกข้อของเด็กคนนี้ — ไม่มีข้อไหนเป็นการฆ่า' ศาลเงียบงัน คำให้การของวิหารหนักกว่าหลักฐานทุกชิ้น [Death Flag ถูกหัก]"); } },
+      { label: "ขอให้เขาอย่าเสี่ยง", run: (l) => { addFac(l, "temple", 8); return meh("บาทหลวงยิ้ม 'เจ้าโตขึ้นแล้ว' แล้วเดินกลับวิหาร — คุณต้องหาทางรอดด้วยตัวเอง"); } },
+    ],
+  },
+  {
+    id: "c18.df.noble_alibi",
+    minAge: 18,
+    maxAge: 19,
+    forced: true,
+    when: (l) => isVillain(l) && !l.flags.fateDefied && Number(l.flags.dfBroken ?? 0) < 2 && fac(l, "noble") >= 35 && fac(l, "temple") < 35,
+    title: "คำยืนยันจากสภาขุนนาง",
+    text: () => "สมาชิกสภาขุนนางเจ็ดคนลงนามยืนยันว่าในคืนเกิดเหตุ คุณอยู่ในงานเลี้ยงของแกรนด์ดยุก — ซึ่งไม่จริงทั้งหมด แต่ก็ไม่ผิดทั้งหมด",
+    choices: [
+      { label: "รับความช่วยเหลือ", run: (l) => { breakFlag(l); addFac(l, "noble", 5); l.flags.c18NobleDebt = true; return sys("ศาลหลวงไม่อาจปฏิเสธลายเซ็นเจ็ดตระกูล คดีถูกยกฟ้อง [Death Flag ถูกหัก] — แต่ตอนนี้คุณเป็นหนี้สภาขุนนางเจ็ดครั้ง"); } },
+      { label: "ปฏิเสธ — ไม่อยากเป็นหนี้ใคร", run: (l) => { addFac(l, "noble", -5); addStat(l, "smarts", 1); return meh("แกรนด์ดยุกยักไหล่ 'ศักดิ์ศรีไม่ช่วยให้หัวติดบ่าหรอกนะ'"); } },
+    ],
+  },
+  {
+    id: "c18.f.noble_debt_call",
+    minAge: 22,
+    maxAge: 50,
+    weight: (l) => (l.flags.c18NobleDebt ? 25 : 0),
+    text: () => "แกรนด์ดยุกมาทวงหนี้คำยืนยันในศาล: 'จงแต่งงานกับหลานชาย/หลานสาวของข้า หรือคืนสิ่งที่เราให้เจ้า'",
+    choices: [
+      { label: "ยอมแต่งงานเพื่อการเมือง", show: (l) => !l.people.some((p) => p.alive && (p.relation === "spouse" || p.relation === "partner")), run: (l) => { l.flags.c18NobleDebt = false; addFac(l, "noble", 15); l.flags.c18PolMarriage = "noble"; return meh("งานแต่งงานยิ่งใหญ่ ชุดสวย ดอกไม้หอม และคู่สมรสที่คุณเพิ่งเจอครั้งที่สอง"); } },
+      { label: "จ่ายเป็นเงินแทน", run: (l) => { l.flags.c18NobleDebt = false; addMoney(l, -Math.round(Math.max(50_000, l.money * 0.3))); return meh("หนี้ถูกล้างด้วยเหรียญทอง — แพงกว่าที่คิด แต่ถูกกว่าชีวิต"); } },
+      { label: "ปฏิเสธ แล้วหันไปหาราชวงศ์", run: (l) => { l.flags.c18NobleDebt = false; addFac(l, "noble", -25); addFac(l, "royal", 8); return bad("แกรนด์ดยุกลุกออกจากห้องโดยไม่พูดอะไร — ศัตรูที่เงียบคือศัตรูที่อันตรายที่สุด"); } },
+    ],
+  },
+  {
+    id: "c18.f.spy_offer",
+    minAge: 18,
+    maxAge: 60,
+    weight: (l) => (l.flags.c18Spies ? W + 3 : W - 2),
+    text: () => "ผู้ชายหน้าตาธรรมดาที่สุดในโลกนั่งลงตรงข้ามคุณในร้านกาแฟ 'นายของข้าอยากรู้ว่าวิหารกำลังคุยอะไรกับสภาขุนนาง เราจ่ายดี' — เขาไม่บอกว่านายเป็นใคร",
+    choices: [
+      { label: "รับงาน", check: { stat: "smarts", dc: 50 }, skill: ["stealth"], run: (l, _c, ok) => { if (ok) { addMoney(l, 60_000); addFac(l, "royal", 8); return good("นายของเขาคือราชเลขาธิการ — คุณรู้หลังจากได้รับเหรียญตราลับของสำนักข่าวกรองหลวง"); } addFac(l, "temple", -10); addFac(l, "noble", -10); return bad("ทั้งวิหารและสภาขุนนางรู้ว่าคุณคือคนสอดแนม — ประตูสองบานปิดใส่หน้าพร้อมกัน"); } },
+      { label: "ส่งข้อมูลปลอมแล้วเก็บเงิน", run: (l) => { addMoney(l, 30_000); if (chance(l, 0.4)) { addFac(l, "royal", -12); return bad("ข้อมูลปลอมของคุณทำให้วังหลวงเสียหน้ากลางสภา ราชเลขาธิการรู้ว่าใครเป็นต้นตอ"); } return meh("เงินมาถึงตรงเวลา ไม่มีใครถามอะไร — ยังไม่ถาม"); } },
+      { label: "ปฏิเสธ", run: () => meh("ผู้ชายคนนั้นยิ้ม จ่ายค่ากาแฟให้คุณ แล้วหายไปในฝูงชน — คุณนึกหน้าเขาไม่ออกตั้งแต่ก้าวแรกที่เขาเดินจากไป") },
+    ],
+  },
+  {
+    id: "c18.f.famine_politics",
+    minAge: 25,
+    maxAge: 70,
+    weight: (l) => (noble(l) ? W : 0),
+    title: "ข้าวในยุ้งฉาง",
+    text: () => "ภัยแล้งทางใต้ทำให้ข้าวขาดตลาด ยุ้งฉางของคุณเต็ม พ่อค้าเสนอราคาสามเท่า วิหารขอให้บริจาค วังหลวงขอซื้อในราคาทุนเพื่อแจกในนามจักรพรรดิ",
+    choices: [
+      { label: "ขายให้พ่อค้า", run: (l) => { addMoney(l, 150_000); addSoc(l, -8); addRumor(l, `c18.r.hoarder_${l.age}`, "ลือกันว่าคุณขายข้าวราคาแพงตอนคนอดตาย", true, false, 4); return bad(`กำไร ${money(l, 150_000)} — และหน้าต่างคฤหาสน์ถูกปาด้วยหินในคืนถัดมา`); } },
+      { label: "บริจาคผ่านวิหาร", run: (l) => { addFac(l, "temple", 12); shiftPow(l, "temple", 3); addSoc(l, 6); return good("บาทหลวงแจกข้าวพร้อมคำว่า 'จากเทพธิดาผ่านมือผู้มีศรัทธา' — ชื่อคุณถูกสวดในทุกโบสถ์ทางใต้"); } },
+      { label: "ขายให้วังหลวงในราคาทุน", run: (l) => { addFac(l, "royal", 12); shiftPow(l, "royal", 3); addSoc(l, 4); return good("ขบวนรถข้าวติดธงหลวงแล่นลงใต้ ประชาชนโห่ร้องชื่อจักรพรรดิ — และข้าหลวงกระซิบชื่อคุณ"); } },
+      { label: "แจกเองโดยตรงที่ประตูคฤหาสน์", run: (l) => { addSoc(l, 10); addFame(l, 6); addFac(l, "temple", -3); addFac(l, "royal", -3); return good("คิวยาวสามกิโลเมตร คุณยืนแจกด้วยมือตัวเองจนหมดยุ้ง ทั้งวังและวิหารไม่พอใจที่ไม่ได้หน้า แต่ประชาชนจำคุณได้"); } },
+    ],
+  },
+  {
+    id: "c18.f.border_lord",
+    minAge: 22,
+    maxAge: 60,
+    weight: (l) => (l.flags.exiled ? W + 4 : 0),
+    text: () => "ในดินแดนเนรเทศ ลอร์ดชายแดนผู้ไม่ขึ้นกับใครเสนอให้คุณเป็นที่ปรึกษา — 'ที่นี่ไม่มีราชวงศ์ ไม่มีวิหาร ไม่มีสภา มีแต่หิมะกับคนที่อยากมีชีวิตรอด'",
+    choices: [
+      { label: "รับตำแหน่ง แล้วสร้างฐานอำนาจใหม่", run: (l) => { addMoney(l, 40_000); addStat(l, "happiness", 8); l.flags.c18Border = true; return good("ภายในห้าปี ดินแดนชายแดนมีโรงเรียน ตลาด และกองทหารของตัวเอง — นครหลวงเริ่มเรียกที่นี่ว่า 'ขั้วที่สี่'"); } },
+      { label: "ใช้ตำแหน่งนี้ส่งจดหมายต่อรองกลับนครหลวง", check: { stat: "smarts", dc: 60 }, skill: ["social"], run: (l, _c, ok) => { if (ok) { l.flags.exiled = false; addFac(l, "royal", 10); return big("จดหมายของคุณทำให้วังหลวงเห็นว่าชายแดนต้องมีคนกลาง — คุณได้รับอนุญาตให้กลับเมืองหลวงในฐานะทูต"); } return meh("จดหมายไม่ได้รับคำตอบ แต่หิมะที่นี่สวยกว่าที่คิด"); } },
+    ],
+  },
+  {
+    id: "c18.f.royal_engagement_politics",
+    minAge: 16,
+    maxAge: 19,
+    weight: (l) => (isVillain(l) && !l.flags.engagementOff ? W + 4 : 0),
+    text: (l) => `สามขั้วอำนาจต่างมีความเห็นเรื่องการหมั้นของคุณกับ${royal(l)}: ราชวงศ์อยากรักษาไว้ วิหารอยากให้ถอนเพื่อยก${hero(l)}ขึ้นแทน สภาขุนนางอยากรู้ว่าใครจะจ่ายมากกว่า`,
+    choices: [
+      { label: "ยอมถอนหมั้นตามที่วิหารต้องการ", run: (l) => { l.flags.engagementOff = true; addFac(l, "temple", 15); addFac(l, "royal", -8); l.flags.dfBroken = Number(l.flags.dfBroken ?? 0) + 1; return sys("การหมั้นจบลงอย่างเงียบๆ ไม่มีฉากถอนหมั้นต่อหน้าทุกคน ไม่มีความอับอาย ไม่มีเหตุผลให้ใครอยากฆ่าคุณ [Death Flag ถูกหัก]"); } },
+      { label: "รักษาการหมั้นไว้ แล้วเอาใจราชวงศ์", run: (l) => { addFac(l, "royal", 10); addFac(l, "temple", -8); return meh("จักรพรรดินีส่งเข็มกลัดทับทิมมาให้ — สัญลักษณ์ของสะใภ้หลวง และเป้าหมายของทุกสายตา"); } },
+      { label: "ขายข้อมูลการหมั้นให้สภาขุนนาง", run: (l) => { addFac(l, "noble", 10); addMoney(l, 40_000); addFac(l, "royal", -10); return bad("สภาขุนนางใช้ข้อมูลของคุณต่อรองกับวังหลวง — และราชวงศ์เริ่มสงสัยว่าคู่หมั้นของรัชทายาทรั่วไหลอะไรบ้าง"); } },
+    ],
+  },
+  {
+    id: "c18.f.lead_temple_claim",
+    minAge: 15,
+    maxAge: 20,
+    weight: (l) => (String(l.flags.role) === "lead" ? W + 6 : 0),
+    text: () => "วิหารต้องการประกาศให้คุณเป็น 'บุตรแห่งเทพธิดา' ตามบทนิยาย — แต่คุณรู้ว่าในนิยาย ตำแหน่งนี้ทำให้ตัวเอกกลายเป็นหุ่นเชิดของสังฆราช",
+    choices: [
+      { label: "รับตำแหน่ง แต่ต่อรองเงื่อนไขอิสระ", check: { stat: "smarts", dc: 55 }, skill: ["social"], run: (l, _c, ok) => { if (ok) { addFac(l, "temple", 15); addFame(l, 10); l.flags.saint = true; return big("คุณได้ตำแหน่งพร้อมสิทธิ์ปฏิเสธคำสั่งสังฆราช — สิ่งที่ตัวเอกในนิยายไม่เคยได้"); } addFac(l, "temple", 10); l.flags.saint = true; return meh("คุณได้ตำแหน่ง แต่เงื่อนไขถูกเขียนด้วยตัวอักษรเล็กจนอ่านไม่ออก"); } },
+      { label: "ปฏิเสธ แล้วหันไปหาราชวงศ์", run: (l) => { addFac(l, "temple", -15); addFac(l, "royal", 12); return meh("สังฆราชยิ้มแต่ตาไม่ยิ้ม จักรพรรดิส่งคนมาเชิญคุณเข้าวังในวันรุ่งขึ้น — เรื่องราวเบี่ยงออกจากนิยายแล้ว"); } },
+    ],
+  },
+  {
+    id: "c18.f.extra_survival_politics",
+    minAge: 16,
+    maxAge: 17,
+    weight: (l) => (String(l.flags.role) === "extra" && !l.flags.extraSurvived ? W + 5 : 0),
+    text: () => "คุณรู้ว่าเทศกาลดอกไม้ในบทที่ 3 จะเกิดหายนะ แต่ตัวประกอบไม่มีเสียง ต้องหาขั้วอำนาจที่ยอมฟังคุณ",
+    choices: [
+      { label: "เตือนวังหลวงผ่านองครักษ์ที่รู้จัก", run: (l) => { addFac(l, "royal", 6); if (fac(l, "royal") >= 25) { l.flags.c18FestivalWarned = true; return good("องครักษ์ส่งเรื่องขึ้นไป วังหลวงเพิ่มกำลังทหารในวันเทศกาลเป็นสามเท่า"); } return meh("องครักษ์หัวเราะ 'ตัวประกอบอย่างเจ้ารู้ได้ไง' — แต่เขาก็จดไว้"); } },
+      { label: "เตือนวิหารว่าเป็นนิมิตจากเทพธิดา", run: (l) => { addFac(l, "temple", 6); if (fac(l, "temple") >= 25) { l.flags.c18FestivalWarned = true; return good("บาทหลวงเชื่อคุณ วิหารเตรียมม่านพลังศักดิ์สิทธิ์ไว้รอบจัตุรัส"); } return meh("บาทหลวงบอกว่านิมิตของเด็กมักเกิดจากการกินชีสก่อนนอน"); } },
+      { label: "เตรียมทางหนีของตัวเองอย่างเดียว", run: (l) => { addStat(l, "smarts", 2); return meh("คุณจดเส้นทางหนีสามเส้นทาง และตุนขนมปังไว้ในห้องใต้ดิน"); } },
+    ],
+  },
+];
+

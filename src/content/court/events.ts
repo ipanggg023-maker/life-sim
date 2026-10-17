@@ -7,6 +7,7 @@ import { addFame, addMoney, addStat, clamp, createPerson, displayName, firstPers
 import { CLASSES, awaken, classById, fightOdds, gainExp, guildById, offerClasses, rankLabel, rankUp, rollAwakening, settleNone, survivalOdds, trackOf } from "../hunter/power";
 import { worldFacts } from "../hunter/worldFacts";
 import { startArc } from "../manhwa";
+import { addFac, fac } from "./politics";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
 const bad = (text: string, next?: string): Outcome => ({ text, kind: "bad", next });
@@ -167,6 +168,7 @@ const VILLAIN: GameEvent[] = [
       { label: "สืบหาคนร้ายตัวจริงด้วยตัวเอง", check: { stat: "smarts", dc: 60, bonus: (l) => broken(l) * 0.05 }, run: (l, _c, ok) => { if (ok) { breakFlag(l); addFame(l, 15); return sys("คุณพบว่าสาวใช้ของเคานต์เตสคู่แข่งเป็นคนลงมือ และนำหลักฐานไปยื่นต่อหน้าจักรพรรดิด้วยตัวเอง [Death Flag 3 ถูกหัก]"); } followFlag(l); return bad("หลักฐานของคุณไม่หนักแน่นพอ คุณถูกจับขังในหอคอยรอการพิจารณาคดี"); } },
       { label: (l) => `ใช้พลังศักดิ์สิทธิ์ถอนพิษให้${hero(l)}`, tone: "special", show: (l) => l.power?.hunterClass === "c_holy", run: (l) => { breakFlag(l); addFame(l, 25); return sys(`แสงสีทองแผ่จากมือคุณ ${hero(l)}ลืมตาขึ้น ทั้งราชสำนักคุกเข่า — ตัวร้ายในนิยายกลายเป็นนักบุญ [Death Flag 3 ถูกหัก]`); } },
       { label: "หนีออกจากเมืองหลวงทันที", run: (l) => { breakFlag(l); l.flags.exiled = true; addMoney(l, -Math.round(Math.max(0, l.money) / 2)); addFame(l, -20); return sys("คุณปีนกำแพงคฤหาสน์หนีไปพร้อมเงินครึ่งเดียว ชื่อคุณถูกประกาศจับ… แต่หัวยังอยู่บนบ่า [Death Flag 3 ถูกหัก]"); } },
+      { label: "👑 ทูลขอให้วังหลวงไต่สวนใหม่", tone: "special", show: (l) => fac(l, "royal") >= 30, run: (l) => { breakFlag(l); addFac(l, "royal", 5); return sys("จักรพรรดิสั่งราชเลขาธิการสอบสวนเอง หลักฐานปลอมพังลงภายในสามวัน [Death Flag 3 ถูกหักด้วยความโปรดปรานของราชวงศ์]"); } },
       { label: "ยอมให้จับ", run: (l) => { followFlag(l); return bad("โซ่ตรวนเย็นเฉียบรัดข้อมือ… ทุกอย่างกำลังเป็นไปตามบทนิยาย"); } },
     ],
   },
@@ -191,7 +193,7 @@ const VILLAIN: GameEvent[] = [
     choices: [
       {
         label: "ร้องขอความเมตตาต่อจักรพรรดิ",
-        odds: (l) => clamp(0.2 + broken(l) * 0.25 + (l.stats.looks - 50) / 200, 0.05, 0.9),
+        odds: (l) => clamp(0.2 + broken(l) * 0.25 + (l.stats.looks - 50) / 200 + fac(l, "royal") / 250, 0.05, 0.9),
         run: (l, _c, ok) => {
           if (ok) { l.flags.exiled = true; addFame(l, -15); return sys("จักรพรรดิยกพระหัตถ์ \"เนรเทศ\" — คุณรอดตาย แต่ต้องไปใช้ชีวิตที่ชายแดน"); }
           kill(l, "ถูกประหารด้วยกิโยตินตามบทนิยาย");
@@ -209,6 +211,9 @@ const VILLAIN: GameEvent[] = [
           return bad("องครักษ์จักรพรรดิสกัดเวทของคุณไว้ได้…");
         },
       },
+      // M18: ขั้วอำนาจที่อยู่ข้างคุณยื่นมือมาช่วยบนลานประหาร
+      { label: "👑 ราชวงศ์ที่โปรดปรานคุณยกพระหัตถ์อภัยโทษ", tone: "special", show: (l) => fac(l, "royal") >= 50, run: (l) => { breakFlag(l); l.flags.fateDefied = true; addFac(l, "royal", 10); addFame(l, 5); return sys("จักรพรรดิลุกจากบัลลังก์ \"คนของข้า ไม่มีใครแตะได้\" — เชือกกิโยตินถูกตัดต่อหน้าฝูงชน ความโปรดปรานของราชวงศ์หนักกว่าบทนิยายทั้งเล่ม"); } },
+      { label: "⛪ วิหารประกาศให้ที่พักพิงศักดิ์สิทธิ์", tone: "special", show: (l) => fac(l, "temple") >= 50, run: (l) => { l.flags.exiled = true; addFac(l, "temple", 10); return sys("สังฆราชเดินขึ้นลานประหารพร้อมคทา \"ผู้นี้อยู่ภายใต้พรของเทพธิดา\" — คุณรอดตาย และถูกส่งไปบวชที่อารามชายแดน"); } },
       { label: "ยอมรับชะตา", run: (l) => { kill(l, "ถูกประหารด้วยกิโยตินตามบทนิยาย"); return bad("คุณหลับตา… บางทีชาติหน้าอาจได้เป็นตัวเอกบ้าง"); } },
     ],
   },

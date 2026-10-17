@@ -15,6 +15,7 @@ import type { Life, WorldId } from "../../engine/types";
 import { displayName, hasTalent, loc } from "../../engine/util";
 import type { Act } from "../App";
 import { SystemWindow } from "./SystemWindow";
+import { CourtPoliticsCard } from "./CourtPoliticsCard";
 
 /** คำเรียกในแท็บพลังของแต่ละโลก */
 const UI: Record<
@@ -150,6 +151,7 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
 
       {life.worldId === "court" && life.flags.role && <NovelCard life={life} />}
       {life.worldId === "court" && life.flags.academy && <AcademyCard life={life} />}
+      {life.worldId === "court" && <CourtPoliticsCard life={life} act={act} />}
 
       <TitlesCard life={life} act={act} />
       <PassivesCard life={life} />
