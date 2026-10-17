@@ -9,6 +9,7 @@ import "./activities"; // งานพิเศษ / พักผ่อน (แ�
 import "./skillUse"; // ใช้สกิลในฉาก + สกิลรักษาฟื้นสุขภาพ
 import "./passiveHook"; // สกิลติดตัว
 import { PHONE_EVENTS } from "../phone";
+import { COUNTRY_EVENTS } from "./countryEvents"; // M21: เหตุการณ์เฉพาะประเทศ ไทย/เกาหลี/ญี่ปุ่น
 
 let loaded = false;
 
@@ -16,5 +17,6 @@ let loaded = false;
 export function loadSharedEvents() {
   if (loaded) return;
   loaded = true;
+  registerEvents(COUNTRY_EVENTS, "modern");
   registerEvents([...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, ...PHONE_EVENTS]);
 }

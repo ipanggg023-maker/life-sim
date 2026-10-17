@@ -6,6 +6,7 @@ import { skillsOf } from "../../content/hunter/power";
 import { SKILL_TYPE, skillEffectText } from "../../content/skills";
 import type { Life } from "../../engine/types";
 import type { Act } from "../App";
+import { SystemExtras } from "./SystemExtras";
 
 export function SystemWindow({ life, act }: { life: Life; act: Act }) {
   const s = life.sys!;
@@ -72,6 +73,7 @@ export function SystemWindow({ life, act }: { life: Life; act: Act }) {
       <p className="small muted">
         {blocked ?? `ภารกิจตามอาชีพ: ${stageOf(life).names[challengeLevel(life)]} (ใช้ ${SYS_INFO[stageOf(life).main].label})`}
       </p>
+      <SystemExtras life={life} act={act} />
 
       <div className="section-title">สกิลจากระบบ ({sysSkillsOf(life).length}/12)</div>
       <div className="skill-list">

@@ -46,8 +46,8 @@ export const SYSTEM_ARRIVAL: GameEvent = {
 
 // ───────────────────────── ภารกิจระบบ (ตามอาชีพ) ─────────────────────────
 
-type Stage = { main: SysStat; tag: string; names: string[]; foe: string[]; go: string; safe: string; win: string; lose: string; danger: boolean; fame: boolean };
-const STAGES: Record<string, Stage> = {
+export type Stage = { main: SysStat; tag: string; names: string[]; foe: string[]; go: string; safe: string; win: string; lose: string; danger: boolean; fame: boolean };
+export const STAGES: Record<string, Stage> = {
   fighter: {
     main: "str", tag: "combat", danger: true, fame: true,
     names: ["สังเวียนใต้ดิน", "แมตช์ MMA ระดับประเทศ", "ศึกชิงแชมป์เอเชีย", "ศึกชิงแชมป์โลก"],
@@ -105,7 +105,7 @@ const STAGES: Record<string, Stage> = {
     win: "งานเสร็จสมบูรณ์จนหัวหน้าเรียกไปชมต่อหน้าทุกคน", lose: "งานพังตอนนาทีสุดท้าย",
   },
 };
-const JOB_STAGE: Record<string, string> = {
+export const JOB_STAGE: Record<string, string> = {
   o_mma: "fighter", o_bodyguard: "fighter", o_trainee: "idol", o_model: "idol", doctor: "doctor", o_progamer: "gamer", streamer: "gamer",
   o_chef_job: "chef", o_athlete: "athlete", o_heir: "business", finance: "business", office: "business", o_dev: "business",
 };

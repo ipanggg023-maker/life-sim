@@ -14,6 +14,7 @@ export function initSys(l: Life) {
   l.sys = { level: 1, exp: 0, points: 5, str: 0, agi: 0, sta: 0, int: 0, cha: 0, luk: 0 };
   for (const k of SYS_STATS) l.sys[k] = baseSys(l, k);
   l.flags.awakenDone = true;
+  l.flags.dailyAt = l.age;
 }
 
 export function gainSysExp(l: Life, n: number) {
@@ -76,6 +77,7 @@ export function trainSys(l: Life, k: SysStat): Outcome | undefined {
 export function sysDaily(l: Life): Outcome | undefined {
   if (!l.sys || l.doneThisYear.includes("daily")) return;
   l.doneThisYear.push("daily");
+  l.flags.dailyAt = l.age; // ข้ามภารกิจรายวันทั้งปี = โดนภารกิจลงโทษ (m21quests)
   const k = pick(l, SYS_STATS);
   raise(l, k, 1);
   addStat(l, "health", randInt(l, 1, 3));
