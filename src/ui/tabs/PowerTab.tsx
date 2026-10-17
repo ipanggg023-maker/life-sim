@@ -14,6 +14,7 @@ import { worldOf } from "../../content/worlds";
 import type { Life, WorldId } from "../../engine/types";
 import { displayName, hasTalent, loc } from "../../engine/util";
 import type { Act } from "../App";
+import { SystemWindow } from "./SystemWindow";
 
 /** คำเรียกในแท็บพลังของแต่ละโลก */
 const UI: Record<
@@ -145,7 +146,7 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
   const ui = UI[life.worldId ?? "hunter"];
   return (
     <div className="tab-content">
-      {p ? <StatusWindow life={life} act={act} /> : <Dormant life={life} />}
+      {p ? <StatusWindow life={life} act={act} /> : life.sys ? <SystemWindow life={life} act={act} /> : <Dormant life={life} />}
 
       {life.worldId === "court" && life.flags.role && <NovelCard life={life} />}
       {life.worldId === "court" && life.flags.academy && <AcademyCard life={life} />}

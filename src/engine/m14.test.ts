@@ -6,6 +6,7 @@ import { awaken } from "../content/hunter/power";
 import { loadMurimWorld } from "../content/murim";
 import { loadOrdinaryWorld } from "../content/ordinary";
 import { startChallenge } from "../content/ordinary/system";
+import { initSys } from "../content/ordinary/sys";
 import { passivesOf } from "../content/passives";
 import { loadSharedEvents } from "../content/shared";
 import { loadTowerWorld } from "../content/tower";
@@ -77,14 +78,17 @@ describe("M14 เล่นอิสระ", () => {
   });
 
   it("สกิลขึ้นเฉพาะฉากที่แท็กตรงกัน", () => {
-    // ไอดอล: สกิลร้องเพลงขึ้นในภารกิจแสดง แต่ไม่ขึ้นในการต่อสู้
+    // ไอดอล (ระบบชีวิต): สกิลเสน่ห์ขึ้นในภารกิจแสดง แต่สกิลหมัดไม่ขึ้น
     const idol = createLife({ seed: 99, worldId: "ordinary" });
     idol.age = 20;
-    awaken(idol, 3, "o_idol");
-    startChallenge(idol, 3);
+    initSys(idol);
+    idol.flags.sysSkills = "รอยยิ้มพิฆาต,หมัดหนัก";
+    idol.job = { careerId: "o_trainee", level: 1, performance: 50, years: 0 };
+    startChallenge(idol);
     resolveChoice(idol, 0); // ไปฉากตัดสิน
     const labels = visibleChoices(idol, idol.queue[0]).map(({ c }) => (typeof c.label === "string" ? c.label : c.label(idol, idol.queue[0].ctx)));
-    expect(labels.some((x) => x.includes("เสียงร้องสวรรค์"))).toBe(true);
+    expect(labels.some((x) => x.includes("รอยยิ้มพิฆาต"))).toBe(true);
+    expect(labels.some((x) => x.includes("หมัดหนัก"))).toBe(false);
 
     // ฮีลเลอร์: สกิลรักษาไม่ขึ้นในฉากสู้บอส
     const healer = createLife({ seed: 98, worldId: "hunter" });

@@ -36,7 +36,7 @@ function baseChoice(l: Life, scene: Scene, ctx: Ctx): { c: Choice; tags: string[
 export const skillReady = (l: Life, name: string) => !l.doneThisYear.includes(`skill:${name}`);
 
 sceneExtras.push((l, scene, ctx) => {
-  if (!l.power || !l.alive) return [];
+  if (!l.alive || !skillsOf(l).length) return [];
   const found = baseChoice(l, scene, ctx);
   if (!found) return [];
   const base = found.c;
@@ -53,9 +53,10 @@ sceneExtras.push((l, scene, ctx) => {
       survival: base.survival && ((l2, c2) => withBoost(l2, s.boost, () => base.survival!(l2, c2))),
       run: (l2, c2, ok) => {
         l2.doneThisYear.push(`skill:${s.name}`);
-        const p = l2.power!;
+        const p = l2.power;
         const before = masteryOf(l2, s.name);
-        p.mastery = { ...p.mastery, [s.name]: (p.mastery?.[s.name] ?? 0) + 1 };
+        if (p) p.mastery = { ...p.mastery, [s.name]: (p.mastery?.[s.name] ?? 0) + 1 };
+        else l2.flags[`mastery_${s.name}`] = Number(l2.flags[`mastery_${s.name}`] ?? 0) + 1;
         const out = withBoost(l2, s.boost, () => base.run(l2, c2, ok));
         const after = masteryOf(l2, s.name);
         const up = after > before ? ` (ความชำนาญ「${s.name}」เพิ่มเป็น Lv.${after})` : "";

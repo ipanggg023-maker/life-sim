@@ -36,6 +36,7 @@ import { ActivitiesTab } from "./tabs/ActivitiesTab";
 import { CareerTab } from "./tabs/CareerTab";
 import { PeopleTab } from "./tabs/PeopleTab";
 import { PowerTab } from "./tabs/PowerTab";
+import { PhoneTab } from "./tabs/PhoneTab";
 import { SoulTab } from "./tabs/SoulTab";
 
 export const DEV = new URLSearchParams(location.search).has("dev");
@@ -300,6 +301,7 @@ export function App() {
           {tab === "people" && <PeopleTab life={life} act={act} />}
           {tab === "power" && <PowerTab life={life} act={act} />}
           {tab === "activities" && <ActivitiesTab life={life} act={act} />}
+          {tab === "phone" && <PhoneTab life={life} act={act} />}
           {tab === "soul" && (
             <SoulTab
               life={life}
@@ -338,5 +340,6 @@ const TAB_TITLES: Record<TabId, string> = {
   people: "ความสัมพันธ์",
   power: "พลัง",
   activities: "กิจกรรม",
+  phone: "มือถือ",
   soul: "วิญญาณ",
 };

@@ -3,6 +3,27 @@ export type WorldId = "hunter" | "murim" | "court" | "tower" | "apocalypse" | "o
 /** ประเทศที่เกิด (เฉพาะโลกยุคปัจจุบัน) */
 export type Country = "th" | "kr" | "jp";
 
+/** ค่าสถานะแบบเกม (ระบบชีวิตของโลกธรรมดา) */
+export type SysStat = "str" | "agi" | "sta" | "int" | "cha" | "luk";
+
+export interface SysState extends Record<SysStat, number> {
+  level: number;
+  exp: number;
+  /** แต้มที่ยังไม่ได้แจก */
+  points: number;
+}
+
+/** มือถือ (โลกยุคปัจจุบัน) */
+export interface PhoneState {
+  ig: number;
+  igPosts: number;
+  yt: number;
+  ytVideos: number;
+  ytViews: number;
+  /** มูลค่าพอร์ตหุ้น */
+  portfolio: number;
+}
+
 export type StatKey = "health" | "happiness" | "smarts" | "looks" | "luck";
 
 export type Stats = Record<StatKey, number>;
@@ -170,6 +191,10 @@ export interface Life {
   observed?: Memory[];
   /** มรดกจากชาติก่อนในโลกเดียวกัน (เกิดใหม่ยุคถัดไป) */
   legacy?: Legacy;
+  /** ระบบชีวิต (โลกธรรมดา) */
+  sys?: SysState;
+  /** มือถือ */
+  phone?: PhoneState;
 }
 
 export interface Memory {

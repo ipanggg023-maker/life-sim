@@ -6,6 +6,7 @@ import { titleBonus } from "../titles";
 import { skillInfo, type SkillInfo } from "../skills";
 import { sponsorBonus } from "../sponsors";
 import { passiveBonus } from "../passives";
+import { effSys, sysSkillTier, sysSkillsOf } from "../gameStats";
 
 /** เพื่อนร่วมทีมที่ยังมีชีวิต (นับสูงสุด 3 คน) */
 export const partySize = (life: Life) => Math.min(3, life.people.filter((p) => p.relation === "ally" && p.alive).length);
@@ -189,6 +190,8 @@ export const classById = (id: HunterClass) => CLASSES.find((c) => c.id === id)!;
 
 /** ขั้นของสกิล (0–3) = ตำแหน่งในสายอาชีพ · สกิลจากวาสนาที่ไม่อยู่ในสายไหนนับเป็นขั้นสูงสุด */
 export function skillTier(name: string): number {
+  const sys = sysSkillTier(name);
+  if (sys !== undefined) return sys;
   for (const c of CLASSES) {
     const i = c.skills.findIndex(([, s]) => s === name);
     if (i >= 0) return i;
@@ -196,7 +199,7 @@ export function skillTier(name: string): number {
   return 3;
 }
 
-export const skillsOf = (life: Life): SkillInfo[] => (life.power?.skills ?? []).map((s) => skillInfo(life, s, skillTier(s)));
+export const skillsOf = (life: Life): SkillInfo[] => (life.power?.skills ?? sysSkillsOf(life)).map((s) => skillInfo(life, s, skillTier(s)));
 const sumSkills = (life: Life, k: "cp" | "survival") => skillsOf(life).reduce((s, x) => s + x[k], 0);
 /** โบนัสชั่วคราวระหว่างใช้สกิลในฉาก (ดู content/shared/skillUse.ts) */
 const skillBoost = (life: Life) => Number(life.flags.skillBoost ?? 0);
@@ -277,6 +280,8 @@ const RANK_STEP = 12;
 
 export function combatPower(life: Life): number {
   const p = life.power;
+  // ผู้มีระบบชีวิต (ไม่มีพลังพิเศษ): สู้ด้วยร่างกายที่ฝึกมา
+  if (!p && life.sys) return Math.round(((effSys(life, "str") + effSys(life, "agi") + effSys(life, "sta")) / 3) * 0.4 + sumSkills(life, "cp") + passiveBonus(life, "cp"));
   if (!p) return 0;
   const cls = classById(p.hunterClass);
   const g = guildById(p.guild);

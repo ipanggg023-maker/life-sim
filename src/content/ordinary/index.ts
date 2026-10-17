@@ -1,7 +1,8 @@
 import { registerEvents } from "../../engine/events";
 import { ORDINARY_EVENTS } from "./events";
 import { CHALLENGE, SYSTEM_ARRIVAL } from "./system";
-import "./careers"; // อาชีพตามเส้นทางของระบบชีวิต
+import "./careers"; // อาชีพเฉพาะทาง (ใช้ STR–LUK)
+import "./sys"; // ระบบชีวิต: ค่าสถานะ เลเวล การฝึก
 
 let loaded = false;
 

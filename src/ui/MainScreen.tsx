@@ -5,17 +5,19 @@ import { worldOf } from "../content/worlds";
 import { cliffhanger, formatLikes, parseComments } from "../content/manhwa";
 import { titleById } from "../content/titles";
 import { secretQuestStatus } from "../content/shared/systemQuest";
+import { hasPhone } from "../content/phone";
 import { STAT_LABEL } from "../engine/game";
 import type { Life, LogEntry, StatKey } from "../engine/types";
 import { displayName, loc, money } from "../engine/util";
 
-export type TabId = "career" | "people" | "power" | "activities" | "soul";
+export type TabId = "career" | "people" | "power" | "activities" | "phone" | "soul";
 
 const TABS: { id: TabId; emoji: string; label: string }[] = [
   { id: "career", emoji: "💼", label: "อาชีพ" },
   { id: "people", emoji: "❤️", label: "คน" },
   { id: "power", emoji: "⚔️", label: "พลัง" },
   { id: "activities", emoji: "🎯", label: "ทำ" },
+  { id: "phone", emoji: "📱", label: "มือถือ" },
   { id: "soul", emoji: "👻", label: "วิญญาณ" },
 ];
 
@@ -159,7 +161,7 @@ export function MainScreen({
           ＋ อายุ 1 ปี
         </button>
         <nav className="tabs">
-          {TABS.map((t) => (
+          {TABS.filter((t) => t.id !== "phone" || hasPhone(life)).map((t) => (
             <button key={t.id} className="tab" onClick={() => onTab(t.id)}>
               <span className="tab-emoji">{t.emoji}</span>
               <span>{t.label}</span>

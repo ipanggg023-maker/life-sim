@@ -32,7 +32,7 @@ const big = (text: string, next?: string): Outcome => ({ text, kind: "milestone"
 const W = <T>(l: Life, t: Record<WorldId, T>): T => t[l.worldId ?? "hunter"];
 const rank = (l: Life) => l.power?.rank ?? -1;
 /** โลกวันสิ้นโลกที่ระบบยังไม่มา — ยังไม่มีใครได้พลัง */
-const preDoom = (l: Life) => l.worldId === "apocalypse" && !l.flags.doomed;
+const preDoom = (l: Life) => (l.worldId === "apocalypse" && !l.flags.doomed) || l.worldId === "ordinary";
 const RL = rankLabel;
 
 function damage(l: Life, min: number, max: number, cause: string): string {

@@ -1,5 +1,5 @@
 import { CAREERS, careerById, facultyById } from "../../content/hunter/careers";
-import { worldMatches } from "../../content/worlds";
+import { worldMatches, worldOf } from "../../content/worlds";
 import { applyJob, gradeToGpa, isStudent, jobChance, jobRequirementMissing, quitJob, salaryOf, studyHard, workHard } from "../../engine/game";
 import type { Life, SchoolStage } from "../../engine/types";
 import { money } from "../../engine/util";
@@ -22,7 +22,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
 
   return (
     <div className="tab-content">
-      {life.worldId !== "hunter" ? null : <div className="card">
+      {!worldOf(life.worldId).modern ? null : <div className="card">
         <div className="card-title">🎓 การศึกษา</div>
         <p>
           สถานะ: {STAGE_LABEL[ed.stage]}

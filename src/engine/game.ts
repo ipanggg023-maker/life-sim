@@ -3,7 +3,7 @@ import { HIDDEN_RARITY_ODDS, RARITY_ODDS, TALENTS, talentById } from "../content
 import { currentScene, getEvent, pickEvents, stillValid, type Choice, type Ctx, type Outcome } from "./events";
 import { chance, newSeed, nextFloat, pick, randInt, weightedPick } from "./rng";
 import type { Career } from "../content/hunter/careers";
-import type { Country, Faculty, Gender, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
+import type { Country, Faculty, Gender, SysStat, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
 import { worldMatches, worldOf } from "../content/worlds";
 import { countryOf } from "../content/countries";
 import { rollAwakenTrack } from "../content/hunter/power";
@@ -11,6 +11,7 @@ import { awakenArc, birthArc, maybeComment, seriesOf, startChapter } from "../co
 import { checkTitles, titleBonus } from "../content/titles";
 import { sponsorBonus } from "../content/sponsors";
 import { passiveBonus } from "../content/passives";
+import { SYS_INFO, effSys, sysAs100 } from "../content/gameStats";
 import {
   addFame,
   addMoney,
@@ -318,7 +319,7 @@ function progressJob(life: Life) {
   life.flags.income = pay;
   job.years++;
   job.performance = clamp(
-    job.performance + (life.stats[career.key] - 50) / 10 + randInt(life, -8, 8) + (hasTalent(life, "diligent") ? 5 : 0),
+    job.performance + ((career.sys ? sysAs100(effSys(life, career.sys.main)) : life.stats[career.key]) - 50) / 10 + randInt(life, -8, 8) + (hasTalent(life, "diligent") ? 5 : 0),
     0,
     100,
   );
@@ -550,6 +551,11 @@ export function jobRequirementMissing(life: Life, c: Career): string | undefined
   if (c.anyDegree && !life.education.degree) return "ต้องมีปริญญาตรี";
   if (c.degree && (!life.education.degree || !c.degree.includes(life.education.degree)))
     return `ต้องจบ ${c.degree.map((d) => facultyById(d).name).join("/")}`;
+  const special = c.needs?.(life);
+  if (special) return special;
+  for (const [k, v] of Object.entries(c.sys?.min ?? {})) {
+    if (effSys(life, k as SysStat) < (v ?? 0)) return `${SYS_INFO[k as SysStat].label} ${v}+`;
+  }
   for (const [k, v] of Object.entries(c.minStat ?? {})) {
     if (life.stats[k as keyof Stats] < (v ?? 0)) return `${STAT_LABEL[k as keyof Stats]} ${v}+`;
   }
@@ -557,6 +563,7 @@ export function jobRequirementMissing(life: Life, c: Career): string | undefined
 }
 
 export function jobChance(life: Life, c: Career) {
+  if (c.sys) return clamp(0.5 + (sysAs100(effSys(life, c.sys.main)) - c.dc) / 60 + (life.stats.luck - 50) / 400, 0.05, 0.95);
   return checkChance(life, c.key, c.dc, (life.education.grade - 50) / 300);
 }
 

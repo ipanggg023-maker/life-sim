@@ -4,14 +4,16 @@ import { kill } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, shortName } from "../../engine/util";
-import { fightOdds, gainExp, luckyRankUp, markTurn } from "../hunter/power";
+import { fightOdds, markTurn, trackOf } from "../hunter/power";
+import { effSys } from "../gameStats";
+import { gainSysExp } from "./sys";
 
 const good = (text: string): Outcome => ({ text, kind: "good" });
 const bad = (text: string): Outcome => ({ text, kind: "bad" });
 const meh = (text: string): Outcome => ({ text });
 
-const path = (l: Life) => l.power?.hunterClass;
-const has = (l: Life) => !!l.power;
+const job = (l: Life) => l.job?.careerId ?? "";
+const has = (l: Life) => !!l.sys;
 const foe = (l: Life, d = 0) => clamp((l.power?.rank ?? 0) + d, 0, 8);
 
 const SYSTEM: GameEvent[] = [
@@ -74,7 +76,7 @@ const PATH_EVENTS: GameEvent[] = [
     id: "ord.school_gang",
     minAge: 13,
     maxAge: 20,
-    when: (l) => path(l) === "o_fighter",
+    when: (l) => has(l) && effSys(l, "str") >= 30,
     title: "หัวหน้าแก๊งโรงเรียน",
     text: () => "หัวหน้าแก๊งที่คุมสามโรงเรียนรอบเมืองส่งคนมาบอกว่า \"หลังเลิกเรียน ดาดฟ้าตึกสาม มาคนเดียว\"",
     choices: [
@@ -83,7 +85,7 @@ const PATH_EVENTS: GameEvent[] = [
         tone: "danger",
         odds: (l) => fightOdds(l, foe(l, 1)),
         run: (l, _c, ok) => {
-          if (ok) { addFame(l, 6); gainExp(l, 300); return good("หัวหน้าแก๊งนอนกองอยู่บนดาดฟ้า วันรุ่งขึ้นทั้งสามโรงเรียนรู้ชื่อคุณ"); }
+          if (ok) { addFame(l, 6); gainSysExp(l, 300); return good("หัวหน้าแก๊งนอนกองอยู่บนดาดฟ้า วันรุ่งขึ้นทั้งสามโรงเรียนรู้ชื่อคุณ"); }
           addStat(l, "health", -randInt(l, 8, 16));
           return bad("คุณแพ้ยับ — แต่ระบบบันทึกท่าของเขาไว้ทั้งหมดแล้ว");
         },
@@ -95,7 +97,7 @@ const PATH_EVENTS: GameEvent[] = [
     id: "ord.trainee_sabotage",
     minAge: 13,
     maxAge: 30,
-    when: (l) => path(l) === "o_idol",
+    when: (l) => ["o_trainee", "o_model"].includes(job(l)),
     title: "เด็กฝึกที่ไม่ชอบคุณ",
     text: () => "ก่อนขึ้นประเมินรายเดือน รองเท้าเต้นของคุณถูกกรีดพื้นขาด เด็กฝึกคนหนึ่งยิ้มมุมปากจากอีกฝั่งห้อง",
     choices: [
@@ -107,19 +109,19 @@ const PATH_EVENTS: GameEvent[] = [
     id: "ord.hospital_politics",
     minAge: 24,
     maxAge: 65,
-    when: (l) => path(l) === "o_doctor",
+    when: (l) => job(l) === "doctor",
     title: "การเมืองในโรงพยาบาล",
     text: () => "หัวหน้าแผนกเอาชื่อตัวเองไปใส่ในงานวิจัยที่คุณทำมาสามปี แล้วขึ้นรับรางวัลบนเวทีต่อหน้าคุณ",
     choices: [
       { label: "ยื่นหลักฐานต่อคณะกรรมการ", skill: ["medical", "study"], check: { stat: "smarts", dc: 58 }, run: (l, _c, ok) => { if (ok) { addFame(l, 10); if (l.job) l.job.performance = clamp(l.job.performance + 20, 0, 100); return good("หัวหน้าแผนกถูกสอบสวน ชื่อคุณกลับมาอยู่บนงานวิจัย และคุณได้ตำแหน่งเขา"); } addStat(l, "happiness", -8); return bad("คณะกรรมการเป็นพวกเดียวกัน คุณถูกย้ายไปเวรดึกถาวร"); } },
-      { label: "ปล่อยไป แล้วเก็บผลงานถัดไปไว้เอง", run: (l) => { gainExp(l, 300); return meh("คุณเงียบ — และเริ่มงานวิจัยชิ้นใหม่ที่ใหญ่กว่าเดิมสิบเท่า"); } },
+      { label: "ปล่อยไป แล้วเก็บผลงานถัดไปไว้เอง", run: (l) => { gainSysExp(l, 300); return meh("คุณเงียบ — และเริ่มงานวิจัยชิ้นใหม่ที่ใหญ่กว่าเดิมสิบเท่า"); } },
     ],
   },
   {
     id: "ord.vr_launch",
     minAge: 14,
     maxAge: 50,
-    when: (l) => path(l) === "o_gamer",
+    when: (l) => ["o_progamer", "streamer"].includes(job(l)) || (has(l) && effSys(l, "agi") >= 35),
     title: "เกม VR เปิดตัว",
     text: () => "เกม VR ที่ทั้งโลกรอคอยเปิดเซิร์ฟเวอร์วันแรก — ระบบของคุณกะพริบ 「ตรวจพบคลาสลับที่ยังไม่มีใครค้นพบ」",
     choices: [
@@ -128,18 +130,18 @@ const PATH_EVENTS: GameEvent[] = [
         skill: ["game"],
         check: { stat: "luck", dc: 50 },
         run: (l, _c, ok) => {
-          if (ok) { luckyRankUp(l, "[ระบบ] ค้นพบคลาสลับคนแรกของโลก"); addFame(l, 8); markTurn(l); return { text: "คุณกลายเป็นผู้เล่นคนเดียวในโลกที่มีคลาสนี้ — ทุกกิลด์ส่งข้อความมาเต็มกล่อง", kind: "milestone" }; }
+          if (ok) { gainSysExp(l, 400); l.sys && (l.sys.agi += 3); addFame(l, 8); markTurn(l); return { text: "คุณกลายเป็นผู้เล่นคนเดียวในโลกที่มีคลาสนี้ — ทุกกิลด์ส่งข้อความมาเต็มกล่อง", kind: "milestone" }; }
           return meh("คุณวนหาจนเช้า เจอแต่ NPC ขายมันฝรั่ง");
         },
       },
-      { label: "เก็บเลเวลตามปกติ", run: (l) => { gainExp(l, 250); return meh("คุณติดอันดับร้อยแรกของเซิร์ฟเวอร์ในสัปดาห์แรก"); } },
+      { label: "เก็บเลเวลตามปกติ", run: (l) => { gainSysExp(l, 250); return meh("คุณติดอันดับร้อยแรกของเซิร์ฟเวอร์ในสัปดาห์แรก"); } },
     ],
   },
   {
     id: "ord.critic",
     minAge: 18,
     maxAge: 70,
-    when: (l) => path(l) === "o_chef",
+    when: (l) => job(l) === "o_chef_job",
     title: "นักวิจารณ์อาหาร",
     text: () => "นักวิจารณ์อาหารที่ปากร้ายที่สุดในประเทศเดินเข้าร้านคุณโดยไม่จอง แล้วสั่ง \"อะไรก็ได้ที่เชฟภูมิใจที่สุด\"",
     choices: [
@@ -151,7 +153,7 @@ const PATH_EVENTS: GameEvent[] = [
     id: "ord.chaebol_dinner",
     minAge: 18,
     maxAge: 60,
-    when: (l) => path(l) === "o_chaebol",
+    when: (l) => (l.regressions ?? 0) > 0 && (l.wealth === "rich" || l.wealth === "elite"),
     title: "มื้อค่ำของตระกูล",
     text: () => "มื้อค่ำประจำเดือนของตระกูล คุณปู่ประธานถามคำถามเดียวกับที่ถามในชาติก่อน \"ถ้าเป็นแก จะทำอะไรกับบริษัทนี้\" — ครั้งก่อนคุณตอบผิด",
     choices: [
@@ -209,7 +211,7 @@ const LIFE: GameEvent[] = [
     id: "ord.mafia_offer",
     minAge: 18,
     maxAge: 60,
-    when: (l) => has(l) && l.fame >= 15 && !l.power?.guild,
+    when: (l) => has(l) && l.fame >= 15,
     title: "ข้อเสนอที่ปฏิเสธไม่ได้",
     text: () => "ชายใส่สูทดำวางซองเงินหนาเตอะไว้บนโต๊ะ \"เจ้านายชอบฝีมือคุณ ทำงานให้เราสักงาน แล้วชีวิตคุณจะง่ายขึ้นมาก\"",
     choices: [
@@ -221,7 +223,7 @@ const LIFE: GameEvent[] = [
     id: "ord.mentor_kid",
     minAge: 28,
     maxAge: 70,
-    when: (l) => has(l) && (l.power?.rank ?? 0) >= 3,
+    when: (l) => has(l) && (l.sys?.level ?? 0) >= 8,
     text: () => "เด็กคนหนึ่งเขียนจดหมายมาบอกว่าอยากเป็นเหมือนคุณ แต่ที่บ้านไม่มีเงินส่งเรียน",
     choices: [
       { label: "ออกทุนให้", run: (l) => { addMoney(l, -300_000); createPerson(l, "ally", { age: randInt(l, 12, 15), bond: 70, job: "เด็กที่คุณให้ทุน" }); addStat(l, "happiness", 8); return good("สิบปีต่อมา เด็กคนนั้นขึ้นเวทีรับรางวัล แล้วพูดชื่อคุณเป็นคนแรก"); } },
@@ -232,7 +234,7 @@ const LIFE: GameEvent[] = [
     id: "ord.no_system",
     minAge: 30,
     maxAge: 80,
-    when: (l) => !has(l) && !!l.flags.awakenDone,
+    when: (l) => !has(l) && trackOf(l) === "never" && l.age >= 30,
     text: (l) => pick(l, [
       "คุณดูการ์ตูนเรื่องคนธรรมดาที่วันหนึ่งได้ระบบ แล้วนึกขำ — ชีวิตจริงไม่มีหน้าต่างสีฟ้ามาช่วยใคร",
       "เพื่อนเก่าในงานเลี้ยงรุ่นเล่าว่าชีวิตยากแค่ไหน คุณพบว่าทุกคนต่างก็สู้มาด้วยตัวเองทั้งนั้น",

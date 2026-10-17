@@ -28,6 +28,10 @@ const TAG_OVERRIDE: Record<string, SkillTag[]> = {
   อ่านตลาด: ["business"], รู้ข่าวก่อนใคร: ["business", "social"], ยึดอำนาจบริษัท: ["business"], จักรวรรดิแชโบล: ["business", "social"],
   รู้เนื้อเรื่อง: ["stealth", "escape", "study"], ปฐมพยาบาล: ["heal", "medical"], โคมสอดแนม: ["combat", "stealth"],
   พรคุ้มครอง: ["combat", "heal"], แสงเยียวยา: ["heal", "medical"],
+  หมัดหนัก: ["combat"], พลังช้างสาร: ["combat"], ปฏิกิริยาไว: ["escape", "game", "combat"], เงาสายฟ้า: ["escape", "combat", "game"],
+  อึดไม่รู้จบ: ["combat", "escape"], ร่างไม่รู้จักเหนื่อย: ["combat", "heal"], สมองไว: ["study", "medical", "business"],
+  อัจฉริยะ: ["study", "medical", "business", "game"], รอยยิ้มพิฆาต: ["social", "perform"], ออร่าดารา: ["social", "perform"],
+  ดวงเฮง: ["business", "game"], ลูกรักฟ้า: ["business", "social", "escape"],
 };
 
 export const SKILL_TYPE: Record<SkillType, { emoji: string; name: string }> = {
@@ -190,6 +194,19 @@ const DEFS: Record<string, [SkillType, string]> = {
   เขียนทับฉาก: ["mobility", "ทำสิ่งที่ไม่มีในเนื้อเรื่องจนฉากภารกิจต้องเปลี่ยนตาม"],
   ผู้อ่านคนสุดท้าย: ["curse", "คนเดียวในโลกที่อ่านเรื่องนี้จนจบ"],
   ผู้เขียนตอนจบใหม่: ["curse", "ตอนจบของโลกนี้ ต่อไปคุณเป็นคนเขียน"],
+  // ระบบชีวิต: ปลดล็อกจากค่าสถานะ
+  หมัดหนัก: ["attack", "หมัดที่ระบบปรับแนวแรงให้สมบูรณ์แบบ"],
+  พลังช้างสาร: ["attack", "แรงที่ไม่ควรมีในร่างมนุษย์ธรรมดา"],
+  ปฏิกิริยาไว: ["mobility", "เห็นทุกอย่างช้าลงครึ่งหนึ่งในวินาทีสำคัญ"],
+  เงาสายฟ้า: ["mobility", "เร็วจนคนรอบตัวคิดว่าตาฝาด"],
+  อึดไม่รู้จบ: ["defense", "ทำงานสามวันไม่นอนก็ยังยืนได้"],
+  ร่างไม่รู้จักเหนื่อย: ["defense", "ระบบกู้ร่างกายให้ทุกครั้งที่ใกล้ขีดจำกัด"],
+  สมองไว: ["stealth", "อ่านครั้งเดียวจำได้ทั้งหน้า"],
+  อัจฉริยะ: ["stealth", "แก้ปัญหาที่ผู้เชี่ยวชาญทั้งห้องคิดไม่ออก"],
+  รอยยิ้มพิฆาต: ["defense", "ยิ้มทีเดียว คนตรงหน้าลืมว่าจะโกรธ"],
+  ออร่าดารา: ["defense", "เดินเข้าห้องไหน ห้องนั้นเงียบ"],
+  ดวงเฮง: ["stealth", "เหรียญออกหัวเสมอเวลาที่สำคัญ"],
+  ลูกรักฟ้า: ["stealth", "โลกทั้งใบดูเหมือนจะเข้าข้างคุณ"],
   // โลกธรรมดา: นักสู้ข้างถนน
   หมัดตรงไร้เงา: ["attack", "หมัดที่เร็วจนกล้องสโลว์โมชันยังจับไม่ทัน"],
   หลบพริบตา: ["mobility", "ระบบแสดงเส้นทางหมัดของคู่ต่อสู้ล่วงหน้าครึ่งวินาที"],
@@ -270,7 +287,7 @@ export function skillInfo(life: Life, name: string, tier: number): SkillInfo {
 
 /** ความชำนาญ 1–10: ได้จากการใช้สกิลในฉากจริง */
 export function masteryOf(life: Life, name: string) {
-  const uses = life.power?.mastery?.[name] ?? 0;
+  const uses = life.power?.mastery?.[name] ?? Number(life.flags[`mastery_${name}`] ?? 0);
   return Math.min(10, 1 + Math.floor(uses / 2));
 }
 

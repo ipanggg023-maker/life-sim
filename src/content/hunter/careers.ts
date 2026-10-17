@@ -1,4 +1,4 @@
-import type { Faculty, Life, StatKey, WorldId } from "../../engine/types";
+import type { Faculty, Life, StatKey, SysStat, WorldId } from "../../engine/types";
 import { RETAINER, guildById } from "./power";
 
 export interface Career {
@@ -23,9 +23,25 @@ export interface Career {
   /** ต้องเป็นคนธรรมดา (ไม่ตื่นพลัง) */
   mundaneOnly?: boolean;
   salary?: (life: Life, base: number) => number;
+  /** ใช้ค่าสถานะแบบเกม (STR–LUK) แทนสเตตัสพื้นฐาน — main ใช้ตอนสมัครและวัดผลงาน */
+  sys?: { main: SysStat; min?: Partial<Record<SysStat, number>> };
+  /** เงื่อนไขพิเศษ (คืนข้อความเมื่อยังไม่ผ่าน) */
+  needs?: (life: Life) => string | undefined;
 }
 
 export const CAREERS: Career[] = [
+  {
+    id: "influencer",
+    name: "อินฟลูเอนเซอร์",
+    emoji: "📸",
+    minAge: 15,
+    titles: ["ไมโครอินฟลูเอนเซอร์", "อินฟลูเอนเซอร์", "อินฟลูฯ ดัง", "เซเลบโซเชียล", "ไอคอนแห่งยุค"],
+    baseSalary: 60_000,
+    key: "looks",
+    dc: 30,
+    needs: (l) => ((l.phone?.ig ?? 0) >= 10_000 ? undefined : "ผู้ติดตาม IG 10K+"),
+    salary: (life, base) => base + (life.phone?.ig ?? 0) * 4,
+  },
   {
     id: "store",
     name: "พนักงานร้านสะดวกซื้อ",
@@ -66,7 +82,8 @@ export const CAREERS: Career[] = [
     baseSalary: 40_000,
     key: "looks",
     dc: 55,
-    salary: (life, base) => base * (1 + Math.max(0, life.fame) / 6),
+    // รายได้จากชื่อเสียง + ผู้ติดตามช่อง YouTube (แท็บมือถือ)
+    salary: (life, base) => base * (1 + Math.max(0, life.fame) / 6) + (life.phone?.yt ?? 0) * 6,
   },
   {
     id: "police",
