@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { careerById } from "../content/hunter/careers";
 import { rankLabel } from "../content/hunter/power";
 import { worldOf } from "../content/worlds";
@@ -38,6 +38,23 @@ export function StatBar({ k, value }: { k: StatKey; value: number }) {
     </div>
   );
 }
+
+const LOG_PAGE = 20;
+
+/** กลุ่มบันทึกของปีหนึ่ง — ปีที่ผ่านไปแล้วไม่ต้องวาดใหม่ */
+const LogGroup = memo(
+  function LogGroup({ age, entries }: { age: number; entries: LogEntry[] }) {
+    return (
+      <div className="log-group">
+        <div className="log-age">อายุ {age} ปี</div>
+        {entries.map((e, i) => (
+          <LogLine e={e} key={i} />
+        ))}
+      </div>
+    );
+  },
+  (a, b) => a.age === b.age && a.entries.length === b.entries.length && a.entries[a.entries.length - 1] === b.entries[b.entries.length - 1],
+);
 
 function groupByAge(log: LogEntry[]) {
   const groups: { age: number; entries: LogEntry[] }[] = [];
@@ -96,6 +113,11 @@ export function MainScreen({
   const logRef = useRef<HTMLDivElement>(null);
   const teaser = cliffhanger(life);
   const quest = secretQuestStatus(life);
+  // แสดงเฉพาะช่วงหลังของบันทึก — ชีวิตยาวๆ มีเป็นพันบรรทัด วาดทั้งหมดทุกครั้งทำให้แลค
+  const [showYears, setShowYears] = useState(LOG_PAGE);
+  const groups = groupByAge(life.log);
+  const hidden = Math.max(0, groups.length - showYears);
+  useEffect(() => setShowYears(LOG_PAGE), [life.id]);
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
   }, [life.log.length]);
@@ -151,11 +173,13 @@ export function MainScreen({
       )}
 
       <div className="log" ref={logRef}>
-        {groupByAge(life.log).map((g) => (
-          <div className="log-group" key={g.age}>
-            <div className="log-age">อายุ {g.age} ปี</div>
-            {g.entries.map((e, i) => <LogLine e={e} key={i} />)}
-          </div>
+        {hidden > 0 && (
+          <button className="btn small ghost log-more" onClick={() => setShowYears(showYears + LOG_PAGE)}>
+            📜 ดูบันทึกก่อนหน้า ({hidden} ปี)
+          </button>
+        )}
+        {groups.slice(hidden).map((g) => (
+          <LogGroup key={g.age} age={g.age} entries={g.entries} />
         ))}
         {teaser && <p className="cliffhanger">{loc(life, teaser)}</p>}
       </div>

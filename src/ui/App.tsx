@@ -22,6 +22,7 @@ import {
   pruneSnapshots,
   requestPersistence,
   saveCurrent,
+  saveCurrentSoon,
   saveSnapshot,
   saveSoul,
   updateGraveyardPoints,
@@ -94,7 +95,9 @@ export function App() {
 
   const commit = useCallback(async (l: Life) => {
     setLife({ ...l });
-    await saveCurrent(l);
+    // ตายแล้วบันทึกทันที · ระหว่างเล่นบันทึกแบบรวบ
+    if (l.alive) saveCurrentSoon(l);
+    else await saveCurrent(l);
     if (!l.alive) setGraveyard(await addToGraveyard(toPastLife(l)));
   }, []);
 
@@ -161,7 +164,7 @@ export function App() {
 
   const onAgeUp = useCallback(async () => {
     if (!life) return;
-    await saveSnapshot(life); // สถานะตอนสิ้นปี — จุดที่ย้อนเวลากลับมาได้
+    void saveSnapshot(life); // สถานะตอนสิ้นปี — จุดที่ย้อนเวลากลับมาได้ (คัดลอกทันที เขียนลงเครื่องเบื้องหลัง)
     ageUp(life);
     commit(life);
     if (life.log[life.log.length - 1]?.kind === "bad") flash();

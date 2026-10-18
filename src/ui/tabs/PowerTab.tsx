@@ -522,6 +522,7 @@ function PassivesCard({ life }: { life: Life }) {
   const owned = passivesOf(life);
   const ids = owned.map((p) => p.id);
   const [sel, setSel] = useState<string | null>(null);
+  const [showLocked, setShowLocked] = useState(false);
   const picked = owned.find((p) => p.id === sel);
   const locked = PASSIVES.filter((p) => !ids.includes(p.id));
   return (
@@ -541,16 +542,16 @@ function PassivesCard({ life }: { life: Life }) {
         <p className="muted small">ยังไม่มีสกิลติดตัว — ได้มาจากวิธีใช้ชีวิตของคุณ</p>
       )}
       {picked && <p className="small passive-detail">{picked.emoji} <b>{picked.name}</b> — {picked.desc}</p>}
-      <details className="passive-locked">
+      <details className="passive-locked" onToggle={(e) => setShowLocked((e.target as HTMLDetailsElement).open)}>
         <summary className="muted small">🔒 ยังไม่ได้ {locked.length} อย่าง — ดูวิธีได้</summary>
-        <ul className="passive-list">
+        {showLocked && <ul className="passive-list">
           {locked.map((p) => (
             <li key={p.id}>
               <b>{p.emoji} {p.name}</b> <span className="muted">· {p.how}</span>
               <div className="muted small">{p.desc}</div>
             </li>
           ))}
-        </ul>
+        </ul>}
       </details>
     </details>
   );

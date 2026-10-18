@@ -17,11 +17,33 @@ export async function loadCurrent(): Promise<Life | undefined> {
 }
 
 export async function saveCurrent(life: Life) {
+  pending = undefined;
+  if (timer) window.clearTimeout(timer);
+  timer = undefined;
   try {
     await set(CURRENT, life);
   } catch (e) {
     console.warn("บันทึกไม่สำเร็จ", e);
   }
+}
+
+// บันทึกแบบรวบ: กดถี่ๆ ไม่ต้องเขียนลงเครื่องทุกครั้ง (เขียนจริงทุก 0.5 วินาที และทันทีที่ออกจากแอป)
+let pending: Life | undefined;
+let timer: number | undefined;
+export function saveCurrentSoon(life: Life) {
+  pending = life;
+  if (timer) return;
+  timer = window.setTimeout(() => {
+    timer = undefined;
+    if (pending) void saveCurrent(pending);
+  }, 500);
+}
+export function flushSave() {
+  if (pending) void saveCurrent(pending);
+}
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", flushSave);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flushSave(); });
 }
 
 export async function clearCurrent() {
