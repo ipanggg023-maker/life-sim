@@ -106,6 +106,10 @@ export function MainScreen({
     ? job.titles[life.job!.level - 1]
     : life.education.stage === "university"
       ? "นักศึกษา"
+      : life.age < 3
+        ? "ทารก"
+        : life.age < 6 && !murim && life.worldId !== "court"
+          ? "เด็กเล็ก"
       : life.age >= 18
         ? murim ? "ผู้ไร้สังกัด" : life.worldId === "court" ? (life.wealth === "poor" ? "สามัญชน" : "ขุนนางไร้ตำแหน่ง") : "ว่างงาน"
         : murim ? "เด็กในหมู่บ้าน" : life.worldId === "court" ? (life.flags.academy ? (life.flags.acaRank ? `นักเรียนสถาบัน ปี ${Math.min(5, life.age - 12)} · อันดับ ${life.flags.acaRank}` : "นักเรียนสถาบันจักรวรรดิ") : life.wealth === "poor" ? "เด็กสามัญชน" : `${life.gender === "f" ? "คุณหนู" : "คุณชาย"}น้อย`) : "นักเรียน";

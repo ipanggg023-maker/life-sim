@@ -152,10 +152,15 @@ const inWorld = (a: Activity, w: WorldId) => a.world === "all" || worldMatches(a
 /** ระหว่างติดคุกทำได้แค่ไม่กี่อย่าง */
 const JAIL_OK = /^(gym|read|free_create|.*_rest)$/;
 
+/** อายุที่เริ่มทำอะไรเองได้ */
+export const BABY_AGE = 3;
+
 export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => inWorld(a, life.worldId));
 
 export function activityLocked(life: Life, a: Activity): string | undefined {
   if (!inWorld(a, life.worldId)) return "ไม่มีในโลกนี้";
+  // ทารกยังทำอะไรเองไม่ได้ — พ่อแม่ดูแลทุกอย่าง
+  if (life.age < BABY_AGE) return "ยังเป็นเด็กเล็ก";
   if (Number(life.flags.jailUntil ?? -1) > life.age && !JAIL_OK.test(a.id)) return "ติดคุกอยู่";
   if (life.age < a.minAge) return `อายุ ${a.minAge}+`;
   if (a.available && !a.available(life)) return "ตอนนี้ทำไม่ได้";

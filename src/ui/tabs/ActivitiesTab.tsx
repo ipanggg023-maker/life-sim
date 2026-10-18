@@ -1,9 +1,18 @@
-import { activitiesFor, activityLocked, doActivity } from "../../engine/activities";
+import { BABY_AGE, activitiesFor, activityLocked, doActivity } from "../../engine/activities";
 import type { Life } from "../../engine/types";
 import { loc, money } from "../../engine/util";
 import type { Act } from "../App";
 
 export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
+  if (life.age < BABY_AGE)
+    return (
+      <div className="tab-content">
+        <div className="card">
+          <p>👶 คุณยังเป็นเด็กเล็ก — กิน นอน ร้องไห้ และมองโลกด้วยตาโตๆ</p>
+          <p className="muted small">พ่อแม่ดูแลทุกอย่างให้ กด +1 ปี เพื่อเติบโต (ทำกิจกรรมเองได้ตั้งแต่ {BABY_AGE} ขวบ)</p>
+        </div>
+      </div>
+    );
   return (
     <div className="tab-content grid">
       {activitiesFor(life).filter((a) => life.age >= a.minAge - 2).map((a) => {

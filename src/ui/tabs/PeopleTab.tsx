@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { runEvent, argue, askMoney, breakUp, propose, spendTime, tryForBaby, confess, cutTies, giveGift } from "../../engine/game";
 import type { Life, Person, Relation } from "../../engine/types";
-import { relationLabel } from "../../engine/util";
+import { relationLabel, shortName } from "../../engine/util";
 import type { Act } from "../App";
 
 const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "father", "mother", "sibling", "friend", "rival"];
@@ -45,13 +45,21 @@ export function PeopleTab({ life, act }: { life: Life; act: Act }) {
 
 function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
   const isParent = p.relation === "father" || p.relation === "mother";
+  if (life.age < 3)
+    return (
+      <div className="person-actions">
+        <span className="muted small">👶 คุณยังพูดไม่ได้ — ได้แต่ยิ้มและจับนิ้ว{shortName(p)}ไว้แน่น</span>
+      </div>
+    );
   return (
     <div className="person-actions">
+      {life.age >= 4 && (
       <button className="btn small" disabled={life.doneThisYear.includes(`talk:${p.id}`)} onClick={() => act((l) => { l.doneThisYear.push(`talk:${p.id}`); runEvent(l, "talk.menu", { pid: p.id }); })}>
         💬 คุย
       </button>
+      )}
       <button className="btn small" disabled={life.doneThisYear.includes(`time:${p.id}`)} onClick={() => act((l) => spendTime(l, p))}>
-        ใช้เวลาด้วยกัน
+        {life.age < 6 ? "เล่นด้วยกัน" : "ใช้เวลาด้วยกัน"}
       </button>
       {isParent && life.age >= 6 && (
         <button className="btn small" disabled={life.doneThisYear.includes(`ask:${p.id}`)} onClick={() => act((l) => askMoney(l, p))}>
@@ -88,9 +96,11 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
           ตัดขาด
         </button>
       )}
-      <button className="btn small ghost" onClick={() => act((l) => argue(l, p))}>
-        ทะเลาะ
-      </button>
+      {life.age >= 6 && (
+        <button className="btn small ghost" onClick={() => act((l) => argue(l, p))}>
+          ทะเลาะ
+        </button>
+      )}
     </div>
   );
 }
