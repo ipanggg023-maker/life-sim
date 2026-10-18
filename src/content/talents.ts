@@ -1,7 +1,10 @@
-import { addStat } from "../engine/util";
-import type { Life, Rarity } from "../engine/types";
+import type { Life, Rarity, StatKey } from "../engine/types";
+import { MORE_TALENTS, type TalentFx } from "./talentsMore";
 
-export interface Talent {
+// ไม่ import engine/util (util → passives → talents) — บวกค่าสถานะเองแบบจำกัด 0–100
+const addStat = (l: Life, k: StatKey, v: number) => { l.stats[k] = Math.max(0, Math.min(100, Math.round(l.stats[k] + v))); };
+
+export interface Talent extends TalentFx {
   id: string;
   name: string;
   rarity: Rarity;
@@ -68,13 +71,23 @@ export const TALENTS: Talent[] = [
   },
 ];
 
+// ชุดใหม่: ค่าสถานะตอนเปิดเผย (s) รวมเข้ากับ apply
+for (const t of MORE_TALENTS) {
+  const extra = t.apply;
+  TALENTS.push({ ...t, apply: (l) => { for (const [k, v] of Object.entries(t.s ?? {})) addStat(l, k as StatKey, v); extra?.(l); } });
+}
+
 export const talentById = (id: string) => TALENTS.find((t) => t.id === id);
+/** พรสวรรค์ที่เปิดเผยแล้ว (ใช้คิดโบนัส) */
+export const activeTalents = (l: Life): Talent[] => l.talents.filter((x) => x.revealed).map((x) => talentById(x.id)).filter((t): t is Talent => !!t);
 
 export const RARITY_ODDS: Record<Rarity, number> = {
   common: 0.6,
   rare: 0.3,
   legendary: 0.09,
   divine: 0.01,
+  /** หนึ่งเดียวในโลก — ยากที่สุดแต่ไม่ใช่ศูนย์ */
+  mythic: 0.0002,
 };
 
 /** ช่องลับ ??? มีโอกาสได้ของหายากสูงกว่าปกติ */
@@ -83,6 +96,7 @@ export const HIDDEN_RARITY_ODDS: Record<Rarity, number> = {
   rare: 0.45,
   legendary: 0.2,
   divine: 0.05,
+  mythic: 0.0008,
 };
 
 export const RARITY_LABEL: Record<Rarity, string> = {
@@ -90,4 +104,5 @@ export const RARITY_LABEL: Record<Rarity, string> = {
   rare: "หายาก",
   legendary: "ตำนาน",
   divine: "ศักดิ์สิทธิ์",
+  mythic: "หนึ่งเดียวในโลก",
 };

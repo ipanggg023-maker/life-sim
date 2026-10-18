@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { RARITY_LABEL, talentById } from "../../content/talents";
 import { canEnterGate, dailyQuest, enterGate, gatesLeft, train } from "../../content/hunter/events/gates";
 import { RANKS, classById, combatPower, skillsOf, subClassOf, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
@@ -516,31 +517,42 @@ function AcademyCard({ life }: { life: Life }) {
 }
 
 /** สกิลติดตัว: ที่ได้แล้ว + วิธีปลดล็อกที่เหลือ */
+/** สกิลติดตัว: แบบย่อ — ที่มีแล้วเป็นชิปกดดูผล ส่วนที่ยังไม่ได้พับเก็บไว้ */
 function PassivesCard({ life }: { life: Life }) {
   const owned = passivesOf(life);
   const ids = owned.map((p) => p.id);
+  const [sel, setSel] = useState<string | null>(null);
+  const picked = owned.find((p) => p.id === sel);
+  const locked = PASSIVES.filter((p) => !ids.includes(p.id));
   return (
-    <>
-      <div className="section-title">
-        สกิลติดตัว ({owned.length}/{PASSIVES.length})
-      </div>
-      <div className="skill-list">
-        {owned.map((p) => (
-          <div className="skill-card" key={p.id}>
-            <span className="skill-name">
+    <details className="passive-box">
+      <summary className="section-title">
+        สกิลติดตัว {owned.length}/{PASSIVES.length} <span className="muted small">(แตะเพื่อเปิด)</span>
+      </summary>
+      {owned.length ? (
+        <div className="passive-chips">
+          {owned.map((p) => (
+            <button key={p.id} className={`passive-chip${sel === p.id ? " on" : ""}`} onClick={() => setSel(sel === p.id ? null : p.id)}>
               {p.emoji} {p.name}
-            </span>
-            <p className="small muted">{p.desc}</p>
-          </div>
-        ))}
-        {PASSIVES.filter((p) => !ids.includes(p.id)).map((p) => (
-          <div className="skill-card locked" key={p.id}>
-            <span className="skill-name">🔒 {p.name}</span>
-            <span className="skill-meta">{p.how}</span>
-          </div>
-        ))}
-      </div>
-    </>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="muted small">ยังไม่มีสกิลติดตัว — ได้มาจากวิธีใช้ชีวิตของคุณ</p>
+      )}
+      {picked && <p className="small passive-detail">{picked.emoji} <b>{picked.name}</b> — {picked.desc}</p>}
+      <details className="passive-locked">
+        <summary className="muted small">🔒 ยังไม่ได้ {locked.length} อย่าง — ดูวิธีได้</summary>
+        <ul className="passive-list">
+          {locked.map((p) => (
+            <li key={p.id}>
+              <b>{p.emoji} {p.name}</b> <span className="muted">· {p.how}</span>
+              <div className="muted small">{p.desc}</div>
+            </li>
+          ))}
+        </ul>
+      </details>
+    </details>
   );
 }
 

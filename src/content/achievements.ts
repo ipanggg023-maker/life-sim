@@ -1,5 +1,6 @@
 import type { Life, Soul } from "../engine/types";
 import { hasTalent, people } from "../engine/util";
+import { talentById } from "./talents";
 
 export type AchCategory = "life" | "power" | "social" | "hunter" | "murim" | "court" | "tower" | "apocalypse" | "ordinary";
 
@@ -71,6 +72,8 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "dual", name: "สองสาย", cat: "power", desc: "ได้พลังสายที่สอง", points: 20, check: (l) => !!l.flags.subClass },
   { id: "mastery10", name: "ปรมาจารย์สกิล", cat: "power", desc: "ความชำนาญสกิลใดก็ได้ถึง Lv.10", points: 20, check: (l) => Object.values(l.power?.mastery ?? {}).some((u) => u >= 18) || Object.keys(l.flags).some((k) => k.startsWith("mastery_") && n(l, k) >= 18) },
   { id: "sss_birth", name: "อัจฉริยะแต่กำเนิด", cat: "power", desc: "ได้ระดับสูงสุดตั้งแต่วันตื่นพลัง", points: 40, hidden: true, check: (l) => !!l.flags.sssAwakened },
+  { id: "mythic_talent", name: "หนึ่งเดียวในโลก", cat: "power", desc: "เกิดมาพร้อมพรสวรรค์ระดับหนึ่งเดียวในโลก", points: 100, hidden: true, check: (l) => l.talents.some((t) => talentById(t.id)?.rarity === "mythic") },
+  { id: "passive_30", name: "ร้อยวิชาติดตัว", cat: "life", desc: "มีสกิลติดตัว 30 อย่างในชาติเดียว", points: 25, check: (l) => String(l.flags.passives ?? "").split(",").filter(Boolean).length >= 30 },
   { id: "late_hero", name: "ช้าแต่ชัวร์", cat: "power", desc: "ตื่นพลังช้ากว่าคนอื่นแต่ไปถึงระดับ S", points: 30, check: (l) => !!l.flags.lateBloom && (l.power?.rank ?? 0) >= 6 },
   { id: "secret_quests", name: "นักล่าภารกิจลับ", cat: "power", desc: "ทำภารกิจลับสำเร็จ 5 ครั้ง", points: 20, check: (l) => n(l, "sqDone") >= 5 },
   { id: "sponsored", name: "มีดาวหนุนหลัง", cat: "power", desc: "ได้รับการสนับสนุนจากดวงดาว", points: 10, check: (l) => !!l.flags.sponsor && l.flags.sponsor !== "none" },

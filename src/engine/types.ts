@@ -83,7 +83,7 @@ export interface Job {
   years: number;
 }
 
-export type Rarity = "common" | "rare" | "legendary" | "divine";
+export type Rarity = "common" | "rare" | "legendary" | "divine" | "mythic";
 
 export interface TalentState {
   id: string;

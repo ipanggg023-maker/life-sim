@@ -797,3 +797,35 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .collect-items { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 .collect { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--surface-2); opacity: 0.45; font-size: 18px; }
 .collect.on { opacity: 1; border: 1px solid var(--line); }
+
+/* ── พรสวรรค์ "หนึ่งเดียวในโลก" (M24) — ขอบรุ้งเคลื่อนไหว ── */
+.talent.mythic {
+  border: 2px solid transparent;
+  background: linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(120deg, #ff5e7e, #ffb547, #f8f06c, #5fe08a, #4cc3ff, #b57bff, #ff5e7e) border-box;
+  background-size: 100% 100%, 300% 300%;
+  animation: mythic 4s linear infinite;
+  box-shadow: 0 0 22px rgba(255, 220, 120, 0.45);
+}
+.talent.mythic .t-rarity {
+  background: linear-gradient(90deg, #ff5e7e, #ffb547, #5fe08a, #4cc3ff, #b57bff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.chip.mythic { border-color: #ffb547; box-shadow: 0 0 8px rgba(255, 181, 71, 0.6); }
+@keyframes mythic { to { background-position: 0 0, 300% 0; } }
+@media (prefers-reduced-motion: reduce) { .talent.mythic { animation: none; } }
+
+/* ── สกิลติดตัวแบบย่อ (M24) ── */
+.passive-box > summary { cursor: pointer; list-style: none; }
+.passive-box > summary::-webkit-details-marker { display: none; }
+.passive-box > summary::before { content: "▸ "; }
+.passive-box[open] > summary::before { content: "▾ "; }
+.passive-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; }
+.passive-chip { font-size: 12px; padding: 4px 9px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface-2); color: inherit; }
+.passive-chip.on { border-color: var(--accent); background: var(--accent); color: #fff; }
+.passive-detail { margin: 2px 0 8px; }
+.passive-locked > summary { cursor: pointer; padding: 4px 0; }
+.passive-list { list-style: none; padding: 0; margin: 4px 0; max-height: 320px; overflow-y: auto; }
+.passive-list li { padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }

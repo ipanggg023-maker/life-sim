@@ -6,6 +6,7 @@ import { titleBonus } from "../titles";
 import { skillInfo, type SkillInfo } from "../skills";
 import { sponsorBonus } from "../sponsors";
 import { passiveBonus } from "../passives";
+import { TALENTS } from "../talents";
 import { effSys, sysSkillTier, sysSkillsOf } from "../gameStats";
 
 /** เพื่อนร่วมทีมที่ยังมีชีวิต (นับสูงสุด 3 คน) */
@@ -399,8 +400,8 @@ export const RETAINER = [60_000, 120_000, 300_000, 800_000, 2_000_000, 6_000_000
 // ───────────────────────── พรสวรรค์สายพลัง ─────────────────────────
 
 /** โบนัสแรงก์ตอนตื่นพลัง (นับแม้ยังไม่เปิดช่องลับ เพราะพลังมาจากตัวพรสวรรค์เอง) */
-const RANK_BONUS: Record<string, number> = { mana_heart: 1, dragon_blood: 2, cursed_body: 3 };
-export const POWER_TALENTS = ["mana_heart", "late_bloomer", "dragon_blood", "cursed_body", "system_user"];
+const RANK_BONUS: Record<string, number> = { mana_heart: 1, dragon_blood: 2, cursed_body: 3, ...Object.fromEntries(TALENTS.filter((t) => t.rank).map((t) => [t.id, t.rank!])) };
+export const POWER_TALENTS = TALENTS.filter((t) => t.power).map((t) => t.id);
 
 export const owns = (life: Life, id: string) => life.talents.some((t) => t.id === id);
 const ownsActive = (life: Life, id: string) => life.talents.some((t) => t.id === id && t.revealed);

@@ -1,6 +1,8 @@
 // สกิลติดตัว (passive): ได้จากการใช้ชีวิต การฝึก และเหตุการณ์ — ทุกโลกใช้ร่วมกัน ไม่ต้องมีพลัง
 // ห้าม import engine/util หรือ content/hunter/power (ทั้งสองไฟล์ import ไฟล์นี้)
 import type { Life, StatKey } from "../engine/types";
+import { activeTalents } from "./talents";
+import { MORE_PASSIVES } from "./passivesMore";
 
 export interface Passive {
   id: string;
@@ -43,6 +45,8 @@ export const PASSIVES: Passive[] = [
   { id: "traveler", name: "นักเดินทาง", emoji: "🧳", desc: "เช็กโชค +4%", how: "ไปเที่ยวรวม 4 ปี", earn: (l) => n(l, "act_trip") >= 4, check: { luck: 0.04 } },
 ];
 
+PASSIVES.push(...MORE_PASSIVES);
+
 export const passiveById = (id: string) => PASSIVES.find((p) => p.id === id);
 export const passivesOf = (l: Life): Passive[] =>
   String(l.flags.passives ?? "")
@@ -51,12 +55,18 @@ export const passivesOf = (l: Life): Passive[] =>
     .map((id) => passiveById(id))
     .filter((p): p is Passive => !!p);
 
+/** เพดานผลรวมของสกิลติดตัว (กันสะสมจนเกมพัง) — ผลของพรสวรรค์ไม่นับในเพดาน */
+export const PASSIVE_CAP = { cp: 15, survival: 0.12, exp: 0.3, money: 0.3, check: 0.15, yearly: 3 } as const;
+
 export function passiveBonus(l: Life, kind: "cp" | "survival" | "exp" | "money"): number {
-  return passivesOf(l).reduce((s, p) => s + (p[kind] ?? 0), 0);
+  const own = Math.min(PASSIVE_CAP[kind], passivesOf(l).reduce((s, p) => s + (p[kind] ?? 0), 0));
+  // รวมผลของพรสวรรค์ที่เปิดเผยแล้วด้วย
+  return own + activeTalents(l).reduce((s, t) => s + (t[kind] ?? 0), 0);
 }
 
 export function passiveCheck(l: Life, stat: StatKey): number {
-  return passivesOf(l).reduce((s, p) => s + (p.check?.[stat] ?? 0), 0);
+  const own = Math.min(PASSIVE_CAP.check, passivesOf(l).reduce((s, p) => s + (p.check?.[stat] ?? 0), 0));
+  return own + activeTalents(l).reduce((s, t) => s + (t.c?.[stat] ?? 0), 0);
 }
 
 /** สกิลติดตัวที่เพิ่งได้ (ยังไม่มีในรายการ) — ผู้เรียกเป็นคนบันทึก log */

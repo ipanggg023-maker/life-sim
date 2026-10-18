@@ -71,11 +71,11 @@ export const pastSelfOf = (l: Life): PastSelf => ({
   skill: l.power?.skills[l.power.skills.length - 1],
 });
 
-const BLESSED_ODDS: Record<Rarity, number> = { common: 0.35, rare: 0.42, legendary: 0.18, divine: 0.05 };
-const BLESSED_HIDDEN: Record<Rarity, number> = { common: 0.15, rare: 0.45, legendary: 0.3, divine: 0.1 };
+const BLESSED_ODDS: Record<Rarity, number> = { common: 0.35, rare: 0.42, legendary: 0.18, divine: 0.05, mythic: 0.001 };
+const BLESSED_HIDDEN: Record<Rarity, number> = { common: 0.15, rare: 0.45, legendary: 0.3, divine: 0.1, mythic: 0.003 };
 
 function rollRarity(life: Life, odds: Record<Rarity, number>): Rarity {
-  const order: Rarity[] = ["divine", "legendary", "rare", "common"];
+  const order: Rarity[] = ["mythic", "divine", "legendary", "rare", "common"];
   return weightedPick(life, order, (r) => odds[r])!;
 }
 
@@ -687,6 +687,7 @@ export function propose(life: Life, p: Person): Outcome {
 
 export function breakUp(life: Life, p: Person): Outcome {
   const divorce = p.relation === "spouse";
+  life.flags.breakups = Number(life.flags.breakups ?? 0) + 1;
   life.people = life.people.filter((x) => x.id !== p.id);
   if (divorce && life.money > 0) addMoney(life, -Math.round(life.money / 2));
   addStat(life, "happiness", -8);
@@ -699,6 +700,7 @@ export function giveGift(life: Life, p: Person): Outcome {
   const key = `gift:${p.id}`;
   if (life.doneThisYear.includes(key)) return { text: "ปีนี้ให้ของขวัญไปแล้ว" };
   life.doneThisYear.push(key);
+  life.flags.gifts = Number(life.flags.gifts ?? 0) + 1;
   const cost = { poor: 500, middle: 3_000, rich: 30_000, elite: 300_000 }[life.wealth];
   addMoney(life, -cost);
   const liked = chance(life, 0.75);
