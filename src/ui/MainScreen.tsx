@@ -85,10 +85,20 @@ export function LogLine({ e }: { e: LogEntry }) {
   return <p className={`log-line ${e.kind}`}>{e.text}</p>;
 }
 
+// ซ่อน/แสดงความคิดเห็นผู้อ่านทั้งเกม (จำไว้ในเครื่อง)
+function toggleComments() {
+  const off = document.body.classList.toggle("no-comments");
+  try { localStorage.setItem("ls.noComments", off ? "1" : ""); } catch { /* ไม่มี storage */ }
+}
+try { if (localStorage.getItem("ls.noComments")) document.body.classList.add("no-comments"); } catch { /* ไม่มี storage */ }
+
 export function Comments({ items }: { items: { user: string; text: string; likes: number }[] }) {
   return (
     <div className="comments">
-      <div className="comments-head">💬 ความคิดเห็นจากผู้อ่าน</div>
+      <button className="comments-head" onClick={toggleComments}>
+        <span className="ch-on">💬 ความคิดเห็นจากผู้อ่าน · แตะเพื่อซ่อน</span>
+        <span className="ch-off">💬 ซ่อนความคิดเห็นอยู่ · แตะเพื่อแสดง</span>
+      </button>
       {items.map((c, i) => (
         <div className="comment" key={i}>
           <span className="c-user">{c.user}</span>

@@ -398,21 +398,6 @@ p { margin: 0.25em 0; }
   animation: pop 0.2s ease-out;
   font-size: 14px;
 }
-.size-btn {
-  position: fixed;
-  left: 4px;
-  top: calc(50% + env(safe-area-inset-top));
-  z-index: 30;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--surface-2);
-  color: var(--text);
-  font-size: 13px;
-  opacity: 0.5;
-  padding: 0;
-}
 .toast.good { border-color: var(--good); }
 .toast.bad { border-color: var(--bad); }
 .toast.milestone { border-color: var(--milestone); }
@@ -653,7 +638,10 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
   background: var(--surface);
   font-size: 13px;
 }
-.comments-head { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.comments-head { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; background: none; border: none; padding: 0; text-align: left; }
+.comments-head .ch-off, body.no-comments .comments-head .ch-on, body.no-comments .comment { display: none; }
+body.no-comments .comments-head .ch-off { display: inline; }
+body.no-comments .comments-head { margin-bottom: 0; }
 .comment { display: grid; grid-template-columns: auto 1fr auto; gap: 6px; align-items: baseline; padding: 2px 0; }
 .c-user { font-weight: 700; color: var(--accent); white-space: nowrap; }
 .c-text { min-width: 0; }
