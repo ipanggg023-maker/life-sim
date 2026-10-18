@@ -159,5 +159,8 @@ export const MORE_PASSIVES: PassiveDef[] = [
   P("p_nemesis_end", "🎯", "ปิดบัญชีคู่ปรับ", "ชนะคู่ปรับประจำชีวิต", (l) => !!l.flags.nemesisBeaten, { cp: 3, yearly: { happiness: 1 } }),
   P("p_nemesis_friend", "🫂", "ศัตรูกลายเป็นมิตร", "คืนดีกับคู่ปรับประจำชีวิต", (l) => l.flags.nemesisStage === "friend", { survival: 0.03, yearly: { happiness: 1 } }),
   P("p_heir", "🧬", "ทายาทผู้สืบทอด", "เกิดเป็นลูกหลานของชาติก่อน (เล่นต่อเป็นลูก)", (l) => !!l.flags.inherited || !!l.flags.descendant, { money: 0.04, check: { luck: 0.03 } }),
+  P("p_club_star", "🏅", "ดาวเด่นของชมรม", "ไต่ระดับชมรมถึงขั้นที่ 3", (l) => n(l, "clubBest") >= 3, { check: { health: 0.03, looks: 0.03 } }),
+  P("p_champion", "🥇", "แชมป์ตัวจริง", "ชนะการแข่งขันชมรม 5 ครั้ง", (l) => n(l, "clubWins") >= 5, { check: { luck: 0.03 }, yearly: { happiness: 1 } }),
+  P("p_club_pro", "📝", "นักกีฬา/ศิลปินอาชีพ", "ได้สัญญาจากแมวมอง", (l) => !!l.flags.clubPro, { money: 0.05, check: { health: 0.03 } }),
   P("p_old_soul", "👻", "วิญญาณเก่าแก่", "ฝันถึงชาติก่อนจากโลกอื่น", (l) => sp(l, "past.") >= 1, { exp: 0.05, check: { smarts: 0.03 } }),
 ];

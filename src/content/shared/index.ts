@@ -17,6 +17,7 @@ import { FREE_EVENTS } from "./freedom"; // M23: อิสระในการ�
 import { MODERN23_EVENTS } from "./modern23";
 import { LIFE23_EVENTS } from "./life23";
 import "./collection"; // M23: ตู้สะสมของวิญญาณ
+import { CLUB_EVENTS } from "./clubs"; // M25: ชมรม
 
 let loaded = false;
 
@@ -26,5 +27,5 @@ export function loadSharedEvents() {
   loaded = true;
   registerEvents(COUNTRY_EVENTS, "modern");
   registerEvents(MODERN23_EVENTS, "modern");
-  registerEvents([...LIFE23_EVENTS, ...FREE_EVENTS, ...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, ...PHONE_EVENTS, DUAL_CLASS, ...CHAIN_EVENTS]);
+  registerEvents([...CLUB_EVENTS, ...LIFE23_EVENTS, ...FREE_EVENTS, ...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, ...PHONE_EVENTS, DUAL_CLASS, ...CHAIN_EVENTS]);
 }
