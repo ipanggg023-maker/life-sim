@@ -398,6 +398,21 @@ p { margin: 0.25em 0; }
   animation: pop 0.2s ease-out;
   font-size: 14px;
 }
+.size-btn {
+  position: fixed;
+  left: 4px;
+  top: calc(50% + env(safe-area-inset-top));
+  z-index: 30;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13px;
+  opacity: 0.5;
+  padding: 0;
+}
 .toast.good { border-color: var(--good); }
 .toast.bad { border-color: var(--bad); }
 .toast.milestone { border-color: var(--milestone); }
