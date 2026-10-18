@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { RARITY_LABEL, talentById } from "../content/talents";
 import { wealthLabel } from "../engine/game";
 import { worldOf } from "../content/worlds";
 import { countryOf } from "../content/countries";
 import type { Life, StatKey } from "../engine/types";
-import { displayName, firstPerson, people, shortName } from "../engine/util";
+import { displayName, firstPerson, people, relationLabel, shortName } from "../engine/util";
 import { StatBar } from "./MainScreen";
 
 const STATS: StatKey[] = ["health", "happiness", "smarts", "looks"];
@@ -59,7 +59,11 @@ export function BirthScreen({
           <div className="card-title">ครอบครัว</div>
           {dad && <p>พ่อ: {shortName(dad)} ({dad.job}) อายุ {dad.age}</p>}
           {mom && <p>แม่: {shortName(mom)} ({mom.job}) อายุ {mom.age}</p>}
-          <p>พี่น้อง: {sibs.length ? sibs.map(shortName).join(", ") : "ลูกคนเดียว"}</p>
+          {sibs.length ? (
+            sibs.map((s) => <p key={s.id}>{relationLabel(s, life)}: {shortName(s)} อายุ {s.age}</p>)
+          ) : (
+            <p>พี่น้อง: ลูกคนเดียว</p>
+          )}
         </div>
       )}
 
