@@ -398,6 +398,9 @@ p { margin: 0.25em 0; }
   animation: pop 0.2s ease-out;
   font-size: 14px;
 }
+.gender-tag { font-size: 15px; font-weight: 700; vertical-align: middle; }
+.gender-tag.m { color: #7fb2ff; }
+.gender-tag.f { color: #ff8fc0; }
 .toast.good { border-color: var(--good); }
 .toast.bad { border-color: var(--bad); }
 .toast.milestone { border-color: var(--milestone); }

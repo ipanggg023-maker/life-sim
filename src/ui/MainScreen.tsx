@@ -151,7 +151,7 @@ export function MainScreen({
       <header className="top">
         <div className="who" style={{ flex: 1, minWidth: 0 }}>
           <div className="name">
-            {displayName(life)}
+            {displayName(life)} <span className={`gender-tag ${life.gender}`}>{life.gender === "m" ? "♂" : "♀"}</span>
           </div>
           {title && <div className="title-tag">「{title.name}」</div>}
           <div className="sub">

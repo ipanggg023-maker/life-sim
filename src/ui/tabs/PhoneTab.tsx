@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   CHAT_LINES,
   IG_PER_YEAR,
@@ -168,7 +168,7 @@ export function PhoneTab({ life, act }: { life: Life; act: Act }) {
             <div className="job-main">
               <div className="job-name">{shortName(p)}</div>
               <div className="job-sub">
-                {relationLabel(p)} · ความผูกพัน {p.bond}
+                {relationLabel(p, life)} · ความผูกพัน {p.bond}
               </div>
             </div>
             <button className="btn small" disabled={done} onClick={() => act((l) => chat(l, p.id))}>

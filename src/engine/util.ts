@@ -113,14 +113,19 @@ export function shortName(p: Person) {
   return m ? m[1] : p.name.split(" ")[0];
 }
 
-export function relationLabel(p: Person): string {
+/** ส่ง life มาด้วยเพื่อบอกพี่/น้องตามอายุเทียบกับตัวเรา */
+export function relationLabel(p: Person, life?: { age: number }): string {
   switch (p.relation) {
     case "father":
       return "พ่อ";
     case "mother":
       return "แม่";
-    case "sibling":
-      return p.gender === "m" ? "พี่น้องชาย" : "พี่น้องหญิง";
+    case "sibling": {
+      const m = p.gender === "m";
+      if (!life) return m ? "พี่น้องชาย" : "พี่น้องหญิง";
+      if (p.age === life.age) return m ? "แฝดชาย" : "แฝดหญิง";
+      return (p.age > life.age ? "พี่" : "น้อง") + (m ? "ชาย" : "สาว");
+    }
     case "friend":
       return "เพื่อน";
     case "partner":

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { runEvent, argue, askMoney, breakUp, propose, spendTime, tryForBaby, confess, cutTies, giveGift } from "../../engine/game";
 import type { Life, Person, Relation } from "../../engine/types";
 import { relationLabel, shortName } from "../../engine/util";
@@ -24,7 +24,7 @@ export function PeopleTab({ life, act }: { life: Life; act: Act }) {
                 {p.name} {p.alive ? "" : "🕯️"}
               </div>
               <div className="person-sub">
-                {relationLabel(p)} · อายุ {p.age}
+                {relationLabel(p, life)} · อายุ {p.age}
                 {p.job ? ` · ${p.job}` : ""}
               </div>
             </div>
