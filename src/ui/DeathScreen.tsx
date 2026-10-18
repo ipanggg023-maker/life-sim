@@ -7,6 +7,7 @@ import { Comments } from "./MainScreen";
 import { SeriesCover } from "./SeriesCover";
 import { talentById } from "../content/talents";
 import { passivesOf } from "../content/passives";
+import { assetsValue } from "../content/shared/business";
 import { COLLECTIBLES, foundThisLife } from "../content/shared/collection";
 import { SHOP, heirsOf, previewAward, regressTarget } from "../engine/soul";
 import type { Life, Soul, WorldId } from "../engine/types";
@@ -77,7 +78,7 @@ export function DeathScreen({
 
       <div className="card">
         <div className="card-title">สรุปชีวิต</div>
-        <p>ทรัพย์สินสุทธิ: {money(life, life.money - life.debt)}</p>
+        <p>ทรัพย์สินสุทธิ: {money(life, life.money - life.debt)}{assetsValue(life) > 0 && ` · ธุรกิจ/อสังหาฯ ${money(life, assetsValue(life))}`}</p>
         <p>
           สกิลติดตัว: {passivesOf(life).length} อย่าง
           {foundThisLife(life).length > 0 && ` · ของสะสมที่เจอ: ${foundThisLife(life).map((id) => COLLECTIBLES.find((c) => c.id === id)?.emoji ?? "").join(" ")}`}

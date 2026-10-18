@@ -52,6 +52,8 @@ export interface Person {
   job?: string;
   /** ชื่อเรียกสั้น (เกาหลี/ญี่ปุ่นเรียกด้วยชื่อตัว ซึ่งอยู่ท้ายชื่อเต็ม) */
   short?: string;
+  /** เรื่องราวที่เกิดกับคนนี้แล้ว (เช่น ลูกผ่านวัยต่อต้านแล้ว) */
+  tags?: string[];
 }
 
 export type Wealth = "poor" | "middle" | "rich" | "elite";

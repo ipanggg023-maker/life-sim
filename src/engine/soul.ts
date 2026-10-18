@@ -179,6 +179,9 @@ export function buildHeir(dead: Life, childId: string): Life {
   life.flags.generation = Number(dead.flags.generation ?? 1) + 1;
   life.flags.seriesTitle = String(dead.flags.seriesTitle ?? seriesOf(dead).title);
   life.flags.inherited = true;
+  // ลูกรับช่วงกิจการและทรัพย์สินของพ่อแม่
+  if (dead.flags.bizData) life.flags.bizData = dead.flags.bizData;
+  if (dead.flags.propData) life.flags.propData = dead.flags.propData;
   life.money = share;
   life.fame = Math.round(dead.fame * 0.3);
   // คนในครอบครัว: พ่อ/แม่คนเดิม (ผู้เล่นชาติก่อน) + คู่สมรสของเขา + พี่น้อง

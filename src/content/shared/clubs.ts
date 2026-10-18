@@ -170,13 +170,13 @@ function practiceRun(i: number) {
     const physical = c.kind === "sport" || c.kind === "fight";
     if (i === 0) {
       // ซ้อมหนัก
-      if (ok) { addStat(l, c.stat, randInt(l, 2, 4)); if (physical) addStat(l, "health", 2); return { text: `คุณ${c.drills[0]}จนหมดแรง ร่างกายจำได้แล้ว${gainClub(l, 3)}`, kind: "good" }; }
+      if (ok) { addStat(l, c.stat, randInt(l, 1, 2)); return { text: `คุณ${c.drills[0]}จนหมดแรง ร่างกายจำได้แล้ว${gainClub(l, 3)}`, kind: "good" }; }
       if (physical && chance(l, 0.35)) { addStat(l, "health", -randInt(l, 4, 9)); return { text: `ซ้อมหนักเกินไป ${pick(l, ["ข้อเท้าพลิก", "กล้ามเนื้อฉีก", "หัวเข่าบวม"])} ต้องพักสองสัปดาห์${gainClub(l, 1)}`, kind: "bad" }; }
       return { text: `วันนี้ร่างกายไม่เป็นใจ แต่ก็ยังซ้อมจนจบ${gainClub(l, 1)}` };
     }
     if (i === 1) {
       // ซ้อมเทคนิค
-      addStat(l, ok ? c.stat : "smarts", ok ? randInt(l, 1, 3) : 1);
+      addStat(l, ok ? c.stat : "smarts", 1);
       return ok ? { text: `คุณ${c.drills[1]} และเข้าใจอะไรบางอย่างที่โค้ชพูดมาตลอด${gainClub(l, 2)}`, kind: "good" } : { text: `คุณ${c.drills[1]}ซ้ำๆ แต่ยังไม่คลิก${gainClub(l, 1)}` };
     }
     // ซ้อมกับทีม
@@ -211,7 +211,10 @@ export const CLUB_EVENTS: GameEvent[] = [
   },
   {
     id: "club.tourney",
-    minAge: 6, maxAge: 40, weight: (l) => (myClub(l) && clubLv(l) >= 1 ? 22 : 0), maxTimes: 0,
+    // แข่งทุก 2 ปีเมื่ออยู่ในชมรม (ระดับ 1 ขึ้นไป)
+    minAge: 6, maxAge: 45, forced: true, maxTimes: 0,
+    when: (l) => !!myClub(l) && clubLv(l) >= 1 && l.age - Number(l.flags.lastTourney ?? -9) >= 2,
+    prepare: (l) => { l.flags.lastTourney = l.age; return {}; },
     title: "การแข่งขัน",
     text: (l) => { const c = myClub(l)!; const lvl = ["ระหว่างห้อง", "ระหว่างโรงเรียน", "ระดับจังหวัด", "ระดับภูมิภาค", "ระดับประเทศ", "ระดับนานาชาติ"][clubLv(l)]; return `การแข่งขัน${clubName(l, c)}${lvl}มาถึง — คู่แข่งเตรียมตัวมาอย่างดี`; },
     choices: [
@@ -286,7 +289,7 @@ export const CLUB_EVENTS: GameEvent[] = [
 yearHooks.push((l) => {
   const c = myClub(l);
   if (!c || !l.alive) return;
-  if (c.kind === "sport" || c.kind === "fight") addStat(l, "health", 1);
+  if (c.kind === "sport" || c.kind === "fight") { if (chance(l, 0.4)) addStat(l, "health", 1); }
   else if (c.kind === "art") addStat(l, "happiness", 1);
   else if (chance(l, 0.5)) addStat(l, "smarts", 1);
   if (l.age === 23 && clubLv(l) >= 1 && !l.flags.clubAdultNote) {

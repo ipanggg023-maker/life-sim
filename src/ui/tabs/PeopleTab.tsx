@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { argue, askMoney, breakUp, propose, spendTime, tryForBaby, confess, cutTies, giveGift } from "../../engine/game";
+import { runEvent, argue, askMoney, breakUp, propose, spendTime, tryForBaby, confess, cutTies, giveGift } from "../../engine/game";
 import type { Life, Person, Relation } from "../../engine/types";
 import { relationLabel } from "../../engine/util";
 import type { Act } from "../App";
@@ -47,6 +47,9 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
   const isParent = p.relation === "father" || p.relation === "mother";
   return (
     <div className="person-actions">
+      <button className="btn small" disabled={life.doneThisYear.includes(`talk:${p.id}`)} onClick={() => act((l) => { l.doneThisYear.push(`talk:${p.id}`); runEvent(l, "talk.menu", { pid: p.id }); })}>
+        💬 คุย
+      </button>
       <button className="btn small" disabled={life.doneThisYear.includes(`time:${p.id}`)} onClick={() => act((l) => spendTime(l, p))}>
         ใช้เวลาด้วยกัน
       </button>

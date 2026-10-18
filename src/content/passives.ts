@@ -56,7 +56,7 @@ export const passivesOf = (l: Life): Passive[] =>
     .filter((p): p is Passive => !!p);
 
 /** เพดานผลรวมของสกิลติดตัว (กันสะสมจนเกมพัง) — ผลของพรสวรรค์ไม่นับในเพดาน */
-export const PASSIVE_CAP = { cp: 15, survival: 0.12, exp: 0.3, money: 0.3, check: 0.15, yearly: 3 } as const;
+export const PASSIVE_CAP = { cp: 10, survival: 0.08, exp: 0.15, money: 0.3, check: 0.15, yearly: 3 } as const;
 
 export function passiveBonus(l: Life, kind: "cp" | "survival" | "exp" | "money"): number {
   const own = Math.min(PASSIVE_CAP[kind], passivesOf(l).reduce((s, p) => s + (p[kind] ?? 0), 0));

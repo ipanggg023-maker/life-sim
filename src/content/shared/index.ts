@@ -18,6 +18,8 @@ import { MODERN23_EVENTS } from "./modern23";
 import { LIFE23_EVENTS } from "./life23";
 import "./collection"; // M23: ตู้สะสมของวิญญาณ
 import { CLUB_EVENTS } from "./clubs"; // M25: ชมรม
+import { BIZ_EVENTS } from "./business"; // M25: ธุรกิจและทรัพย์สิน
+import { FRIEND_ORPHAN, RELATION_EVENTS } from "./relations"; // M25: ลูกมีเรื่องราว + เมนูคุย
 
 let loaded = false;
 
@@ -27,5 +29,5 @@ export function loadSharedEvents() {
   loaded = true;
   registerEvents(COUNTRY_EVENTS, "modern");
   registerEvents(MODERN23_EVENTS, "modern");
-  registerEvents([...CLUB_EVENTS, ...LIFE23_EVENTS, ...FREE_EVENTS, ...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, ...PHONE_EVENTS, DUAL_CLASS, ...CHAIN_EVENTS]);
+  registerEvents([...RELATION_EVENTS, FRIEND_ORPHAN, ...BIZ_EVENTS, ...CLUB_EVENTS, ...LIFE23_EVENTS, ...FREE_EVENTS, ...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, ...PHONE_EVENTS, DUAL_CLASS, ...CHAIN_EVENTS]);
 }

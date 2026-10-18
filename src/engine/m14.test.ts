@@ -85,6 +85,7 @@ describe("M14 เล่นอิสระ", () => {
     idol.flags.sysSkills = "รอยยิ้มพิฆาต,หมัดหนัก";
     idol.job = { careerId: "o_trainee", level: 1, performance: 50, years: 0 };
     startChallenge(idol);
+    resolveChoice(idol, 0); // กระดาน: เลือกภารกิจสายอาชีพ
     resolveChoice(idol, 0); // ไปฉากตัดสิน
     const labels = visibleChoices(idol, idol.queue[0]).map(({ c }) => (typeof c.label === "string" ? c.label : c.label(idol, idol.queue[0].ctx)));
     expect(labels.some((x) => x.includes("รอยยิ้มพิฆาต"))).toBe(true);
