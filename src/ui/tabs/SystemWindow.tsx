@@ -1,5 +1,6 @@
 // หน้าต่างสถานะของ "ระบบชีวิต" (โลกธรรมดา): STR–LUK, แจกแต้ม, ฝึก, ภารกิจรายวัน, ภารกิจระบบ
 import { SYS_INFO, SYS_STATS, effSys, sysSkillsOf } from "../../content/gameStats";
+import { legendTier, sysMastered } from "../../content/ordinary/m25board";
 import { CHALLENGES_PER_YEAR, canChallenge, challengeLevel, challengesLeft, stageOf, startChallenge } from "../../content/ordinary/system";
 import { SYS_CAP, allocate, sysDaily, sysExpToNext, trainSys, trainingsLeft } from "../../content/ordinary/sys";
 import { skillsOf } from "../../content/hunter/power";
@@ -71,7 +72,10 @@ export function SystemWindow({ life, act }: { life: Life; act: Act }) {
         </button>
       </div>
       <p className="small muted">
-        {blocked ?? `ภารกิจตามอาชีพ: ${stageOf(life).names[challengeLevel(life)]} (ใช้ ${SYS_INFO[stageOf(life).main].label})`}
+        {blocked ??
+          (sysMastered(life)
+            ? `ภารกิจสายอาชีพผ่านครบ 4/4 · ภารกิจตำนาน ★${legendTier(life) + 1} (เลือกได้จากกระดาน เปลี่ยนไปเรื่อยๆ)`
+            : `ภารกิจตามอาชีพ: ${stageOf(life).names[challengeLevel(life)]} (ใช้ ${SYS_INFO[stageOf(life).main].label}) · หรือเลือกภารกิจระบบอื่นจากกระดาน`)}
       </p>
       <SystemExtras life={life} act={act} />
 

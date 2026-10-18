@@ -1,4 +1,5 @@
 import { registerEvents } from "../../engine/events";
+import { BOARD } from "./m25board";
 import { ORDINARY_EVENTS } from "./events";
 import { CHALLENGE, SYSTEM_ARRIVAL } from "./system";
 import "./careers"; // อาชีพเฉพาะทาง (ใช้ STR–LUK)
@@ -14,5 +15,5 @@ let loaded = false;
 export function loadOrdinaryWorld() {
   if (loaded) return;
   loaded = true;
-  registerEvents([SYSTEM_ARRIVAL, CHALLENGE, ...ORDINARY_EVENTS, ...M21_SYS_EVENTS, ...M21_QUEST_EVENTS, ...M21_CAREER_EVENTS, ...M21_LIFE_EVENTS], "ordinary");
+  registerEvents([SYSTEM_ARRIVAL, CHALLENGE, BOARD, ...ORDINARY_EVENTS, ...M21_SYS_EVENTS, ...M21_QUEST_EVENTS, ...M21_CAREER_EVENTS, ...M21_LIFE_EVENTS], "ordinary");
 }

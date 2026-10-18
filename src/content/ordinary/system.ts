@@ -1,13 +1,14 @@
 // โลกธรรมดา: วันที่ "ระบบชีวิต" มาหาคุณคนเดียว และภารกิจระบบตามอาชีพ
 // ระบบให้แค่ "ระบบ" — ไม่มีสายพลัง ไม่มีแรงก์ · คุณต้องฝึก STR–LUK เอง แล้วไปทำอาชีพปกติ
 import type { Ctx, GameEvent, Outcome } from "../../engine/events";
-import { kill, runEvent } from "../../engine/game";
-import { chance, pick, randInt } from "../../engine/rng";
+import { kill } from "../../engine/game";
+import { chance, randInt } from "../../engine/rng";
 import type { Life, SysStat } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, money } from "../../engine/util";
 import { trackOf } from "../hunter/power";
 import { SYS_INFO, effSys } from "../gameStats";
 import { gainSysExp, initSys } from "./sys";
+import { openBoard } from "./m25board";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
 const bad = (text: string, next?: string): Outcome => ({ text, kind: "bad", next });
@@ -132,7 +133,8 @@ export function startChallenge(l: Life, _r?: number) {
   if (!l.sys) initSys(l);
   if (canChallenge(l)) return;
   l.doneThisYear.push("syschal");
-  runEvent(l, "ord.challenge", { r: challengeLevel(l), foe: pick(l, stageOf(l).foe), score: 0 });
+  // M25: เลือกเองจากกระดาน (ภารกิจสายอาชีพ + ภารกิจระบบที่ไม่ซ้ำ)
+  openBoard(l);
 }
 
 const winRate = (l: Life) => clamp(0.82 + (effSys(l, "sta") - 30) / 150, 0.5, 0.99);
@@ -185,6 +187,7 @@ export const CHALLENGE: GameEvent = {
               gainSysExp(l, 80 * (r + 1));
               if (s.fame && r >= 2) addFame(l, 1);
               if (l.job) l.job.performance = clamp(l.job.performance + 10, 0, 100);
+              if (r >= 3 && !l.flags.sysMastered) { l.flags.sysMastered = true; l.log.push({ age: l.age, text: "[ระบบ] ภารกิจสายอาชีพผ่านครบ 4/4 — ปลดล็อกภารกิจตำนาน (เปลี่ยนไปเรื่อยๆ ไม่ซ้ำ ยากขึ้นทุกครั้ง)", kind: "system" }); }
               addStat(l, "happiness", 4);
               return { text: `🏆 ${s.win} ได้ ${money(l, pay)} และ EXP ระบบ ${80 * (r + 1)}`, kind: "good" };
             }
