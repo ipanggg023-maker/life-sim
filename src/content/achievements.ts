@@ -33,7 +33,7 @@ const list = (l: Life, k: string) => String(l.flags[k] ?? "").split(",").filter(
 
 export const ACHIEVEMENTS: Achievement[] = [
   { id: "elder", name: "อายุยืน", desc: "มีชีวิตถึง 90 ปี", points: 20, check: (l) => l.age >= 90 },
-  { id: "young", name: "ดอกไม้ร่วงก่อนบาน", desc: "ตายก่อนอายุ 18", points: 5, check: (l) => l.age < 18 },
+  { id: "young", name: "ดอกไม้ร่วงก่อนบาน", desc: "ตายก่อนอายุ 18", points: 5, check: (l) => !l.alive && l.age < 18 },
   { id: "awakened", name: "ผู้ตื่นพลัง", desc: "ตื่นพลังได้สำเร็จ", points: 5, check: (l) => !!l.power },
   { id: "rank_a", name: "ชนชั้นสูงสุดของประเทศ", desc: "ไปถึงแรงก์ A", points: 15, check: (l) => (l.power?.rank ?? -1) >= 5 },
   { id: "rank_s", name: "อาวุธแห่งชาติ", desc: "ไปถึงแรงก์ S", points: 30, check: (l) => (l.power?.rank ?? -1) >= 6 },

@@ -87,3 +87,20 @@ describe("M24 พรสวรรค์และสกิลติดตัว", 
     expect(kinds).toBeGreaterThan(PASSIVES.length * 0.7);
   });
 });
+
+describe("ความสำเร็จที่ต้องตายก่อน", () => {
+  it("ดอกไม้ร่วงก่อนบาน ไม่ขึ้นระหว่างที่ยังมีชีวิต", () => {
+    for (let s = 1; s <= 30; s++) {
+      const life = createLife({ seed: s * 7777, worldId: WORLDS[s % 6] });
+      const r = { rng: s };
+      while (life.alive && life.age < 17) {
+        while (life.queue.length) {
+          const o = visibleChoices(life, life.queue[0]);
+          resolveChoice(life, o[Math.floor(nextFloat(r) * o.length)].index);
+        }
+        ageUp(life);
+      }
+      if (life.alive) expect(String(life.flags.achShown ?? "")).not.toContain("young");
+    }
+  });
+});
