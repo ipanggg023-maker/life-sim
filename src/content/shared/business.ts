@@ -155,7 +155,7 @@ export const BIZ_EVENTS: GameEvent[] = [
     title: "วิกฤตกิจการ",
     text: (l) => `${pick(l, tone(l) === "ruins" ? ["สัตว์อสูรบุกโกดัง", "หลังคารั่วกลางพายุ", "แก๊งปล้นขู่เก็บค่าคุ้มครอง"] : tone(l) === "murim" ? ["พรรคมารมาเก็บค่าคุ้มครอง", "ไฟไหม้ครัว", "ข่าวลือว่าอาหารมีพิษ"] : tone(l) === "court" ? ["ขุนนางขึ้นภาษีการค้า", "ไฟไหม้โกดัง", "คู่แข่งปล่อยข่าวลือ"] : ["น้ำท่วมหน้าร้าน", "ข่าวปลอมในโซเชียล", "ค่าเช่าขึ้นสองเท่า"])} — ${bizName(l, bizList(l)[0])}กำลังลำบาก`,
     choices: [
-      { label: "ทุ่มเงินแก้ปัญหา", run: (l) => { addMoney(l, -Math.round(BIZ[bizList(l)[0].t].cost * 0.2)); return { text: "เสียเงินไม่น้อย แต่กิจการรอด", kind: "good" }; } },
+      { label: "ทุ่มเงินแก้ปัญหา", show: (l) => l.money >= Math.round(BIZ[bizList(l)[0]?.t ?? 0].cost * 0.2), run: (l) => { addMoney(l, -Math.round(BIZ[bizList(l)[0].t].cost * 0.2)); return { text: "เสียเงินไม่น้อย แต่กิจการรอด", kind: "good" }; } },
       { label: "แก้ด้วยไหวพริบ", check: { stat: "smarts", dc: 60 }, skill: ["business", "social"], run: (l, _c, ok) => { const list = bizList(l); list[0].rep = clamp(list[0].rep + (ok ? 10 : -15), 0, 100); saveBiz(l, list); return ok ? { text: "คุณพลิกวิกฤตเป็นโอกาส ลูกค้าเห็นใจและกลับมาอุดหนุนมากกว่าเดิม", kind: "good" } : { text: "แผนไม่ได้ผล กิจการซบเซาไปพักใหญ่", kind: "bad" }; } },
     ],
   },

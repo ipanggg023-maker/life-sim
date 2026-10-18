@@ -109,6 +109,8 @@ export interface QueuedEvent {
   ctx: Record<string, string | number | boolean>;
   /** ฉากปัจจุบันของตอนพิเศษ (ไม่มี = "start") */
   scene?: string;
+  /** ข้อความฉากที่แสดงไปแล้ว (คิดครั้งเดียว — ข้อความที่สุ่มจะไม่เปลี่ยนทุกครั้งที่หน้าจอวาดใหม่) */
+  txt?: Record<string, string>;
 }
 
 export type HunterClass =

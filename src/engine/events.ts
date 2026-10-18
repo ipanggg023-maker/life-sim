@@ -89,8 +89,15 @@ export function currentScene(q: QueuedEvent, life?: Life): Scene | undefined {
   if (!e) return;
   const s = q.scene && q.scene !== "start" ? e.scenes?.[q.scene] : { title: e.title, system: e.system, text: e.text, choices: e.choices ?? [] };
   if (!s || !life) return s;
+  // จำข้อความฉากไว้ในคิว: event ที่สุ่มข้อความจะไม่เปลี่ยนเรื่องกลางคันเมื่อหน้าจอวาดใหม่
+  const key = q.scene ?? "start";
+  const raw = s.text;
+  const text = (l: Life, c: Ctx) => {
+    if (q.txt?.[key] === undefined) q.txt = { ...q.txt, [key]: raw(l, c) };
+    return q.txt[key];
+  };
   const extra = sceneExtras.flatMap((f) => f(life, s, q.ctx));
-  return extra.length ? { ...s, choices: [...s.choices, ...extra] } : s;
+  return { ...s, text, choices: extra.length ? [...s.choices, ...extra] : s.choices };
 }
 
 /** โลกพังแล้ว: ชีวิตประจำวันแบบเดิม (event "modern") หายไปจนกว่าโลกจะฟื้น */
