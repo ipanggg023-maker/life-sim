@@ -829,3 +829,10 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .passive-locked > summary { cursor: pointer; padding: 4px 0; }
 .passive-list { list-style: none; padding: 0; margin: 4px 0; max-height: 320px; overflow-y: auto; }
 .passive-list li { padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+
+/* ── สมุดพรสวรรค์ (M24) ── */
+.book-row { padding: 4px 0; border-bottom: 1px dashed var(--line); }
+.book-row > summary { cursor: pointer; padding: 3px 0; }
+.book-row .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
+.rar-rare { color: var(--r-rare); } .rar-legendary { color: var(--r-legendary); } .rar-divine { color: var(--r-divine); }
+.rar-mythic { background: linear-gradient(90deg, #ff5e7e, #ffb547, #5fe08a, #4cc3ff, #b57bff); -webkit-background-clip: text; background-clip: text; color: transparent; }

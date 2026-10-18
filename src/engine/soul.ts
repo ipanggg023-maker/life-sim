@@ -50,6 +50,7 @@ export function claimAward(soul: Soul, life: Life, regress: boolean): number {
   soul.awarded = [...soul.awarded, life.id].slice(-300);
   rememberSeen(soul, life);
   soul.collection = [...new Set([...(soul.collection ?? []), ...foundThisLife(life)])];
+  soul.talentBook = [...new Set([...(soul.talentBook ?? []), ...life.talents.map((t) => t.id)])];
   return gained;
 }
 

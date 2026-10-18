@@ -143,6 +143,7 @@ export function SoulTab({
       )}
 
       <CollectionCard life={life} soul={soul} />
+      <TalentBookCard life={life} soul={soul} />
 
       <div className="section-title">ย้ายเซฟไปอีกเครื่อง</div>
       <SaveTransfer life={life} soul={soul} graveyard={graveyard} onImport={onImport} />
@@ -164,6 +165,39 @@ export function SoulTab({
       )}
 
       {dev && <DevPanel act={act} onNewLife={onNewLife} />}
+    </div>
+  );
+}
+
+/** สมุดพรสวรรค์: พรสวรรค์ที่วิญญาณเคยได้ในทุกชาติ แยกตามระดับ */
+function TalentBookCard({ life, soul }: { life: Life; soul: Soul }) {
+  const have = new Set([...(soul.talentBook ?? []), ...life.talents.filter((t) => t.revealed).map((t) => t.id)]);
+  const order = ["mythic", "divine", "legendary", "rare", "common"] as const;
+  return (
+    <div className="card">
+      <div className="card-title">
+        📖 สมุดพรสวรรค์ · {TALENTS.filter((t) => have.has(t.id)).length}/{TALENTS.length}
+      </div>
+      <p className="muted small">พรสวรรค์ที่วิญญาณเคยได้ในทุกชาติ (พรสวรรค์ในช่องลับจะถูกบันทึกเมื่อจบชีวิต)</p>
+      {order.map((r) => {
+        const all = TALENTS.filter((t) => t.rarity === r);
+        const got = all.filter((t) => have.has(t.id));
+        return (
+          <details key={r} className="book-row">
+            <summary className="small">
+              <b className={`rar-${r}`}>{RARITY_LABEL[r]}</b> {got.length}/{all.length}
+            </summary>
+            <div className="chips">
+              {got.map((t) => (
+                <span key={t.id} className={`chip ${r}`} title={t.desc}>
+                  {t.name}
+                </span>
+              ))}
+              {!got.length && <span className="muted small">ยังไม่เคยได้</span>}
+            </div>
+          </details>
+        );
+      })}
     </div>
   );
 }

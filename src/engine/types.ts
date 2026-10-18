@@ -256,6 +256,8 @@ export interface Soul {
   seenEver?: string[];
   /** ตู้สะสม: ของที่เคยเจอในทุกชาติ */
   collection?: string[];
+  /** สมุดพรสวรรค์: พรสวรรค์ที่เคยได้ในทุกชาติ */
+  talentBook?: string[];
   perks: {
     blessing: number; // ใช้ครั้งเดียวต่อการเกิด
     reroll: number;
