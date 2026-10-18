@@ -125,7 +125,7 @@ ACTIVITIES.push(
     world: "all",
     available: (l) => l.age <= 18,
     run: (l) => {
-      addStat(l, "smarts", randInt(l, 2, 4));
+      addStat(l, "smarts", randInt(l, 1, 2));
       addStat(l, "happiness", -2);
       if (l.education) l.education.grade = clamp(l.education.grade + randInt(l, 3, 8), 0, 100);
       return { text: tone(l) === "murim" ? "อาจารย์ประจำหมู่บ้านสอนอักษรเพิ่มให้ทุกเย็น" : tone(l) === "court" ? "ครูพิเศษสอนประวัติศาสตร์ราชวงศ์จนคุณจำได้ทุกชื่อ" : "คุณไปเรียนพิเศษหลังเลิกเรียน เหนื่อยแต่เกรดดีขึ้น", kind: "good" };

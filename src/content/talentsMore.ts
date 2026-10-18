@@ -141,10 +141,10 @@ export const MORE_TALENTS: TalentDef[] = [
   T("timeless_beauty", "ความงามไร้กาลเวลา", "legendary", "แก่แค่ไหนก็ยังงาม", { s: { looks: 25 }, y: { looks: 2 } }),
   T("golden_luck", "ดวงทอง", "legendary", "ลอตเตอรี่ยังเคยถูกสองงวดติด", { s: { luck: 30 }, money: 0.15 }),
   // สายพลัง
-  T("star_core", "แกนดาวในหัวใจ", "legendary", "มีแสงบางอย่างเต้นอยู่ในอก", { rank: 2, exp: 0.15 }, { power: true }),
-  T("ancient_blood", "สายเลือดโบราณ", "legendary", "บรรพบุรุษเคยเป็นวีรบุรุษในตำนาน", { rank: 2, cp: 6, survival: 0.04 }, { power: true }),
-  T("calamity_body", "ร่างภัยพิบัติ", "legendary", "พลังมหาศาลที่ร่างกายแทบรับไม่ไหว", { rank: 3, s: { health: -20 }, cp: 6 }, { power: true }),
-  T("sword_heart", "หัวใจกระบี่", "legendary", "จับอาวุธครั้งแรกเหมือนจับมาทั้งชีวิต", { rank: 2, cp: 8 }, { power: true }),
+  T("star_core", "แกนดาวในหัวใจ", "legendary", "มีแสงบางอย่างเต้นอยู่ในอก", { rank: 1, exp: 0.15 }, { power: true }),
+  T("ancient_blood", "สายเลือดโบราณ", "legendary", "บรรพบุรุษเคยเป็นวีรบุรุษในตำนาน", { rank: 1, cp: 6, survival: 0.04 }, { power: true }),
+  T("calamity_body", "ร่างภัยพิบัติ", "legendary", "พลังมหาศาลที่ร่างกายแทบรับไม่ไหว", { rank: 2, s: { health: -20 }, cp: 6 }, { power: true }),
+  T("sword_heart", "หัวใจกระบี่", "legendary", "จับอาวุธครั้งแรกเหมือนจับมาทั้งชีวิต", { rank: 1, cp: 8 }, { power: true }),
 
   // ───────── ศักดิ์สิทธิ์ ─────────
   T("heavens_favorite", "บุตรสวรรค์", "divine", "ฟ้ามองคุณด้วยรอยยิ้ม", { s: { luck: 40, happiness: 20 }, c: { luck: 0.12 }, survival: 0.06 }),
@@ -153,8 +153,8 @@ export const MORE_TALENTS: TalentDef[] = [
   T("dragon_fortune", "โชคมังกร", "divine", "ทรัพย์สินไหลเข้ามาเองเหมือนแม่น้ำ", { money: 0.5, s: { luck: 25 } }, { apply: (l) => { if (l.wealth === "poor") l.wealth = "middle"; } }),
   T("blessed_body", "กายศักดิ์สิทธิ์", "divine", "โรคภัยไม่กล้าเข้าใกล้", { s: { health: 40 }, y: { health: 3 }, survival: 0.08 }),
   // สายพลัง
-  T("monarch_seed", "เมล็ดพันธุ์ราชันย์", "divine", "วันหนึ่งคุณจะยืนเหนือทุกคน", { rank: 3, cp: 10, exp: 0.25 }, { power: true }),
-  T("void_walker", "ผู้เดินในความว่างเปล่า", "divine", "หายตัวไปจากอันตรายได้เสมอ", { rank: 3, survival: 0.12 }, { power: true }),
+  T("monarch_seed", "เมล็ดพันธุ์ราชันย์", "divine", "วันหนึ่งคุณจะยืนเหนือทุกคน", { rank: 2, cp: 10, exp: 0.25 }, { power: true }),
+  T("void_walker", "ผู้เดินในความว่างเปล่า", "divine", "หายตัวไปจากอันตรายได้เสมอ", { rank: 2, survival: 0.12 }, { power: true }),
 
   // ───────── หนึ่งเดียวในโลก (ยากที่สุด) ─────────
   T("world_chosen", "ผู้ที่โลกเลือก", "mythic", "ทั้งโลกมีได้เพียงคนเดียวในรอบพันปี", { s: { health: 20, happiness: 20, smarts: 20, looks: 20, luck: 20 }, survival: 0.1, money: 0.25, exp: 0.25 }),
@@ -163,6 +163,6 @@ export const MORE_TALENTS: TalentDef[] = [
   T("fortune_avatar", "เทพแห่งโชคกลับชาติมาเกิด", "mythic", "เหรียญโยนกี่ครั้งก็ออกด้านที่คุณต้องการ", { s: { luck: 70 }, c: { luck: 0.2 }, money: 0.5 }),
   T("worlds_beloved", "หัวใจที่โลกรัก", "mythic", "ไม่มีใครในโลกที่เกลียดคุณได้", { s: { looks: 50, happiness: 30 }, y: { happiness: 4 }, c: { looks: 0.2 } }),
   // สายพลัง
-  T("destined_sovereign", "ราชันย์ผู้ถูกลิขิต", "mythic", "ชะตาเขียนไว้ตั้งแต่ก่อนคุณเกิดว่าจะยืนบนจุดสูงสุด", { rank: 4, cp: 15, survival: 0.1, exp: 0.3 }, { power: true }),
-  T("twin_souls", "สองวิญญาณในร่างเดียว", "mythic", "อีกวิญญาณหนึ่งกระซิบสิ่งที่คุณไม่ควรรู้", { rank: 3, exp: 0.5, c: { smarts: 0.1, luck: 0.1, health: 0.1 } }, { power: true }),
+  T("destined_sovereign", "ราชันย์ผู้ถูกลิขิต", "mythic", "ชะตาเขียนไว้ตั้งแต่ก่อนคุณเกิดว่าจะยืนบนจุดสูงสุด", { rank: 3, cp: 15, survival: 0.1, exp: 0.3 }, { power: true }),
+  T("twin_souls", "สองวิญญาณในร่างเดียว", "mythic", "อีกวิญญาณหนึ่งกระซิบสิ่งที่คุณไม่ควรรู้", { rank: 2, exp: 0.5, c: { smarts: 0.1, luck: 0.1, health: 0.1 } }, { power: true }),
 ];

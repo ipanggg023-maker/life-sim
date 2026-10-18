@@ -540,7 +540,8 @@ export function awaken(life: Life, rank: number, cls: HunterClass) {
  */
 export function luckyRankUp(life: Life, reason: string, steps = 1) {
   const r = life.power?.rank ?? 0;
-  const p = r >= 7 ? 0.15 : r >= 6 ? 0.35 : r >= 5 ? 0.6 : 1;
+  // ยุทธภพ: ขั้นเซียนต้องฝ่าทัณฑ์สวรรค์เท่านั้น — โชคช่วยไม่ได้
+  const p = r >= 7 ? (life.worldId === "murim" ? 0 : 0.15) : r >= 6 ? 0.35 : r >= 5 ? 0.6 : 1;
   if (chance(life, p)) {
     rankUp(life, reason, r >= 5 ? 1 : steps);
     return;

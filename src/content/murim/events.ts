@@ -148,11 +148,14 @@ const pills = ["ยาเม็ดทะลวงชีพจร", "ยาเม
 const pillIdx = (l: Life) => l.power?.items.findIndex((i) => pills.includes(i)) ?? -1;
 const breakOdds = (l: Life, bonus = 0) =>
   rank(l) === 7
-    ? clamp(0.06 + (l.stats.smarts - 50) / 400 + bonus * 0.5, 0.03, 0.45) // ทัณฑ์สวรรค์: ประตูสู่เซียนแคบมาก
+    ? clamp(0.05 + (l.stats.smarts - 50) / 500 + bonus * 0.5, 0.03, 0.4) // ทัณฑ์สวรรค์: ประตูสู่เซียนแคบมาก
     : clamp(0.58 - rank(l) * 0.05 + (l.stats.smarts - 50) / 200 + bonus, 0.08, 0.95);
 /** เลเวลที่ต้องถึงก่อนทะลวงขั้นถัดไป — ขั้นสูงยิ่งไกล */
 export const breakLevel = (r: number) => (r + 1) * 8 + r * r;
-const breakSurvival = (l: Life) => clamp(0.92 - rank(l) * 0.04 + (l.stats.health - 50) / 200, 0.4, 0.99);
+const breakSurvival = (l: Life) =>
+  rank(l) === 7
+    ? clamp(0.5 + (l.stats.health - 50) / 300, 0.3, 0.75) // ทัณฑ์สวรรค์ล้มเหลว = มักไม่รอด (กันลองซ้ำจนผ่าน)
+    : clamp(0.92 - rank(l) * 0.04 + (l.stats.health - 50) / 200, 0.4, 0.99);
 
 export const BREAKTHROUGH: GameEvent = {
   id: "murim.breakthrough",
