@@ -190,7 +190,7 @@ The world remembers (**บันทึกยุทธภพ** tab):
 |---|---|---|
 | A | Lock other worlds; remove [ระบบ]/regression/cross-world/soul shop from murim; rewrite system texts in-world; murim relation names | M |
 | B | Stats & realms rework (internal years, comprehension, realm lifespan, realistic odds) + birth classes/regions/traits | M |
-| C | Martial techniques system + combat/injury/poison | L |
+| C | Martial techniques + **body & permanent injuries** (§15) + combat scenes (§16) + choice cards with pros/cons/% (§14) | L |
 | D | Life stages & careers (all ladders above) + yearly activities menu + festivals | L |
 | E | Relationships + **NPC feelings/memory/autonomy**: affinity, master–disciple, sworn brothers, matchmaker, multiple wives household, filial piety & mourning | L |
 | F | Factions, rankings, nicknames, own sect upgrade, **Heavenly Demon & Demonic Cult succession** | L |
@@ -240,3 +240,131 @@ get jealous (wives, rival disciples), grieve when someone dies. Relationships ca
 - [Wandering Sword companions guide](https://gamepretty.com/wandering-sword-companions-and-followers-guide/)
 - [BitLife ribbons — Prima Games](https://primagames.com/?p=191443)
 - [武侠人生模拟器 (Wuxia Life Simulator, App Store)](https://apps.apple.com/us/app/-/id1517777677)
+
+---
+
+## 13. Rebuild policy
+
+- **All murim events, stories and careers are rewritten from scratch.** Old murim content (events.ts, m17*, m23, more, quest) is removed
+  once the new content covers each life stage. Engine pieces that still fit (ledger, alignment, rankings, sect founding) are reused under new text.
+- Shared cross-world events (modern life, clubs, business, collectibles, chains, fate, sponsors, system quests) are **switched off** in murim.
+  Murim gets its own versions where it makes sense (e.g. businesses → inn / escort agency / medicine hall).
+
+---
+
+## 14. Choices: pros, cons and success %
+
+Every choice card shows what you are risking. Example (escort ambushed by bandits):
+
+```
+⚔️ ชักกระบี่สู้                      สำเร็จ 62%
+   ✅ ชื่อเสียง +, ค่าจ้างเต็ม, ศิษย์สำนักคุ้มภัยนับถือ
+   ❌ ล้มเหลว: บาดเจ็บหนัก (อาจเสียอวัยวะ), สินค้าถูกปล้น
+   ⚠️ อัตรารอด 91%
+🗣️ เจรจาจ่ายค่าผ่านทาง               สำเร็จ 78%  (สติปัญญา + ชื่อเสียง)
+   ✅ ไม่มีใครเจ็บ   ❌ เสียเงิน 30 ตำลึง, ถูกมองว่าขี้ขลาด
+🏃 ทิ้งสินค้าหนี                      สำเร็จ 95%
+   ✅ รอดแน่   ❌ สำนักคุ้มภัยไล่ออก, หนี้ชดใช้สินค้า
+🗡️ ซัดอาวุธลับใส่หัวหน้าโจร (ถ้ามีวิชา) สำเร็จ 44%
+```
+
+Rules:
+- % comes from the character: relevant stat(s) + realm + technique mastery + injuries + equipment + NPC opponent strength. Shown exactly.
+- Each choice lists **pros (✅)** and **cons (❌)** in one line each; hidden outcomes show as "❓ ไม่แน่ชัด" (mystery is part of the fun).
+- Outcomes have 4 tiers: **สำเร็จงดงาม / สำเร็จ / พลาด / พลาดหนัก**, not just win/lose.
+- Survival warning appears whenever death is possible.
+- Some choices only appear with a requirement (technique, item, relationship, alignment) and say why: "(ใช้วิชาสายฟ้าฟาดได้)".
+
+---
+
+## 15. Body & injuries (real and permanent)
+
+The body is tracked part by part:
+
+| Part | Possible damage | Lasting effect |
+|---|---|---|
+| Eyes (L/R) | scratched, **blinded** | one eye: accuracy −, looks −; both: cannot read manuals, must learn "listening to the wind" style |
+| Ears | deaf | ambush checks −, sound-based techniques fail |
+| Tongue | cut out (torture) | cannot persuade/teach by talking, writes instead |
+| Face | scar, burn | looks −; can make you feared (intimidation +) |
+| Arms (L/R), hands, fingers | broken, tendons cut, **fingers lost**, **arm severed** | weapon techniques of that hand −70% until you retrain the other hand (years); "one-armed swordsman" path |
+| Legs (L/R) | broken, tendons cut, **leg severed** | qinggong lost, escape −, wooden leg from a craftsman restores walking only |
+| Torso / organs | internal injury (light → critical), broken ribs | health cap −, yearly death risk until healed |
+| Meridians / **dantian** | blocked, damaged, **shattered** | internal energy drops or goes to 0; rare cures only (legendary medicine / reverse meridians) |
+| Whole body | poisoned, infection, chronic pain | yearly health loss, happiness − |
+
+- Injuries heal over **years**, not instantly. Age slows healing. Treatment cost: village healer < physician < divine physician.
+- **Severed parts do not grow back.** Only a divine physician within days, or a legendary relic, can reattach — very rare.
+- Prosthetics: wooden leg, iron hand (can become a hidden weapon!), eye patch.
+- Disabilities show next to the name (e.g. 🦾 แขนขวาขาด, 👁️ ตาซ้ายบอด) and change the available choices and %.
+- Torture events (captured by a cult, interrogated by imperial guards) can cost fingers, eyes, tongue.
+- Death is real: bleed-out, poison, executions, plague, old age.
+
+---
+
+## 16. Combat flow
+
+Big fights are short scenes (1–3 rounds), small fights resolve in one choice.
+Each round you pick: **โจมตีเต็มกำลัง · ตั้งรับ · ใช้ท่าไม้ตาย (costs energy) · อาวุธลับ/ยาพิษ · หลบหนี · ยอมแพ้/ขอชีวิต**, each with %.
+Result per round: damage to a random/targeted body part (see §15), energy spent, opponent state.
+Opponent NPCs remember: a spared enemy may repay the favor — or return stronger for revenge.
+
+---
+
+## 17. Story & event catalogue (all new)
+
+Target: **600+ murim events** at launch of the overhaul. Each has 2–4 choices with % and pros/cons, and most leave a lasting mark
+(flag, NPC memory, injury, item, technique, reputation).
+
+### Childhood (0–12) — ~90 events
+- Born during famine / flood / war; parents sell a sibling; plague in the village.
+- Old beggar asks for food → hidden master arc (3 parts).
+- Bandits burn the village → orphan arc (taken in by a sect / joins beggars / adopted by a merchant).
+- Sect recruiters' **bone test**; fail → stubborn self-training path.
+- Bullied by the landlord's son; first fight; first scar.
+- Fall from a cliff → cave → old manual (rare).
+- Father's gambling debt, mother's illness, little sibling lost at market.
+
+### Sect / teen (13–17) — ~110 events
+- Outer-disciple chores, hazing by seniors, stealing food, sect rules punishment (whipping, kneeling in snow).
+- Accused of stealing a manual (frame-up arc: prove innocence / flee / take blame).
+- Forbidden library at night; qi deviation from secret manual.
+- Sect master's daughter / son romance; rival disciple jealousy.
+- Inner-sect tournament (bracket of 3 fights).
+- First kill on a sect mission; nightmare & guilt.
+- Coming-of-age; chosen as core disciple or expelled.
+
+### Young adult (18–30) — ~150 events
+- Descending the mountain; first night in a jianghu inn (classic brawl).
+- **Escort arc** (5 parts): contract → ambush → betrayal from inside → lost cargo → revenge or ruin.
+- Young-master humiliation at a banquet → slap / duel / patience.
+- **Martial tournament** & Young Dragon list.
+- Love arcs: love across factions (orthodox × demonic), arranged marriage vs true love, matchmaker meetings, wedding night, second wife negotiations.
+- **Sworn brotherhood** oath; years later one brother betrays you (or you betray him).
+- Imperial draft for war; bandit-suppression campaign.
+- Treasure map rumor → race against other sects → ambush at the ruin.
+
+### Prime (31–50) — ~130 events
+- Found your sect / family; disciples' rivalry; spy inside your sect.
+- **Massacre arc**: your sect/family destroyed → years-long revenge (track killers one by one).
+- Demonic Cult invasion; Murim Alliance war council; choose to fight, negotiate, or defect.
+- Emperor's edict bans martial sects; eunuch faction plots; join the rebellion?
+- Wives' household politics, children's inheritance fights, a child joins the enemy faction.
+- Duel with the rival from childhood (callback to flags).
+
+### Elder (51+) — ~70 events
+- Closed-door retreat for a breakthrough (deadly).
+- Choosing a successor; disciples split the sect.
+- Writing your manual; burying it or passing it on.
+- Last duel with an old enemy; dying words to family.
+- Immortal tribulation (if eligible).
+
+### World-tier arcs (any age, era-driven) — ~50 events
+- **Heavenly Demon succession war**, Demonic Cult crusade on the Central Plains.
+- **Demon Lord** awakening crisis (all factions unite).
+- **Emperor** changes: wise / tyrant / puppet; palace coup; dynasty collapse → warlord era → found a dynasty.
+- **Immortals** appear: test a chosen mortal, punish heaven-defiers, leave relics.
+
+### Generational callbacks — woven into all of the above
+- Meet descendants of people you helped or wronged; your old sect asks for help; your grave; your manual found by a stranger;
+  storytellers retelling your life (with exaggerations).
