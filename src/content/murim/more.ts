@@ -1,3 +1,4 @@
+import { woundFrom } from "../../engine/body";
 // เหตุการณ์ยุทธภพเพิ่มเติม (M9): ให้ชีวิตในยุทธภพไม่ซ้ำเร็ว
 import type { GameEvent, Outcome } from "../../engine/events";
 import { kill } from "../../engine/game";
@@ -24,7 +25,7 @@ function hurt(l: Life, min: number, max: number, cause: string): string {
     kill(l, cause);
     return " …ร่างกายคุณทนไม่ไหวอีกต่อไป";
   }
-  return ` (สุขภาพ -${d})`;
+  return ` (สุขภาพ -${d})` + woundFrom(l, d, cause);
 }
 
 const CHILD: GameEvent[] = [

@@ -1,11 +1,11 @@
 // Phase 2 — เป้าหมายชีวิต: แรงผลักที่ทำให้แต่ละชีวิตมีเรื่องราว (MURIM_PLAN §18.1)
 // เป้าหมายหลัก 1 ข้อ (+ รองได้อีก 2) · มีขั้นตอนที่มองเห็น · จบได้หลายแบบ · เปลี่ยนได้เมื่อมีเหตุการณ์สำคัญ ไม่ใช่สุ่มเปลี่ยน
 import type { GameEvent, Outcome } from "../../../engine/events";
-import { kill } from "../../../engine/game";
-import { feel, relOf, remember } from "../../../engine/npc";
-import { chance, pick, randInt } from "../../../engine/rng";
+import { feel, relOf } from "../../../engine/npc";
+import { pick, randInt } from "../../../engine/rng";
 import type { Life, Person } from "../../../engine/types";
 import { addFame, addStat, createPerson, log, people, shortName } from "../../../engine/util";
+import { DUEL_END, startDuel } from "./duel";
 
 export interface LifeGoal {
   id: string;
@@ -215,15 +215,12 @@ export const GOAL_EVENTS: GameEvent[] = [
       {
         label: "ท้าสู้จนตายกันไปข้าง",
         tone: "danger",
-        odds: (l) => Math.min(0.9, Math.max(0.15, 0.45 + ((l.power?.rank ?? 0) - Number(foeOf(l)?.tags?.find((t) => t.startsWith("rank:"))?.slice(5) ?? 2)) * 0.15 + (l.stats.health - 50) / 300)),
-        survival: (l) => Math.min(0.95, 0.6 + ((l.power?.rank ?? 0) - Number(foeOf(l)?.tags?.find((t) => t.startsWith("rank:"))?.slice(5) ?? 2)) * 0.1),
-        run: (l, _c, ok) => {
+        pros: "จบความแค้นด้วยมือตัวเอง",
+        cons: "สู้ถึงตาย — แพ้อาจไม่รอด หรือเสียอวัยวะ",
+        run: (l) => {
           const f = foeOf(l)!;
-          const g = mainGoal(l)!;
-          if (ok) { f.alive = false; g.step = 3; g.end = "won"; l.flags.goalWon_revenge = true; addFame(l, 5); return { text: `กระบี่ของคุณแทงทะลุอก${shortName(f)} เขายิ้มแปลกๆ ก่อนสิ้นใจ "ในที่สุด… ก็มีคนมาเก็บ" — ความแค้นจบลงแล้ว`, kind: "milestone" }; }
-          if (chance(l, 0.35)) { kill(l, `ถูก${shortName(f)}ฆ่าตายขณะพยายามล้างแค้น`); return bad("คุณล้มลงต่อหน้าศัตรูคนเดิม…"); }
-          addStat(l, "health", -randInt(l, 20, 35)); remember(l, f, "beat_you", "เคยเอาชนะคุณแล้วไว้ชีวิต", 2, {});
-          return bad(`${shortName(f)}เตะคุณล้มลงกับพื้น "กลับไปฝึกมาใหม่" — เขาไว้ชีวิตคุณ และนั่นเจ็บกว่าแผลทั้งหมด`);
+          startDuel(l, { foe: shortName(f), rank: foeRank(f), lethal: true, pid: f.id, on: "revenge", cruel: true });
+          return { text: `${shortName(f)}วางจอกเหล้าลงช้าๆ แล้วลุกขึ้น "ข้ารอวันนี้มานานแล้วเหมือนกัน"` };
         },
       },
       {
@@ -250,6 +247,23 @@ export const GOAL_EVENTS: GameEvent[] = [
     ],
   },
 ];
+
+const foeRank = (f: Person) => Number(f.tags?.find((t) => t.startsWith("rank:"))?.slice(5) ?? 2);
+
+// ผลการต่อสู้ล้างแค้น
+DUEL_END.revenge = (l, r) => {
+  const g = l.goals?.find((x) => x.id === "revenge" && !x.end);
+  if (!g) return "";
+  if (r === "win") {
+    g.step = 3;
+    g.end = "won";
+    l.flags.goalWon_revenge = true;
+    addFame(l, 5);
+    return "— ความแค้นที่แบกมาหลายปีจบลงแล้ว";
+  }
+  if (r === "lose" || r === "yield") return "ศัตรูยังลอยนวลอยู่ — และตอนนี้เขารู้แล้วว่าคุณตามมา";
+  return "";
+};
 
 /** ตั้งธงเมื่อครอบครัวเสียชีวิต (ใช้กระตุ้นการเปลี่ยนเป้าหมาย) — เรียกจากที่ที่มีการตาย */
 export function noteKinDeath(l: Life, p: Person, violent: boolean, killer?: string) {

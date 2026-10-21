@@ -1,3 +1,4 @@
+import { combatFactor } from "../../engine/body";
 import { chance, nextFloat, pick, weightedPick } from "../../engine/rng";
 import type { HunterClass, Life, StatKey, WorldId } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, log, money as fmtMoney } from "../../engine/util";
@@ -371,8 +372,9 @@ export function combatPower(life: Life): number {
   const cls = classById(p.hunterClass);
   const g = guildOf(life);
   const sub = subClassOf(life);
-  return Math.round((sub ? Math.max(0, sub.cp) * 0.5 + 2 : 0) +
-    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp") + sponsorBonus(life, "cp") + passiveBonus(life, "cp"),
+  // บาดแผล/ความพิการ (ยุทธภพ) ลดพลังต่อสู้จริง
+  return Math.round(combatFactor(life) * ((sub ? Math.max(0, sub.cp) * 0.5 + 2 : 0) +
+    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp") + sponsorBonus(life, "cp") + passiveBonus(life, "cp")),
   );
 }
 

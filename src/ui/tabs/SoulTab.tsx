@@ -16,6 +16,7 @@ import type { Act } from "../App";
 import { SaveTransfer } from "../SaveTransfer";
 import { CloudCard } from "../CloudCard";
 import { goalById } from "../../content/murim/life/goals";
+import { injuryLabel } from "../../engine/body";
 import { SeriesCover } from "../SeriesCover";
 
 export function SoulTab({
@@ -46,6 +47,18 @@ export function SoulTab({
           <p>
             ชีวิตที่ {graveyard.length + 1} · {displayName(life)} · ปี {life.birthYear}
           </p>
+          {(life.body?.injuries.length ?? 0) > 0 && (
+            <>
+              <div className="section-title">ร่างกาย</div>
+              {life.body!.injuries.map((i) => (
+                <p className="small" key={i.id}>
+                  {i.sev === 3 ? "🩸" : "🤕"} {injuryLabel(i)} · ตั้งแต่อายุ {i.since}
+                  {i.cause && <span className="muted"> — {i.cause}</span>}
+                </p>
+              ))}
+              <div className="section-title">เป้าหมายชีวิต</div>
+            </>
+          )}
           {(life.goals ?? []).map((g, i) => {
             const d = goalById(g.id);
             if (!d) return null;

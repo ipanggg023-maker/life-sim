@@ -49,7 +49,8 @@ PASSIVES.push(...MORE_PASSIVES);
 
 export const passiveById = (id: string) => PASSIVES.find((p) => p.id === id);
 export const passivesOf = (l: Life): Passive[] =>
-  String(l.flags.passives ?? "")
+  // โลกสมจริงไม่มี "สกิลติดตัว" แบบเกม — ความชำนาญอยู่ในวิชา/ร่างกายแทน
+  l.worldId === "murim" ? [] : String(l.flags.passives ?? "")
     .split(",")
     .filter(Boolean)
     .map((id) => passiveById(id))
@@ -71,6 +72,7 @@ export function passiveCheck(l: Life, stat: StatKey): number {
 
 /** สกิลติดตัวที่เพิ่งได้ (ยังไม่มีในรายการ) — ผู้เรียกเป็นคนบันทึก log */
 export function newPassives(l: Life): Passive[] {
+  if (l.worldId === "murim") return [];
   const owned = String(l.flags.passives ?? "").split(",").filter(Boolean);
   const fresh = PASSIVES.filter((p) => !owned.includes(p.id) && p.earn(l));
   if (fresh.length) l.flags.passives = [...owned, ...fresh.map((p) => p.id)].join(",");

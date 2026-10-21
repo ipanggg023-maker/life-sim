@@ -1,3 +1,4 @@
+import { woundFrom } from "../../engine/body";
 import type { Ctx, GameEvent, Outcome } from "../../engine/events";
 import { kill, kinDeathHooks, openHiddenSlot } from "../../engine/game";
 import { memoryOdds, observe, remembers, useMemory } from "../../engine/memory";
@@ -39,7 +40,7 @@ function damage(l: Life, min: number, max: number, cause: string): string {
     kill(l, cause);
     return " …ร่างกายคุณทนไม่ไหวอีกต่อไป";
   }
-  return ` (สุขภาพ -${d})`;
+  return ` (สุขภาพ -${d})` + woundFrom(l, d, cause);
 }
 
 const MURIM_STYLE_IDS: HunterClass[] = CLASSES.filter((c) => c.world === "murim").map((c) => c.id);

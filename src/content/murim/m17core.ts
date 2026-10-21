@@ -1,3 +1,4 @@
+import { woundFrom } from "../../engine/body";
 // M17 — ระบบประจำยุทธภพ: ทำเนียบยอดฝีมือ · มาตรธรรมะ/มาร · สมุดบุญคุณ/ความแค้น · ก่อตั้งสำนัก
 // เก็บทุกอย่างใน life.flags (JSON string / ตัวเลข) เพื่อไม่แตะ engine/types.ts
 import type { Outcome } from "../../engine/events";
@@ -433,7 +434,7 @@ export function hurt(l: Life, min: number, max: number, cause: string): string {
     kill(l, cause);
     return " …ร่างกายคุณทนไม่ไหวอีกต่อไป";
   }
-  return ` (สุขภาพ -${d})`;
+  return ` (สุขภาพ -${d})` + woundFrom(l, d, cause);
 }
 
 /** ศัตรูทั่วไประดับเดียวกับเรา (ไม่มีวิชาใช้ร่างกายสู้) */

@@ -515,6 +515,9 @@ export function resolveChoice(life: Life, choiceIndex: number): Outcome | undefi
   const q = life.queue[0];
   if (!q) return;
   const c = currentScene(q, life)!.choices[choiceIndex];
+  // ตัวเลือกที่เงื่อนไขยังไม่ครบ (หน้าจอปิดปุ่มไว้แล้ว) — ไม่ทำอะไร
+  const missing = c.req?.(life, q.ctx);
+  if (missing) return { text: `ทำไม่ได้: ${missing}` };
   // ฉากแรกของ event ที่มีชื่อ = ตอนใหม่ของมังฮวา
   const e = getEvent(q.eventId)!;
   if (!q.scene && e.title && !e.manual) startChapter(life, e.title);

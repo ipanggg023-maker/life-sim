@@ -24,6 +24,14 @@ export interface Choice {
   skill?: string[] | ((life: Life, ctx: Ctx) => string[]);
   /** โอกาสรอดชีวิตที่จะแสดงเป็นคำเตือน (0-1) */
   survival?: (life: Life, ctx: Ctx) => number;
+  /** ข้อดีของตัวเลือกนี้ (บรรทัดเดียว) */
+  pros?: string | ((life: Life, ctx: Ctx) => string);
+  /** ข้อเสีย/ความเสี่ยงของตัวเลือกนี้ (บรรทัดเดียว) */
+  cons?: string | ((life: Life, ctx: Ctx) => string);
+  /** ตัวละครยังประเมินไม่ได้ → แสดงโอกาสเป็น ต่ำ/กลาง/สูง แทนตัวเลข (MURIM_PLAN §18.6) */
+  unknown?: (life: Life, ctx: Ctx) => boolean;
+  /** เงื่อนไขที่ยังขาด → แสดงตัวเลือกแต่กดไม่ได้ พร้อมเหตุผล */
+  req?: (life: Life, ctx: Ctx) => string | undefined;
   run: (life: Life, ctx: Ctx, success: boolean) => Outcome;
 }
 
@@ -156,10 +164,20 @@ export function labelOf(c: Choice, life: Life, ctx: Ctx) {
   return typeof c.label === "function" ? c.label(life, ctx) : c.label;
 }
 
+/** ตัวเลือกที่กดได้จริง (ผ่าน show และเงื่อนไข req) */
 export function visibleChoices(life: Life, q: QueuedEvent) {
   const s = currentScene(q, life);
   if (!s) return [];
   return s.choices
     .map((c, index) => ({ c, index }))
-    .filter(({ c }) => (c.show ? c.show(life, q.ctx) : true));
+    .filter(({ c }) => (c.show ? c.show(life, q.ctx) : true) && !c.req?.(life, q.ctx));
+}
+
+/** ตัวเลือกที่ยังขาดเงื่อนไข — แสดงเป็นปุ่มล็อกพร้อมเหตุผล */
+export function lockedChoices(life: Life, q: QueuedEvent) {
+  const s = currentScene(q, life);
+  if (!s) return [];
+  return s.choices
+    .map((c, index) => ({ c, index, why: c.req?.(life, q.ctx) }))
+    .filter(({ c, why }) => (c.show ? c.show(life, q.ctx) : true) && !!why);
 }

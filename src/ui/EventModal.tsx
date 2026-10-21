@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { loc } from "../engine/util";
-import { currentScene, labelOf, visibleChoices, type Outcome } from "../engine/events";
+import { currentScene, labelOf, lockedChoices, visibleChoices, type Outcome } from "../engine/events";
 import { choiceChance } from "../engine/game";
 import type { Life } from "../engine/types";
 import { isRealistic } from "../content/worlds";
@@ -24,12 +24,16 @@ function useTypewriter(text: string, speed = 18) {
   return { shown: text.slice(0, n), done: n >= text.length, skip: () => setN(text.length) };
 }
 
+/** โอกาสแบบคร่าวๆ เมื่อตัวละครยังมีข้อมูลไม่พอ — ไม่โชว์ตัวเลขที่แม่นเกินจริง */
+const vagueLabel = (p: number) => (p >= 0.7 ? "สูง" : p >= 0.4 ? "กลาง" : "ต่ำ");
+
 export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: number) => void }) {
   const q = life.queue[0];
   const scene = currentScene(q, life)!;
   const text = loc(life, scene.text(life, q.ctx));
   const { shown, done, skip } = useTypewriter(text);
-  const choices = visibleChoices(life, q);
+  // ตัวเลือกที่กดได้ก่อน แล้วตามด้วยตัวที่ยังขาดเงื่อนไข (ล็อกไว้พร้อมเหตุผล) ตามลำดับเดิม
+  const choices = [...visibleChoices(life, q), ...lockedChoices(life, q)].sort((a, b) => a.index - b.index);
 
   return (
     <div className="overlay modal-overlay">
@@ -43,19 +47,28 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
           {choices.map(({ c, index }) => {
             const pct = choiceChance(life, q, index);
             const survive = c.survival?.(life, q.ctx);
+            const missing = c.req?.(life, q.ctx);
+            const vague = c.unknown?.(life, q.ctx);
+            const pros = typeof c.pros === "function" ? c.pros(life, q.ctx) : c.pros;
+            const cons = typeof c.cons === "function" ? c.cons(life, q.ctx) : c.cons;
             return (
               <button
                 key={index}
-                className={`choice ${c.tone ?? ""}`}
-                disabled={!done}
+                className={`choice ${c.tone ?? ""} ${missing ? "locked" : ""}`}
+                disabled={!done || !!missing}
                 onClick={(ev) => {
                   ev.stopPropagation();
                   onChoose(index);
                 }}
               >
                 <span>{loc(life, labelOf(c, life, q.ctx))}</span>
-                {survive !== undefined && survive < 0.95 && <span className="warn">[คำเตือน: อัตรารอดชีวิต {Math.round(survive * 100)}%]</span>}
-                {pct !== undefined && <span className="pct">สำเร็จ {Math.round(pct * 100)}%</span>}
+                {pros && <span className="pros">✅ {pros}</span>}
+                {cons && <span className="cons">❌ {cons}</span>}
+                {missing && <span className="cons">🔒 {missing}</span>}
+                {survive !== undefined && survive < 0.95 && (
+                  <span className="warn">[คำเตือน: อัตรารอดชีวิต {vague ? vagueLabel(survive) : `${Math.round(survive * 100)}%`}]</span>
+                )}
+                {pct !== undefined && <span className="pct">{vague ? `โอกาสสำเร็จ: ${vagueLabel(pct)} (ยังประเมินคู่ต่อสู้ไม่ได้)` : `สำเร็จ ${Math.round(pct * 100)}%`}</span>}
               </button>
             );
           })}

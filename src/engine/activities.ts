@@ -1,7 +1,7 @@
 import { chance, randInt } from "./rng";
 import type { Outcome } from "./events";
 import type { Life, WorldId } from "./types";
-import { worldMatches } from "../content/worlds";
+import { isRealistic, worldMatches } from "../content/worlds";
 import { addFame, addMoney, addStat, checkChance, createPerson, money, hasTalent, log, people, shortName } from "./util";
 
 export interface Activity {
@@ -148,7 +148,9 @@ export const ACTIVITIES: Activity[] = [
   },
 ];
 
-const inWorld = (a: Activity, w: WorldId) => a.world === "all" || worldMatches(a.world, w);
+/** ของจากโลกยุคปัจจุบัน/ระบบเกมที่ไม่มีในโลกแบบสมจริง (ยุทธภพใช้แผนของปี + กิจกรรมของตัวเองแทน) */
+const REALISTIC_OFF = /^(club_|kid_|biz_|free_course|free_move|free_splurge)/;
+const inWorld = (a: Activity, w: WorldId) => (a.world === "all" || worldMatches(a.world, w)) && !(isRealistic(w) && REALISTIC_OFF.test(a.id));
 /** ระหว่างติดคุกทำได้แค่ไม่กี่อย่าง */
 const JAIL_OK = /^(gym|read|free_create|.*_rest)$/;
 

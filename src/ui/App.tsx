@@ -368,7 +368,7 @@ export function App() {
       <MainScreen life={life} onAgeUp={onAgeUp} onTab={setTab} />
 
       {tab && !life.queue.length && !resolved && (
-        <Sheet title={tab === "soul" && isRealistic(life.worldId) ? "บันทึก" : TAB_TITLES[tab]} onClose={() => setTab(null)}>
+        <Sheet title={isRealistic(life.worldId) && tab === "soul" ? "บันทึก" : isRealistic(life.worldId) && tab === "power" ? "วิชายุทธ์" : TAB_TITLES[tab]} onClose={() => setTab(null)}>
           {tab === "career" && <CareerTab life={life} act={act} />}
           {tab === "people" && <PeopleTab life={life} act={act} />}
           {tab === "power" && <PowerTab life={life} act={act} />}

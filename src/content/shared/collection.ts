@@ -60,7 +60,7 @@ export function findCollectible(l: Life, how: string): Collectible | undefined {
 const HOW = ["เจอวางทิ้งไว้ในที่ที่ไม่น่ามีใครมา", "คนแปลกหน้ายื่นให้แล้วเดินจากไปโดยไม่พูดอะไร", "ได้มาจากแผงของเก่าในราคาถูกเกินจริง", "มันอยู่ในกระเป๋าคุณตอนตื่นนอน ทั้งที่จำไม่ได้ว่าได้มาจากไหน"];
 
 yearHooks.push((l) => {
-  if (!l.alive || l.age < 6) return;
+  if (!l.alive || l.age < 6 || l.worldId === "murim") return; // ตู้สะสมข้ามชาติไม่มีในโลกสมจริง
   const p = 0.035 + (l.power ? 0.02 : 0) + (l.flags.collectBuy ? 0.03 : 0);
   if (chance(l, p)) findCollectible(l, pick(l, HOW));
   if (l.flags.collectBuy) {

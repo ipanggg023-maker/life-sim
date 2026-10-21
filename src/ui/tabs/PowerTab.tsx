@@ -12,7 +12,8 @@ import { openStories } from "../../content/shared/chains";
 import { STUDENTS, acaYear, houseOf, inAcademy } from "../../content/court/academy";
 import { SKILL_TYPE, skillEffectText } from "../../content/skills";
 import { skillReady } from "../../content/shared/skillUse";
-import { worldOf } from "../../content/worlds";
+import { isRealistic, worldOf } from "../../content/worlds";
+import { combatFactor } from "../../engine/body";
 import type { Life, WorldId } from "../../engine/types";
 import { displayName, hasTalent, loc } from "../../engine/util";
 import type { Act } from "../App";
@@ -148,9 +149,68 @@ const UI: Record<
   },
 };
 
+/** ระดับความชำนาญเป็นคำ (ไม่ใช้ตัวเลขแบบเกม) */
+const masteryWord = (m: number) => (m >= 8 ? "สมบูรณ์" : m >= 5 ? "ชำนาญใหญ่" : m >= 2 ? "ชำนาญน้อย" : "เริ่มเรียน");
+
+/** ยุทธภพ: บันทึกวิชายุทธ์แบบในนิยาย — ไม่มีหน้าต่างระบบ เลเวล หรือตัวเลขพลัง */
+function MartialRecord({ life }: { life: Life }) {
+  const p = life.power;
+  if (!p) {
+    const w = worldOf(life.worldId);
+    const [from, to] = w.awakenAge;
+    return (
+      <div className="card">
+        <div className="card-title">วิชายุทธ์</div>
+        <p className="muted">
+          {life.age < from ? `ยังไม่ถึงวัยที่สำนักต่างๆ ลงเขามาคัดศิษย์ (${from}–${to} ปี)` : "เส้นชีพจรยังไม่ทะลวง — คุณยังไม่ได้ฝึกวิชาลมปราณ ใช้ชีวิตแบบคนธรรมดา"}
+        </p>
+        {Number(life.flags.mwBasics ?? 0) > 0 && <p className="small">ฝึกร่างกายพื้นฐานมาแล้ว {Number(life.flags.mwBasics)} ปี</p>}
+      </div>
+    );
+  }
+  const cls = classById(p.hunterClass);
+  const guild = guildById(p.guild);
+  const next = breakLevel(p.rank);
+  const progress = p.rank >= 8 ? 1 : Math.min(1, p.level / Math.max(1, next));
+  const factor = combatFactor(life);
+  return (
+    <div className="card">
+      <div className="card-title">วิชายุทธ์</div>
+      <div className="status-grid">
+        <span>ขั้นฝีมือ</span>
+        <b className={`rank r${p.rank}`}>{rankLabel(life, p.rank)}</b>
+        <span>สายวิชา</span>
+        <b>
+          {cls.emoji} {cls.name}
+        </b>
+        <span>สังกัด</span>
+        <b>{guild ? loc(life, guild.name) : "ไร้สังกัด"}</b>
+      </div>
+      <div className="exp">
+        <div className="bar">
+          <div className="fill" style={{ width: `${progress * 100}%` }} />
+        </div>
+        <span className="small muted">{p.rank >= 8 ? "ถึงจุดสูงสุดของวิชาแล้ว" : progress >= 1 ? "พร้อมทะลวงขั้นถัดไป" : progress >= 0.6 ? "ใกล้แตะขั้นถัดไป" : progress >= 0.3 ? "ฝึกมาได้ครึ่งทางของขั้นนี้" : "เพิ่งก้าวเข้าขั้นนี้"}</span>
+      </div>
+      {factor < 1 && <p className="small danger-text">บาดแผลและความพิการทำให้ฝีมือเหลือราว {Math.round(factor * 100)}% ของที่ควรเป็น</p>}
+      <div className="section-title">วิชาที่รู้</div>
+      {skillsOf(life).map((s) => (
+        <details className="skill-card" key={s.name}>
+          <summary>
+            <span className="skill-name">{s.name}</span>
+            <span className="skill-meta">{masteryWord(s.mastery)}</span>
+          </summary>
+          <p className="small">{s.desc}</p>
+        </details>
+      ))}
+    </div>
+  );
+}
+
 export function PowerTab({ life, act }: { life: Life; act: Act }) {
   const p = life.power;
   const ui = UI[life.worldId ?? "hunter"];
+  if (isRealistic(life.worldId)) return <MurimPowerTab life={life} act={act} />;
   return (
     <div className="tab-content">
       {p ? <StatusWindow life={life} act={act} /> : life.sys ? <SystemWindow life={life} act={act} /> : <Dormant life={life} />}
@@ -201,6 +261,111 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
         )}
       </ul>
     </div>
+  );
+}
+
+/** แท็บวิชาของยุทธภพ: บันทึกวิชา · ฝึก/ปิดด่าน · สำนัก · งานยุทธภพ · ฉายา · พรสวรรค์ที่รู้ตัวแล้ว */
+function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
+  const p = life.power;
+  const known = life.talents.filter((t) => t.revealed);
+  return (
+    <div className="tab-content">
+      <MartialRecord life={life} />
+      {p && <MurimActions life={life} act={act} />}
+      <MurimCard life={life} act={act} />
+      <TitlesCard life={life} act={act} />
+      {known.length > 0 && (
+        <>
+          <div className="section-title">พรสวรรค์แต่กำเนิด</div>
+          <div className="talent-row">
+            {known.map((t, i) => {
+              const info = talentById(t.id)!;
+              return (
+                <div className="talent" key={i}>
+                  <div className="t-name">{info.name}</div>
+                  <div className="t-desc">{info.desc}</div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+      {(p?.items.length ?? 0) > 0 && (
+        <>
+          <div className="section-title">ของติดตัว</div>
+          <ul className="items">
+            {p!.items.map((it, i) => (
+              <li key={i}>🎒 {it}</li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** ฝึก · ปิดด่าน · รับงานยุทธภพ · สำนัก (ยุทธภพ) */
+function MurimActions({ life, act }: { life: Life; act: Act }) {
+  const w = worldOf(life.worldId);
+  const p = life.power!;
+  const canQuest = w.questJobs.includes(life.job?.careerId ?? "");
+  const guild = guildById(p.guild);
+  return (
+    <>
+      <div className="row">
+        <button className="btn" disabled={life.doneThisYear.includes("train")} onClick={() => act(train)}>
+          🧘 {w.labels.train}
+        </button>
+        <button className="btn" disabled={!!canSeclude(life)} title={canSeclude(life)} onClick={() => act((l) => startSeclusion(l))}>
+          {isSecluded(life) ? `⛩️ ปิดด่านอยู่ (ถึงอายุ ${life.flags.secludeUntil})` : `⛩️ ปิดด่าน ${SECLUSION_YEARS} ปี`}
+        </button>
+      </div>
+      <div className="section-title">งานยุทธภพ · เหลือ {Math.max(0, gatesLeft(life))} ครั้งในปีนี้</div>
+      {!canQuest && <p className="muted small">ต้องเป็นศิษย์สำนัก จอมยุทธ์พเนจร หรือนักฆ่ารับจ้างก่อน (แท็บ 💼 อาชีพ)</p>}
+      {Array.from({ length: Math.min(p.rank + 2, RANKS.length) }, (_, r) => r).map((r) => {
+        const blocked = canEnterGate(life, r);
+        return (
+          <div className="job" key={r}>
+            <div className="job-main">
+              <div className="job-name">งานระดับ{rankLabel(life, r)}</div>
+              <div className="job-sub">
+                สำเร็จ {Math.round(fightOdds(life, r) * 100)}% · <span className={survivalOdds(life, r) < 0.8 ? "danger-text" : ""}>รอด {Math.round(survivalOdds(life, r) * 100)}%</span>
+              </div>
+            </div>
+            <button className="btn small" disabled={!!blocked} title={blocked} onClick={() => act((l) => enterGate(l, r))}>
+              รับงาน
+            </button>
+          </div>
+        );
+      })}
+      <div className="section-title">สำนัก</div>
+      {guild ? (
+        <div className="job">
+          <div className="job-main">
+            <div className="job-name">{loc(life, guild.name)}</div>
+            <div className="job-sub">{guild.desc}</div>
+          </div>
+          <button className="btn small ghost" onClick={() => act((l) => { l.power!.guild = undefined; if (l.job?.careerId === "disciple") l.job = undefined; return { text: `คุณคืนป้ายศิษย์แล้วลงเขาจาก${guild.name}` }; })}>
+            ออก
+          </button>
+        </div>
+      ) : (
+        guildsFor(life).map((g) => {
+          const locked = g.minRank > p.rank;
+          return (
+            <div className={`job ${locked ? "locked" : ""}`} key={g.id}>
+              <div className="job-main">
+                <div className="job-name">{loc(life, g.name)}</div>
+                <div className="job-sub">{locked ? `🔒 ต้องฝีมือขั้น${rankLabel(life, g.minRank)}ขึ้นไป` : loc(life, g.desc)}</div>
+              </div>
+              <button className="btn small" disabled={locked} onClick={() => act((l) => { l.power!.guild = g.id; l.job = { careerId: "disciple", level: 1, performance: 50, years: 0 }; return { text: `คุณคุกเข่าคารวะ และได้เป็นศิษย์แห่ง${g.name}`, kind: "good" }; })}>
+                ฝากตัว
+              </button>
+            </div>
+          );
+        })
+      )}
+    </>
   );
 }
 

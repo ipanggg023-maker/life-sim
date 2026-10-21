@@ -1,3 +1,4 @@
+import { woundFrom } from "../../engine/body";
 import type { Ctx, GameEvent, Outcome } from "../../engine/events";
 import { kill, runEvent } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
@@ -35,7 +36,7 @@ function hurt(l: Life, qRank: number, min: number, max: number): string {
     kill(l, `บาดเจ็บสาหัสระหว่างภารกิจระดับ${rankLabel(l, qRank)}`);
     return " บาดแผลสาหัสเกินกว่าจะรอด…";
   }
-  return ` (สุขภาพ -${dmg})`;
+  return ` (สุขภาพ -${dmg})` + woundFrom(l, dmg, `บาดเจ็บระหว่างภารกิจ`);
 }
 
 export function startQuest(life: Life, qRank: number) {

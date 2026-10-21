@@ -1,3 +1,4 @@
+import { woundFrom } from "../../engine/body";
 import type { Ctx, GameEvent, Outcome } from "../../engine/events";
 import { kill, openHiddenSlot } from "../../engine/game";
 import { chance, randInt } from "../../engine/rng";
@@ -42,7 +43,7 @@ function damage(l: Life, min: number, max: number, cause: string): string {
     kill(l, cause);
     return " …ร่างกายคุณทนไม่ไหวอีกต่อไป";
   }
-  return ` (สุขภาพ -${d})`;
+  return ` (สุขภาพ -${d})` + woundFrom(l, d, cause);
 }
 
 /** ฉากเลือกสายพลัง ใช้ร่วมกันทุกตอนพิเศษที่ทำให้ตื่นพลัง — ctx.rank, ctx.offer */

@@ -12,6 +12,7 @@ import type { YearReport } from "../engine/report";
 import { worldSummary } from "../content/murim/life/world";
 import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
 import { goalLine } from "../content/murim/life/goals";
+import { disabilities, openInjuries } from "../engine/body";
 import { displayName, loc, money } from "../engine/util";
 
 export type TabId = "career" | "people" | "power" | "activities" | "phone" | "soul";
@@ -242,6 +243,16 @@ export function MainScreen({
             {displayName(life)} <span className={`gender-tag ${life.gender}`}>{life.gender === "m" ? "♂" : "♀"}</span>
           </div>
           {title && <div className="title-tag">「{title.name}」</div>}
+          {murim && (disabilities(life).length > 0 || openInjuries(life).length > 0) && (
+            <div className="injury-row">
+              {disabilities(life).map((d) => (
+                <span className="injury-chip" key={d}>
+                  {d}
+                </span>
+              ))}
+              {openInjuries(life).length > 0 && <span className="injury-chip">🤕 แผลยังไม่หาย {openInjuries(life).length}</span>}
+            </div>
+          )}
           <div className="sub">
             {subtitle} · {money(life, life.money)}
             {life.debt > 0 && <span className="debt"> · หนี้ {money(life, life.debt)}</span>}
@@ -295,7 +306,7 @@ export function MainScreen({
           {TABS.filter((t) => t.id !== "phone" || hasPhone(life)).map((t) => (
             <button key={t.id} className="tab" onClick={() => onTab(t.id)}>
               <span className="tab-emoji">{t.id === "soul" && isRealistic(life.worldId) ? "📜" : t.emoji}</span>
-              <span>{t.id === "soul" && isRealistic(life.worldId) ? "บันทึก" : t.label}</span>
+              <span>{isRealistic(life.worldId) ? (t.id === "soul" ? "บันทึก" : t.id === "power" ? "วิชา" : t.label) : t.label}</span>
             </button>
           ))}
         </nav>
