@@ -207,7 +207,7 @@ export function E(id: string, ages: [number, number], text: Txt, choices: Choice
     maxAge: ages[1],
     weight: o.weight ?? 8,
     maxTimes: o.maxTimes ?? 1,
-    when: o.when,
+    when: mergeWhen(o.when, o.prepare as NeedPrep | undefined),
     prepare: o.prepare,
     forced: o.forced,
     title: o.title,
@@ -225,7 +225,7 @@ export function A(id: string, ages: [number, number], text: Txt, fx: Fx | ((l: L
     maxAge: ages[1],
     weight: o.weight ?? 8,
     maxTimes: o.maxTimes ?? 1,
-    when: o.when,
+    when: mergeWhen(o.when, o.prepare as NeedPrep | undefined),
     prepare: o.prepare,
     forced: o.forced,
     title: o.title,
@@ -241,10 +241,18 @@ export const S = (text: Txt, choices: Choice[], title?: string) => ({ title, tex
 
 const aliveOf = (l: Life, rels: Relation[]) => l.people.filter((p) => p.alive && rels.includes(p.relation));
 /** เลือกคนในครอบครัว/ความสัมพันธ์ที่ยังมีชีวิต ใส่ ctx.pid */
-export const withPerson = (rels: Relation[], f: (p: Person, l: Life) => boolean = () => true) => ({
-  when: (l: Life) => aliveOf(l, rels).some((p) => f(p, l)),
-  prepare: (l: Life): Ctx => { const ps = aliveOf(l, rels).filter((p) => f(p, l)); return { pid: pick(l, ps).id }; },
-});
+export const withPerson = (rels: Relation[], f: (p: Person, l: Life) => boolean = () => true) => {
+  const when = (l: Life) => aliveOf(l, rels).some((p) => f(p, l));
+  // prepare จำเงื่อนไขของตัวเองไว้ — E/A จะบังคับเงื่อนไขนี้เสมอ แม้ event จะเขียน when ของตัวเองทับ
+  const prepare = Object.assign((l: Life): Ctx => { const ps = aliveOf(l, rels).filter((p) => f(p, l)); return { pid: pick(l, ps).id }; }, { need: when });
+  return { when, prepare };
+};
+type NeedPrep = ((l: Life) => Ctx) & { need?: (l: Life) => boolean };
+const mergeWhen = (when: ((l: Life) => boolean) | undefined, prepare: NeedPrep | undefined) => {
+  const need = prepare?.need;
+  if (!need) return when;
+  return when ? (l: Life) => need(l) && when(l) : need;
+};
 export const hasKin = (l: Life, r: Relation) => people(l, r).length > 0;
 export const poor = (l: Life) => l.wealth === "poor";
 export const rich = (l: Life) => l.wealth === "rich" || l.wealth === "elite";

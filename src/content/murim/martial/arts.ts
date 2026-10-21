@@ -150,7 +150,7 @@ export const QI_NEED = [0, 3, 24, 55, 85, 120, 160, 210, 999];
 export const rootOf = (l: Life) => Number(l.flags.mwRoot ?? l.power?.rank ?? 0);
 
 /** อายุขัยที่ยืดออกตามขั้นฝีมือ (ปี) */
-export const REALM_LIFE = [0, 0, 0, 2, 10, 18, 30, 60, 100];
+export const REALM_LIFE = [0, 0, 0, 2, 8, 15, 25, 40, 60];
 
 /** ทุกปี: ลมปราณสะสมเอง · วิชาขัดกันอาจแปรปรวน · ความเข้าใจลึกขึ้นตามวัย */
 export function tickMartial(l: Life) {

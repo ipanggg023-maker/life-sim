@@ -11,6 +11,7 @@ export { GOAL_EVENTS } from "./goals";
 export { NPC_EVENTS } from "./npcEvents";
 export { DUEL_EVENTS } from "./duel";
 export { BODY_EVENTS } from "./bodyEvents";
+export { HOUSEHOLD_EVENTS } from "./household";
 
 yearHooks.push(applyPlan, tickWorld, tickNpcs, tickGoals, tickBody);
 kinDeathHooks.push((l, p, violent, killer) => {

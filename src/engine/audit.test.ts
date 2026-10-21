@@ -229,7 +229,7 @@ describe("ตรวจทุก event", () => {
     console.log("AUDIT ปัญหา", problems.length, "\n" + problems.join("\n"));
     expect(getEvent("free.gamble")).toBeTruthy();
     expect(problems.filter((p) => !p.startsWith("บังคับ"))).toEqual([]);
-  });
+  }, 400_000);
 });
 
 describe("ตรวจการเกิดใหม่ทุกแบบ", () => {

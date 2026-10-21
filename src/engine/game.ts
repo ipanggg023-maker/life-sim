@@ -689,8 +689,14 @@ export function propose(life: Life, p: Person): Outcome {
   if (life.doneThisYear.includes("propose")) return { text: "รอปีหน้าค่อยลองใหม่นะ" };
   life.doneThisYear.push("propose");
   if (chance(life, clamp((p.bond - 30) / 60, 0.05, 0.95))) {
+    const already = life.people.filter((x) => x.alive && x.relation === "spouse" && x.id !== p.id);
     p.relation = "spouse";
     if (npcOn(life)) remember(life, p, "married", "แต่งงานกัน", 3, { love: 10, trust: 8, loyalty: 20 });
+    // ยุทธภพ: มีคู่สมรสอยู่แล้ว = เข้าบ้านเป็นฮูหยินรอง และคนเดิมจดจำเรื่องนี้
+    if (npcOn(life) && already.length) {
+      p.tags = [...(p.tags ?? []), "secondary"];
+      for (const w of already) remember(life, w, "second_wife", "สามีรับคนใหม่เข้าบ้าน", 3, { trust: -12, jealousy: 25, love: -8 });
+    }
     const cost = { poor: 50_000, middle: 250_000, rich: 1_500_000, elite: 20_000_000 }[life.wealth];
     addMoney(life, -cost);
     addStat(life, "happiness", 20);
