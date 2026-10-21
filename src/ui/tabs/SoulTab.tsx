@@ -14,6 +14,7 @@ import { displayName, money } from "../../engine/util";
 import { saveSnapshot, type Bundle } from "../../save";
 import type { Act } from "../App";
 import { SaveTransfer } from "../SaveTransfer";
+import { CloudCard } from "../CloudCard";
 import { SeriesCover } from "../SeriesCover";
 
 export function SoulTab({
@@ -145,7 +146,10 @@ export function SoulTab({
       <CollectionCard life={life} soul={soul} />
       <TalentBookCard life={life} soul={soul} />
 
-      <div className="section-title">ย้ายเซฟไปอีกเครื่อง</div>
+      <div className="section-title">บัญชี & ซิงก์เซฟ</div>
+      <CloudCard bundle={{ v: 1, soul, life, graveyard }} onImport={onImport} />
+
+      <div className="section-title">ย้ายเซฟไปอีกเครื่อง (QR / รหัส)</div>
       <SaveTransfer life={life} soul={soul} graveyard={graveyard} onImport={onImport} />
 
       <div className="section-title">ตัวเลือก</div>

@@ -593,6 +593,11 @@ p { margin: 0.25em 0; }
 .qr { display: block; width: 220px; max-width: 100%; margin: 10px auto; border-radius: 8px; background: #fff; }
 .paste { width: 100%; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px; color: var(--text); font-family: ui-monospace, monospace; font-size: 12px; }
 label.btn { display: inline-flex; align-items: center; cursor: pointer; }
+.field { display: block; width: 100%; box-sizing: border-box; margin-bottom: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; color: var(--text); font-size: 16px; }
+.card.cloud .row { flex-wrap: wrap; }
+.login { width: 100%; max-width: 420px; text-align: center; }
+.login .card { text-align: left; }
+.login-title { font-size: 26px; margin: 0 0 6px; }
 
 /* ── แอนิเมชัน ── */
 .fade-in { animation: fadeIn 0.4s ease; }

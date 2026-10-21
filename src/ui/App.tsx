@@ -30,6 +30,8 @@ import {
 } from "../save";
 import { BirthScreen } from "./BirthScreen";
 import { DeathScreen, type RebirthChoice } from "./DeathScreen";
+import { cancelUpload, cloudEnabled, currentUser, downloadSave, isGuest, newerInCloud, onAuthChange, scheduleUpload, setGuest, setMark } from "../cloud";
+import { LoginScreen } from "./CloudCard";
 import { EventModal, OutcomeModal, type Resolved } from "./EventModal";
 import { MainScreen, type TabId } from "./MainScreen";
 import { Sheet } from "./Sheet";
@@ -82,6 +84,43 @@ export function App() {
       }
     })();
   }, []);
+
+  // บัญชีคลาวด์: ล็อกอินอยู่ → อัปโหลดอัตโนมัติ · คลาวด์มีเซฟใหม่กว่า (เล่นจากอีกเครื่อง) → ถามก่อนโหลดมาแทน
+  // undefined = ยังตรวจไม่เสร็จ · null = ยังไม่ล็อกอิน
+  const [user, setUser] = useState<string | null | undefined>(cloudEnabled ? undefined : null);
+  const [guest, setGuestState] = useState(isGuest);
+  useEffect(() => {
+    if (!cloudEnabled) return;
+    let off = () => {};
+    void currentUser().then((u) => setUser(u?.id ?? null), () => setUser(null));
+    void onAuthChange((u) => setUser(u?.id ?? null)).then((f) => (off = f));
+    return () => off();
+  }, []);
+  // ตรวจคลาวด์ก่อนเสมอ แล้วค่อยเริ่มอัปโหลด — กันเซฟว่างของเครื่องใหม่ไปทับเซฟจริงบนคลาวด์
+  const [cloudChecked, setCloudChecked] = useState<string | null>(null);
+  useEffect(() => {
+    if (!user || loading) return;
+    // ล็อกอินแล้ว: ออกจากระบบครั้งหน้าจะกลับมาที่หน้าเข้าสู่ระบบ
+    setGuest(false);
+    setGuestState(false);
+    let live = true;
+    void (async () => {
+      const info = await newerInCloud().catch(() => null);
+      const r = info ? await downloadSave().catch(() => null) : null;
+      if (!live) return;
+      if (r) {
+        cancelUpload();
+        setMark(r.updatedAt); // ถามครั้งเดียว — ถ้าไม่โหลด เซฟเครื่องนี้จะอัปโหลดทับรอบถัดไป
+        setPendingImport(r.bundle);
+      }
+      setCloudChecked(user);
+    })();
+    return () => { live = false; };
+  }, [user, loading]);
+  useEffect(() => {
+    if (user && cloudChecked === user && soul && !pendingImport) scheduleUpload({ v: 1, soul, life: life ?? undefined, graveyard });
+    if (pendingImport) cancelUpload();
+  }, [user, cloudChecked, soul, life, graveyard, pendingImport]);
 
   // ธีมเปลี่ยนตามโลก (หน้าต่างระบบสีฟ้าเหมือนเดิมทุกโลก)
   useEffect(() => {
@@ -226,7 +265,21 @@ export function App() {
     [life, soul, birth, commit, commitSoul],
   );
 
-  if (loading || !soul) return <div className="app center">กำลังโหลด…</div>;
+  if (loading || !soul || user === undefined) return <div className="app center">กำลังโหลด…</div>;
+
+  // หน้าเข้าสู่ระบบ: ก่อนเข้าเกมทุกครั้ง จนกว่าจะล็อกอินหรือเลือกเล่นแบบไม่มีบัญชี
+  if (cloudEnabled && !user && !guest) {
+    return (
+      <div className="app center">
+        <LoginScreen
+          onGuest={() => {
+            setGuest(true);
+            setGuestState(true);
+          }}
+        />
+      </div>
+    );
+  }
 
   if (pendingImport) {
     return (
