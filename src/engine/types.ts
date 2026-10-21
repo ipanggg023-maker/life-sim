@@ -207,6 +207,8 @@ export interface Life {
   phone?: PhoneState;
   /** สภาพโลกยุทธภพ: ยุค แรงกดดัน วิกฤต (MURIM_PLAN Phase 1) */
   mw?: import("../content/murim/life/world").MurimWorld;
+  /** สรุปผลของปีล่าสุด (แสดงใต้บันทึก) */
+  report?: import("./report").YearReport;
 }
 
 export interface Memory {

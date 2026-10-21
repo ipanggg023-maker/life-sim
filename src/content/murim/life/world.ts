@@ -183,7 +183,7 @@ export function tickWorld(l: Life) {
     }
   } else {
     const start: CrisisId | undefined =
-      w.food < 25 ? "famine" : w.unrest > 78 ? "rebellion" : w.cult > 80 ? "cult" : chance(l, 0.015) ? "plague" : undefined;
+      w.food < 22 ? "famine" : w.unrest > 80 ? "rebellion" : w.cult > 80 ? "cult" : chance(l, 0.015) ? "plague" : undefined;
     if (start && l.age >= 1) {
       w.crisis = { id: start, stage: 0, since: yr };
       log(l, `【${CRISIS[start].name} · ${CRISIS_STAGES[0]}】 ${CRISIS[start].warn}`, "normal");
@@ -192,7 +192,7 @@ export function tickWorld(l: Life) {
 
   // เปลี่ยนยุค
   const next = nextEra(w);
-  if (next !== w.era && yr - w.eraSince >= 3) {
+  if (next !== w.era && yr - w.eraSince >= 6) {
     w.era = next;
     w.eraSince = yr;
     log(l, `🏮 แผ่นดินเข้าสู่${ERA[next].name} — ${ERA[next].desc}`, "milestone");

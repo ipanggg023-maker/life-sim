@@ -8,6 +8,9 @@ import { secretQuestStatus } from "../content/shared/systemQuest";
 import { hasPhone } from "../content/phone";
 import { STAT_LABEL } from "../engine/game";
 import type { Life, LogEntry, StatKey } from "../engine/types";
+import type { YearReport } from "../engine/report";
+import { worldSummary } from "../content/murim/life/world";
+import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
 import { displayName, loc, money } from "../engine/util";
 
 export type TabId = "career" | "people" | "power" | "activities" | "phone" | "soul";
@@ -110,13 +113,97 @@ export function Comments({ items }: { items: { user: string; text: string; likes
   );
 }
 
+/** สภาพบ้านเมืองตอนนี้ (ยุค · ราคาข้าว · วิกฤต) */
+function WorldStrip({ life }: { life: Life }) {
+  const w = worldSummary(life);
+  return (
+    <div className={`world-strip ${w.crisis ? "crisis" : ""}`} title={w.desc}>
+      🏮 {w.era} · ข้าว ×{w.price.toFixed(2)}
+      {w.crisis && <b> · ⚠️ {w.crisis}</b>}
+    </div>
+  );
+}
+
+/** สรุปผลของปีที่เพิ่งผ่านไป */
+function ReportCard({ report }: { report: YearReport }) {
+  return (
+    <div className="report-card">
+      <div className="report-head">สรุป{report.to - report.from > 1 ? ` ${report.to - report.from} ปี (อายุ ${report.from}–${report.to})` : "ปีที่ผ่านมา"}</div>
+      <div className="report-lines">
+        {report.lines.map((x, i) => (
+          <span key={i} className={`report-chip ${x.tone}`}>
+            {x.text}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** ความเสี่ยงที่รู้ได้ก่อนข้ามเวลา */
+function skipRisks(life: Life): string[] {
+  const r: string[] = [];
+  if (life.stats.health < 35) r.push("สุขภาพย่ำแย่ — อาจตายระหว่างนี้");
+  if (life.money < 0 || life.debt > Math.max(0, life.money)) r.push("เงินติดลบ/หนี้มาก");
+  const w = worldSummary(life);
+  if (w.crisis) r.push(`บ้านเมืองกำลังเผชิญ${w.crisis}`);
+  if (life.age >= 60) r.push("อายุมากแล้ว");
+  if (life.people.some((p) => p.alive && (p.relation === "father" || p.relation === "mother") && p.age >= 70)) r.push("พ่อแม่ชราภาพ");
+  return r;
+}
+
+/** แผนหลักของปี + ข้ามเวลา */
+function PlanBar({ life, onAgeUp }: { life: Life; onAgeUp: (years?: number) => void }) {
+  const list = plansFor(life);
+  const cur = currentPlan(life);
+  const [, force] = useState(0);
+  if (life.age < 3) return null;
+  return (
+    <div className="plan-bar">
+      <label className="plan-pick">
+        <span className="plan-label">แผนปีนี้</span>
+        <select
+          value={cur?.id ?? ""}
+          onChange={(e) => {
+            setPlan(life, e.target.value || undefined);
+            force((n) => n + 1);
+          }}
+        >
+          <option value="">🌾 ใช้ชีวิตตามปกติ</option>
+          {list.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.emoji} {p.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button
+        className="btn small ghost"
+        disabled={life.queue.length > 0}
+        onClick={() => {
+          const r = skipRisks(life);
+          if (r.length && !window.confirm(`ข้าม 3 ปี? ความเสี่ยงที่รู้ตอนนี้:\n• ${r.join("\n• ")}\n\n(จะหยุดทันทีถ้ามีเรื่องสำคัญให้ตัดสินใจ)`)) return;
+          onAgeUp(3);
+        }}
+      >
+        ⏩ 3 ปี
+      </button>
+      {cur && (
+        <div className="plan-hint">
+          ✅ {cur.pros} · ❌ {cur.cons}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function MainScreen({
   life,
   onAgeUp,
   onTab,
 }: {
   life: Life;
-  onAgeUp: () => void;
+  onAgeUp: (years?: number) => void;
   onTab: (t: TabId) => void;
 }) {
   const title = titleById(life.flags.title as string | undefined);
@@ -176,6 +263,8 @@ export function MainScreen({
         ))}
       </section>
 
+      {murim && <WorldStrip life={life} />}
+
       {quest && (
         <div className="quest-strip">
           <b>[ภารกิจลับ]</b> {quest.text} · {quest.progress} · เหลือ {quest.left} ปี
@@ -191,11 +280,13 @@ export function MainScreen({
         {groups.slice(hidden).map((g) => (
           <LogGroup key={g.age} age={g.age} entries={g.entries} />
         ))}
-        {teaser && <p className="cliffhanger">{loc(life, teaser)}</p>}
+        {!murim && teaser && <p className="cliffhanger">{loc(life, teaser)}</p>}
+        {life.report && life.report.to === life.age && life.report.lines.length > 0 && <ReportCard report={life.report} />}
       </div>
 
       <footer className="bottom">
-        <button className="age-btn" onClick={onAgeUp} disabled={life.queue.length > 0}>
+        {murim && life.alive && <PlanBar life={life} onAgeUp={onAgeUp} />}
+        <button className="age-btn" onClick={() => onAgeUp(1)} disabled={life.queue.length > 0}>
           ＋ อายุ 1 ปี
         </button>
         <nav className="tabs">

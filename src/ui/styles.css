@@ -596,6 +596,21 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .field { display: block; width: 100%; box-sizing: border-box; margin-bottom: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; color: var(--text); font-size: 16px; }
 .card.cloud .row { flex-wrap: wrap; }
 .path.locked { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Phase 1: สภาพโลก · สรุปปี · แผนของปี ── */
+.world-strip { margin: 0 12px 6px; padding: 4px 10px; font-size: 12px; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; }
+.world-strip.crisis { border-color: var(--bad); color: var(--text); }
+.report-card { margin: 8px 0 4px; padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; background: var(--surface); }
+.report-head { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.report-lines { display: flex; flex-wrap: wrap; gap: 4px; }
+.report-chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); }
+.report-chip.good { color: var(--good); }
+.report-chip.bad { color: var(--bad); }
+.plan-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 6px; }
+.plan-pick { flex: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.plan-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.plan-pick select { flex: 1; min-width: 0; background: var(--surface-2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 14px; }
+.plan-hint { width: 100%; font-size: 11px; color: var(--muted); }
 .login { width: 100%; max-width: 420px; text-align: center; }
 .login .card { text-align: left; }
 .login-title { font-size: 26px; margin: 0 0 6px; }

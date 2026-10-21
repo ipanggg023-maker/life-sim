@@ -27,6 +27,7 @@ import {
 } from "../save";
 import { BirthScreen } from "./BirthScreen";
 import { DeathScreen, type RebirthChoice } from "./DeathScreen";
+import { buildReport, snapshot } from "../engine/report";
 import { cancelUpload, cloudEnabled, currentUser, downloadSave, isGuest, newerInCloud, onAuthChange, scheduleUpload, setGuest, setMark } from "../cloud";
 import { LoginScreen } from "./CloudCard";
 import { EventModal, OutcomeModal, type Resolved } from "./EventModal";
@@ -198,13 +199,22 @@ export function App() {
     await commit(l);
   }, [soul, birthOpts, commit, commitSoul]);
 
-  const onAgeUp = useCallback(async () => {
-    if (!life) return;
-    void saveSnapshot(life); // สถานะตอนสิ้นปี — จุดที่ย้อนเวลากลับมาได้ (คัดลอกทันที เขียนลงเครื่องเบื้องหลัง)
-    ageUp(life);
-    commit(life);
-    if (life.log[life.log.length - 1]?.kind === "bad") flash();
-  }, [life, commit, flash]);
+  /** เดินเวลา n ปี — หยุดทันทีเมื่อมีเรื่องให้ตัดสินใจหรือเสียชีวิต แล้วสรุปผลรวมของช่วงนั้น */
+  const onAgeUp = useCallback(
+    async (years = 1) => {
+      if (!life) return;
+      const before = snapshot(life);
+      for (let i = 0; i < years; i++) {
+        if (!isRealistic(life.worldId)) void saveSnapshot(life); // จุดที่ย้อนเวลากลับมาได้ (โลกที่มีการย้อนเวลา)
+        ageUp(life);
+        if (!life.alive || life.queue.length) break;
+      }
+      life.report = buildReport(life, before);
+      commit(life);
+      if (life.log[life.log.length - 1]?.kind === "bad") flash();
+    },
+    [life, commit, flash],
+  );
 
   const onChoose = useCallback(
     (index: number) => {
