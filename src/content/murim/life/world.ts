@@ -24,6 +24,10 @@ export interface MurimWorld {
   /** อิทธิพลของพรรคมาร 0–100 */
   cult: number;
   crisis?: { id: CrisisId; stage: number; since: number };
+  /** สำนักและฝ่ายต่างๆ (Phase 6) */
+  fx?: import("../world/factions").Faction[];
+  /** ราชสำนัก (Phase 6) */
+  court?: import("../world/court").Court;
   /** วิกฤตที่ผ่านมาแล้ว (ปีปฏิทิน) — ใช้ในบันทึกยุทธภพ */
   past?: { id: CrisisId; year: number }[];
 }

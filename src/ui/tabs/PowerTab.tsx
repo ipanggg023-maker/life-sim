@@ -16,6 +16,8 @@ import { isRealistic, worldOf } from "../../content/worlds";
 import { combatFactor } from "../../engine/body";
 import { GRADE_NAME, TYPE_NAME, artInfo, artsOf, comprehension, masteryWord as artMastery, qiYears } from "../../content/murim/martial/arts";
 import { TRAIN_MODES, trainArt } from "../../content/murim/martial/training";
+import { STATUS_NAME, factions } from "../../content/murim/world/factions";
+import { courtSummary } from "../../content/murim/world/court";
 import type { Life, WorldId } from "../../engine/types";
 import { displayName, hasTalent, loc } from "../../engine/util";
 import type { Act } from "../App";
@@ -285,6 +287,7 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
       <MartialRecord life={life} />
       {p && <MurimActions life={life} act={act} />}
       <MurimCard life={life} act={act} />
+      <WorldCard life={life} />
       <TitlesCard life={life} act={act} />
       {known.length > 0 && (
         <>
@@ -312,6 +315,28 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
           </ul>
         </>
       )}
+    </div>
+  );
+}
+
+/** สถานการณ์ใต้หล้า: สำนักต่างๆ และราชสำนัก */
+function WorldCard({ life }: { life: Life }) {
+  const fs = factions(life);
+  return (
+    <div className="card">
+      <div className="card-title">สถานการณ์ใต้หล้า</div>
+      <p className="small">🏯 {courtSummary(life)}</p>
+      {fs.map((f) => (
+        <div className="faction-row" key={f.id}>
+          <span className="faction-name">
+            {f.name} <span className="muted small">· {STATUS_NAME[f.status]} · ประมุข {f.leader}</span>
+          </span>
+          <div className="bar small-bar">
+            <div className={`fill ${f.side === "demonic" ? "low" : f.side === "unorthodox" ? "mid" : "high"}`} style={{ width: `${f.power}%` }} />
+          </div>
+          <span className={`small ${f.rep >= 30 ? "good-text" : f.rep <= -30 ? "danger-text" : "muted"}`}>{f.rep >= 50 ? "มิตร" : f.rep >= 20 ? "เป็นมิตร" : f.rep <= -50 ? "ศัตรู" : f.rep <= -20 ? "ไม่ไว้ใจ" : "เฉยๆ"}</span>
+        </div>
+      ))}
     </div>
   );
 }
