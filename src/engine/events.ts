@@ -38,6 +38,8 @@ export interface GameEvent {
   id: string;
   /** "modern" = ทุกโลกยุคปัจจุบัน (Hunter, หอคอย …) */
   world?: WorldId | "modern";
+  /** ห้ามเกิดในโลกเหล่านี้ (เช่น ระบบ/ย้อนเวลา ในโลกแบบสมจริง) */
+  notIn?: WorldId[];
   minAge: number;
   maxAge: number;
   weight?: number | ((life: Life) => number);
@@ -63,11 +65,11 @@ export interface GameEvent {
 const registry = new Map<string, GameEvent>();
 const QUIET_WEIGHT = 25;
 
-/** world: event เกิดเฉพาะในโลกนั้น · ไม่ใส่ = ทุกโลก */
-export function registerEvents(events: GameEvent[], world?: WorldId | "modern") {
+/** world: event เกิดเฉพาะในโลกนั้น · ไม่ใส่ = ทุกโลก · notIn: โลกที่ห้ามเกิด */
+export function registerEvents(events: GameEvent[], world?: WorldId | "modern", notIn?: WorldId[]) {
   for (const e of events) {
     if (registry.has(e.id)) throw new Error(`event ซ้ำ: ${e.id}`);
-    registry.set(e.id, world && !e.world ? { ...e, world } : e);
+    registry.set(e.id, { ...e, world: e.world ?? world, notIn: notIn ? [...(e.notIn ?? []), ...notIn] : e.notIn });
   }
 }
 
@@ -106,6 +108,7 @@ const ruinsBlock = (life: Life, e: GameEvent) => e.world === "modern" && !!life.
 function eligible(life: Life, e: GameEvent, takenThisYear: Set<string>): boolean {
   if (e.manual) return false;
   if (e.world && !worldMatches(e.world, life.worldId)) return false;
+  if (e.notIn?.includes(life.worldId)) return false;
   if (ruinsBlock(life, e)) return false;
   if (life.age < e.minAge || life.age > e.maxAge) return false;
   if (takenThisYear.has(e.id)) return false;

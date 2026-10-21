@@ -11,7 +11,7 @@ import { assetsValue } from "../content/shared/business";
 import { COLLECTIBLES, foundThisLife } from "../content/shared/collection";
 import { SHOP, heirsOf, previewAward, regressTarget } from "../engine/soul";
 import type { Life, Soul, WorldId } from "../engine/types";
-import { WORLDS } from "../content/worlds";
+import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds";
 import { displayName, loc, money, people } from "../engine/util";
 
 export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}` | `heir:${string}`;
@@ -58,6 +58,9 @@ export function DeathScreen({
   };
 
   const revealed = life.talents.filter((t) => t.revealed);
+  const open = isOpenWorld(life.worldId);
+  // โลกสมจริง หรือเซฟเก่าของโลกที่ปิดไปแล้ว → ใช้ตอนจบแบบสมจริง (ไม่มีย้อนเวลา/ร้านวิญญาณ)
+  const real = isRealistic(life.worldId) || !open;
 
   return (
     <div className="death">
@@ -73,8 +76,12 @@ export function DeathScreen({
         <p className="cause">{loc(life, life.causeOfDeath ?? "")}</p>
       </div>
 
-      <SeriesCover series={series} world={life.worldId} author={displayName(life)} />
-      <Comments items={finaleComments(life)} />
+      {!real && (
+        <>
+          <SeriesCover series={series} world={life.worldId} author={displayName(life)} />
+          <Comments items={finaleComments(life)} />
+        </>
+      )}
 
       <div className="card">
         <div className="card-title">สรุปชีวิต</div>
@@ -99,6 +106,10 @@ export function DeathScreen({
         </p>
       </div>
 
+      {real ? (
+        <RealisticEnd life={life} achievements={claimed ? [] : award.achievements} open={open} busy={busy} go={go} />
+      ) : (
+        <>
       <div className="sys-window">
         <div className="sys-head">ระบบ · บันทึกวิญญาณ</div>
         <p>ชีวิตที่ {lifeNumber} สิ้นสุดลง วิญญาณของคุณยังไม่ดับสูญ…</p>
@@ -195,7 +206,7 @@ export function DeathScreen({
         <span className="path-desc">โลกเดิม หลายสิบปีต่อมา — ตระกูล{life.lastName}และสิ่งที่คุณทิ้งไว้ยังอยู่ อาจได้เกิดเป็นทายาทของตัวเอง</span>
       </button>
       <div className="section-title">✨ เกิดใหม่ในเส้นเวลาใหม่ — เลือกโลก</div>
-      {Object.values(WORLDS).map((w) => (
+      {Object.values(WORLDS).filter((w) => isOpenWorld(w.id)).map((w) => (
         <button className="path" key={w.id} disabled={busy} onClick={() => go(`world:${w.id}`)}>
           <span className="path-title">
             {w.emoji} {w.name}
@@ -207,7 +218,63 @@ export function DeathScreen({
           </span>
         </button>
       ))}
+        </>
+      )}
     </div>
+  );
+}
+
+/** ตอนจบแบบสมจริง (ยุทธภพ): ไม่มีวิญญาณ/ร้าน/ย้อนเวลา — เล่นต่อเป็นลูก หรือคนใหม่ในโลกเดิม */
+function RealisticEnd({
+  life,
+  achievements,
+  open,
+  busy,
+  go,
+}: {
+  life: Life;
+  achievements: { id: string; name: string; desc: string }[];
+  open: boolean;
+  busy: boolean;
+  go: (c: RebirthChoice) => void;
+}) {
+  const heirs = heirsOf(life);
+  return (
+    <>
+      {achievements.length > 0 && (
+        <div className="card">
+          <div className="card-title">ความสำเร็จใหม่</div>
+          {achievements.map((a) => (
+            <p className="small" key={a.id}>
+              🏆 {a.name} — {a.desc}
+            </p>
+          ))}
+        </div>
+      )}
+      <div className="section-title">เรื่องราวต่อจากนี้</div>
+      {heirs.map((c) => (
+        <button className="path" key={c.id} disabled={busy} onClick={() => go(`heir:${c.id}`)}>
+          <span className="path-title">👶 เล่นต่อเป็น{c.gender === "m" ? "ลูกชาย" : "ลูกสาว"} — {c.name}</span>
+          <span className="path-desc">
+            อายุ {c.age} ปี · รับมรดก{heirs.length > 1 ? `ส่วนแบ่ง 1/${heirs.length}` : "ทั้งหมด"} ชื่อเสียงและความแค้นของตระกูล
+          </span>
+        </button>
+      ))}
+      {open && (
+        <button className="path" disabled={busy} onClick={() => go("nextEra")}>
+          <span className="path-title">🏮 คนใหม่ในยุคถัดไป</span>
+          <span className="path-desc">โลกเดิม หลายสิบปีต่อมา — เรื่องของ{displayName(life)}กลายเป็นตำนานที่คนรุ่นหลังเล่าต่อ</span>
+        </button>
+      )}
+      {OPEN_WORLDS.filter((w) => w !== life.worldId || !open).map((w) => (
+        <button className="path" key={w} disabled={busy} onClick={() => go(`world:${w}`)}>
+          <span className="path-title">
+            {WORLDS[w].emoji} เริ่มชีวิตใหม่ใน{WORLDS[w].name}
+          </span>
+          <span className="path-desc">เริ่มต้นใหม่ทั้งหมด</span>
+        </button>
+      ))}
+    </>
   );
 }
 

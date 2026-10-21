@@ -4,7 +4,7 @@ import type { Life, LogEntry, Series } from "../engine/types";
 import { displayName, loc, log, people } from "../engine/util";
 import { classById, rankLabel } from "./hunter/power";
 import { worldFacts } from "./hunter/worldFacts";
-import { worldOf } from "./worlds";
+import { isRealistic, worldOf } from "./worlds";
 
 // ───────────────────────── ตอน / ภาค ─────────────────────────
 
@@ -102,7 +102,7 @@ function writeComments(life: Life, mood: Mood) {
  * (ฉากที่แรงมาก เช่น ตื่นพลัง ตบหน้า สูญเสีย ออกได้ทันที)
  */
 export function maybeComment(life: Life, text: string, kind: string, awakenedNow: boolean) {
-  if (!life.alive) return;
+  if (!life.alive || isRealistic(life.worldId)) return; // โลกสมจริงอ่านแบบนิยาย ไม่มีคอมเมนต์ผู้อ่าน
   const mood = moodOf(life, text, kind, awakenedNow);
   if (!mood) return;
   const strong = awakenedNow || mood === "slap" || mood === "sad" || mood === "sss" || mood === "regress";

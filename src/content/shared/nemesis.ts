@@ -1,3 +1,4 @@
+import { isRealistic } from "../worlds";
 // คู่ปรับประจำชีวิต: เจอกันตั้งแต่เด็ก โตไปพร้อมกัน ปะทะกันเป็นช่วงๆ
 // สุดท้ายกลายเป็นศัตรูที่ต้องสู้กันถึงตาย หรือเพื่อนที่เข้าใจกันที่สุด
 // บางชีวิต คู่ปรับคือ "ผู้ย้อนเวลาอีกคน" ที่จำอนาคตได้เหมือนคุณ
@@ -46,7 +47,7 @@ export const NEMESIS_EVENTS: GameEvent[] = [
       const p = createPerson(l, "rival", { age: l.age, bond: 25, job: "คู่ปรับตลอดกาล" });
       l.flags.nemesisId = p.id;
       l.flags.nemLast = l.age;
-      if (chance(l, 0.2)) l.flags.nemRegressor = true; // ผู้ย้อนเวลาอีกคน (ยังไม่เปิดเผย)
+      if (!isRealistic(l.worldId) && chance(l, 0.2)) l.flags.nemRegressor = true; // ผู้ย้อนเวลาอีกคน (ยังไม่เปิดเผย)
       return { name: shortName(p) };
     },
     text: (l, c) =>

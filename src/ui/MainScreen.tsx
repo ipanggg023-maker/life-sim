@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { careerById } from "../content/hunter/careers";
 import { rankLabel } from "../content/hunter/power";
-import { worldOf } from "../content/worlds";
+import { isRealistic, worldOf } from "../content/worlds";
 import { cliffhanger, formatLikes, parseComments } from "../content/manhwa";
 import { titleById } from "../content/titles";
 import { secretQuestStatus } from "../content/shared/systemQuest";
@@ -201,8 +201,8 @@ export function MainScreen({
         <nav className="tabs">
           {TABS.filter((t) => t.id !== "phone" || hasPhone(life)).map((t) => (
             <button key={t.id} className="tab" onClick={() => onTab(t.id)}>
-              <span className="tab-emoji">{t.emoji}</span>
-              <span>{t.label}</span>
+              <span className="tab-emoji">{t.id === "soul" && isRealistic(life.worldId) ? "📜" : t.emoji}</span>
+              <span>{t.id === "soul" && isRealistic(life.worldId) ? "บันทึก" : t.label}</span>
             </button>
           ))}
         </nav>

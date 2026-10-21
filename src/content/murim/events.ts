@@ -102,7 +102,7 @@ export const ASSESSMENT: GameEvent = {
     sect: {
       title: "รากฐานยอดเยี่ยม",
       system: true,
-      text: (l, c) => `[ระบบ] ศิลาเปล่งแสง! รากฐานระดับ【${RL(l, Number(c.rank))}】— ผู้อาวุโสหลายสำนักยื่นข้อเสนอให้คุณ`,
+      text: (l, c) => `ศิลาทดสอบเปล่งแสงจ้าจนผู้คนรอบลานต้องหรี่ตา ผู้อาวุโสประกาศเสียงดัง: "รากฐานขั้น${RL(l, Number(c.rank))}!" — ผู้อาวุโสจากหลายสำนักเดินเข้ามาหาคุณพร้อมกัน`,
       choices: [
         ...guildsFor({ worldId: "murim" })
           .filter((g) => g.id !== "alliance")
@@ -122,7 +122,7 @@ export const ASSESSMENT: GameEvent = {
     style: {
       title: "เลือกวิชา",
       system: true,
-      text: () => "[ระบบ] กรุณาเลือกเส้นทางวิชา",
+      text: () => "อาจารย์วางคัมภีร์หลายเล่มลงตรงหน้า \"วิชามีหลายสาย แต่ชีวิตคนเรามีเวลาให้ฝึกจนถึงที่สุดได้เพียงสายเดียว — เลือกเถิด\"",
       choices: styleChoices((l, c, id) => {
         const r = Number(c.rank);
         awaken(l, r, id);
@@ -705,9 +705,9 @@ const MUNDANE: GameEvent[] = [
     minAge: 8,
     maxAge: 80,
     weight: 4,
-    text: () => "พระธุดงค์รูปหนึ่งหยุดมองหน้าคุณที่ตลาด \"โยมมีดวงชะตาแปลกนัก ดูเหมือนเคยเกิดมาแล้วหลายครั้ง\"",
+    text: () => "พระธุดงค์รูปหนึ่งหยุดมองหน้าคุณที่ตลาด \"โยมมีดวงชะตาแปลกนัก กรรมเก่าหนัก แต่บุญก็ไม่น้อย\"",
     choices: [
-      { label: "ขอให้ท่านทำนายต่อ", run: (l) => { addStat(l, "luck", 2); return sys("\"วิญญาณโยมแบกความทรงจำของหลายโลก… อย่าลืมว่าชาตินี้ก็มีคนที่โยมต้องปกป้อง\""); } },
+      { label: "ขอให้ท่านทำนายต่อ", run: (l) => { addStat(l, "luck", 2); return sys("\"สิ่งที่โยมตามหาอยู่ไกล แต่คนที่โยมต้องปกป้องอยู่ใกล้นิดเดียว… อย่าให้อย่างแรกทำให้เสียอย่างหลัง\""); } },
       { label: "ถวายเงินแล้วเดินจากไป", run: (l) => { addMoney(l, -100); addStat(l, "happiness", 3); return meh("พระยิ้มให้แล้วเดินจากไปโดยไม่พูดอะไรอีก"); } },
     ],
   },
@@ -842,9 +842,9 @@ const LEGACY: GameEvent[] = [
     minAge: 8,
     maxAge: 80,
     weight: (l) => (l.legacy ? 10 : 0),
-    text: (l) => `คุณเดินผ่านหอบรรพชนของตระกูล${l.legacy!.lastName} ป้ายวิญญาณแผ่นใหญ่ที่สุดสลักชื่อ "${l.legacy!.founderName}" — ชื่อของคุณในชาติก่อน`,
+    text: (l) => `คุณเดินผ่านหอบรรพชนของตระกูล${l.legacy!.lastName} ป้ายวิญญาณแผ่นใหญ่ที่สุดสลักชื่อ "${l.legacy!.founderName}" — คนที่คุณได้ยินเรื่องเล่ามาตั้งแต่เด็ก`,
     choices: [
-      { label: "จุดธูปให้ตัวเอง", run: (l) => { addStat(l, "happiness", 5); addStat(l, "luck", 2); return sys("ควันธูปม้วนเป็นวงกลมรอบตัวคุณ เหมือนบรรพชนจำคุณได้"); } },
+      { label: "จุดธูปคารวะ", run: (l) => { addStat(l, "happiness", 5); addStat(l, "luck", 2); return sys("ควันธูปม้วนเป็นวงกลมรอบตัวคุณ ผู้เฝ้าหอบอกว่าท่านผู้นั้นคงพอใจที่ยังมีคนจำได้"); } },
       { label: "แก้ลำดับรุ่นที่จารึกผิด", run: (l) => { addFame(l, 1); return meh("ผู้เฝ้าหอโกรธจนหนวดสั่น"); } },
     ],
   },
@@ -856,7 +856,7 @@ const LEGACY: GameEvent[] = [
     prepare: (l) => { const p = createPerson(l, "friend", { age: l.age + randInt(l, -3, 3), bond: 35, lastName: l.legacy!.lastName }); return { id: p.id, name: shortName(p) }; },
     text: (l, c) => `${c.name}ทายาทตระกูล${l.legacy!.lastName}ที่ตกอับ ถูกสำนักคู่อริรังแกกลางตลาด`,
     choices: [
-      { label: "ช่วยลูกหลานของตัวเอง", tone: "special", run: (l, c) => { const p = l.people.find((x) => x.id === c.id); if (p) p.bond = 85; addFame(l, 4); return good(`${c.name}คุกเข่าขอบคุณ คุณลูบหัวเขาเหมือนเป็นหลานแท้ๆ`); } },
+      { label: "ช่วยลูกหลานของตระกูลนั้น", tone: "special", run: (l, c) => { const p = l.people.find((x) => x.id === c.id); if (p) p.bond = 85; addFame(l, 4); return good(`${c.name}คุกเข่าขอบคุณ คุณลูบหัวเขาเหมือนเป็นหลานแท้ๆ`); } },
       { label: "ปล่อยไป", run: (l) => { addStat(l, "happiness", -6); return meh("ตระกูลที่คุณสร้างตกต่ำลงขนาดนี้เลยหรือ…"); } },
     ],
   },

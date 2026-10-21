@@ -4,12 +4,9 @@ import { currentScene, labelOf, type Outcome } from "../engine/events";
 import { applySoul, buildHeir, buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
 import type { Life, PastLife, Soul, WorldId } from "../engine/types";
 import { loc } from "../engine/util";
-import { WORLDS } from "../content/worlds";
+import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds";
 
-const pickWorld = () => {
-  const ids = Object.keys(WORLDS) as WorldId[];
-  return ids[Math.floor(Math.random() * ids.length)];
-};
+const pickWorld = () => OPEN_WORLDS[Math.floor(Math.random() * OPEN_WORLDS.length)];
 import {
   addToGraveyard,
   applyBundle,
@@ -218,7 +215,8 @@ export function App() {
       const choice = loc(life, labelOf(scene.choices[index], life, q.ctx));
       const out = resolveChoice(life, index);
       if (out) {
-        setResolved({ title: scene.title, prompt, choice, out: { ...out, text: loc(life, out.text) } });
+        const kind = out.kind === "system" && isRealistic(life.worldId) ? "good" : out.kind;
+        setResolved({ title: scene.title, prompt, choice, out: { ...out, kind, text: loc(life, out.text) } });
         if (out.kind === "bad") flash();
       }
       commit(life);
@@ -260,7 +258,9 @@ export function App() {
         return;
       }
       // เส้นเวลาใหม่: ผู้เล่นเลือกโลกเอง — ข้ามโลกได้ฟรี วิญญาณพาความทรงจำไปด้วย
-      await birth({ worldId: choice.slice(6) as WorldId, pastLife: pastSelfOf(life) });
+      const w = choice.slice(6) as WorldId;
+      // โลกสมจริงไม่มีความทรงจำข้ามชาติ
+      await birth({ worldId: w, pastLife: isRealistic(w) ? undefined : pastSelfOf(life) });
     },
     [life, soul, birth, commit, commitSoul],
   );
@@ -314,21 +314,23 @@ export function App() {
     return (
       <div className="app center">
         <div className="title-card">
-          <div className="sys-window">
-            <div className="sys-head">ระบบ</div>
-            <p>{soul.lives ? `วิญญาณของคุณผ่านมาแล้ว ${soul.lives} ชาติ — พร้อมเกิดใหม่หรือไม่?` : "ตรวจพบวิญญาณใหม่ — พร้อมเริ่มต้นชีวิตแรกหรือไม่?"}</p>
-          </div>
+          <h1 className="login-title">ชีวิตนับร้อยชาติ</h1>
+          <p className="muted">{soul.lives ? `ผ่านมาแล้ว ${soul.lives} ชีวิต — พร้อมเริ่มชีวิตใหม่หรือไม่?` : "พร้อมเริ่มต้นชีวิตแรกหรือไม่?"}</p>
           <div className="section-title">เลือกโลกที่จะเกิด</div>
-          {Object.values(WORLDS).map((w) => (
-            <button className="path" key={w.id} onClick={() => birth({ worldId: w.id })}>
-              <span className="path-title">
-                {w.emoji} {w.name}
-              </span>
-              <span className="path-desc">{w.tagline}</span>
-            </button>
-          ))}
+          {Object.values(WORLDS).map((w) => {
+            const open = isOpenWorld(w.id);
+            return (
+              <button className={`path ${open ? "" : "locked"}`} key={w.id} disabled={!open} onClick={() => birth({ worldId: w.id })}>
+                <span className="path-title">
+                  {w.emoji} {w.name}
+                  {!open && " · 🔒 เร็วๆ นี้"}
+                </span>
+                <span className="path-desc">{open ? w.tagline : "กำลังสร้างใหม่ให้สมจริง จะเปิดทีละโลก"}</span>
+              </button>
+            );
+          })}
           <button className="btn primary big" onClick={() => birth({ worldId: pickWorld() })}>
-            🎲 สุ่มโลก
+            เริ่มชีวิตใหม่
           </button>
         </div>
       </div>
@@ -356,7 +358,7 @@ export function App() {
       <MainScreen life={life} onAgeUp={onAgeUp} onTab={setTab} />
 
       {tab && !life.queue.length && !resolved && (
-        <Sheet title={TAB_TITLES[tab]} onClose={() => setTab(null)}>
+        <Sheet title={tab === "soul" && isRealistic(life.worldId) ? "บันทึก" : TAB_TITLES[tab]} onClose={() => setTab(null)}>
           {tab === "career" && <CareerTab life={life} act={act} />}
           {tab === "people" && <PeopleTab life={life} act={act} />}
           {tab === "power" && <PowerTab life={life} act={act} />}

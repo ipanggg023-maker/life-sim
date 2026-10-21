@@ -29,5 +29,7 @@ export function loadSharedEvents() {
   loaded = true;
   registerEvents(COUNTRY_EVENTS, "modern");
   registerEvents(MODERN23_EVENTS, "modern");
-  registerEvents([...RELATION_EVENTS, FRIEND_ORPHAN, ...BIZ_EVENTS, ...CLUB_EVENTS, ...LIFE23_EVENTS, ...FREE_EVENTS, ...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, ...PHONE_EVENTS, DUAL_CLASS, ...CHAIN_EVENTS]);
+  registerEvents([...RELATION_EVENTS, FRIEND_ORPHAN, ...BIZ_EVENTS, ...CLUB_EVENTS, ...LIFE23_EVENTS, ...FREE_EVENTS, ...FATE_EVENTS, ...PARTY_EVENTS, ...NEMESIS_EVENTS, ...PHONE_EVENTS, ...CHAIN_EVENTS]);
+  // ระบบ/ภารกิจลับ/ความทรงจำข้ามชาติ/ดวงดาว/คลาสที่สอง — ไม่มีในโลกแบบสมจริง
+  registerEvents([...SECRET_QUEST_EVENTS, ...PAST_LIFE_EVENTS, ...SPONSOR_EVENTS, DUAL_CLASS], undefined, ["murim"]);
 }

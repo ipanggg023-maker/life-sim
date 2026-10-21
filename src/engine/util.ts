@@ -1,5 +1,5 @@
 import { nextFloat, pick } from "./rng";
-import { worldOf } from "../content/worlds";
+import { isRealistic, worldOf } from "../content/worlds";
 import { countryMoney, countryOf, localize } from "../content/countries";
 import { passiveCheck } from "../content/passives";
 import { sysCheckBonus } from "../content/gameStats";
@@ -27,6 +27,8 @@ export function addFame(life: Life, delta: number) {
 }
 
 export function log(life: Life, text: string, kind: LogKind = "normal") {
+  // โลกสมจริงไม่มีหน้าต่างระบบ — ข้อความแบบ "ระบบ" เป็นเหตุการณ์สำคัญธรรมดา
+  if (kind === "system" && isRealistic(life.worldId)) kind = "good";
   life.log.push({ age: life.age, text: loc(life, text), kind });
 }
 
@@ -80,7 +82,10 @@ export function createPerson(
   opts: { gender?: Gender; age: number; bond?: number; lastName?: string; job?: string },
 ): Person {
   const gender = opts.gender ?? (nextFloat(life) < 0.5 ? "m" : "f");
-  const n = randomName(life, gender);
+  // กันชื่อตัวซ้ำกับคนที่รู้จักอยู่แล้ว (เช่น ลูกชื่อเดียวกับพ่อ)
+  const taken = new Set([life.firstName, ...life.people.map((p) => p.name)]);
+  let n = randomName(life, gender);
+  for (let i = 0; i < 6 && [...taken].some((t) => t === n.first || t.endsWith(n.first)); i++) n = randomName(life, gender);
   const c = countryIn(life);
   const familyFirst = !!c && countryOf(c).familyFirst;
   const person: Person = {
@@ -113,8 +118,22 @@ export function shortName(p: Person) {
   return m ? m[1] : p.name.split(" ")[0];
 }
 
-/** ส่ง life มาด้วยเพื่อบอกพี่/น้องตามอายุเทียบกับตัวเรา */
-export function relationLabel(p: Person, life?: { age: number }): string {
+/** คำเรียกแบบยุทธภพ */
+function murimLabel(p: Person): string | undefined {
+  switch (p.relation) {
+    case "father": return "ท่านพ่อ";
+    case "mother": return "ท่านแม่";
+    case "spouse": return p.gender === "m" ? "ท่านพี่ (สามี)" : "ฮูหยิน";
+    case "partner": return "คนรัก";
+    case "friend": return "สหาย";
+    case "ally": return "สหายร่วมทาง";
+  }
+}
+
+/** ส่ง life มาด้วยเพื่อบอกพี่/น้องตามอายุเทียบกับตัวเรา และใช้คำเรียกตามโลก */
+export function relationLabel(p: Person, life?: { age: number; worldId?: WorldId }): string {
+  const m = life?.worldId === "murim" ? murimLabel(p) : undefined;
+  if (m) return m;
   switch (p.relation) {
     case "father":
       return "พ่อ";

@@ -4,7 +4,7 @@ import { currentScene, getEvent, pickEvents, stillValid, type Choice, type Ctx, 
 import { chance, newSeed, nextFloat, pick, randInt, weightedPick } from "./rng";
 import type { Career } from "../content/hunter/careers";
 import type { Country, Faculty, Gender, SysStat, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
-import { worldMatches, worldOf } from "../content/worlds";
+import { isRealistic, worldMatches, worldOf } from "../content/worlds";
 import { countryOf } from "../content/countries";
 import { rollAwakenTrack } from "../content/hunter/power";
 import { awakenArc, birthArc, maybeComment, seriesOf, startChapter } from "../content/manhwa";
@@ -422,7 +422,8 @@ export function openHiddenSlot(life: Life, reason: string) {
   if (!hidden) return;
   revealTalent(life, hidden.id);
   const info = talentById(hidden.id)!;
-  log(life, `${reason} — ช่องลับถูกปลดล็อก: 「${info.name}」 (${info.desc})`, "system");
+  if (isRealistic(life.worldId)) log(life, `${reason === "ตรวจพบภาวะใกล้ตาย" ? "หลังรอดจากความตาย" : reason === "ครบเงื่อนไขอายุ" ? "เมื่อโตเต็มวัย" : reason} คุณค้นพบสิ่งที่ซ่อนอยู่ในตัวเอง: 「${info.name}」 — ${info.desc}`, "good");
+  else log(life, `${reason} — ช่องลับถูกปลดล็อก: 「${info.name}」 (${info.desc})`, "system");
 }
 
 function checkHiddenTalent(life: Life) {

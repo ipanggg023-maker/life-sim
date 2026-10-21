@@ -268,6 +268,14 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
 
 export const worldOf = (id: WorldId | undefined) => WORLDS[id ?? "hunter"];
 
+/** โลกที่เปิดให้เกิดใหม่ได้ตอนนี้ — ทำทีละโลกให้ครบก่อน (MURIM_PLAN §18.10) · เซฟเก่าของโลกที่ปิดยังเล่นต่อจนจบชีวิตได้ */
+export const OPEN_WORLDS: WorldId[] = ["murim"];
+export const isOpenWorld = (id: WorldId) => OPEN_WORLDS.includes(id);
+
+/** โลกแบบสมจริง: ไม่มีหน้าต่างระบบ ไม่ย้อนเวลา ไม่ข้ามโลก ไม่มีร้านวิญญาณ ไม่มีคอมเมนต์ผู้อ่าน */
+const REALISTIC: WorldId[] = ["murim"];
+export const isRealistic = (id: WorldId | undefined) => REALISTIC.includes(id ?? "hunter");
+
 /**
  * ของที่ผูกกับโลก (อาชีพ/กิจกรรม/event) ใช้ได้ในโลกนี้ไหม
  * ไม่ระบุ หรือ "modern" = ใช้ได้ทุกโลกยุคปัจจุบัน

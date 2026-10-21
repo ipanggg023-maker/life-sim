@@ -19,7 +19,7 @@ import {
   survivalOdds,
   trackOf,
 } from "../hunter/power";
-import { worldOf } from "../worlds";
+import { isRealistic, worldOf } from "../worlds";
 import { startArc } from "../manhwa";
 
 const good = (text: string, next?: string): Outcome => ({ text, kind: "good", next });
@@ -51,7 +51,10 @@ function chooseStyle(title: string): GameEvent["scenes"] {
     pick: {
       system: true,
       title,
-      text: (l, c) => `[ระบบ] ${worldOf(l.worldId).labels.rank}:【${RL(l, Number(c.rank))}】 — กรุณาเลือกเส้นทาง`,
+      text: (l, c) =>
+        isRealistic(l.worldId)
+          ? `ผู้อาวุโสตรวจชีพจรของคุณอยู่นาน "รากฐานขั้น${RL(l, Number(c.rank))}… พอจะเดินได้หลายเส้นทาง เลือกเอาเองเถิดว่าจะฝึกสายไหน"`
+          : `[ระบบ] ${worldOf(l.worldId).labels.rank}:【${RL(l, Number(c.rank))}】 — กรุณาเลือกเส้นทาง`,
       choices: CLASSES.map((cls) => cls.id).map((id) => ({
         label: `${classById(id).emoji} ${classById(id).name} — ${classById(id).desc}`,
         tone: ["summoner", "m_demon", "c_dark", "t_outsider"].includes(id) ? ("special" as const) : undefined,

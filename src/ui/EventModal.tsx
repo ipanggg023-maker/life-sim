@@ -3,6 +3,7 @@ import { loc } from "../engine/util";
 import { currentScene, labelOf, visibleChoices, type Outcome } from "../engine/events";
 import { choiceChance } from "../engine/game";
 import type { Life } from "../engine/types";
+import { isRealistic } from "../content/worlds";
 
 /** พิมพ์ข้อความทีละตัว แตะเพื่อข้าม */
 function useTypewriter(text: string, speed = 18) {
@@ -32,7 +33,7 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
 
   return (
     <div className="overlay modal-overlay">
-      <div className={`modal ${scene.system ? "sys-modal" : ""}`} onClick={skip}>
+      <div className={`modal ${scene.system && !isRealistic(life.worldId) ? "sys-modal" : ""}`} onClick={skip}>
         <div className="modal-head">
           <span className="modal-age">อายุ {life.age} ปี</span>
           {scene.title && <h3>{scene.title}</h3>}

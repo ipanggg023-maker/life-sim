@@ -595,6 +595,7 @@ p { margin: 0.25em 0; }
 label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .field { display: block; width: 100%; box-sizing: border-box; margin-bottom: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; color: var(--text); font-size: 16px; }
 .card.cloud .row { flex-wrap: wrap; }
+.path.locked { opacity: 0.45; cursor: not-allowed; }
 .login { width: 100%; max-width: 420px; text-align: center; }
 .login .card { text-align: left; }
 .login-title { font-size: 26px; margin: 0 0 6px; }

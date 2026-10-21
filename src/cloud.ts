@@ -72,6 +72,16 @@ export async function cloudInfo(): Promise<CloudInfo | null> {
   return { updatedAt: data.updated_at, summary: data.summary };
 }
 
+/** แจ้งหน้าจอเมื่ออัปโหลดสำเร็จ (รวมการอัปโหลดอัตโนมัติ) */
+const uploadListeners = new Set<(at: string) => void>();
+export function onUploaded(f: (at: string) => void) {
+  uploadListeners.add(f);
+  return () => void uploadListeners.delete(f);
+}
+
+/** ผลการอัปโหลดอัตโนมัติครั้งล่าสุด (ข้อความผิดพลาด หรือ null = สำเร็จ) */
+export let lastAutoError: string | null = null;
+
 export async function uploadSave(b: Bundle): Promise<string | null> {
   const user = await currentUser();
   if (!user) return "ยังไม่ได้เข้าสู่ระบบ";
@@ -81,6 +91,7 @@ export async function uploadSave(b: Bundle): Promise<string | null> {
   const { error } = await (await sb()).from("saves").upsert({ user_id: user.id, code, summary, updated_at });
   if (error) return thaiError(error.message);
   setMark(updated_at);
+  for (const f of uploadListeners) f(updated_at);
   return null;
 }
 
@@ -109,7 +120,15 @@ async function flush() {
   const b = latest;
   latest = undefined;
   busy = true;
-  try { await uploadSave(b); } catch { latest ??= b; } finally { busy = false; }
+  try {
+    lastAutoError = await uploadSave(b);
+  } catch {
+    lastAutoError = "เชื่อมต่อไม่ได้ — ตรวจอินเทอร์เน็ต";
+    latest ??= b;
+  } finally {
+    busy = false;
+  }
+  if (lastAutoError) console.warn("อัปโหลดเซฟอัตโนมัติไม่สำเร็จ:", lastAutoError);
 }
 
 /** ทิ้งงานอัปโหลดที่รออยู่ (เช่น กำลังจะโหลดเซฟจากคลาวด์มาแทน) */

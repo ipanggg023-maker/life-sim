@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { cloudEnabled, cloudInfo, currentUser, downloadSave, onAuthChange, setMark, signIn, signOut, signUp, uploadSave, type CloudInfo } from "../cloud";import type { Bundle } from "../save";
+import { cloudEnabled, cloudInfo, currentUser, downloadSave, lastAutoError, onAuthChange, onUploaded, setMark, signIn, signOut, signUp, uploadSave, type CloudInfo } from "../cloud";import type { Bundle } from "../save";
 
 const when = (iso: string) => new Date(iso).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
 
@@ -92,6 +92,8 @@ export function CloudCard({ bundle, onImport }: { bundle: Bundle; onImport: (b: 
   useEffect(() => {
     if (user) void cloudInfo().then(setInfo);
     else setInfo(null);
+    // อัปโหลดอัตโนมัติสำเร็จ → อัปเดตเวลาซิงก์บนการ์ดทันที
+    return onUploaded(() => void cloudInfo().then(setInfo));
   }, [user]);
 
   if (!cloudEnabled) return <p className="muted small">ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์ซิงก์เซฟ</p>;
@@ -162,6 +164,7 @@ export function CloudCard({ bundle, onImport }: { bundle: Bundle; onImport: (b: 
         </button>
       </div>
       <p className="small muted">เซฟอัปโหลดอัตโนมัติระหว่างเล่น (ทุก ~20 วินาที และตอนปิดแอป)</p>
+      {lastAutoError && <p className="small danger-text">อัปโหลดอัตโนมัติไม่สำเร็จ: {lastAutoError}</p>}
       {msg && <p className="small muted">{msg}</p>}
     </div>
   );

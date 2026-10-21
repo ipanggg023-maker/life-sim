@@ -205,6 +205,8 @@ export interface Life {
   sys?: SysState;
   /** มือถือ */
   phone?: PhoneState;
+  /** สภาพโลกยุทธภพ: ยุค แรงกดดัน วิกฤต (MURIM_PLAN Phase 1) */
+  mw?: import("../content/murim/life/world").MurimWorld;
 }
 
 export interface Memory {

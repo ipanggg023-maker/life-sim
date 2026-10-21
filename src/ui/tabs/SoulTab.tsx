@@ -8,7 +8,7 @@ import { ageUp, resolveChoice, STAT_LABEL, type BirthOptions } from "../../engin
 import { visibleChoices } from "../../engine/events";
 import { memoryOdds } from "../../engine/memory";
 import type { Country, Gender, Life, PastLife, Soul, Stats, Wealth, WorldId } from "../../engine/types";
-import { worldOf } from "../../content/worlds";
+import { isRealistic, worldOf } from "../../content/worlds";
 import { COLLECTIBLES, SET_BONUS, completedSets, foundThisLife } from "../../content/shared/collection";
 import { displayName, money } from "../../engine/util";
 import { saveSnapshot, type Bundle } from "../../save";
@@ -36,8 +36,18 @@ export function SoulTab({
 }) {
   const [confirm, setConfirm] = useState(false);
   const memories = life.memories ?? [];
+  const real = isRealistic(life.worldId);
   return (
     <div className="tab-content">
+      {real ? (
+        <div className="card">
+          <div className="card-title">บันทึกชีวิต</div>
+          <p>
+            ชีวิตที่ {graveyard.length + 1} · {displayName(life)} · ปี {life.birthYear}
+          </p>
+        </div>
+      ) : (
+        <>
       <div className="sys-window">
         <div className="sys-head">บันทึกวิญญาณ</div>
         <p>
@@ -76,6 +86,8 @@ export function SoulTab({
       ) : (
         <p className="muted small">ยังไม่มี — ย้อนเวลาหลังตาย แล้วสิ่งที่คุณเห็นในชาตินี้จะกลายเป็นความทรงจำ</p>
       )}
+        </>
+      )}
 
       <div className="section-title">
         ความสำเร็จ {soul.achievements.length}/{ACHIEVEMENTS.length}
@@ -109,7 +121,7 @@ export function SoulTab({
         );
       })}
 
-      {graveyard.some((g) => g.series) && (
+      {!real && graveyard.some((g) => g.series) && (
         <>
           <div className="section-title">📚 ชั้นหนังสือของวิญญาณ</div>
           <div className="shelf">

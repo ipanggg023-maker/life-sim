@@ -7,6 +7,7 @@ import { loadHunterWorld } from "../content/hunter";
 import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
 import { titlesOf } from "../content/titles";
+import { isRealistic } from "../content/worlds";
 import { ACTIVITIES, activityLocked, doActivity } from "./activities";
 import { visibleChoices } from "./events";
 import { ageUp, applyJob, createLife, pastSelfOf, resolveChoice } from "./game";
@@ -76,12 +77,13 @@ describe("M9 ปรับระบบ", () => {
   });
 
   it("วิญญาณข้ามโลก: ความทรงจำชาติก่อนกลับมาและได้วิชาจากต่างโลก", () => {
-    let dreams = 0, crossSkill = 0, knowledge = 0;
-    const N = 120;
-    for (let s = 1; s <= N; s++) {
+    let dreams = 0, crossSkill = 0, knowledge = 0, N = 0;
+    for (let s = 1; s <= 120; s++) {
+      const world = WORLDS[(s + 1) % 4];
+      if (isRealistic(world)) continue; // โลกสมจริง (ยุทธภพ) ไม่มีความทรงจำข้ามชาติ
+      N++;
       const prev = createLife({ seed: s * 31337, worldId: WORLDS[s % 4] });
       play(prev, { rng: s });
-      const world = WORLDS[(s + 1) % 4];
       const life = createLife({ seed: s * 7331, worldId: world, pastLife: pastSelfOf(prev) });
       expect(life.flags.pastWorld).toBe(prev.worldId);
       play(life, { rng: s + 99 });

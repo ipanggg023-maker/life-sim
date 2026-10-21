@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { RARITY_LABEL, talentById } from "../content/talents";
 import { wealthLabel } from "../engine/game";
-import { worldOf } from "../content/worlds";
+import { isRealistic, worldOf } from "../content/worlds";
 import { countryOf } from "../content/countries";
 import type { Life, StatKey } from "../engine/types";
 import { displayName, firstPerson, people, relationLabel, shortName } from "../engine/util";
@@ -33,11 +33,12 @@ export function BirthScreen({
   const dad = firstPerson(life, "father");
   const mom = firstPerson(life, "mother");
   const sibs = people(life, "sibling");
+  const real = isRealistic(life.worldId);
 
   return (
     <div className="birth" onClick={() => setStep(total)}>
-      <div className="sys-window">
-        <div className="sys-head">ระบบ · สุ่มการเกิด</div>
+      <div className={real ? "card" : "sys-window"}>
+        <div className={real ? "card-title" : "sys-head"}>{real ? "กำเนิด" : "ระบบ · สุ่มการเกิด"}</div>
         <p className="birth-name">
           {life.gender === "m" ? "♂" : "♀"} {displayName(life)} ("{life.nickname}")
         </p>
@@ -47,9 +48,13 @@ export function BirthScreen({
         </p>
         {life.legacy && (
           <p className="small">
-            {life.flags.descendant
-              ? `🩸 ทายาทรุ่นที่ ${life.legacy.generation + 1} ของตระกูล${life.legacy.lastName} — ตระกูลที่คุณสร้างไว้ในชาติก่อน`
-              : `🌏 ${life.birthYear - life.legacy.founderDeathYear} ปีหลังการตายของ${life.legacy.founderName} (คุณในชาติก่อน)`}
+            {real
+              ? life.flags.descendant
+                ? `🩸 ทายาทรุ่นที่ ${life.legacy.generation + 1} ของตระกูล${life.legacy.lastName} — ลูกหลานของ${life.legacy.founderName}`
+                : `🏮 ${life.birthYear - life.legacy.founderDeathYear} ปีหลังการจากไปของ${life.legacy.founderName} — ผู้คนยังเล่าเรื่องของท่านในโรงน้ำชา`
+              : life.flags.descendant
+                ? `🩸 ทายาทรุ่นที่ ${life.legacy.generation + 1} ของตระกูล${life.legacy.lastName} — ตระกูลที่คุณสร้างไว้ในชาติก่อน`
+                : `🌏 ${life.birthYear - life.legacy.founderDeathYear} ปีหลังการตายของ${life.legacy.founderName} (คุณในชาติก่อน)`}
           </p>
         )}
       </div>
@@ -57,8 +62,8 @@ export function BirthScreen({
       {step >= 1 && (
         <div className="card fade-in">
           <div className="card-title">ครอบครัว</div>
-          {dad && <p>พ่อ: {shortName(dad)} ({dad.job}) อายุ {dad.age}</p>}
-          {mom && <p>แม่: {shortName(mom)} ({mom.job}) อายุ {mom.age}</p>}
+          {dad && <p>{relationLabel(dad, life)}: {shortName(dad)} ({dad.job}) อายุ {dad.age}</p>}
+          {mom && <p>{relationLabel(mom, life)}: {shortName(mom)} ({mom.job}) อายุ {mom.age}</p>}
           {sibs.length ? (
             sibs.map((s) => <p key={s.id}>{relationLabel(s, life)}: {shortName(s)} อายุ {s.age}</p>)
           ) : (
