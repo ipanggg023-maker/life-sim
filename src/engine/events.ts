@@ -113,8 +113,12 @@ export function currentScene(q: QueuedEvent, life?: Life): Scene | undefined {
 /** โลกพังแล้ว: ชีวิตประจำวันแบบเดิม (event "modern") หายไปจนกว่าโลกจะฟื้น */
 const ruinsBlock = (life: Life, e: GameEvent) => e.world === "modern" && !!life.flags.doomed && !life.flags.rebuilt;
 
+/** ตัวกรองเพิ่มเติมจาก content (เช่น ปลดเรื่องเก่าของโลกที่เขียนใหม่) — คืน false = ห้ามเกิด */
+export const eligibilityFilters: Array<(life: Life, e: GameEvent) => boolean> = [];
+
 function eligible(life: Life, e: GameEvent, takenThisYear: Set<string>): boolean {
   if (e.manual) return false;
+  for (const f of eligibilityFilters) if (!f(life, e)) return false;
   if (e.world && !worldMatches(e.world, life.worldId)) return false;
   if (e.notIn?.includes(life.worldId)) return false;
   if (ruinsBlock(life, e)) return false;

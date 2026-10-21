@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RARITY_LABEL, talentById } from "../../content/talents";
+import { RARITY_LABEL, talentById, talentFlavor } from "../../content/talents";
 import { canEnterGate, dailyQuest, enterGate, gatesLeft, train } from "../../content/hunter/events/gates";
 import { RANKS, classById, combatPower, skillsOf, subClassOf, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
 import { breakLevel } from "../../content/murim/events";
@@ -283,7 +283,7 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
               return (
                 <div className="talent" key={i}>
                   <div className="t-name">{info.name}</div>
-                  <div className="t-desc">{info.desc}</div>
+                  <div className="t-desc">{talentFlavor(info.desc)}</div>
                 </div>
               );
             })}

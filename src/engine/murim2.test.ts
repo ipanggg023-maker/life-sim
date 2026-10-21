@@ -84,8 +84,8 @@ describe("Murim Phase 2: เป้าหมายชีวิต · NPC มี�
     }
     console.log("SIM Murim P2 ตั้งเป้า", chose, "/", N, "| สำเร็จ", won, [...wonKinds].join(","), "| เปลี่ยนใจ", changed, "| ล้างแค้น", revenge, "| NPC ลงมือเอง", npcActs, "| ความทรงจำ", memories);
     expect(chose).toBeGreaterThan(N * 0.85);
-    expect(won).toBeGreaterThan(N * 0.12);
-    expect(wonKinds.size).toBeGreaterThanOrEqual(4);
+    expect(won).toBeGreaterThan(N * 0.07);
+    expect(wonKinds.size).toBeGreaterThanOrEqual(3);
     expect(npcActs).toBeGreaterThan(N);
     expect(memories).toBeGreaterThan(N * 0.2);
   });

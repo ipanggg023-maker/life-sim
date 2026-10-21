@@ -1,5 +1,5 @@
 import { CAREERS, careerById, facultyById } from "../content/hunter/careers";
-import { HIDDEN_RARITY_ODDS, RARITY_ODDS, TALENTS, talentById } from "../content/talents";
+import { HIDDEN_RARITY_ODDS, RARITY_ODDS, TALENTS, talentById, talentFlavor } from "../content/talents";
 import { currentScene, getEvent, pickEvents, stillValid, type Choice, type Ctx, type Outcome } from "./events";
 import { chance, newSeed, nextFloat, pick, randInt, weightedPick } from "./rng";
 import type { Career } from "../content/hunter/careers";
@@ -427,7 +427,7 @@ export function openHiddenSlot(life: Life, reason: string) {
   if (!hidden) return;
   revealTalent(life, hidden.id);
   const info = talentById(hidden.id)!;
-  if (isRealistic(life.worldId)) log(life, `${reason === "ตรวจพบภาวะใกล้ตาย" ? "หลังรอดจากความตาย" : reason === "ครบเงื่อนไขอายุ" ? "เมื่อโตเต็มวัย" : reason} คุณค้นพบสิ่งที่ซ่อนอยู่ในตัวเอง: 「${info.name}」 — ${info.desc}`, "good");
+  if (isRealistic(life.worldId)) log(life, `${reason === "ตรวจพบภาวะใกล้ตาย" ? "หลังรอดจากความตาย" : reason === "ครบเงื่อนไขอายุ" ? "เมื่อโตเต็มวัย" : reason} คุณค้นพบสิ่งที่ซ่อนอยู่ในตัวเอง: 「${info.name}」 — ${talentFlavor(info.desc)}`, "good");
   else log(life, `${reason} — ช่องลับถูกปลดล็อก: 「${info.name}」 (${info.desc})`, "system");
 }
 

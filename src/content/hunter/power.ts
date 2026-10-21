@@ -597,7 +597,8 @@ export function gainExp(life: Life, amount: number) {
     p.exp -= expToNext(p.level);
     levelUp(life);
   }
-  if (p.level > before) log(life, `เลเวลอัป! Lv.${before} → Lv.${p.level}`, "system");
+  // โลกสมจริงไม่มีเลเวล — ความก้าวหน้าแสดงในบันทึกวิชาและสรุปปีแทน
+  if (p.level > before && life.worldId !== "murim") log(life, `เลเวลอัป! Lv.${before} → Lv.${p.level}`, "system");
 }
 
 /** แจกรางวัลจาก Gate และคืนข้อความสรุป */

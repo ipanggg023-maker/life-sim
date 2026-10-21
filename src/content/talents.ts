@@ -78,6 +78,8 @@ for (const t of MORE_TALENTS) {
 }
 
 export const talentById = (id: string) => TALENTS.find((t) => t.id === id);
+/** คำบรรยายแบบเรื่องเล่า (ตัดตัวเลขกลไกท้ายประโยคออก) — ใช้ในโลกสมจริง */
+export const talentFlavor = (desc: string) => desc.split(" — ")[0];
 /** พรสวรรค์ที่เปิดเผยแล้ว (ใช้คิดโบนัส) */
 export const activeTalents = (l: Life): Talent[] => l.talents.filter((x) => x.revealed).map((x) => talentById(x.id)).filter((t): t is Talent => !!t);
 

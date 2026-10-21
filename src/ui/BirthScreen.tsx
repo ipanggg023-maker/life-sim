@@ -1,5 +1,5 @@
-﻿import { useEffect, useState } from "react";
-import { RARITY_LABEL, talentById } from "../content/talents";
+import { useEffect, useState } from "react";
+import { RARITY_LABEL, talentById, talentFlavor } from "../content/talents";
 import { wealthLabel } from "../engine/game";
 import { isRealistic, worldOf } from "../content/worlds";
 import { countryOf } from "../content/countries";
@@ -85,6 +85,7 @@ export function BirthScreen({
         {talents.map((t, i) => {
           if (step < 3 + i) return null;
           const info = talentById(t.id)!;
+          if (!t.revealed && real) return null;
           if (!t.revealed)
             return (
               <div className="talent hidden fade-in" key={i}>
@@ -95,9 +96,9 @@ export function BirthScreen({
             );
           return (
             <div className={`talent ${info.rarity} fade-in`} key={i}>
-              <div className="t-rarity">{RARITY_LABEL[info.rarity]}</div>
+              {!real && <div className="t-rarity">{RARITY_LABEL[info.rarity]}</div>}
               <div className="t-name">{info.name}</div>
-              <div className="t-desc">{info.desc}</div>
+              <div className="t-desc">{real ? talentFlavor(info.desc) : info.desc}</div>
             </div>
           );
         })}
