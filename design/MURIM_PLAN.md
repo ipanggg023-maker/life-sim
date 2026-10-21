@@ -184,20 +184,9 @@ The world remembers (**บันทึกยุทธภพ** tab):
 
 ---
 
-## 11. Build order (each = one push, ask before push)
+## 11. Build order
 
-| # | Phase | Size |
-|---|---|---|
-| A | Lock other worlds; remove [ระบบ]/regression/cross-world/soul shop from murim; rewrite system texts in-world; murim relation names | M |
-| B | Stats & realms rework (internal years, comprehension, realm lifespan, realistic odds) + birth classes/regions/traits | M |
-| C | Martial techniques + **body & permanent injuries** (§15) + combat scenes (§16) + choice cards with pros/cons/% (§14) | L |
-| D | Life stages & careers (all ladders above) + yearly activities menu + festivals | L |
-| E | Relationships + **NPC feelings/memory/autonomy**: affinity, master–disciple, sworn brothers, matchmaker, multiple wives household, filial piety & mourning | L |
-| F | Factions, rankings, nicknames, own sect upgrade, **Heavenly Demon & Demonic Cult succession** | L |
-| G | Era engine + Three Kingdoms-style war era + **Emperor & imperial court** (become Emperor in chaos) | L |
-| G2 | **Demon Lord** crisis arcs + **Immortals** & ascension ending | M |
-| H | Generations & Chronicle | L |
-| I | Content flood (target 600+ murim events), balance sims, mobile check | L |
+Superseded by the merged phase plan in **§18.10** (after merging `MURIM_EXPANSION.md`).
 
 ---
 
@@ -368,3 +357,116 @@ Target: **600+ murim events** at launch of the overhaul. Each has 2–4 choices 
 ### Generational callbacks — woven into all of the above
 - Meet descendants of people you helped or wronged; your old sect asks for help; your grave; your manual found by a stranger;
   storytellers retelling your life (with exaggerations).
+
+---
+
+## 18. Merged with MURIM_EXPANSION.md (user's blueprint, 2026-10-21)
+
+`design/MURIM_EXPANSION.md` is the quality blueprint; this plan is the concrete content. Where they overlap, the rules below win.
+Its §19 rubric, §20 don'ts and §22 checklist are the acceptance bar for every phase.
+
+### 18.1 Life goals (new core — ties everything together)
+- Player and every important NPC: **1 main goal, up to 2 side goals, a fear, values, limits**.
+- Goal types: revenge · protect family · found/restore a sect · peak realm · wealth & freedom · rise at court · famous craftsman/physician/merchant ·
+  truth of my birth · keep an oath · atone/quit violence · pass on knowledge · quiet family life · become Emperor / Heavenly Demon / sect leader · ascend.
+- Each goal = start condition → visible steps → risks/costs → several endings → writes to memory, fame, relations, Chronicle.
+- Goals **change for a reason** (mother dies → healer instead of warrior; revenge turns to forgiveness when the truth surfaces).
+- Success is possible without being a top fighter.
+
+### 18.2 Year structure (replaces plain "tap +1 year")
+1. Status summary (age, health, money/debt, injuries, open threads).
+2. **Main plan for the year**: train · work · travel · run sect · family · investigate (one pick; "repeat last plan" button).
+3. Side activities (limited by time/money).
+4. World ticks (NPCs, economy, sects, court).
+5. 0–2 events from real conditions. Pacing: calm / pressure / turning point / past catches up / rare chance — not drama every year.
+6. Year result card (income, training, relations, injuries), short and expandable.
+7. Chronicle entry if important.
+8. Age up, stage change.
+- **Skip 3 years / closed-door 1–3 years**: warns of known risks first and **stops early on important events**.
+
+### 18.3 NPCs: memory, knowledge, news
+- Important NPCs (~50–150 per save) are detailed; everyone else is a light profile or an aggregate (phone performance).
+- **Weighted memories**: major (saved a life, killed a lover, betrayal, oath, took as disciple, destroyed sect) / medium (loan, duel, favor) / minor.
+  Each stores who, to whom, year, place, what they actually know, their interpretation, emotion, how public.
+- **No omniscient NPCs**: they learn by witnessing, reports, rumors. News travels slowly between regions and can be distorted.
+  Disguise, forged papers and destroying evidence lower exposure.
+- NPC decisions = goal + personality + relations + resources + risk + what they know (+ small randomness).
+- Accept: no revenge for things they could not know; the dead stay dead.
+
+### 18.4 Relationships are multi-axis (replaces single affinity)
+Axes: **love · trust · respect · fear · debt (บุญคุณ) · jealousy · grudge · loyalty**. The UI shows only those that matter.
+Someone can love you but not trust you; an expensive gift does not erase a betrayal.
+Actions: talk, gift by taste, help, train together, keep a promise, apologize/compensate, reveal a secret, ask for help, end the relation.
+- Children: own personality, talents, goals; may refuse the heir role or leave; favoritism breeds conflict.
+- Multiple spouses: each has consent, goals, relations with the other spouses, her family's expectations, children's care — never a collection bonus.
+- Disciples grow into people with their own goals.
+
+### 18.5 Techniques give playstyle; training modes differ
+- Each technique: type, range, usage style, body/qi requirement, strengths/weaknesses, compatibility, training cost, misuse risk, owner, teaching rules.
+- Mastery unlocks **options**, not only numbers (basic moves → fewer mistakes → applications → strategy → beyond form).
+- Training modes: safe/slow · hard/fast/risky · with a master (costs, precise) · from a manual (can misread) · real fights (exp, risk) · closed-door (big gain, world moves on).
+- Creating a technique needs comprehension + experience + base arts + time + resources; it starts unstable and improves with use.
+
+### 18.6 Honest odds (merges §14 with expansion §7.1)
+- **Exact %** only when the character can judge (own skills, known opponent). **Unknown opponents/situations show ต่ำ/กลาง/สูง or a range**;
+  observing, spying, earlier fights or reputation narrow it to an exact %.
+- The % shown is the formula used — never changed after the click. Balance tests check that 60% choices win ≈60% over many runs.
+- Death-risk warnings based on what the character could know.
+
+### 18.7 Injuries open new paths (merges §15)
+Severe injuries stay permanent (user decision), but each leaves a **meaningful way to keep playing**: one-armed → retrain the other hand or teach;
+dantian lost → external arts, medicine, trade, investigation; blind → listening arts; lame → prosthetic or new role; chronic poison → manage money & medicine.
+Violence has consequences: fear, resistance, survivors' memories, law, feuds across generations; it is not always the best option.
+**Opponents adapt**: survivors study your style, prepare antidotes, gather allies, flee, surrender or reconcile — from information, never hidden stat boosts.
+
+### 18.8 Sects, economy, court, eras
+- **Sect profile**: leader & successor, goals, doctrine, money, manpower, territory, signature arts, weaknesses, internal problems, allies/enemies, legitimacy.
+  Faction relations by trust/interest/territory/debts/ideology/fear/betrayal history. Orthodox not all good, unorthodox not all evil, the Cult has its own ideology and infighting.
+- **Sect management**: budget, recruitment, loyalty, morale, buildings with real effects, side businesses, defense, alliances, succession, spies.
+- **Economy**: seasons, harvest, drought, flood, plague, war, trade routes, bandits, taxes → cost of living, medicine prices, wages, debts, escort risk.
+  Defined money sources and sinks, no infinite money loops, capped inflation; tested for both rich and poor lives.
+- **Imperial Court & Inner Palace** (expansion §8.5, adopted in full): Emperor limited by legitimacy, health, army, treasury, popularity;
+  Empress with her own goals and clan; consorts with backgrounds and alliances (not all enemies); eunuchs whose power is access, documents, news and patronage
+  (not all villains); crown prince & royals; ministers, generals and great clans who switch sides by interest.
+  Succession by legal status + ability + backers + legitimacy + secrets; no clear heir → other branch, regency, compromise, or succession war.
+  Player paths: guard/investigator, palace physician, supplier/lender, official, messenger/spy, heir of a fallen clan. Access must be earned.
+  Example chains: lost edict · suspected crown prince · contested appointment · eunuch with a secret · palace grain crisis · regency · clearing an ancestor's name.
+  Not every save gets a coup; the player can stay out of politics and still feel the effects later.
+- **Rumors & investigation** (expansion §10, §8.5.5): five layers — fact · witnesses/evidence · rumor · each character's belief · what the player knows.
+  Rumors have a source, time, reliability, motive, a way to verify and trap risk. Frames and forgeries leave traces; not every case is solvable.
+- **Eras by pressure**, not a timer: legitimacy, food security, public anger, warlord power, sect conflict, plague, trade.
+  Crises run 5 stages: warning → preparation/negotiation → crisis → outcome → long tail (refugees, war debt, revenge, rebuilding).
+- Legendary figures stay rare, and the story explains why they do not solve everything.
+
+### 18.9 Generations: what passes and what does not
+- Passes: part of money/property, family weapon, house, business, sect, manuals, taught techniques, reputation, debts, oaths, allies, enemies, rumors, secrets, unfinished goals.
+- Does **not** pass automatically: full mastery, every personal relationship, disciples' loyalty, positions that need recognition, truths the new generation cannot know, power that needs upkeep.
+- Before switching: summary of successes, failures, people affected, open promises, inheritable assets, family/sect state.
+- On death, when fitting: pass on arts, write a will, settle inheritance, reconcile, reveal a secret — never forced on sudden deaths.
+
+### 18.10 Merged phase plan (replaces §11; each phase = one or more pushes, ask before each push)
+
+| # | Phase | Contents | Done when |
+|---|---|---|---|
+| 0 | **Audit & lock** | Audit current murim code (Existing/Partial/Missing/Broken). Lock other worlds. Turn off system/regression/cross-world/soul shop/reader comments in murim. Murim relation names. | Report with real file refs; build and tests pass. |
+| 1 | **Core year loop** | Year structure §18.2, main plan + side activities, result card, skip/closed-door with early stop, world-state module (year, era, regions, prices). | One full life plays with no duplicate rewards. |
+| 2 | **Goals & NPC memory** | §18.1, §18.3, multi-axis relations §18.4 (data + basic UI). | NPCs act from goals and what they really know. |
+| 3 | **Combat & injury** | Body parts §15, combat §16, honest odds §18.6, alt paths §18.7, adaptive opponents, choice cards with pros/cons. | UI % matches formula in sims; no dead-end injuries. |
+| 4 | **Techniques & realms** | Realms/internal years §4, techniques & training modes §8.1 + §18.5, birth classes/regions/traits §3. | Realm distribution matches targets in sims. |
+| 5 | **Relationships & household** | Family, multiple spouses, children with goals, master–disciple, sworn brothers, matchmaker, filial piety & mourning. | Relations change from real events and affect inheritance. |
+| 6 | **Sect, economy, politics, eras** | 6a sects/factions/rankings/nicknames/economy/rumors · 6b **Imperial Court & Inner Palace** · 6c era pressure & crises, war era, Heavenly Demon, Demon Lord, Immortals. | World grows/declines on its own; succession crises are traceable. |
+| 7 | **Generations & Chronicle** | §9 + §18.9, Chronicle tab with sources and dates. | Several generations play with consistent history. |
+| 8 | **Vertical slice → content** | First a playable slice (birth → goal → years → NPC memory → fight → death → heir meets the past). Then event schema, chains, callbacks, cooldowns; mix ~35% daily / 35% system-linked / 20% chains / 10% rare. Old murim content removed only after its replacement (§13). | Events are varied and connected, not just numerous. |
+| 9 | **Balance, UX, polish** | Mass sims (power spread, lifespan & causes of death, income, injury rates, marriage/children, war cycles, every career viable), mobile UI, save size, performance, migrations. | Rubric: every category ≥7; core loop/NPC/consequences/generations ≥8. |
+
+### 18.11 Conflicts between the two documents and how they are resolved
+1. **"Rebuild all events from scratch" vs "don't mass-delete, audit first"** → rewrite all murim content, but delete old files only after new content
+   covers that life stage and tests pass; engine systems that work are reused.
+2. **"Always show exact %" vs "no false precision"** → exact % when knowable, ต่ำ/กลาง/สูง or a range when not (§18.6).
+3. **"Manhwa-level dark" vs "not every event dramatic; no violence as cheap thrill"** → dark content stays (massacres, torture, severed limbs)
+   but always with context and consequences; calm years in between; violence against women or eunuchs is never used just for shock.
+4. **"Permanent injuries" vs "injury must not end the game"** → permanent, each with a playable alternative path.
+5. **"Every NPC has real feelings" vs phone performance** → full simulation for important NPCs only; the rest are light/aggregate.
+6. **BitLife one-tap year vs structured year** → keep a fast path: "repeat last plan + age up" in one tap; full planning optional.
+7. **Saves**: current murim saves cannot move cleanly into the new systems → new murim lives start fresh after Phase 1;
+   an old save stays playable in legacy mode until that life ends (save-version check).
