@@ -15,6 +15,7 @@ import { saveSnapshot, type Bundle } from "../../save";
 import type { Act } from "../App";
 import { SaveTransfer } from "../SaveTransfer";
 import { CloudCard } from "../CloudCard";
+import { goalById } from "../../content/murim/life/goals";
 import { SeriesCover } from "../SeriesCover";
 
 export function SoulTab({
@@ -45,6 +46,17 @@ export function SoulTab({
           <p>
             ชีวิตที่ {graveyard.length + 1} · {displayName(life)} · ปี {life.birthYear}
           </p>
+          {(life.goals ?? []).map((g, i) => {
+            const d = goalById(g.id);
+            if (!d) return null;
+            const st = g.end === "won" ? "✅ สำเร็จ" : g.end === "lost" ? "❌ ล้มเหลว" : g.end === "changed" ? "↪️ เปลี่ยนใจ" : `กำลังไล่ตาม (${g.step}/${d.steps.length})`;
+            return (
+              <p className="small" key={i}>
+                {d.emoji} {d.name} · ตั้งแต่อายุ {g.since} · {st}
+                {g.why && <span className="muted"> — {g.why}</span>}
+              </p>
+            );
+          })}
         </div>
       ) : (
         <>

@@ -11,6 +11,7 @@ import type { Life, LogEntry, StatKey } from "../engine/types";
 import type { YearReport } from "../engine/report";
 import { worldSummary } from "../content/murim/life/world";
 import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
+import { goalLine } from "../content/murim/life/goals";
 import { displayName, loc, money } from "../engine/util";
 
 export type TabId = "career" | "people" | "power" | "activities" | "phone" | "soul";
@@ -264,6 +265,7 @@ export function MainScreen({
       </section>
 
       {murim && <WorldStrip life={life} />}
+      {murim && goalLine(life) && <div className="goal-strip">🎯 {goalLine(life)}</div>}
 
       {quest && (
         <div className="quest-strip">

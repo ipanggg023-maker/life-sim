@@ -3,6 +3,8 @@ import { runEvent, argue, askMoney, breakUp, propose, spendTime, tryForBaby, con
 import type { Life, Person, Relation } from "../../engine/types";
 import { relationLabel, shortName } from "../../engine/util";
 import type { Act } from "../App";
+import { AXIS, goalOf, notableAxes, traitName, traitsOf } from "../../engine/npc";
+import { isRealistic } from "../../content/worlds";
 
 const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "father", "mother", "sibling", "friend", "rival"];
 
@@ -36,9 +38,37 @@ export function PeopleTab({ life, act }: { life: Life; act: Act }) {
               </div>
             )}
           </button>
+          {open === p.id && p.alive && isRealistic(life.worldId) && <PersonMind p={p} />}
           {open === p.id && p.alive && <PersonActions life={life} p={p} act={act} />}
         </div>
       ))}
+    </div>
+  );
+}
+
+/** ใจของคนนี้: บุคลิก เป้าหมาย ความรู้สึกเด่นๆ และเรื่องที่เขาจำได้ */
+function PersonMind({ p }: { p: Person }) {
+  const axes = notableAxes(p);
+  const mem = (p.mem ?? []).filter((m) => m.known).slice(-3).reverse();
+  return (
+    <div className="person-mind">
+      <div className="small muted">
+        บุคลิก: {traitsOf(p).map(traitName).join(" · ")} · {goalOf(p)}
+      </div>
+      {axes.length > 0 && (
+        <div className="axis-row">
+          {axes.map(({ axis, value }) => (
+            <span key={axis} className={`axis-chip ${AXIS[axis].good ? "good" : "bad"}`}>
+              {AXIS[axis].emoji} {AXIS[axis].name} {value}
+            </span>
+          ))}
+        </div>
+      )}
+      {mem.length > 0 && (
+        <div className="small muted">
+          จำได้ว่า: {mem.map((m) => `${m.text} (ตอนคุณอายุ ${m.age})`).join(" · ")}
+        </div>
+      )}
     </div>
   );
 }

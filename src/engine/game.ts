@@ -5,6 +5,10 @@ import { chance, newSeed, nextFloat, pick, randInt, weightedPick } from "./rng";
 import type { Career } from "../content/hunter/careers";
 import type { Country, Faculty, Gender, SysStat, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
 import { isRealistic, worldMatches, worldOf } from "../content/worlds";
+import { feel, relOf, remember } from "./npc";
+
+/** ระบบความรู้สึกหลายแกนของ NPC ใช้เฉพาะโลกสมจริง (โลกอื่นใช้ความสนิทแบบเดิม) */
+const npcOn = (l: Life) => isRealistic(l.worldId);
 import { countryOf } from "../content/countries";
 import { rollAwakenTrack } from "../content/hunter/power";
 import { awakenArc, birthArc, maybeComment, seriesOf, startChapter } from "../content/manhwa";
@@ -378,6 +382,7 @@ function progressPeople(life: Life) {
     if (p.relation === "spouse") p.bond = clamp(p.bond - randInt(life, 0, 2), 0, 100);
     if (chance(life, mortality(p.age, 70) * (p.age > 60 ? 1.2 : 0.5))) {
       p.alive = false;
+      for (const h of kinDeathHooks) h(life, p, false);
       if (["father", "mother", "spouse", "child", "sibling"].includes(p.relation)) {
         log(life, `💔 ${shortName(p)} (${p.relation === "father" ? "พ่อ" : p.relation === "mother" ? "แม่" : "คนในครอบครัว"}) เสียชีวิตแล้วในวัย ${p.age} ปี`, "bad");
         addStat(life, "happiness", -randInt(life, 10, 25));
@@ -453,6 +458,8 @@ export function runEvent(life: Life, eventId: string, ctx: Ctx = {}) {
 
 /** ระบบที่ต้องทำงานทุกปี (เช่น Focus) ลงทะเบียนตรงนี้ — กัน import วนกับ content */
 export const yearHooks: Array<(life: Life) => void> = [];
+/** เมื่อมีคนรู้จักเสียชีวิต (violent = ถูกฆ่า) — ให้ content ใช้กระตุ้นเรื่องราว เช่น เปลี่ยนเป้าหมายชีวิต */
+export const kinDeathHooks: Array<(life: Life, p: Person, violent: boolean, killer?: string) => void> = [];
 
 export function ageUp(life: Life) {
   if (!life.alive || life.queue.length) return;
@@ -635,6 +642,7 @@ export function spendTime(life: Life, p: Person): Outcome {
   life.doneThisYear.push(key);
   const gain = randInt(life, 5, 12) + (hasTalent(life, "sweettalk") ? 5 : 0);
   p.bond = clamp(p.bond + gain, 0, 100);
+  if (npcOn(life)) feel(p, { love: 3, trust: 2 });
   addStat(life, "happiness", 2);
   const out = { text: `คุณใช้เวลาดีๆ กับ${shortName(p)}`, kind: "good" as const };
   log(life, out.text, out.kind);
@@ -643,6 +651,7 @@ export function spendTime(life: Life, p: Person): Outcome {
 
 export function argue(life: Life, p: Person): Outcome {
   p.bond = clamp(p.bond - randInt(life, 10, 20), 0, 100);
+  if (npcOn(life)) remember(life, p, "argue", "ทะเลาะกันรุนแรง", 1, { trust: -6, love: -4, grudge: 8 });
   addStat(life, "happiness", -3);
   const out = { text: `คุณทะเลาะกับ${shortName(p)}เสียงดังจนข้างบ้านได้ยิน`, kind: "bad" as const };
   log(life, out.text, out.kind);
@@ -657,6 +666,7 @@ export function askMoney(life: Life, p: Person): Outcome {
   if (chance(life, p.bond / 120)) {
     addMoney(life, amount);
     p.bond = clamp(p.bond - 3, 0, 100);
+    if (npcOn(life)) feel(p, { respect: -2 });
     const out = { text: `${shortName(p)}ให้เงินคุณ ${money(life, amount)}`, kind: "good" as const };
     log(life, out.text, out.kind);
     return out;
@@ -672,6 +682,7 @@ export function propose(life: Life, p: Person): Outcome {
   life.doneThisYear.push("propose");
   if (chance(life, clamp((p.bond - 30) / 60, 0.05, 0.95))) {
     p.relation = "spouse";
+    if (npcOn(life)) remember(life, p, "married", "แต่งงานกัน", 3, { love: 10, trust: 8, loyalty: 20 });
     const cost = { poor: 50_000, middle: 250_000, rich: 1_500_000, elite: 20_000_000 }[life.wealth];
     addMoney(life, -cost);
     addStat(life, "happiness", 20);
@@ -706,6 +717,8 @@ export function giveGift(life: Life, p: Person): Outcome {
   addMoney(life, -cost);
   const liked = chance(life, 0.75);
   p.bond = clamp(p.bond + (liked ? randInt(life, 8, 16) : 2), 0, 100);
+  // ของขวัญซื้อใจได้ แต่ลบความแค้นจากเรื่องใหญ่ไม่ได้
+  if (npcOn(life)) feel(p, { love: liked ? 4 : 1, grudge: relOf(p).grudge < 40 ? -3 : 0 });
   addStat(life, "happiness", 2);
   const out = liked
     ? { text: `🎁 ${shortName(p)}ชอบของขวัญมาก เก็บไว้อย่างดี`, kind: "good" as const }
@@ -722,6 +735,7 @@ export function confess(life: Life, p: Person): Outcome {
   if (chance(life, odds)) {
     p.relation = "partner";
     p.bond = clamp(p.bond + 10, 0, 100);
+    if (npcOn(life)) remember(life, p, "lovers", "เริ่มคบกัน", 2, { love: 12, trust: 5 });
     addStat(life, "happiness", 15);
     const out = { text: `💕 ${shortName(p)}เงียบไปนาน แล้วยิ้ม "นึกว่าจะไม่พูดสักที" — คุณสองคนเริ่มคบกัน`, kind: "milestone" as const };
     log(life, out.text, out.kind);
@@ -735,6 +749,8 @@ export function confess(life: Life, p: Person): Outcome {
 }
 
 export function cutTies(life: Life, p: Person): Outcome {
+  // ตัดขาดคนที่ยังผูกพัน = เขาจำ (ถ้ากลับมาเจอกันในอนาคต)
+  if (npcOn(life) && p.bond >= 40) remember(life, p, "cut", "ถูกตัดขาดอย่างไม่ไยดี", 2, { grudge: 25, love: -20 });
   life.people = life.people.filter((x) => x.id !== p.id);
   addStat(life, "happiness", p.bond < 30 ? 4 : -4);
   const out = { text: p.bond < 30 ? `คุณตัดขาดกับ${shortName(p)} — โล่งอกอย่างบอกไม่ถูก` : `คุณตัดขาดกับ${shortName(p)} บางคืนก็ยังนึกถึง` };

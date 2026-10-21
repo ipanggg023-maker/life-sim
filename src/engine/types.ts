@@ -54,6 +54,14 @@ export interface Person {
   short?: string;
   /** เรื่องราวที่เกิดกับคนนี้แล้ว (เช่น ลูกผ่านวัยต่อต้านแล้ว) */
   tags?: string[];
+  /** ความรู้สึกหลายแกนต่อผู้เล่น (MURIM_PLAN §18.4) — ไม่มี = สร้างจาก bond ตอนใช้ครั้งแรก */
+  rel?: import("./npc").RelAxes;
+  /** ความทรงจำต่อผู้เล่น (สำคัญสุด 10 เรื่อง) */
+  mem?: import("./npc").NpcMemory[];
+  /** บุคลิก 2–3 อย่าง */
+  traits?: string[];
+  /** เป้าหมายชีวิตของคนนี้ */
+  goal?: string;
 }
 
 export type Wealth = "poor" | "middle" | "rich" | "elite";
@@ -207,6 +215,8 @@ export interface Life {
   phone?: PhoneState;
   /** สภาพโลกยุทธภพ: ยุค แรงกดดัน วิกฤต (MURIM_PLAN Phase 1) */
   mw?: import("../content/murim/life/world").MurimWorld;
+  /** เป้าหมายชีวิต: ตัวแรกที่ยังไม่จบ = เป้าหมายหลัก (MURIM_PLAN §18.1) */
+  goals?: import("../content/murim/life/goals").LifeGoal[];
   /** สรุปผลของปีล่าสุด (แสดงใต้บันทึก) */
   report?: import("./report").YearReport;
 }

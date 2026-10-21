@@ -1,5 +1,6 @@
 // Phase 1 — สภาพโลกยุทธภพ: ยุคเปลี่ยนจากแรงกดดันสะสม (ไม่ใช่ตัวนับเวลา) · วิกฤต 5 ระยะ · ราคาข้าวของ
 // MURIM_PLAN §2, §18.8 · ทุกค่าเก็บใน life.mw (optional — เซฟเก่าสร้างให้อัตโนมัติ)
+import { kinDeathHooks } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { clamp, log, people } from "../../../engine/util";
@@ -117,6 +118,7 @@ function crisisToll(l: Life, id: CrisisId) {
     const frail = p.age < 6 || p.age > 60 ? 2 : 1;
     if (chance(l, risk * frail)) {
       p.alive = false;
+      for (const h of kinDeathHooks) h(l, p, id === "rebellion" || id === "cult", id === "cult" ? "สาวกพรรคมาร" : id === "rebellion" ? "ทหารกบฏ" : undefined);
       const cause = { famine: "อดอาหาร", rebellion: "ถูกทหารกบฏฆ่า", plague: "โรคระบาด", cult: "ถูกสาวกมารสังหาร" }[id];
       log(l, `💔 ${p.name} เสียชีวิตเพราะ${cause} ในวัย ${p.age} ปี`, "bad");
       l.stats.happiness = clamp(l.stats.happiness - randInt(l, 10, 20), 0, 100);

@@ -1,5 +1,5 @@
 import type { Ctx, GameEvent, Outcome } from "../../engine/events";
-import { kill, openHiddenSlot } from "../../engine/game";
+import { kill, kinDeathHooks, openHiddenSlot } from "../../engine/game";
 import { memoryOdds, observe, remembers, useMemory } from "../../engine/memory";
 import { chance, pick, randInt } from "../../engine/rng";
 import type { HunterClass, Life } from "../../engine/types";
@@ -828,7 +828,7 @@ function familyLoss(l: Life, p: number): string {
   const lost: string[] = [];
   for (const x of l.people) {
     if (!x.alive || !["father", "mother", "sibling", "spouse", "child"].includes(x.relation)) continue;
-    if (chance(l, p)) { x.alive = false; lost.push(shortName(x)); }
+    if (chance(l, p)) { x.alive = false; lost.push(shortName(x)); for (const h of kinDeathHooks) h(l, x, true, "ทัพลัทธิมารสวรรค์"); }
   }
   if (lost.length) addStat(l, "happiness", -15 * lost.length);
   return lost.join(", ");
