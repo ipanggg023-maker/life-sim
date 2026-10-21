@@ -3,7 +3,7 @@ import type { Ctx, GameEvent } from "../../engine/events";
 import { pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { addFame, addMoney, addStat, money, people, shortName } from "../../engine/util";
-import { gainExp } from "../hunter/power";
+import { gainExp, rankLabel } from "../hunter/power";
 import {
   SECT_COST, addFavor, givePill, addGrudge, alignment, bad, big, canFound, foeOdds, foeSurvival, foundSect, good, hurt, mayDie, meh, mySect,
   npcName, saveSect, sectChange, sectNameOptions, shiftAlign, takePlace, challengeTarget,
@@ -26,7 +26,7 @@ export const M17_SECT: GameEvent[] = [
       return { a, b, c };
     },
     title: "ก่อตั้งสำนัก",
-    text: (l) => `ฝีมือขั้น${l.power ? "ปรมาจารย์" : ""}ของคุณเลื่องลือจนมีคนมาคุกเข่าขอเป็นศิษย์ทุกสัปดาห์ ที่ดินบนเขาหลังเมืองว่างอยู่ — ถึงเวลาตั้งสำนักของตัวเองแล้ว (ค่าก่อสร้าง ${money(l, SECT_COST)})`,
+    text: (l) => `ฝีมือขั้น${l.power ? rankLabel(l, l.power.rank) : ""}ของคุณเลื่องลือจนมีคนมาคุกเข่าขอเป็นศิษย์ทุกสัปดาห์ ที่ดินบนเขาหลังเมืองว่างอยู่ — ถึงเวลาตั้งสำนักของตัวเองแล้ว (ค่าก่อสร้าง ${money(l, SECT_COST)})`,
     choices: [
       { label: (_l, c) => `ตั้งชื่อว่า「${c.a}」`, run: (l, c) => big(foundSect(l, String(c.a))) },
       { label: (_l, c) => `ตั้งชื่อว่า「${c.b}」`, run: (l, c) => big(foundSect(l, String(c.b))) },

@@ -326,7 +326,7 @@ export interface MySect {
   h?: string;
 }
 
-export const SECT_MIN_RANK = 5;
+export const SECT_MIN_RANK = 4;
 export const SECT_MIN_AGE = 28;
 export const SECT_COST = 2_000_000;
 
@@ -336,7 +336,7 @@ export const saveSect = (l: Life, s: MySect) => writeJson(l, "m17Sect", s);
 export function canFound(l: Life): string | undefined {
   if (!isMurim(l)) return "เฉพาะยุทธภพ";
   if (mySect(l)) return "คุณมีสำนักของตัวเองแล้ว";
-  if (rankOf(l) < SECT_MIN_RANK) return "ต้องถึงขั้นปรมาจารย์ก่อน";
+  if (rankOf(l) < SECT_MIN_RANK) return "ต้องมีฝีมือถึงขั้นจุดสูงสุดก่อน — ไม่มีใครฝากตัวกับอาจารย์ที่ฝีมือยังไม่ถึง";
   if (l.age < SECT_MIN_AGE) return `ต้องอายุ ${SECT_MIN_AGE} ปีขึ้นไป — ไม่มีใครฝากตัวกับเจ้าสำนักที่อายุน้อยกว่าลูกศิษย์`;
   if (l.money < SECT_COST) return `ต้องมีเงินสร้างสำนัก ${money(l, SECT_COST)}`;
   return;

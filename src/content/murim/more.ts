@@ -570,7 +570,7 @@ const LATER: GameEvent[] = [
     text: () => "คุณเริ่มเขียนทุกสิ่งที่เรียนรู้มาทั้งชีวิตลงในคัมภีร์ เขียนไปลบไป ปีครึ่งผ่านไปถึงเสร็จ",
     choices: [
       { label: "มอบให้สำนัก", run: (l) => { addFame(l, 10); l.flags.wroteManual = true; return good("คัมภีร์ของคุณถูกเก็บไว้ในหอคัมภีร์ชั้นในสุด — ชื่อคุณจะอยู่ในยุทธภพไปอีกร้อยปี"); } },
-      { label: "ซ่อนไว้ในถ้ำให้ผู้มีวาสนา", run: (l) => { l.flags.wroteManual = true; l.flags.stash = Number(l.flags.stash ?? 0) + 1_000_000; return meh("คุณสลักคำใบ้ไว้บนผนังถ้ำ 'ผู้ที่อ่านออก คือศิษย์ของข้า'"); } },
+      { label: "ซ่อนไว้ในถ้ำให้ผู้มีวาสนา", run: (l) => { l.flags.wroteManual = true; l.flags.buriedManual = true; l.flags.stash = Number(l.flags.stash ?? 0) + 1_000_000; return meh("คุณสลักคำใบ้ไว้บนผนังถ้ำ 'ผู้ที่อ่านออก คือศิษย์ของข้า'"); } },
     ],
   },
   {

@@ -13,8 +13,9 @@ import { SHOP, heirsOf, previewAward, regressTarget } from "../engine/soul";
 import type { Life, Soul, WorldId } from "../engine/types";
 import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds";
 import { displayName, loc, money, people } from "../engine/util";
+import { disciplesOf, lifeSummary } from "../content/murim/life/generations";
 
-export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}` | `heir:${string}`;
+export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}` | `heir:${string}` | `disciple:${string}`;
 
 export function DeathScreen({
   life,
@@ -86,10 +87,12 @@ export function DeathScreen({
       <div className="card">
         <div className="card-title">สรุปชีวิต</div>
         <p>ทรัพย์สินสุทธิ: {money(life, life.money - life.debt)}{assetsValue(life) > 0 && ` · ธุรกิจ/อสังหาฯ ${money(life, assetsValue(life))}`}</p>
-        <p>
-          สกิลติดตัว: {passivesOf(life).length} อย่าง
-          {foundThisLife(life).length > 0 && ` · ของสะสมที่เจอ: ${foundThisLife(life).map((id) => COLLECTIBLES.find((c) => c.id === id)?.emoji ?? "").join(" ")}`}
-        </p>
+        {!real && (
+          <p>
+            สกิลติดตัว: {passivesOf(life).length} อย่าง
+            {foundThisLife(life).length > 0 && ` · ของสะสมที่เจอ: ${foundThisLife(life).map((id) => COLLECTIBLES.find((c) => c.id === id)?.emoji ?? "").join(" ")}`}
+          </p>
+        )}
         {worldOf(life.worldId).modern && (
           <p>
             การศึกษา:{" "}
@@ -97,7 +100,8 @@ export function DeathScreen({
           </p>
         )}
         <p>งานสุดท้าย: {job ? `${job.titles[life.job!.level - 1]} (${job.name})` : "-"}</p>
-        {life.power && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · {life.worldId === "tower" ? `ชั้นที่ ${Number(life.flags.floor ?? 0)} ·` : ""}{life.worldId === "murim" ? "ภารกิจ" : life.worldId === "tower" ? "บททดสอบ" : life.worldId === "apocalypse" ? "ฉากภารกิจ" : life.worldId === "ordinary" ? "ภารกิจระบบ" : "Gate"} {life.power.gates}</p>}
+        {life.power && real && <p>ฝีมือ: ขั้น{rankLabel(life, life.power.rank)}</p>}
+        {life.power && !real && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · {life.worldId === "tower" ? `ชั้นที่ ${Number(life.flags.floor ?? 0)} ·` : ""}{life.worldId === "murim" ? "ภารกิจ" : life.worldId === "tower" ? "บททดสอบ" : life.worldId === "apocalypse" ? "ฉากภารกิจ" : life.worldId === "ordinary" ? "ภารกิจระบบ" : "Gate"} {life.power.gates}</p>}
         <p>
           ครอบครัว: {spouse ? "แต่งงาน" : "โสด"} · ลูก {kids} คน · ชื่อเสียง {life.fame}
         </p>
@@ -107,7 +111,7 @@ export function DeathScreen({
       </div>
 
       {real ? (
-        <RealisticEnd life={life} achievements={claimed ? [] : award.achievements} open={open} busy={busy} go={go} />
+        <RealisticEnd life={life} achievements={claimed ? [] : award.achievements.filter((a) => a.cat === life.worldId)} open={open} busy={busy} go={go} />
       ) : (
         <>
       <div className="sys-window">
@@ -239,8 +243,39 @@ function RealisticEnd({
   go: (c: RebirthChoice) => void;
 }) {
   const heirs = heirsOf(life);
+  const pupils = life.worldId === "murim" ? disciplesOf(life) : [];
+  const sum = life.worldId === "murim" ? lifeSummary(life) : undefined;
   return (
     <>
+      {sum && (
+        <div className="card">
+          <div className="card-title">ชีวิตที่ผ่านมา</div>
+          <p className="small">{sum.family}{sum.era ? ` · จากไปใน${sum.era}` : ""}</p>
+          {sum.goals.map((g, i) => (
+            <p className="small" key={i}>
+              {g.end === "won" ? "✅" : g.end ? "❌" : "⏳"} {g.name}
+            </p>
+          ))}
+          {sum.people.length > 0 && <div className="card-title">คนที่ยังจำคุณ</div>}
+          {sum.people.map((t, i) => (
+            <p className="small" key={i}>
+              {t}
+            </p>
+          ))}
+          {sum.promises.length > 0 && <div className="card-title">สิ่งที่ยังค้างคา</div>}
+          {sum.promises.map((t, i) => (
+            <p className="small" key={i}>
+              {t}
+            </p>
+          ))}
+          {sum.assets.length > 0 && <div className="card-title">สิ่งที่ส่งต่อได้</div>}
+          {sum.assets.map((t, i) => (
+            <p className="small" key={i}>
+              {t}
+            </p>
+          ))}
+        </div>
+      )}
       {achievements.length > 0 && (
         <div className="card">
           <div className="card-title">ความสำเร็จใหม่</div>
@@ -258,6 +293,12 @@ function RealisticEnd({
           <span className="path-desc">
             อายุ {c.age} ปี · รับมรดก{heirs.length > 1 ? `ส่วนแบ่ง 1/${heirs.length}` : "ทั้งหมด"} ชื่อเสียงและความแค้นของตระกูล
           </span>
+        </button>
+      ))}
+      {pupils.map((d) => (
+        <button className="path" key={d.id} disabled={busy} onClick={() => go(`disciple:${d.id}`)}>
+          <span className="path-title">🥋 เล่นต่อเป็นศิษย์ — {d.name}</span>
+          <span className="path-desc">อายุ {d.age} ปี · ได้วิชาที่สอนไว้ สำนัก และความแค้นของอาจารย์ — แต่ไม่ได้ทรัพย์สมบัติ</span>
         </button>
       ))}
       {open && (

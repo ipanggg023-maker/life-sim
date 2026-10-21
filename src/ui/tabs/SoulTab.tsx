@@ -70,6 +70,17 @@ export function SoulTab({
               </p>
             );
           })}
+          {(soul.chronicle?.length ?? 0) > 0 && (
+            <>
+              <div className="section-title">บันทึกยุทธภพ</div>
+              {soul.chronicle!.slice().reverse().slice(0, 60).map((c, i) => (
+                <p className="small" key={i}>
+                  {c.kind === "legend" ? "🌟" : c.kind === "life" ? "🪦" : "📯"} ปี {c.year} · {c.text}
+                  <span className="muted"> — {c.src}</span>
+                </p>
+              ))}
+            </>
+          )}
         </div>
       ) : (
         <>
@@ -115,14 +126,14 @@ export function SoulTab({
       )}
 
       <div className="section-title">
-        ความสำเร็จ {soul.achievements.length}/{ACHIEVEMENTS.length}
+        ความสำเร็จ {real ? ACHIEVEMENTS.filter((a) => a.cat === life.worldId && soul.achievements.includes(a.id)).length : soul.achievements.length}/{real ? ACHIEVEMENTS.filter((a) => a.cat === life.worldId).length : ACHIEVEMENTS.length}
       </div>
-      {(Object.keys(ACH_CATEGORY) as AchCategory[]).map((cat) => {
+      {(Object.keys(ACH_CATEGORY) as AchCategory[]).filter((c) => !real || c === life.worldId).map((cat) => {
         const list = ACHIEVEMENTS.filter((a) => catOf(a) === cat);
         if (!list.length) return null;
         const got = list.filter((a) => soul.achievements.includes(a.id)).length;
         return (
-          <details className="ach-cat" key={cat} open={cat === "life"}>
+          <details className="ach-cat" key={cat} open={cat === "life" || real}>
             <summary>
               {ACH_CATEGORY[cat]} · {got}/{list.length}
             </summary>
@@ -173,14 +184,14 @@ export function SoulTab({
                 {g.cause} · {money({ worldId: g.world ?? "hunter" }, g.money)}
                 {g.job ? ` · ${g.job}` : ""}
                 {g.degree ? ` · ${facultyById(g.degree).name}` : ""}
-                {g.points !== undefined ? ` · +${g.points} แต้ม` : ""}
+                {g.points !== undefined && !real ? ` · +${g.points} แต้ม` : ""}
               </div>
             </div>
           ))}
         </>
       )}
 
-      <CollectionCard life={life} soul={soul} />
+      {!real && <CollectionCard life={life} soul={soul} />}
       <TalentBookCard life={life} soul={soul} />
 
       <div className="section-title">บัญชี & ซิงก์เซฟ</div>

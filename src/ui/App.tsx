@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ageUp, createLife, pastSelfOf, resolveChoice, toPastLife, type BirthOptions } from "../engine/game";
 import { currentScene, labelOf, type Outcome } from "../engine/events";
+import { buildDisciple, inheritMurim, recordChronicle } from "../content/murim/life/generations";
 import { applySoul, buildHeir, buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
 import type { Life, PastLife, Soul, WorldId } from "../engine/types";
 import { loc } from "../engine/util";
@@ -56,6 +57,8 @@ export function App() {
   const [shake, setShake] = useState(false);
   const [resolved, setResolved] = useState<Resolved | null>(null);
   const [birthOpts, setBirthOpts] = useState<BirthOptions>({});
+  /** มรดกของยุคก่อน (ใช้ซ้ำตอนสุ่มเกิดใหม่) */
+  const prepRef = useRef<((l: Life) => void) | undefined>(undefined);
   const [pendingImport, setPendingImport] = useState<Bundle | null>(null);
   const toastTimer = useRef<number>(undefined);
 
@@ -166,7 +169,7 @@ export function App() {
 
   /** เกิดใหม่ (ใช้พรแห่งโชค/พรสวรรค์ที่ผนึกไว้ถ้ามี) */
   const birth = useCallback(
-    async (opts: BirthOptions = {}) => {
+    async (opts: BirthOptions = {}, prep?: (l: Life) => void) => {
       const s = soul ?? (await loadSoul());
       const full: BirthOptions = {
         ...opts,
@@ -178,6 +181,8 @@ export function App() {
       await commitSoul(s);
       const l = createLife(full);
       applySoul(l, s, true);
+      prep?.(l);
+      prepRef.current = prep;
       setBirthOpts(full);
       setStarted(false);
       setTab(null);
@@ -194,6 +199,7 @@ export function App() {
     await commitSoul(soul);
     const l = createLife({ ...birthOpts, seed: undefined });
     applySoul(l, soul, true);
+    prepRef.current?.(l);
     await pruneSnapshots();
     await saveSnapshot(l);
     await commit(l);
@@ -237,6 +243,7 @@ export function App() {
   const onRebirth = useCallback(
     async (choice: RebirthChoice) => {
       if (!life || !soul) return;
+      recordChronicle(soul, life);
       const gained = claimAward(soul, life, choice === "regress");
       await commitSoul(soul);
       setGraveyard(await updateGraveyardPoints(life.id, gained));
@@ -251,9 +258,15 @@ export function App() {
         return;
       }
       await clearCurrent();
-      if (choice.startsWith("heir:")) {
-        // ภาคต่อ: เล่นต่อเป็นลูก — เริ่มทันทีโดยไม่ผ่านหน้าสุ่มเกิด
-        const next = buildHeir(life, choice.slice(5));
+      if (choice.startsWith("heir:") || choice.startsWith("disciple:")) {
+        // ภาคต่อ: เล่นต่อเป็นลูก/ศิษย์ — เริ่มทันทีโดยไม่ผ่านหน้าสุ่มเกิด
+        const pid = choice.slice(choice.indexOf(":") + 1);
+        let next: Life;
+        if (choice.startsWith("disciple:")) next = buildDisciple(life, pid);
+        else {
+          next = buildHeir(life, pid);
+          inheritMurim(life, next, "heir", pid);
+        }
         applySoul(next, soul, true);
         await clearCurrent();
         await pruneSnapshots();
@@ -264,7 +277,7 @@ export function App() {
         return;
       }
       if (choice === "nextEra") {
-        await birth({ ...nextEraOptions(life), worldId: life.worldId });
+        await birth({ ...nextEraOptions(life), worldId: life.worldId }, (l) => inheritMurim(life, l, "era"));
         return;
       }
       // เส้นเวลาใหม่: ผู้เล่นเลือกโลกเอง — ข้ามโลกได้ฟรี วิญญาณพาความทรงจำไปด้วย

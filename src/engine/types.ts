@@ -280,6 +280,8 @@ export interface Soul {
   collection?: string[];
   /** สมุดพรสวรรค์: พรสวรรค์ที่เคยได้ในทุกชาติ */
   talentBook?: string[];
+  /** บันทึกยุทธภพ: ชีวิตทุกชีวิตและเหตุการณ์โลกที่ผ่านมา (MURIM_PLAN §9) */
+  chronicle?: import("../content/murim/life/generations").ChronEntry[];
   perks: {
     blessing: number; // ใช้ครั้งเดียวต่อการเกิด
     reroll: number;
