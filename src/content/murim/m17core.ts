@@ -89,7 +89,8 @@ export function initRanking(l: Life) {
     list.push(m);
     writeJson(l, "m17Rank", list); // ให้ฉายาไม่ซ้ำ
   }
-  list.forEach((m, i) => (m.cp = 212 - i * 9 + randInt(l, -3, 3)));
+  // ทำเนียบสิบยอดฝีมือใต้หล้า = ระดับจุดสูงสุดถึงหลอมรวม (หายากจริง — MURIM_PLAN §4)
+  list.forEach((m, i) => (m.cp = 108 - i * 4 + randInt(l, -3, 3)));
   saveMasters(l, list);
 }
 
@@ -142,7 +143,7 @@ export function dropPlace(l: Life, n = 1): number {
   if (to >= RANK_SIZE) {
     // มีคนใหม่ขึ้นมาแทนที่ท้ายตาราง
     const last = list[list.length - 1];
-    list.push(newMaster(l, (last?.cp ?? 110) - randInt(l, 0, 6)));
+    list.push(newMaster(l, (last?.cp ?? 72) - randInt(l, 0, 6)));
     saveMasters(l, list);
     return 0;
   }
@@ -155,7 +156,7 @@ export function dropPlace(l: Life, n = 1): number {
 export function removeMaster(l: Life, id: string, news?: string) {
   const list = masters(l).filter((m) => m.id !== id);
   const npcs = list.filter((m) => !m.me);
-  const floor = npcs[npcs.length - 1]?.cp ?? 110;
+  const floor = npcs[npcs.length - 1]?.cp ?? 72;
   list.push(newMaster(l, floor + randInt(l, -4, 10), randInt(l, 24, 42)));
   saveMasters(l, list);
   sortNpcs(l);

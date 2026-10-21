@@ -6,6 +6,7 @@ import type { Career } from "../content/hunter/careers";
 import type { Country, Faculty, Gender, SysStat, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
 import { isRealistic, worldMatches, worldOf } from "../content/worlds";
 import { feel, relOf, remember } from "./npc";
+import { birthplaceOf } from "../content/murim/life/region";
 
 /** ระบบความรู้สึกหลายแกนของ NPC ใช้เฉพาะโลกสมจริง (โลกอื่นใช้ความสนิทแบบเดิม) */
 const npcOn = (l: Life) => isRealistic(l.worldId);
@@ -194,7 +195,7 @@ export function createLife(opts: BirthOptions = {}): Life {
   birthArc(life);
   log(
     life,
-    `คุณเกิดเป็น${life.gender === "m" ? "ผู้ชาย" : "ผู้หญิง"} ชื่อ ${displayName(life)} (ชื่อเรียกในบ้าน "${life.nickname}") ใน${wealthLabel(life.wealth, life.worldId)} ที่${worldOf(life.worldId).birthplace}`,
+    `คุณเกิดเป็น${life.gender === "m" ? "ผู้ชาย" : "ผู้หญิง"} ชื่อ ${displayName(life)} (ชื่อเรียกในบ้าน "${life.nickname}") ใน${wealthLabel(life.wealth, life.worldId)} ที่${birthplaceOf(life, worldOf(life.worldId).birthplace)}`,
     "milestone",
   );
   const dad = firstPerson(life, "father")!;
@@ -458,6 +459,8 @@ export function runEvent(life: Life, eventId: string, ctx: Ctx = {}) {
 
 /** ระบบที่ต้องทำงานทุกปี (เช่น Focus) ลงทะเบียนตรงนี้ — กัน import วนกับ content */
 export const yearHooks: Array<(life: Life) => void> = [];
+/** ปีที่ "แก่ช้าลง" จากพลัง/วิชา (ลดความเสี่ยงตายตามวัย) */
+export const lifespanHooks: Array<(life: Life) => number> = [];
 /** เมื่อมีคนรู้จักเสียชีวิต (violent = ถูกฆ่า) — ให้ content ใช้กระตุ้นเรื่องราว เช่น เปลี่ยนเป้าหมายชีวิต */
 export const kinDeathHooks: Array<(life: Life, p: Person, violent: boolean, killer?: string) => void> = [];
 
@@ -485,7 +488,9 @@ export function ageUp(life: Life) {
     }
   }
 
-  if (chance(life, mortality(life.age, life.stats.health))) {
+  // ขั้นพลังสูงทำให้แก่ช้าลง (ยุทธภพ: จุดสูงสุด +10 ปี … เหนือความเป็นความตาย)
+  const younger = lifespanHooks.reduce((s, h) => s + h(life), 0);
+  if (chance(life, mortality(life.age - younger, life.stats.health))) {
     const w = worldOf(life.worldId);
     const ruins = life.flags.doomed && !life.flags.rebuilt && w.deathRuins;
     kill(life, ruins ? pick(life, ruins) : life.age < 50 ? pick(life, w.deathYoung) : pick(life, w.deathOld));

@@ -10,6 +10,7 @@ import { STAT_LABEL } from "../engine/game";
 import type { Life, LogEntry, StatKey } from "../engine/types";
 import type { YearReport } from "../engine/report";
 import { worldSummary } from "../content/murim/life/world";
+import { regionOf } from "../content/murim/life/region";
 import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
 import { goalLine } from "../content/murim/life/goals";
 import { disabilities, openInjuries } from "../engine/body";
@@ -120,7 +121,7 @@ function WorldStrip({ life }: { life: Life }) {
   const w = worldSummary(life);
   return (
     <div className={`world-strip ${w.crisis ? "crisis" : ""}`} title={w.desc}>
-      🏮 {w.era} · ข้าว ×{w.price.toFixed(2)}
+      📍 {regionOf(life).name} · 🏮 {w.era} · ข้าว ×{w.price.toFixed(2)}
       {w.crisis && <b> · ⚠️ {w.crisis}</b>}
     </div>
   );

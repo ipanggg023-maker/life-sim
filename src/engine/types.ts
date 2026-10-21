@@ -215,6 +215,8 @@ export interface Life {
   phone?: PhoneState;
   /** สภาพโลกยุทธภพ: ยุค แรงกดดัน วิกฤต (MURIM_PLAN Phase 1) */
   mw?: import("../content/murim/life/world").MurimWorld;
+  /** วิชายุทธ์ที่รู้ (MURIM_PLAN §8.1) */
+  mwArts?: import("../content/murim/martial/arts").KnownArt[];
   /** ร่างกายและบาดแผล (MURIM_PLAN §15) */
   body?: import("./body").Body;
   /** เป้าหมายชีวิต: ตัวแรกที่ยังไม่จบ = เป้าหมายหลัก (MURIM_PLAN §18.1) */

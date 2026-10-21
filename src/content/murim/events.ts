@@ -150,9 +150,11 @@ const pillIdx = (l: Life) => l.power?.items.findIndex((i) => pills.includes(i)) 
 const breakOdds = (l: Life, bonus = 0) =>
   rank(l) === 7
     ? clamp(0.05 + (l.stats.smarts - 50) / 500 + bonus * 0.5, 0.03, 0.4) // ทัณฑ์สวรรค์: ประตูสู่เซียนแคบมาก
-    : clamp(0.58 - rank(l) * 0.05 + (l.stats.smarts - 50) / 200 + bonus, 0.08, 0.95);
+    : clamp(0.66 - rank(l) * 0.06 + (l.stats.smarts - 50) / 200 + bonus, 0.08, 0.95);
 /** เลเวลที่ต้องถึงก่อนทะลวงขั้นถัดไป — ขั้นสูงยิ่งไกล */
 export const breakLevel = (r: number) => (r + 1) * 8 + r * r;
+export { QI_NEED } from "./martial/arts";
+import { QI_NEED } from "./martial/arts";
 const breakSurvival = (l: Life) =>
   rank(l) === 7
     ? clamp(0.5 + (l.stats.health - 50) / 300, 0.3, 0.75) // ทัณฑ์สวรรค์ล้มเหลว = มักไม่รอด (กันลองซ้ำจนผ่าน)
@@ -164,7 +166,8 @@ export const BREAKTHROUGH: GameEvent = {
   maxAge: 200,
   forced: true,
   maxTimes: 0,
-  when: (l) => !!l.power && rank(l) < 8 && l.power.level >= breakLevel(rank(l)) && l.age >= Number(l.flags.btNext ?? 0),
+  // ยุทธภพไม่มีเลเวลให้เห็น — ทะลวงได้เมื่อกำลังภายในสะสมถึง (MURIM_PLAN §4)
+  when: (l) => !!l.power && rank(l) < 8 && l.age >= Number(l.flags.btNext ?? 0) && Number(l.flags.mwQi ?? 0) >= QI_NEED[rank(l)],
   title: "ทะลวงขั้น",
   text: (l) =>
     rank(l) === 7

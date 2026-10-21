@@ -2,7 +2,7 @@ import { useState } from "react";
 import { RARITY_LABEL, talentById, talentFlavor } from "../../content/talents";
 import { canEnterGate, dailyQuest, enterGate, gatesLeft, train } from "../../content/hunter/events/gates";
 import { RANKS, classById, combatPower, skillsOf, subClassOf, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
-import { breakLevel } from "../../content/murim/events";
+import { QI_NEED, breakLevel } from "../../content/murim/events";
 import { SECLUSION_YEARS, canSeclude, isSecluded, startSeclusion } from "../../content/shared/fate";
 import { TITLES, titlesOf } from "../../content/titles";
 import { TOP_FLOOR, floorCap, floorOf, tierOfFloor } from "../../content/tower/climb";
@@ -14,6 +14,8 @@ import { SKILL_TYPE, skillEffectText } from "../../content/skills";
 import { skillReady } from "../../content/shared/skillUse";
 import { isRealistic, worldOf } from "../../content/worlds";
 import { combatFactor } from "../../engine/body";
+import { GRADE_NAME, TYPE_NAME, artInfo, artsOf, comprehension, masteryWord as artMastery, qiYears } from "../../content/murim/martial/arts";
+import { TRAIN_MODES, trainArt } from "../../content/murim/martial/training";
 import type { Life, WorldId } from "../../engine/types";
 import { displayName, hasTalent, loc } from "../../engine/util";
 import type { Act } from "../App";
@@ -149,8 +151,6 @@ const UI: Record<
   },
 };
 
-/** ระดับความชำนาญเป็นคำ (ไม่ใช้ตัวเลขแบบเกม) */
-const masteryWord = (m: number) => (m >= 8 ? "สมบูรณ์" : m >= 5 ? "ชำนาญใหญ่" : m >= 2 ? "ชำนาญน้อย" : "เริ่มเรียน");
 
 /** ยุทธภพ: บันทึกวิชายุทธ์แบบในนิยาย — ไม่มีหน้าต่างระบบ เลเวล หรือตัวเลขพลัง */
 function MartialRecord({ life }: { life: Life }) {
@@ -170,8 +170,8 @@ function MartialRecord({ life }: { life: Life }) {
   }
   const cls = classById(p.hunterClass);
   const guild = guildById(p.guild);
-  const next = breakLevel(p.rank);
-  const progress = p.rank >= 8 ? 1 : Math.min(1, p.level / Math.max(1, next));
+  const qiNeed = QI_NEED[p.rank] ?? 999;
+  const progress = p.rank >= 8 ? 1 : Math.min(1, qiYears(life) / Math.max(1, qiNeed));
   const factor = combatFactor(life);
   return (
     <div className="card">
@@ -185,24 +185,36 @@ function MartialRecord({ life }: { life: Life }) {
         </b>
         <span>สังกัด</span>
         <b>{guild ? loc(life, guild.name) : "ไร้สังกัด"}</b>
+        <span>กำลังภายใน</span>
+        <b>{qiYears(life).toFixed(1)} ปี</b>
+        <span>ความเข้าใจ</span>
+        <b>{comprehension(life)}</b>
       </div>
       <div className="exp">
         <div className="bar">
           <div className="fill" style={{ width: `${progress * 100}%` }} />
         </div>
-        <span className="small muted">{p.rank >= 8 ? "ถึงจุดสูงสุดของวิชาแล้ว" : progress >= 1 ? "พร้อมทะลวงขั้นถัดไป" : progress >= 0.6 ? "ใกล้แตะขั้นถัดไป" : progress >= 0.3 ? "ฝึกมาได้ครึ่งทางของขั้นนี้" : "เพิ่งก้าวเข้าขั้นนี้"}</span>
+        <span className="small muted">{p.rank < 8 && qiYears(life) < qiNeed ? `ต้องสะสมกำลังภายในให้ถึง ${qiNeed} ปี ก่อนทะลวงขั้นถัดไป · ` : ""}{p.rank >= 8 ? "ถึงจุดสูงสุดของวิชาแล้ว" : progress >= 1 ? "พร้อมทะลวงขั้นถัดไป" : progress >= 0.6 ? "ใกล้แตะขั้นถัดไป" : progress >= 0.3 ? "ฝึกมาได้ครึ่งทางของขั้นนี้" : "เพิ่งก้าวเข้าขั้นนี้"}</span>
       </div>
       {factor < 1 && <p className="small danger-text">บาดแผลและความพิการทำให้ฝีมือเหลือราว {Math.round(factor * 100)}% ของที่ควรเป็น</p>}
       <div className="section-title">วิชาที่รู้</div>
-      {skillsOf(life).map((s) => (
-        <details className="skill-card" key={s.name}>
-          <summary>
-            <span className="skill-name">{s.name}</span>
-            <span className="skill-meta">{masteryWord(s.mastery)}</span>
-          </summary>
-          <p className="small">{s.desc}</p>
-        </details>
-      ))}
+      {artsOf(life).length === 0 && <p className="muted small">ยังไม่มีคัมภีร์หรือวิชาที่ร่ำเรียนอย่างเป็นแบบแผน</p>}
+      {artsOf(life).map((k) => {
+        const a = artInfo(k);
+        return (
+          <details className="skill-card" key={k.id}>
+            <summary>
+              <span className="skill-name">{a.name}</span>
+              <span className="skill-meta">
+                {TYPE_NAME[a.type]} · {GRADE_NAME[a.grade]} · {artMastery(k.m)}
+              </span>
+            </summary>
+            <p className="small">{a.desc}</p>
+            <p className="small">✅ {a.strong} · ❌ {a.weak}</p>
+            <p className="small muted">ได้มาจาก: {k.src} ตอนอายุ {k.since}</p>
+          </details>
+        );
+      })}
     </div>
   );
 }
@@ -304,6 +316,47 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
   );
 }
 
+/** เลือกวิชาและวิธีฝึก (ปีละครั้ง) */
+function TrainPanel({ life, act }: { life: Life; act: Act }) {
+  const arts = artsOf(life);
+  const [art, setArt] = useState(arts[0]?.id ?? "");
+  if (!arts.length) return null;
+  const done = life.doneThisYear.includes("mwTrain");
+  const cur = arts.find((a) => a.id === art) ?? arts[0];
+  return (
+    <>
+      <div className="section-title">ฝึกวิชา {done ? "· ปีนี้ฝึกแล้ว" : "· ปีละครั้ง"}</div>
+      <label className="plan-pick">
+        <span className="plan-label">วิชา</span>
+        <select value={cur.id} onChange={(e) => setArt(e.target.value)}>
+          {arts.map((k) => (
+            <option key={k.id} value={k.id}>
+              {artInfo(k).name} ({artMastery(k.m)})
+            </option>
+          ))}
+        </select>
+      </label>
+      {TRAIN_MODES.map((m) => {
+        const why = m.req?.(life, cur.id);
+        return (
+          <div className={`job ${why ? "locked" : ""}`} key={m.id}>
+            <div className="job-main">
+              <div className="job-name">{m.name}</div>
+              <div className="job-sub">
+                ✅ {m.pros} · ❌ {m.cons}
+                {why && <span className="danger-text"> · 🔒 {why}</span>}
+              </div>
+            </div>
+            <button className="btn small" disabled={done || !!why} onClick={() => act((l) => trainArt(l, cur.id, m.id))}>
+              ฝึก
+            </button>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 /** ฝึก · ปิดด่าน · รับงานยุทธภพ · สำนัก (ยุทธภพ) */
 function MurimActions({ life, act }: { life: Life; act: Act }) {
   const w = worldOf(life.worldId);
@@ -313,13 +366,11 @@ function MurimActions({ life, act }: { life: Life; act: Act }) {
   return (
     <>
       <div className="row">
-        <button className="btn" disabled={life.doneThisYear.includes("train")} onClick={() => act(train)}>
-          🧘 {w.labels.train}
-        </button>
         <button className="btn" disabled={!!canSeclude(life)} title={canSeclude(life)} onClick={() => act((l) => startSeclusion(l))}>
           {isSecluded(life) ? `⛩️ ปิดด่านอยู่ (ถึงอายุ ${life.flags.secludeUntil})` : `⛩️ ปิดด่าน ${SECLUSION_YEARS} ปี`}
         </button>
       </div>
+      <TrainPanel life={life} act={act} />
       <div className="section-title">งานยุทธภพ · เหลือ {Math.max(0, gatesLeft(life))} ครั้งในปีนี้</div>
       {!canQuest && <p className="muted small">ต้องเป็นศิษย์สำนัก จอมยุทธ์พเนจร หรือนักฆ่ารับจ้างก่อน (แท็บ 💼 อาชีพ)</p>}
       {Array.from({ length: Math.min(p.rank + 2, RANKS.length) }, (_, r) => r).map((r) => {
@@ -377,7 +428,7 @@ function TitlesCard({ life, act }: { life: Life; act: Act }) {
     <>
       <div className="section-title">ฉายา ({owned.length}/{TITLES.length})</div>
       {owned.length === 0 ? (
-        <p className="muted small">ยังไม่มีฉายา — ได้จากเหตุการณ์สำคัญ เช่น รอดจาก Red Gate, ชำระแค้น, หักกิโยติน</p>
+        <p className="muted small">ยังไม่มีฉายา — {life.worldId === "murim" ? "คนในยุทธภพจะตั้งให้เองเมื่อคุณทำเรื่องที่คนจดจำ" : "ได้จากเหตุการณ์สำคัญ เช่น รอดจาก Red Gate, ชำระแค้น, หักกิโยติน"}</p>
       ) : (
         <div className="chips">
           {owned.map((t) => (

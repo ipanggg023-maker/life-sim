@@ -5,6 +5,7 @@ import { displayName, loc, log, people } from "../engine/util";
 import { classById, rankLabel } from "./hunter/power";
 import { worldFacts } from "./hunter/worldFacts";
 import { isRealistic, worldOf } from "./worlds";
+import { birthplaceOf } from "./murim/life/region";
 
 // ───────────────────────── ตอน / ภาค ─────────────────────────
 
@@ -31,7 +32,7 @@ export function startArc(life: Life, title: string) {
 export function birthArc(life: Life) {
   const w = worldOf(life.worldId);
   const origin = { poor: "เด็กจากครอบครัวธรรมดา", middle: "เด็กชนชั้นกลาง", rich: "ทายาทตระกูลมีฐานะ", elite: "ทายาทตระกูลใหญ่" }[life.wealth];
-  startArc(life, life.legacy ? `ทายาทแห่งยุคถัดไป` : `${origin}แห่ง${w.birthplace}`);
+  startArc(life, life.legacy ? `ทายาทแห่งยุคถัดไป` : `${origin}แห่ง${birthplaceOf(life, w.birthplace)}`);
 }
 
 export function awakenArc(life: Life) {

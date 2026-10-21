@@ -27,7 +27,7 @@ function RankingBoard({ life }: { life: Life }) {
     <div className="card m17-card">
       <div className="card-title">📜 ทำเนียบยอดฝีมือ</div>
       <p className="small muted">
-        {me ? `คุณอยู่อันดับ ${me} จาก ${RANK_SIZE}` : life.flags.m17Best ? `เคยติดอันดับ ${life.flags.m17Best} — ตอนนี้หลุดทำเนียบ` : "ยังไม่ติดทำเนียบ — ถึงขั้นยอดฝีมือแล้วจะเริ่มมีโอกาสท้าประลอง"}
+        {me ? `คุณอยู่อันดับ ${me} จาก ${RANK_SIZE}` : life.flags.m17Best ? `เคยติดอันดับ ${life.flags.m17Best} — ตอนนี้หลุดทำเนียบ` : "ยังไม่ติดทำเนียบ — ทำเนียบสิบยอดฝีมือใต้หล้าเป็นของผู้ที่ถึงขั้นจุดสูงสุดขึ้นไป"}
       </p>
       <ol className="m17-rank">
         {list.map((m, i) => (

@@ -8,6 +8,9 @@ import { loadMurimWorld } from "../content/murim";
 import { M17_EVENTS } from "../content/murim/m17";
 import { alignment, canFound, foundSect, ledger, masters, myPlace, mySect, sectNameOptions, wasRanked } from "../content/murim/m17core";
 import { loadSharedEvents } from "../content/shared";
+import { artsOf } from "../content/murim/martial/arts";
+import { trainArt } from "../content/murim/martial/training";
+import { setPlan } from "../content/murim/life/plan";
 import { ACTIVITIES, activityLocked, doActivity } from "./activities";
 import { allEvents, visibleChoices } from "./events";
 import { ageUp, applyJob, createLife, resolveChoice } from "./game";
@@ -43,6 +46,10 @@ function play(seed: number, seen: Set<string>, grinder: boolean): Life {
     if (!life.job && life.age >= 16) applyJob(life, careers[Math.floor(nextFloat(r) * careers.length)].id);
     if (grinder && life.power) {
       train(life);
+      // บอทสายบู๊ใช้ระบบฝึกแบบใหม่: แผนปี "ทุ่มเทฝึกวิชา" + ฝึกวิชาหลักทุกปี
+      setPlan(life, "train");
+      const art = artsOf(life)[0];
+      if (art) trainArt(life, art.id, nextFloat(r) < 0.6 ? "master" : "hard");
       for (let i = 0; i < 3 && life.alive; i++) {
         const gr = Math.max(0, life.power.rank - (nextFloat(r) < 0.7 ? 1 : 0));
         if (canEnterGate(life, gr)) break;

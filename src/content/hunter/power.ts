@@ -1,3 +1,4 @@
+import { QI_NEED, martialBonus } from "../murim/martial/arts";
 import { combatFactor } from "../../engine/body";
 import { chance, nextFloat, pick, weightedPick } from "../../engine/rng";
 import type { HunterClass, Life, StatKey, WorldId } from "../../engine/types";
@@ -374,7 +375,7 @@ export function combatPower(life: Life): number {
   const sub = subClassOf(life);
   // บาดแผล/ความพิการ (ยุทธภพ) ลดพลังต่อสู้จริง
   return Math.round(combatFactor(life) * ((sub ? Math.max(0, sub.cp) * 0.5 + 2 : 0) +
-    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp") + sponsorBonus(life, "cp") + passiveBonus(life, "cp")),
+    p.rank * RANK_STEP + p.level * 0.8 + life.stats[cls.key] * 0.15 + sumSkills(life, "cp") + cls.cp + (g?.cp ?? 0) + p.items.length + partySize(life) * 2 + titleBonus(life, "cp") + sponsorBonus(life, "cp") + passiveBonus(life, "cp") + martialBonus(life)),
   );
 }
 
@@ -523,6 +524,11 @@ export function awaken(life: Life, rank: number, cls: HunterClass) {
   };
   life.flags.awakenDone = true;
   delete life.flags.notYet;
+  // ยุทธภพ: ผลตรวจกระดูก = รากฐาน (พรสวรรค์) ไม่ใช่ฝีมือ — ทุกคนเริ่มจากผู้ฝึกหัด รากฐานดีจะโตเร็ว
+  if (life.worldId === "murim") {
+    life.flags.mwRoot = rank;
+    life.power.rank = Math.min(rank, 1);
+  }
   if (life.worldId === "tower" && !life.flags.floor) life.flags.floor = 1; // เริ่มที่ชั้น 1
   // โลกธรรมดา: ไม่มีใครเห็นหน้าต่างระบบ จึงไม่ดังขึ้นเอง
   if (life.worldId !== "ordinary") addFame(life, rank >= 8 ? 50 : rank >= 5 ? 25 : rank >= 3 ? 8 : 1);
@@ -560,7 +566,15 @@ export function markTurn(life: Life) {
 export function rankUp(life: Life, reason: string, steps = 1) {
   const p = life.power;
   if (!p || p.rank >= MAX_RANK) return;
-  p.rank = Math.min(MAX_RANK, p.rank + steps);
+  // ยุทธภพ: ข้ามขั้นได้ก็ต่อเมื่อกำลังภายในสะสมพอ — ไม่พอ วาสนาจะกลายเป็นกำลังภายในและความเข้าใจแทน
+  if (life.worldId === "murim" && Number(life.flags.mwQi ?? 0) < QI_NEED[p.rank]) {
+    life.flags.mwQi = Math.round((Number(life.flags.mwQi ?? 0) + 1) * 10) / 10;
+    gainExp(life, 300);
+    log(life, `${reason} — แต่กำลังภายในยังไม่พอจะข้ามขั้น สิ่งที่ได้รับกลายเป็นลมปราณที่หนาแน่นขึ้นแทน`, "good");
+    return;
+  }
+  // ยุทธภพข้ามได้ทีละขั้นเสมอ (แต่ละขั้นต้องสะสมลมปราณใหม่)
+  p.rank = Math.min(MAX_RANK, p.rank + (life.worldId === "murim" ? 1 : steps));
   if (life.worldId !== "ordinary") addFame(life, p.rank >= 6 ? 15 : 5);
   log(life, `${reason} — ${worldOf(life.worldId).labels.rank}เพิ่มขึ้นเป็น 【${rankLabel(life, p.rank)}】`, "system");
 }

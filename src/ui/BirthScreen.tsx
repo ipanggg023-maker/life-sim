@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { RARITY_LABEL, talentById, talentFlavor } from "../content/talents";
 import { wealthLabel } from "../engine/game";
 import { isRealistic, worldOf } from "../content/worlds";
+import { regionOf } from "../content/murim/life/region";
 import { countryOf } from "../content/countries";
 import type { Life, StatKey } from "../engine/types";
 import { displayName, firstPerson, people, relationLabel, shortName } from "../engine/util";
@@ -46,6 +47,11 @@ export function BirthScreen({
           {worldOf(life.worldId).emoji} {worldOf(life.worldId).name}{life.country ? ` · ${countryOf(life.country).flag} ${countryOf(life.country).name}` : ""} · {wealthLabel(life.wealth, life.worldId)} · {worldOf(life.worldId).yearLabel} {life.birthYear}
           {life.devCreated && <span className="dev-tag"> · สร้างโดย Admin</span>}
         </p>
+        {life.worldId === "murim" && (
+          <p className="small">
+            📍 {regionOf(life).name} — {regionOf(life).desc}
+          </p>
+        )}
         {life.legacy && (
           <p className="small">
             {real
