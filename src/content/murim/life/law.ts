@@ -9,6 +9,7 @@ import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, log, money, shortName } from "../../../engine/util";
 import { shiftAlign } from "../m17core";
 import { DUEL_END, startDuel } from "./duel";
+import { spreadAboutYou } from "./rumors";
 import { REGIONS, regionOf } from "./region";
 import { TAEL } from "../story/kit";
 import { DARK_JOBS } from "../careers";
@@ -23,6 +24,8 @@ export const mourning = (l: Life) => Number(l.flags.mourningUntil ?? -1) > l.age
 export function addHeat(l: Life, n: number): string {
   const before = heatOf(l);
   l.flags.heat = clamp(before + n, 0, 100);
+  // ทำผิดครั้งใหญ่ = มีข่าวเรื่องคุณแพร่ออกไป (ปีละภูมิภาค)
+  if (n >= 8) spreadAboutYou(l, `มีคนเห็น${l.lastName}${l.firstName}${String(l.flags.lastCrime ?? "ก่อเรื่องร้าย")}`, false);
   if (heatOf(l) >= 50 && !l.flags.wanted) { l.flags.wanted = true; return " — ใบหน้าคุณถูกวาดลงใบประกาศจับแล้ว"; }
   return "";
 }

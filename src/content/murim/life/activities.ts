@@ -9,7 +9,7 @@ import { gainExp } from "../../hunter/power";
 import { addQi, artsOf, practise } from "../martial/arts";
 import { startDuel } from "./duel";
 import { jailed, mourning } from "./law";
-import { regionOf } from "./region";
+import { REL_LABEL, coverTracks, hearRumor } from "./rumors";
 import { TAEL } from "../story/kit";
 
 const pow = (l: Life) => l.power?.rank ?? 0;
@@ -40,12 +40,14 @@ const MURIM_ACTS: Activity[] = [
   // ───── ยุทธภพ ─────
   M({ group: "ยุทธภพ", id: "mw_teahouse", emoji: "🍵", name: "ฟังข่าวในโรงน้ำชา", desc: "ข่าวลือ อาจกลายเป็นงาน", minAge: 10, cost: 200, run: (l) => {
     addMoney(l, -200);
-    const rumors = ["ad.j.wanted_hunt", "ad.j.inn_secret", "ad.j.escort_small", "ms.m.challenge_board"].filter((id) => !(l.seen[id] ?? 0) || id === "ad.j.escort_small");
-    if (l.age >= 18 && rumors.length && chance(l, 0.45)) { runEvent(l, pick(l, rumors)); return { text: "" }; }
-    addStat(l, "happiness", 2); return meh(pick(l, ["นักเล่านิทานเล่าเรื่องจอมยุทธ์ที่เหาะข้ามแม่น้ำเหลือง", "โต๊ะข้างๆ เถียงกันว่าสำนักไหนเก่งที่สุด", `ข่าวว่า${regionOf(l).name}ปีนี้ข้าวแพงขึ้นอีก`]));
+    const jobs = ["ad.j.wanted_hunt", "ad.j.inn_secret", "ad.j.escort_small", "ms.m.challenge_board"].filter((id) => !(l.seen[id] ?? 0) || id === "ad.j.escort_small");
+    if (l.age >= 18 && jobs.length && chance(l, 0.25)) { runEvent(l, pick(l, jobs)); return { text: "" }; }
+    const r = hearRumor(l);
+    addStat(l, "happiness", 1); return meh(`ข่าวลือจาก${r.src}: "${r.text}" (${REL_LABEL[r.rel]}) — ตรวจสอบหรือลงมือได้ที่แท็บยุทธภพ`);
   } }),
   M({ group: "ยุทธภพ", id: "mw_challenge", emoji: "⚔️", name: "ท้าประลองจอมยุทธ์", desc: "ชนะได้ชื่อเสียง แพ้อาจเจ็บ", minAge: adult, available: (l) => !!l.power, run: (l) => { startDuel(l, { foe: pick(l, ["จอมยุทธ์พเนจร", "ศิษย์สำนักใหญ่", "นักดาบไร้นาม"]), rank: clamp(pow(l) + randInt(l, -1, 1), 0, 8), lethal: false, on: "brawl" }); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_bounty", emoji: "📯", name: "ล่าค่าหัว", desc: "เงินดี ถึงตาย", minAge: 18, available: (l) => !!l.power && pow(l) >= 2, run: (l) => { startDuel(l, { foe: pick(l, ["โจรร้ายมีค่าหัว", "ฆาตกรหนีคดี", "หัวหน้าโจรภูเขา"]), rank: clamp(pow(l) + randInt(l, 0, 1), 0, 8), lethal: true, on: "bandit" }); return { text: "" }; } }),
+  M({ group: "ยุทธภพ", id: "mw_investigate", emoji: "🔍", name: "รับสืบคดี", desc: "หาคนร้ายจากเบาะแส", minAge: 16, available: (l) => l.stats.smarts >= 40, run: (l) => { runEvent(l, "iv.case"); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_visit", emoji: "⛩️", name: "เยือนสำนักอื่น", desc: "ผูกมิตร แลกเปลี่ยนวิชา", minAge: 14, cost: 2000, run: (l) => { runEvent(l, "jh.visit"); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_alliance", emoji: "🛡️", name: "รับงานพันธมิตรยุทธจักร", desc: "คุ้มกัน สืบข่าว ไกล่เกลี่ย", minAge: 16, available: (l) => Number(l.flags.m17Align ?? 0) >= 0 && (!!l.power || l.stats.smarts >= 55), run: (l) => { runEvent(l, "jh.alliance"); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_cult_hunt", emoji: "🔥", name: "ล่าลัทธิมาร", desc: "ช่วยคน เสี่ยงชีวิต", minAge: 16, available: (l) => !!l.power && Number(l.flags.m17Align ?? 0) >= 0 && l.power.guild !== "cult", run: (l) => { runEvent(l, "jh.cult_hunt"); return { text: "" }; } }),
@@ -87,6 +89,9 @@ const MURIM_ACTS: Activity[] = [
   M({ group: "ครอบครัว", id: "mw_disown", emoji: "✂️", name: "ตัดพ่อตัดลูก", desc: "ขีดชื่อลูกออกจากผังตระกูล", minAge: 35, available: (l) => people(l, "child").some((p) => p.age >= 14), run: (l) => { runEvent(l, "fm.disown"); return { text: "" }; } }),
 
   // ───── อาชญากรรม ─────
+  M({ group: "อาชญากรรม", id: "mw_disguise", emoji: "🎭", name: "ปลอมตัวหลบสายตา", desc: "ทางการจับตาน้อยลง", minAge: 14, available: (l) => Number(l.flags.heat ?? 0) > 0, odds: (l) => clamp(0.45 + (l.stats.smarts - 50) / 150, 0.1, 0.9), run: (l) => { if (chance(l, clamp(0.45 + (l.stats.smarts - 50) / 150, 0.1, 0.9))) { coverTracks(l, 15); return ok("หนวดปลอม ผ้าโพกหัว และสำเนียงต่างถิ่น — ยามเดินผ่านคุณไปสามครั้งโดยไม่หันมอง"); } l.flags.heat = Number(l.flags.heat ?? 0) + 5; return bad("หนวดปลอมหลุดกลางตลาด — มีคนจำหน้าคุณได้"); } }),
+  M({ group: "อาชญากรรม", id: "mw_forge", emoji: "📜", name: "ทำเอกสารตัวตนปลอม", desc: "ล้างใบประกาศจับได้ ถ้าไม่ถูกหักหลัง", minAge: 16, cost: 30 * TAEL, available: (l) => Number(l.flags.heat ?? 0) >= 20, odds: (l) => clamp(0.4 + (l.stats.smarts - 50) / 150 + (l.stats.luck - 50) / 300, 0.1, 0.85), run: (l) => { addMoney(l, -30 * TAEL); if (chance(l, clamp(0.4 + (l.stats.smarts - 50) / 150 + (l.stats.luck - 50) / 300, 0.1, 0.85))) { coverTracks(l, 35); l.flags.forgedId = true; return ok("ตราประทับนายอำเภอเหมือนจริงทุกเส้น — ในทะเบียน คุณกลายเป็นคนอื่นไปแล้ว"); } l.flags.heat = Number(l.flags.heat ?? 0) + 20; return bad("ช่างปลอมเอกสารเป็นสายของทางการ — ชื่อจริงของคุณถูกส่งต่อให้มือปราบ"); } }),
+  M({ group: "อาชญากรรม", id: "mw_cover", emoji: "🔥", name: "ทำลายหลักฐาน", desc: "เผาเอกสาร ปิดปากพยาน", minAge: 16, available: (l) => Number(l.flags.heat ?? 0) > 0, odds: (l) => clamp(0.5 + (l.stats.smarts - 50) / 150, 0.15, 0.9), run: (l) => { if (chance(l, clamp(0.5 + (l.stats.smarts - 50) / 150, 0.15, 0.9))) { coverTracks(l, 20); return ok("เถ้าถ่านของบันทึกปลิวไปกับลม — ข่าวเรื่องคุณเริ่มเงียบลง"); } l.flags.heat = Number(l.flags.heat ?? 0) + 10; return bad("พยานคนหนึ่งเห็นคุณเผาเอกสาร — ตอนนี้เขาเป็นหลักฐานชิ้นใหม่"); } }),
   M({ group: "อาชญากรรม", id: "mw_steal", emoji: "🤏", name: "ล้วงกระเป๋า/ขโมย", desc: "ได้เงิน เสี่ยงถูกจับ", minAge: 8, run: (l) => { runEvent(l, "cr.steal"); return { text: "" }; } }),
   M({ group: "อาชญากรรม", id: "mw_rob", emoji: "🗡️", name: "ดักปล้นคนเดินทาง", desc: "เงินมาก บาปมาก", minAge: adult, run: (l) => { runEvent(l, "cr.rob"); return { text: "" }; } }),
   M({ group: "อาชญากรรม", id: "mw_poison", emoji: "☠️", name: "วางยาศัตรู", desc: "ถ้าพลาด ศัตรูจะรู้", minAge: adult, run: (l) => { runEvent(l, "cr.poison"); return { text: "" }; } }),
