@@ -4,6 +4,7 @@ import { applyJob, gradeToGpa, isStudent, jobChance, jobRequirementMissing, quit
 import type { Life, SchoolStage } from "../../engine/types";
 import { money } from "../../engine/util";
 import type { Act } from "../App";
+import { doJobAction, jobActionLocked, jobActionsFor } from "../../content/murim/life/jobActions";
 
 const STAGE_LABEL: Record<SchoolStage, string> = {
   none: "ยังไม่เข้าเรียน",
@@ -62,6 +63,30 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
             </button>
           </div>
         </div>
+      )}
+
+      {job && jobActionsFor(life).length > 0 && (
+        <>
+          <div className="section-title">งานของ{career?.name ?? "อาชีพนี้"} · ปีละครั้งต่ออย่าง</div>
+          <div className="grid">
+            {jobActionsFor(life).map((a) => {
+              const locked = jobActionLocked(life, a);
+              const odds = a.odds?.(life);
+              return (
+                <button key={a.id} className="activity" disabled={!!locked} onClick={() => act((l) => doJobAction(l, a.id))}>
+                  <span className="act-emoji">{a.emoji}</span>
+                  <span className="act-name">{a.name}</span>
+                  <span className="act-desc">
+                    {locked ?? a.desc}
+                    {!locked && a.cost ? ` · ${a.cost} ตำลึง` : ""}
+                    {!locked && odds !== undefined ? ` · สำเร็จ ${Math.round(odds * 100)}%` : ""}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {life.flags.mwWeapon && <p className="muted small">อาวุธคู่กาย: {String(life.flags.mwWeapon)}</p>}
+        </>
       )}
 
       {!job && (

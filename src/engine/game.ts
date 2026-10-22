@@ -305,6 +305,8 @@ export function salaryOf(life: Life, career: Career, level: number) {
   if (career.salary) base = career.salary(life, base);
   if (hasTalent(life, "merchant")) base *= 1.25;
   base *= 1 + titleBonus(life, "money") + sponsorBonus(life, "money") + passiveBonus(life, "money");
+  // กิจการที่ขยายด้วยงานเฉพาะอาชีพ (ที่นา เรือ สาขา ห้องพัก ลูกศิษย์) — รายได้เพิ่ม 15% ต่อขั้น
+  base *= 1 + Number(life.flags[`jobUp_${career.id}`] ?? 0) * 0.15;
   if (isStudent(life)) base *= 0.4;
   if (life.flags.doomed && !life.flags.rebuilt && !career.needsPower) base *= 0.3;
   return Math.round(base / 1000) * 1000;

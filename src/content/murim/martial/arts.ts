@@ -121,7 +121,9 @@ export function martialBonus(l: Life): number {
     arts += a.grade * tier(k.m) * 0.45 * fight;
   }
   const qi = Math.min(10, Math.sqrt(qiYears(l)) * 1.3);
-  return Math.round(Math.min(18, arts) + qi);
+  // อาวุธที่ตีเอง (งานช่างตีเหล็ก): ธรรมดา +1.5 · ชั้นดี +3 · ชั้นเลิศ +4.5 · ในตำนาน +6
+  const weapon = Number(l.flags.mwWeaponTier ?? 0) * 1.5;
+  return Math.round(Math.min(18, arts) + qi + weapon);
 }
 
 /** ความเร็วในการเรียน (คูณ) */
