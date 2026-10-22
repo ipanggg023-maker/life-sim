@@ -10,6 +10,9 @@ import { B, BIG, C, E, G, N, type Res } from "../story/kit";
 const MALE = [["จื่อหลง", "มังกรผู้เป็นปราชญ์"], ["ป๋อเยว่", "พี่ใหญ่ผู้ส่องแสง"], ["จ้งหมิง", "ผู้กลางผู้ฉลาด"], ["หยวนจือ", "รากฐานแห่งปัญญา"], ["เมิ่งเต๋อ", "ผู้เริ่มต้นด้วยคุณธรรม"], ["อวิ๋นฉาง", "เมฆที่ยาวไกล"], ["เสวียนเต๋อ", "คุณธรรมอันลึกล้ำ"], ["ป๋อเหยียน", "ผู้พูดน้อยแต่หนักแน่น"], ["จื่อจิ้ง", "ผู้สงบนิ่ง"]];
 const FEMALE = [["หว่านอิง", "ดอกไม้ที่อ่อนโยน"], ["ซูอวิ๋น", "เมฆขาวบริสุทธิ์"], ["เยว่หรง", "แสงจันทร์ที่เปิดกว้าง"], ["หลิงซวง", "น้ำค้างแข็งที่เด็ดเดี่ยว"], ["ชิงหว่าน", "ความสงบยามเย็น"], ["อวี้เจิน", "หยกแท้"], ["ซินเหยา", "ดวงใจที่ส่องสว่าง"]];
 
+/** ช่องของชื่อรองในรายการ (ctx ว่าง/ค่าแปลก = เริ่มที่ 0) */
+const slot = (c: Ctx, i: number, n: number) => (Math.abs(Math.floor(Number(c.k) || 0)) + i) % n;
+
 export const courtesyOf = (l: Life) => (l.flags.courtesyName ? String(l.flags.courtesyName) : undefined);
 
 /** ผู้ประกอบพิธี: พ่อ (ชาย) / แม่ (หญิง) → พ่อแม่อีกคน → อาจารย์ → ผู้อาวุโสที่สนิท */
@@ -30,7 +33,7 @@ const named = (i: number, r: Res): Res =>
   Object.assign(
     (l: Life, c: Ctx) => {
       const list = l.gender === "m" ? MALE : FEMALE;
-      const [n, meaning] = i >= 0 ? list[(Number(c.k) + i) % list.length] : pick(l, list);
+      const [n, meaning] = i >= 0 ? list[slot(c, i, list.length)] : pick(l, list);
       l.flags.courtesyName = n;
       l.flags.cameOfAge = true;
       const p = who(l, c);
@@ -42,7 +45,7 @@ const named = (i: number, r: Res): Res =>
   );
 const opt = (l: Life, c: Ctx, i: number) => {
   const list = l.gender === "m" ? MALE : FEMALE;
-  const [n, meaning] = list[(Number(c.k) + i) % list.length];
+  const [n, meaning] = list[slot(c, i, list.length)];
   return `ชื่อรอง "${n}" — ${meaning}`;
 };
 const prep = (l: Life) => ({ pid: officiant(l)?.id ?? "", k: Math.floor((l.seed % 97) + l.age) });
