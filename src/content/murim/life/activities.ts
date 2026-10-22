@@ -113,7 +113,7 @@ const MURIM_ACTS: Activity[] = [
   M({ group: "อาชญากรรม", id: "mw_cover", emoji: "🔥", name: "ทำลายหลักฐาน", desc: "เผาเอกสาร ปิดปากพยาน", minAge: 16, available: (l) => Number(l.flags.heat ?? 0) > 0, odds: (l) => clamp(0.5 + (l.stats.smarts - 50) / 150, 0.15, 0.9), run: (l) => { if (chance(l, clamp(0.5 + (l.stats.smarts - 50) / 150, 0.15, 0.9))) { coverTracks(l, 20); return ok("เถ้าถ่านของบันทึกปลิวไปกับลม — ข่าวเรื่องคุณเริ่มเงียบลง"); } l.flags.heat = Number(l.flags.heat ?? 0) + 10; return bad("พยานคนหนึ่งเห็นคุณเผาเอกสาร — ตอนนี้เขาเป็นหลักฐานชิ้นใหม่"); } }),
   M({ group: "อาชญากรรม", id: "mw_steal", emoji: "🤏", name: "ล้วงกระเป๋า/ขโมย", desc: "ได้เงิน เสี่ยงถูกจับ", minAge: 8, run: (l) => { runEvent(l, "cr.steal"); return { text: "" }; } }),
   M({ group: "อาชญากรรม", id: "mw_rob", emoji: "🗡️", name: "ดักปล้นคนเดินทาง", desc: "เงินมาก บาปมาก", minAge: adult, run: (l) => { runEvent(l, "cr.rob"); return { text: "" }; } }),
-  M({ group: "อาชญากรรม", id: "mw_poison", emoji: "☠️", name: "วางยาศัตรู", desc: "ถ้าพลาด ศัตรูจะรู้", minAge: adult, run: (l) => { runEvent(l, "cr.poison"); return { text: "" }; } }),
+  M({ group: "อาชญากรรม", id: "mw_poison", emoji: "☠️", name: "วางยา / ลอบสังหาร", desc: "เลือกเป้าหมายเอง ใครก็ได้ — ยิ่งสูงยิ่งยาก", minAge: adult, run: (l) => { runEvent(l, "dk.menu"); return { text: "" }; } }),
   M({ group: "อาชญากรรม", id: "mw_hit", emoji: "🌑", name: "รับงานลอบสังหาร", desc: "ทองหนัก ถึงตาย", minAge: 18, available: (l) => !!l.power, run: (l) => { runEvent(l, "cr.assassinate"); return { text: "" }; } }),
   M({ group: "อาชญากรรม", id: "mw_frame", emoji: "🎭", name: "ใส่ร้ายคนอื่น", desc: "ส่งศัตรูเข้าคุก", minAge: 18, run: (l) => { runEvent(l, "cr.frame"); return { text: "" }; } }),
 ];

@@ -29,7 +29,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
           <button className="person-row" onClick={() => setOpen(open === p.id ? null : p.id)}>
             <div>
               <div className="person-name">
-                {p.name} {p.alive ? "" : "🕯️"}
+                {p.name} <Sex p={p} /> {p.alive ? "" : "🕯️"}
               </div>
               <div className="person-sub">
                 {relationLabel(p, life)} · อายุ {p.age}
@@ -178,7 +178,7 @@ function LineageCard({ life, pick }: { life: Life; pick: (id: string) => void })
   const Chip = ({ p }: { p: Person }) => (
     <button className={`kin-chip ${p.alive ? "" : "dead"}`} onClick={() => pick(p.id)}>
       {p.alive ? "" : "🕯️ "}
-      {shortName(p)}
+      {shortName(p)} <Sex p={p} />
       <small> {relationLabel(p, life)} · {p.age}</small>
     </button>
   );
@@ -224,5 +224,14 @@ function LineageCard({ life, pick }: { life: Life; pick: (id: string) => void })
       <Row label="ลูก" list={kids} />
       <Row label="ศิษย์" list={pupils} />
     </details>
+  );
+}
+
+/** เพศของ NPC (ผู้เล่นขอให้รู้ชัดทุกคน) — สัญลักษณ์ + ข้อความสำหรับโปรแกรมอ่านหน้าจอ */
+function Sex({ p }: { p: Person }) {
+  return (
+    <span className={`gender-tag ${p.gender}`} aria-label={p.gender === "f" ? "หญิง" : "ชาย"} title={p.gender === "f" ? "หญิง" : "ชาย"}>
+      {p.gender === "f" ? "♀" : "♂"}
+    </span>
   );
 }

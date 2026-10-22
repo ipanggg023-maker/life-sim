@@ -147,6 +147,8 @@ export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | 
   // การเมืองในวังของรุ่นก่อนตามมาถึงลูกหลาน (EXPANSION §8.5.8)
   const cl = courtLegacy(dead);
   if (cl && how !== "era") next.flags.plCourt = cl;
+  // ตระกูลถูกกวาดล้างเพราะลอบสังหารคนชั้นสูง — ลูกที่หนีรอดสืบเรื่องต่อ
+  if (dead.flags.familyPurged && how === "heir") { next.flags.plPurgedFor = String(dead.flags.familyPurged); next.flags.plCourt = "purged"; }
   // ผู้เล่นเป็นฮ่องเต้: ลูกขึ้นครองราชย์ต่อ · ศิษย์/คนรุ่นหลัง = ราชสำนักต้องหาคนใหม่ · ผู้สำเร็จราชการตาย = อำนาจคืนสู่วัง
   if (dead.flags.emperorSelf || Number(dead.flags.courtRank ?? 0) >= 5) {
     const ct = courtOf(next);

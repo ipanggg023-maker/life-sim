@@ -3,7 +3,7 @@
 // · ผลระยะยาว (ธง ความทรงจำของ NPC บาดแผล เป้าหมาย) · ห้ามเกิดซ้ำโดยไม่มีเหตุผล
 import { injure, type InjuryKind, type Part } from "../../../engine/body";
 import type { Choice, Ctx, GameEvent, Outcome } from "../../../engine/events";
-import { kill } from "../../../engine/game";
+import { kill, kinDeathHooks } from "../../../engine/game";
 import { feel, remember, type RelAxes } from "../../../engine/npc";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life, Person, Relation, StatKey } from "../../../engine/types";
@@ -122,6 +122,20 @@ export function fxHints(fx: Fx | undefined): { good: string[]; bad: string[] } {
   return { good, bad };
 }
 const join = (xs: string[]) => (xs.length ? xs.slice(0, 4).join(" · ") : undefined);
+/** คนในฉาก (ctx.pid) ตายจริง — ไม่ใช่แค่ข้อความ (ผู้เล่นขอ: เหตุการณ์ที่บอกว่าตาย ต้องตายจริง) */
+export const kinDies = (text: Txt, cause: string, fx: Fx = {}): Res =>
+  withFx((l, c) => {
+    const p = who(l, c);
+    let extra = "";
+    if (p && p.alive) {
+      p.alive = false;
+      for (const h of kinDeathHooks) h(l, p, false);
+      l.stats.happiness = clamp(l.stats.happiness - 15, 0, 100);
+      extra = ` — ${shortName(p)}จากไปแล้ว (${cause})`;
+    }
+    return { text: txt(text, l, c) + extra + apply(l, c, fx), kind: "bad", effects: { good: [], bad: [...fxHints(fx).bad, "คนที่คุณรักจากไป"] } };
+  }, fx);
+
 /** สุ่มหนึ่งในหลายผล */
 export const ONE = (...rs: Res[]): Res => (l, c) => pick(l, rs)(l, c);
 
