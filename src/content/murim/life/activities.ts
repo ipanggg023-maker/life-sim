@@ -17,6 +17,14 @@ import { gift } from "./gifts";
 
 const pow = (l: Life) => l.power?.rank ?? 0;
 const adult = 16;
+/** สนามสอบที่เปิดให้คุณปีนี้ (ตามวุฒิที่มี) — undefined = ปีนี้ไม่มีสนามสอบ/สอบครบแล้ว */
+export function examLevel(l: Life): string | undefined {
+  const triennial = (l.birthYear + l.age) % 3 === 0;
+  if (!l.flags.xiucai) return l.age >= 15 ? "goal.exam" : undefined;
+  if (!l.flags.juren) return l.age >= 17 && triennial ? "jh.exam_province" : undefined;
+  if (!l.flags.jinshi) return l.age >= 20 && triennial ? "jh.exam_palace" : undefined;
+  return undefined;
+}
 const ok = (text: string) => ({ text, kind: "good" as const });
 const bad = (text: string) => ({ text, kind: "bad" as const });
 const meh = (text: string) => ({ text });
@@ -28,6 +36,8 @@ const MURIM_ACTS: Activity[] = [
   M({ group: "ฝึกฝน", id: "mw_body", emoji: "🥋", name: "ฝึกร่างกายใต้น้ำตก", desc: "สุขภาพ + พื้นฐาน", minAge: 6, run: (l) => { addStat(l, "health", randInt(l, 2, 5)); l.flags.mwBasics = Number(l.flags.mwBasics ?? 0) + 1; return ok("น้ำตกเย็นจนกระดูกปวด — แต่ทุกเช้าคุณยืนได้นานขึ้นอีกนิด"); } }),
   M({ group: "ฝึกฝน", id: "mw_meditate", emoji: "🧘", name: "นั่งสมาธิ", desc: "ความสุข + ลมปราณนิ่ง", minAge: 8, run: (l) => { addStat(l, "happiness", randInt(l, 2, 5)); if (l.power) addQi(l, 0.5); return ok(l.power ? "ลมปราณไหลเป็นวงช้าๆ ใจสงบลงเหมือนน้ำในบ่อ" : "คุณนั่งหลับตาจนขาเป็นเหน็บ — แต่ใจเบาขึ้น"); } }),
   M({ group: "ฝึกฝน", id: "mw_manual", emoji: "📜", name: "อ่านตำรา", desc: "สติปัญญา + ความเข้าใจวิชา", minAge: 6, run: (l) => { addStat(l, "smarts", randInt(l, 1, 3)); const a = artsOf(l)[0]; if (a) practise(l, a.id, 3); return ok("คุณอ่านจนตะเกียงหมดน้ำมัน — ตัวอักษรบางตัวเริ่มมีความหมายใหม่"); } }),
+  // สอบขุนนาง: ใครก็สอบได้ ไม่ต้องมีเป้าหมายขุนนาง · ระดับตามที่สอบผ่านแล้ว · มณฑลและหน้าพระที่นั่งจัดทุกสามปี
+  M({ group: "ฝึกฝน", id: "mw_exam", emoji: "🖌️", name: "สอบขุนนาง", desc: "อำเภอ → มณฑล → หน้าพระที่นั่ง (สองระดับหลังจัดทุก 3 ปี)", minAge: 15, available: (l) => !!examLevel(l), run: (l) => { runEvent(l, examLevel(l)!); return { text: "" }; } }),
   M({ group: "ฝึกฝน", id: "mw_spar", emoji: "🤺", name: "ประลองกับเพื่อนร่วมฝึก", desc: "ฝีมือ + อาจบาดเจ็บเล็กน้อย", minAge: 12, available: (l) => !!l.power, odds: (l) => clamp(0.5 + (l.stats.health - 50) / 200, 0.2, 0.9), run: (l) => { gainExp(l, 250); if (chance(l, clamp(0.5 + (l.stats.health - 50) / 200, 0.2, 0.9))) return ok("คุณชนะสองในสามยก — ท่าที่ติดมาหลายเดือนเริ่มลื่นไหล"); addStat(l, "health", -3); return bad("ไม้ฟาดเข้าซี่โครงเต็มแรง — เจ็บแต่ได้บทเรียน"); } }),
   M({ group: "ฝึกฝน", id: "mw_wander", emoji: "⛰️", name: "ท่องเขาหาวาสนา", desc: "อาจเจอสิ่งไม่คาดฝัน", minAge: 14, odds: (l) => clamp(0.12 + l.stats.luck / 400, 0.05, 0.4), run: (l) => {
     if (chance(l, clamp(0.12 + l.stats.luck / 400, 0.05, 0.4))) {
