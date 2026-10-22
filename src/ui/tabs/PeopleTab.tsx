@@ -3,7 +3,7 @@ import { runEvent, argue, askMoney, breakUp, propose, spendTime, tryForBaby, con
 import type { Life, Person, Relation } from "../../engine/types";
 import { relationLabel, shortName } from "../../engine/util";
 import type { Act } from "../App";
-import { AXIS, goalOf, notableAxes, traitName, traitsOf } from "../../engine/npc";
+import { AXIS, goalOf, notableAxes, traitName, traitsOf, profileOf, relOf } from "../../engine/npc";
 import { isRealistic } from "../../content/worlds";
 
 const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "father", "mother", "sibling", "friend", "rival"];
@@ -50,11 +50,25 @@ export function PeopleTab({ life, act }: { life: Life; act: Act }) {
 function PersonMind({ p }: { p: Person }) {
   const axes = notableAxes(p);
   const mem = (p.mem ?? []).filter((m) => m.known).slice(-3).reverse();
+  const r = relOf(p);
+  const pr = profileOf(p);
+  // รู้จักตัวตนเชิงลึกของเขาเท่าที่สนิทพอ — ไม่ใช่เห็นทุกอย่างตั้งแต่แรก
+  const family = ["father", "mother", "sibling", "spouse", "child"].includes(p.relation);
+  const knowsHeart = family || r.trust >= 40 || r.love >= 60;
+  const knowsLine = family || r.respect >= 45 || r.trust >= 55;
   return (
     <div className="person-mind">
       <div className="small muted">
         บุคลิก: {traitsOf(p).map(traitName).join(" · ")} · {goalOf(p)}
+        {pr.sideGoals.length > 0 && knowsHeart && ` · และ${pr.sideGoals[0]}`}
       </div>
+      {knowsHeart && (
+        <div className="small muted">
+          ให้ค่ากับ{pr.values.join(" และ ")} · {pr.fear}
+          {knowsLine && pr.limit && ` · เส้นที่ไม่ข้าม: ${pr.limit}`}
+        </div>
+      )}
+      {pr.secret?.known && <div className="small danger-text">🤫 ความลับ: เขา{pr.secret.text}</div>}
       {axes.length > 0 && (
         <div className="axis-row">
           {axes.map(({ axis, value }) => (

@@ -1,7 +1,7 @@
 // Phase 2 — เหตุการณ์ที่เกิดจากความรู้สึกและความทรงจำของ NPC จริงๆ (ไม่ใช่สุ่มลอยๆ)
 // ทุกฉากเลือกคนจากสถานะความสัมพันธ์ปัจจุบัน แล้วผลที่ได้ถูกจดเป็นความทรงจำของเขา
 import type { Ctx, GameEvent, Outcome } from "../../../engine/events";
-import { feel, hasTrait, relOf, remember, reveal } from "../../../engine/npc";
+import { feel, hasTrait, profileOf, relOf, remember, reveal, wouldBetray } from "../../../engine/npc";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life, Person } from "../../../engine/types";
 import { addFame, addMoney, addStat, money, relationLabel, shortName } from "../../../engine/util";
@@ -76,9 +76,9 @@ export const NPC_EVENTS: GameEvent[] = [
     id: "npc.betrayal",
     minAge: 18,
     maxAge: 80,
-    weight: (l) => (alive(l).some((p) => (hasTrait(p, "cunning") || hasTrait(p, "greedy")) && relOf(p).jealousy >= 35 && relOf(p).trust < 50) ? 7 : 0),
+    weight: (l) => (alive(l).some((p) => (hasTrait(p, "cunning") || hasTrait(p, "greedy")) && relOf(p).jealousy >= 35 && relOf(p).trust < 50 && wouldBetray(p)) ? 7 : 0),
     maxTimes: 2,
-    prepare: (l) => ({ pid: pickBy(l, (x) => (hasTrait(x, "cunning") || hasTrait(x, "greedy")) && relOf(x).jealousy >= 35 && relOf(x).trust < 50)!.id }),
+    prepare: (l) => ({ pid: pickBy(l, (x) => (hasTrait(x, "cunning") || hasTrait(x, "greedy")) && relOf(x).jealousy >= 35 && relOf(x).trust < 50 && wouldBetray(x))!.id }),
     title: "แทงข้างหลัง",
     text: (l, c) => `คุณเพิ่งรู้ว่าคนที่เอาความลับเรื่อง${pick(l, ["เส้นทางขนสินค้า", "เงินที่คุณเก็บไว้", "จุดอ่อนในวิชาของคุณ", "ครอบครัวของคุณ"])}ไปขายให้คู่แข่ง คือ${nm(l, c)} — คนที่คุณเคยเรียกว่าสหาย`,
     choices: [
@@ -114,6 +114,65 @@ export const NPC_EVENTS: GameEvent[] = [
     choices: [
       { label: "ยอมรับตรงๆ", run: (l, c) => { const p = who(l, c)!; reveal(p, String(c.k), 20); feel(p, { respect: 6, grudge: -8 }); return meh(`${nm(l, c)}โกรธ แต่ก็นับถือที่คุณไม่โกหก`); } },
       { label: "ปฏิเสธเสียงแข็ง", check: { stat: "smarts", dc: 55 }, run: (l, c, ok) => { const p = who(l, c)!; if (ok) { feel(p, { trust: -5 }); return meh(`${nm(l, c)}ยังลังเล — ครั้งนี้คุณรอดไปได้`); } reveal(p, String(c.k), 35); return bad(`หลักฐานชัดเกินจะปฏิเสธ ${nm(l, c)}เกลียดคุณทั้งเรื่องที่ทำ และเรื่องที่โกหก`); } },
+    ],
+  },
+  // ───── ตัวตนเชิงลึกของ NPC: ความลับ ความกลัว เป้าหมายรอง เส้นที่ไม่ข้าม ─────
+  {
+    id: "npc.confide",
+    minAge: 16,
+    maxAge: 95,
+    maxTimes: 0,
+    weight: (l) => (alive(l).some((p) => { const pr = profileOf(p); return !!pr.secret && !pr.secret.known && relOf(p).trust >= 60 && relOf(p).love >= 50; }) ? 5 : 0),
+    prepare: (l) => ({ pid: pickBy(l, (x) => { const pr = profileOf(x); return !!pr.secret && !pr.secret.known && ((x: Person) => relOf(x).trust >= 60 && relOf(x).love >= 50)(x); })!.id }),
+    title: "ความลับ",
+    text: (l, c) => { const p = who(l, c)!; return `คืนนั้น${nm(l, c)}ดื่มมากกว่าปกติ แล้วจับแขนคุณแน่น "มีเรื่องหนึ่งที่ข้าไม่เคยบอกใคร — ข้า${profileOf(p).secret!.text}"`; },
+    choices: [
+      { label: "สาบานว่าจะเก็บไว้ตลอดชีวิต", run: (l, c) => { const p = who(l, c)!; p.secret!.known = true; feel(p, { trust: 15, love: 8, loyalty: 10 }); remember(l, p, "kept_secret", "คุณรู้ความลับของเขาและเก็บไว้", 3, {}); return good(`${nm(l, c)}ร้องไห้เหมือนเด็ก — ภาระที่แบกมาคนเดียวหลายปี ตอนนี้มีคนช่วยถือ`); } },
+      { label: "แนะนำให้เขาสารภาพและชดใช้", check: { stat: "looks", dc: 50 }, run: (l, c, ok) => { const p = who(l, c)!; p.secret!.known = true; if (ok) { feel(p, { respect: 12, trust: 5 }); return good(`${nm(l, c)}คิดอยู่หลายวัน แล้วไปสารภาพจริงๆ — เขาเสียชื่อไปบ้าง แต่หลับได้ทุกคืน`); } feel(p, { trust: -10 }); return bad(`${nm(l, c)}หน้าซีด "ข้าบอกเจ้าเพราะคิดว่าเจ้าจะเข้าใจ"`); } },
+      { label: "ใช้ความลับนี้ต่อรองในวันหน้า", run: (l, c) => { const p = who(l, c)!; p.secret!.known = true; remember(l, p, "blackmail_risk", "คุณถือความลับของเขาไว้ในมือ", 2, { fear: 15 }, false); return meh(`คุณจดความลับนั้นไว้ในใจ — ${nm(l, c)}ยังไม่รู้ว่าคุณคิดอะไรอยู่`); } },
+    ],
+  },
+  {
+    id: "npc.fear",
+    minAge: 16,
+    maxAge: 95,
+    maxTimes: 0,
+    weight: (l) => (alive(l).some((p) => relOf(p).love >= 45 && ["กลัวความจน", "กลัวถูกทอดทิ้ง", "กลัวคนในครอบครัวเป็นอันตราย"].includes(profileOf(p).fear)) ? 3 : 0),
+    prepare: (l) => ({ pid: pickBy(l, (x) => relOf(x).love >= 45 && ["กลัวความจน", "กลัวถูกทอดทิ้ง", "กลัวคนในครอบครัวเป็นอันตราย"].includes(profileOf(x).fear))!.id }),
+    title: "สิ่งที่เขากลัว",
+    text: (l, c) => { const fear = profileOf(who(l, c)!).fear; return fear === "กลัวความจน" ? `${nm(l, c)}มาหาคุณตอนดึก ตาแดงก่ำ — ร้านค้าเจ๊ง เขากลัวว่าลูกจะต้องอดเหมือนที่ตัวเองเคยอดตอนเด็ก` : fear === "กลัวถูกทอดทิ้ง" ? `${nm(l, c)}ถามคุณเสียงสั่น "เจ้าจะไม่ทิ้งข้าไปเหมือนคนอื่นใช่ไหม"` : `${nm(l, c)}เพิ่งได้ข่าวว่ามีคนตามล่าครอบครัวเขา — เขาไม่กลัวตาย แต่กลัวลูกเมียจะเป็นอะไรไป`; },
+    choices: [
+      { label: (l) => `ช่วยเต็มที่ (${money(l, 40_000)})`, show: (l) => l.money >= 40_000, run: (l, c) => { const p = who(l, c)!; addMoney(l, -40_000); remember(l, p, "helped_fear", "คุณช่วยในวันที่เขากลัวที่สุด", 3, { debt: 40, love: 10, loyalty: 15 }); return good(`${nm(l, c)}คุกเข่าลงต่อหน้าคุณ — คนที่ช่วยเราในวันที่กลัวที่สุด เราไม่มีวันลืม`); } },
+      { label: "อยู่ข้างๆ ปลอบใจ", run: (l, c) => { const p = who(l, c)!; feel(p, { love: 8, trust: 6 }); return good(`ไม่มีเงิน ไม่มีคำสัญญาใหญ่โต — แค่คุณอยู่ตรงนั้นทั้งคืน และ${nm(l, c)}หลับได้เป็นครั้งแรกในรอบเดือน`); } },
+      { label: "บอกว่าเป็นเรื่องของเขาเอง", run: (l, c) => { const p = who(l, c)!; remember(l, p, "abandoned_fear", "คุณหันหลังให้ในวันที่เขากลัวที่สุด", 3, { love: -15, trust: -15, grudge: 10 }); return bad(`${nm(l, c)}พยักหน้าช้าๆ แล้วเดินออกไป — สิ่งที่เขากลัวที่สุดเพิ่งเกิดขึ้นจริง`); } },
+    ],
+  },
+  {
+    id: "npc.side_goal",
+    minAge: 18,
+    maxAge: 90,
+    maxTimes: 0,
+    weight: (l) => (alive(l).some((p) => relOf(p).love >= 40 && profileOf(p).sideGoals.length > 0 && !p.tags?.includes("sideGoalDone")) ? 3 : 0),
+    prepare: (l) => ({ pid: pickBy(l, (x) => relOf(x).love >= 40 && profileOf(x).sideGoals.length > 0 && !x.tags?.includes("sideGoalDone"))!.id }),
+    title: "ความฝันอีกข้อ",
+    text: (l, c) => `${nm(l, c)}เล่าว่านอกจากเรื่องหลักในชีวิต เขา${profileOf(who(l, c)!).sideGoals[0]}มาตลอด — แต่ไม่เคยกล้าลงมือ`,
+    choices: [
+      { label: "ช่วยให้เขาได้ลองสักครั้ง", run: (l, c) => { const p = who(l, c)!; (p.tags ??= []).push("sideGoalDone"); const ok = chance(l, 0.6); remember(l, p, "helped_dream", "คุณช่วยให้เขาได้ทำตามความฝัน", 2, ok ? { love: 12, debt: 20 } : { love: 6, debt: 10 }); return ok ? good(`ครึ่งปีต่อมา${nm(l, c)}ส่งจดหมายมาเล่าว่าทำได้แล้ว — ยาวสามหน้า เต็มไปด้วยคำขอบคุณ`) : meh(`ไม่สำเร็จ — แต่${nm(l, c)}บอกว่าอย่างน้อยก็ไม่ต้องเสียใจที่ไม่เคยลอง`); } },
+      { label: "บอกให้ทำตามความจริงดีกว่า", run: (l, c) => { feel(who(l, c)!, { love: -3 }); return meh(`${nm(l, c)}หัวเราะแห้งๆ "ก็จริงของเจ้า"`); } },
+    ],
+  },
+  {
+    id: "npc.limit",
+    minAge: 18,
+    maxAge: 90,
+    maxTimes: 2,
+    weight: (l) => (alive(l).some((p) => (p.relation === "ally" || p.tags?.includes("disciple")) && profileOf(p).limit !== "") && Number(l.flags.m17Align ?? 0) <= -10 ? 4 : 0),
+    prepare: (l) => ({ pid: pickBy(l, (x) => (x.relation === "ally" || !!x.tags?.includes("disciple")) && profileOf(x).limit !== "")!.id }),
+    title: "เส้นที่เขาไม่ข้าม",
+    text: (l, c) => `คุณสั่งให้${nm(l, c)}ไป${pick(l, ["เผาบ้านของพยาน", "ข่มขู่ครอบครัวของลูกหนี้", "ขโมยคัมภีร์จากหอสำนักอื่น"])} — เขาก้มหน้านิ่ง "ข้า${profileOf(who(l, c)!).limit} ท่านอาจารย์รู้ดี"`,
+    choices: [
+      { label: "เคารพการตัดสินใจของเขา", run: (l, c) => { feel(who(l, c)!, { respect: 15, loyalty: 10 }); return good(`${nm(l, c)}เงยหน้าขึ้นมองคุณ — ในแววตามีทั้งความโล่งใจและความนับถือ`); } },
+      { label: "บังคับให้ทำ", run: (l, c) => { const p = who(l, c)!; remember(l, p, "forced_limit", "ถูกบังคับให้ทำสิ่งที่ขัดกับใจ", 3, { loyalty: -25, trust: -20, grudge: 15 }); return bad(`${nm(l, c)}ทำตามสั่ง — แต่บางอย่างในตัวเขาตายไปในคืนนั้น`); } },
     ],
   },
 ];

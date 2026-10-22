@@ -6,6 +6,7 @@ import { pick, randInt } from "../../../engine/rng";
 import type { Life, Person } from "../../../engine/types";
 import { addFame, addStat, createPerson, log, people, shortName } from "../../../engine/util";
 import { DUEL_END, startDuel } from "./duel";
+import { alignment, mySect, shiftAlign } from "../m17core";
 
 export interface LifeGoal {
   id: string;
@@ -19,6 +20,8 @@ export interface LifeGoal {
   pid?: string;
   /** ทำไมถึงตั้งเป้านี้ (แสดงในบันทึก) */
   why?: string;
+  /** เป้าหมายรอง (ไม่เกิน 2) — เดินคู่กับเป้าหมายหลัก */
+  side?: boolean;
 }
 
 interface GoalDef {
@@ -97,14 +100,80 @@ export const GOALS: GoalDef[] = [
     },
     won: "ความแค้นที่แบกมาหลายปีจบลงแล้ว — คุณรู้สึกเบา หรืออาจจะว่างเปล่า",
   },
+  {
+    id: "sect", emoji: "🏯", name: "ก่อตั้งหรือกอบกู้สำนัก",
+    steps: ["ฝีมือถึงขั้นที่คนยอมฝากตัว", "มีสำนักเป็นของตัวเอง", "สำนักมีศิษย์ครบสามสิบคน"],
+    passed: (l, s) => { const sect = mySect(l); return [rank(l) >= 4 || (l.job?.careerId === "disciple" && l.job.level >= 4), !!sect || (l.job?.careerId === "disciple" && l.job.level >= 5), (sect?.d ?? 0) >= 30 || (l.job?.careerId === "disciple" && l.job.level >= 5 && l.fame >= 40)][s]; },
+    won: "ป้ายชื่อสำนักแขวนเด่นเหนือประตู — ศิษย์สามสิบคนตั้งแถวคารวะทุกเช้า ชื่อนี้จะอยู่หลังคุณจากไป",
+    reward: (l) => addFame(l, 12),
+  },
+  {
+    id: "birth", emoji: "🔍", name: "ค้นหาความจริงเรื่องชาติกำเนิด",
+    steps: ["พบเบาะแสแรก", "ตามรอยจนถึงต้นทาง", "รู้ความจริง"],
+    passed: (l, s) => [!!l.flags.birthClue1, !!l.flags.birthClue2, !!l.flags.birthTruth][s],
+    won: "ความจริงไม่ได้สวยงามอย่างที่ฝัน — แต่ตอนนี้คุณรู้แล้วว่าตัวเองมาจากไหน และเลือกได้ว่าจะเป็นใคร",
+    reward: (l) => addStat(l, "happiness", 10),
+  },
+  {
+    id: "oath", emoji: "🤝", name: "รักษาคำสัตย์",
+    steps: ["ยืนข้างเขาในวันที่ลำบาก", "ยอมเสียสละเพื่อคำสาบาน", "รักษาคำสัตย์ครบแปดปี"],
+    passed: (l, s, g) => { const n = Number(l.flags.oathKept ?? 0); const gone = !l.people.find((p) => p.id === g.pid)?.alive; /* เขาตายไปแล้ว: คำสัตย์ยังอยู่ — ดูแลครอบครัวเขาแทน */ return [n >= 1 || gone, n >= 2 || gone, l.age - g.since >= 8][s]; },
+    won: "แปดปีที่ไม่เคยผิดคำ — ในยุทธภพที่คนทรยศกันเป็นเรื่องปกติ คุณกลายเป็นคนที่ทุกคนอยากได้เป็นพี่น้อง",
+    reward: (l) => { addFame(l, 8); shiftAlign(l, 4); },
+  },
+  {
+    id: "atone", emoji: "🕯️", name: "ชดใช้บาป วางดาบ",
+    steps: ["ไม่ฆ่าใครอีกสองปีเต็ม", "ใช้ชีวิตจนใจกลับมาเป็นกลาง", "ช่วยชีวิตคนจนใจสว่าง"],
+    passed: (l, s, g) => [l.age - Math.max(g.since, Number(l.flags.mwKillAge ?? -99)) >= 2, alignment(l) >= 0, alignment(l) >= 30][s],
+    won: "คืนหนึ่งคุณนอนหลับได้ทั้งคืนโดยไม่ฝันถึงใบหน้าเหล่านั้น — บาปไม่ได้หายไป แต่คุณไม่ได้แบกมันคนเดียวอีกแล้ว",
+    reward: (l) => addStat(l, "happiness", 15),
+  },
+  {
+    id: "teach", emoji: "📚", name: "ถ่ายทอดวิชาให้คนรุ่นหลัง",
+    steps: ["รับศิษย์คนแรก", "ถ่ายทอดวิชาที่ดีที่สุดให้ศิษย์", "ทิ้งคัมภีร์หรือศิษย์สามคนไว้ในโลก"],
+    passed: (l, s) => { const pupils = l.people.filter((p) => p.alive && p.tags?.includes("disciple")); return [pupils.length >= 1, l.people.some((p) => p.tags?.some((t) => t.startsWith("art:"))), !!l.flags.wroteManual || pupils.length >= 3][s]; },
+    won: "สิ่งที่คุณใช้ทั้งชีวิตค้นพบ จะไม่ตายไปพร้อมคุณ — มีมือคู่ใหม่รับมันไว้แล้ว",
+    reward: (l) => addFame(l, 8),
+  },
+  {
+    id: "leader", emoji: "👑", name: "ขึ้นเป็นผู้นำ",
+    steps: ["มีชื่อเสียงจนคนเชื่อฟัง", "มีกำลังพอจะชิงตำแหน่ง", "ได้ตำแหน่งสูงสุด"],
+    passed: (l, s) => {
+      const path = String(l.flags.leaderPath ?? "sect");
+      const top = path === "throne" ? !!l.flags.foundedDynasty : path === "demon" ? !!l.flags.heavenlyDemon : !!mySect(l) || (l.job?.careerId === "disciple" && l.job.level >= 5);
+      return [l.fame >= 25, rank(l) >= 4 || l.fame >= 50, top][s];
+    },
+    won: "คนที่เคยไม่มีใครรู้จัก ตอนนี้นั่งอยู่บนเก้าอี้ที่ทุกคนต้องก้มหัวให้ — และเพิ่งรู้ว่าเก้าอี้ตัวนี้หนักกว่าที่คิด",
+    reward: (l) => addFame(l, 15),
+  },
+  {
+    id: "ascend", emoji: "☁️", name: "บรรลุเซียน",
+    steps: ["ก้าวสู่ขั้นลึกล้ำ", "ข้ามพ้นความเป็นความตาย", "ผ่านทัณฑ์สวรรค์"],
+    passed: (l, s) => [rank(l) >= 7, rank(l) >= 8, !!l.flags.ascended][s],
+    won: "เมฆเปิดทาง — สิ่งที่มนุษย์ร้อยล้านคนใฝ่ฝัน คุณทำได้สำเร็จ",
+  },
 ];
 
 export const goalById = (id: string) => GOALS.find((g) => g.id === id);
-export const mainGoal = (l: Life) => l.goals?.find((g) => !g.end);
+export const mainGoal = (l: Life) => l.goals?.find((g) => !g.end && !g.side);
+export const sideGoals = (l: Life) => (l.goals ?? []).filter((g) => !g.end && g.side);
+export const hasGoal = (l: Life, id: string) => (l.goals ?? []).some((g) => !g.end && g.id === id);
+
+/** เพิ่มเป้าหมายรอง (ไม่เกิน 2 · ไม่ซ้ำกับที่มีอยู่) */
+export function addSideGoal(l: Life, id: string, why?: string, pid?: string): boolean {
+  if (sideGoals(l).length >= 2 || hasGoal(l, id)) return false;
+  (l.goals ??= []).push({ id, step: 0, since: l.age, why, pid, side: true });
+  const d = goalById(id)!;
+  log(l, `🎯 เป้าหมายรอง: ${d.emoji} ${d.name}${why ? ` — ${why}` : ""}`, "good");
+  return true;
+}
 
 export function setGoal(l: Life, id: string, why?: string, pid?: string) {
   const cur = mainGoal(l);
   if (cur) cur.end = "changed";
+  // เป้าหมายรองที่ตรงกับเป้าหมายหลักใหม่ ถูกยกขึ้นเป็นหลัก (ไม่นับซ้ำ)
+  const dup = sideGoals(l).find((g) => g.id === id);
+  if (dup) { dup.side = false; dup.why = why ?? dup.why; return; }
   (l.goals ??= []).push({ id, step: 0, since: l.age, why, pid });
   const d = goalById(id)!;
   log(l, `🎯 เป้าหมายชีวิตใหม่: ${d.emoji} ${d.name}${why ? ` — ${why}` : ""}`, "milestone");
@@ -114,20 +183,21 @@ export function setGoal(l: Life, id: string, why?: string, pid?: string) {
 export function tickGoals(l: Life) {
   if (l.worldId !== "murim" || !l.alive) return;
   if (l.flags.plan === "wander") l.flags.mwWanderYears = Number(l.flags.mwWanderYears ?? 0) + 1;
-  const g = mainGoal(l);
-  if (!g) return;
-  const d = goalById(g.id);
-  if (!d) return;
-  // ผ่านได้ปีละหนึ่งขั้น
-  if (g.step < d.steps.length && d.passed(l, g.step, g)) {
-    g.step++;
-    if (g.step >= d.steps.length) {
-      g.end = "won";
-      d.reward?.(l);
-      l.flags[`goalWon_${g.id}`] = true;
-      log(l, `🏆 เป้าหมายชีวิตสำเร็จ: ${d.name} — ${d.won}`, "milestone");
-    } else {
-      log(l, `🎯 ${d.name}: ${d.steps[g.step - 1]} ✓ (ขั้นต่อไป: ${d.steps[g.step]})`, "good");
+  for (const g of [mainGoal(l), ...sideGoals(l)]) {
+    if (!g) continue;
+    const d = goalById(g.id);
+    if (!d) continue;
+    // ผ่านได้ปีละหนึ่งขั้นต่อเป้าหมาย
+    if (g.step < d.steps.length && d.passed(l, g.step, g)) {
+      g.step++;
+      if (g.step >= d.steps.length) {
+        g.end = "won";
+        d.reward?.(l);
+        l.flags[`goalWon_${g.id}`] = true;
+        log(l, `🏆 ${g.side ? "เป้าหมายรอง" : "เป้าหมายชีวิต"}สำเร็จ: ${d.name} — ${d.won}`, "milestone");
+      } else {
+        log(l, `🎯 ${d.name}: ${d.steps[g.step - 1]} ✓ (ขั้นต่อไป: ${d.steps[g.step]})`, "good");
+      }
     }
   }
 }
@@ -137,7 +207,8 @@ export function goalLine(l: Life): string | undefined {
   const g = mainGoal(l);
   const d = g && goalById(g.id);
   if (!g || !d) return;
-  return `${d.emoji} ${d.name} (${g.step}/${d.steps.length}) · ถัดไป: ${d.steps[Math.min(g.step, d.steps.length - 1)]}`;
+  const extra = sideGoals(l).map((x) => goalById(x.id)?.emoji ?? "").join("");
+  return `${d.emoji} ${d.name} (${g.step}/${d.steps.length}) · ถัดไป: ${d.steps[Math.min(g.step, d.steps.length - 1)]}${extra ? ` · รอง ${extra}` : ""}`;
 }
 
 const good = (text: string): Outcome => ({ text, kind: "good" });
@@ -176,6 +247,8 @@ export const GOAL_EVENTS: GameEvent[] = [
       { label: "🌿 เป็นหมอที่ช่วยชีวิตคน", run: (l) => { setGoal(l, "healer", "เพราะเคยเห็นคนตายต่อหน้าเพราะไม่มีหมอ"); return good("คุณนึกถึงกลิ่นสมุนไพรในร้านยาหัวมุมตลาด"); } },
       { label: "📯 สอบเข้ารับราชการ", show: (l) => l.stats.smarts >= 45, run: (l) => { setGoal(l, "official", "ตระกูลจะได้ไม่ต้องก้มหัวให้ใคร"); return good("คุณหยิบตำราขึ้นมาอ่านต่อใต้แสงจันทร์"); } },
       { label: "🗺️ ออกไปดูโลกให้ทั่วแผ่นดิน", run: (l) => { setGoal(l, "wander", "หมู่บ้านนี้เล็กเกินไปสำหรับความฝัน"); return good("คุณมองถนนที่ทอดออกไปนอกหมู่บ้าน แล้วตัดสินใจ"); } },
+      { label: "🔍 ค้นหาว่าแท้จริงแล้วตัวเองเป็นลูกใคร", show: (l) => !!l.flags.knowsAdopted || !l.people.some((p) => p.relation === "father" || p.relation === "mother"), run: (l) => { setGoal(l, "birth", "เพราะคำถามนี้ไม่เคยหายไปจากใจ"); return good("คุณหยิบผ้าห่อตัวเก่าที่ติดตัวมาตั้งแต่เกิดออกมาดูอีกครั้ง — มีลายปักที่ไม่เคยสังเกต"); } },
+      { label: "👑 สักวันจะนั่งบนเก้าอี้ที่สูงที่สุด", show: (l) => l.stats.smarts >= 50 || l.fame >= 10, run: (l) => { l.flags.leaderPath = l.power?.guild === "cult" ? "demon" : "sect"; setGoal(l, "leader", "เพราะเบื่อที่ต้องก้มหัวให้คนที่ไม่คู่ควร"); return good("คุณมองไปที่ยอดเขาซึ่งสำนักใหญ่ตั้งอยู่ — สักวันหนึ่ง"); } },
       { label: "🍵 ขอแค่ชีวิตสงบสุข", run: (l) => { setGoal(l, "quiet", "ยุทธภพวุ่นวายเกินไป"); return meh("คุณหลับไปบนหลังคา จนแม่ต้องตะโกนเรียกลงมากินข้าว"); } },
     ],
   },

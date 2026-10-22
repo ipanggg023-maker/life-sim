@@ -65,7 +65,7 @@ export function SoulTab({
             const st = g.end === "won" ? "✅ สำเร็จ" : g.end === "lost" ? "❌ ล้มเหลว" : g.end === "changed" ? "↪️ เปลี่ยนใจ" : `กำลังไล่ตาม (${g.step}/${d.steps.length})`;
             return (
               <p className="small" key={i}>
-                {d.emoji} {d.name} · ตั้งแต่อายุ {g.since} · {st}
+                {d.emoji} {d.name}{g.side ? " (รอง)" : ""} · ตั้งแต่อายุ {g.since} · {st}
                 {g.why && <span className="muted"> — {g.why}</span>}
               </p>
             );

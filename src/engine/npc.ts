@@ -80,6 +80,37 @@ export function goalOf(p: Person): string {
   return p.goal;
 }
 
+// ───── ตัวตนเชิงลึกของ NPC: เป้าหมายรอง ความกลัว ค่านิยม เส้นที่ไม่ข้าม ความลับ ─────
+export const FEARS = ["กลัวความจน", "กลัวถูกทอดทิ้ง", "กลัวตายอย่างไร้ชื่อ", "กลัวคนในครอบครัวเป็นอันตราย", "กลัวถูกหักหลัง", "กลัวความเจ็บปวด", "กลัวเสียหน้า", "กลัวความแก่"];
+export const VALUES = ["ความภักดี", "เงินทอง", "ชื่อเสียง", "ครอบครัว", "ความยุติธรรม", "อิสรภาพ", "พลัง", "ความสงบ", "ศักดิ์ศรี"];
+export const LIMITS = ["ไม่ฆ่าคนบริสุทธิ์", "ไม่ทรยศคนที่ไว้ใจตน", "ไม่แตะต้องวิชามาร", "ไม่ยอมคุกเข่าให้ใคร", "ไม่ขโมย", "ไม่ทิ้งครอบครัว"];
+export const SECRETS = [
+  "เคยยักยอกเงินของสำนักแล้วโทษคนอื่น", "มีลูกนอกสมรสอยู่ที่เมืองอื่น", "เคยเป็นสาวกลัทธิมารตอนหนุ่ม", "ติดหนี้บ่อนก้อนใหญ่ที่ไม่มีใครรู้",
+  "แอบรักคนที่ไม่ควรรัก", "เคยทิ้งเพื่อนให้ตายในสนามรบ", "ป่วยด้วยโรคที่ไม่มีวันหาย", "เป็นลูกของโจรที่ถูกประหาร",
+];
+
+/** สร้างตัวตนเชิงลึกครั้งแรกที่ใช้ (คงที่ตาม id — เซฟเก่ารองรับ) */
+export function profileOf(p: Person): Required<Pick<Person, "sideGoals" | "fear" | "values" | "limit">> & { secret?: Person["secret"] } {
+  if (!p.fear) {
+    const h = hash(p.id + ":" + p.name);
+    const main = goalOf(p);
+    const others = NPC_GOALS.filter((g) => g !== main);
+    p.sideGoals = (h >>> 3) % 3 === 0 ? [] : [others[(h >>> 5) % others.length]];
+    p.fear = FEARS[(h >>> 7) % FEARS.length];
+    const v1 = VALUES[(h >>> 9) % VALUES.length];
+    let v2 = VALUES[(h >>> 13) % VALUES.length];
+    if (v2 === v1) v2 = VALUES[((h >>> 13) + 3) % VALUES.length];
+    p.values = [v1, v2];
+    // บางคนไม่มีเส้นที่ไม่ข้าม (คนเจ้าเล่ห์/โลภมักไม่มี)
+    p.limit = hasTrait(p, "cunning") || hasTrait(p, "greedy") ? "" : LIMITS[(h >>> 17) % LIMITS.length];
+    if ((h >>> 21) % 3 !== 0 && !p.secret) p.secret = { text: SECRETS[(h >>> 23) % SECRETS.length], known: false };
+  }
+  return { sideGoals: p.sideGoals ?? [], fear: p.fear, values: p.values ?? [], limit: p.limit ?? "", secret: p.secret };
+}
+export const valuesOf = (p: Person) => profileOf(p).values;
+/** NPC คนนี้ยอมทรยศคุณได้ไหม — คนที่ยึดความภักดีหรือมีเส้นห้ามทรยศจะไม่ทำ */
+export const wouldBetray = (p: Person) => { const pr = profileOf(p); return !pr.values.includes("ความภักดี") && pr.limit !== "ไม่ทรยศคนที่ไว้ใจตน"; };
+
 /** ค่าเริ่มต้นของความรู้สึก — คำนวณจากความสัมพันธ์และความสนิทเดิม (รองรับเซฟเก่า) */
 export function relOf(p: Person): RelAxes {
   if (!p.rel) {
@@ -172,6 +203,14 @@ export function tickNpcs(l: Life) {
     r.fear = clamp(r.fear - 2, 0, 100);
     if (!hasTrait(p, "vengeful")) r.grudge = clamp(r.grudge - (hasTrait(p, "generous") ? 4 : 1), 0, 100);
     r.debt = clamp(r.debt - 1, 0, 100);
+    // ค่านิยมของเขากับสิ่งที่คุณเป็น (เฉพาะคนที่รู้จักคุณจริง)
+    const vals = profileOf(p).values;
+    const align = Number(l.flags.m17Align ?? 0);
+    if (vals.includes("ความยุติธรรม") && align <= -30 && r.love < 70) { r.respect = clamp(r.respect - 2, 0, 100); r.grudge = clamp(r.grudge + 1, 0, 100); }
+    if (vals.includes("ความยุติธรรม") && align >= 30) r.respect = clamp(r.respect + 1, 0, 100);
+    if (vals.includes("พลัง") && (l.power?.rank ?? 0) >= 3) r.respect = clamp(r.respect + 2, 0, 100);
+    if (vals.includes("เงินทอง") && l.money >= 1_000_000) r.love = clamp(r.love + 1, 0, 100);
+    if (vals.includes("ชื่อเสียง") && l.fame >= 40) r.respect = clamp(r.respect + 1, 0, 100);
 
     // ปีละไม่เกิน 2 เรื่องที่ NPC ทำเอง — กันบันทึกรก
     if (acted.size >= 2 || p.age < 14) continue;

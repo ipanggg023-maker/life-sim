@@ -75,7 +75,7 @@ export const CRIME_EVENTS: GameEvent[] = [
     choices: [
       { label: "ใส่ยาในถ้วยของเขา", skill: ["stealth"], tone: "danger", show: (_l, c) => !!c.pid, odds: (l) => crimeOdds(l, 0.5, "smarts") + (l.flags.medicKnow ? 0.1 : 0), run: (l, c, s) => {
         const p = l.people.find((x) => x.id === c.pid)!;
-        if (s) { p.alive = false; return { text: `${shortName(p)}ล้มลงกลางงานเลี้ยง หมอบอกว่าหัวใจวาย — ไม่มีใครสงสัยคุณ${shiftAlign(l, -10)}${addHeat(l, 10)}`, kind: "bad" }; }
+        if (s) { p.alive = false; l.flags.mwKills = Number(l.flags.mwKills ?? 0) + 1; l.flags.mwKillAge = l.age; return { text: `${shortName(p)}ล้มลงกลางงานเลี้ยง หมอบอกว่าหัวใจวาย — ไม่มีใครสงสัยคุณ${shiftAlign(l, -10)}${addHeat(l, 10)}`, kind: "bad" }; }
         feel(p, { grudge: 60, fear: 20 });
         return caught(l, "วางยาพิษ", 40);
       } },
@@ -289,7 +289,7 @@ DUEL_END.crimeRob = (l, r) => {
   return r === "lose" ? "ผู้คุ้มกันกระชากผ้าปิดหน้าคุณออก — เขาเห็นหน้าคุณชัดเต็มตา" : "";
 };
 DUEL_END.crimeHit = (l, r) => {
-  if (r === "win") { addMoney(l, 80 * TAEL); return `ขุนนางไม่ได้ตื่นขึ้นมาอีก — ห่อทองรอคุณอยู่ที่ศาลเจ้าร้างตามนัด${shiftAlign(l, -12)}${addHeat(l, 30)}`; }
+  if (r === "win") { l.flags.mwKills = Number(l.flags.mwKills ?? 0) + 1; l.flags.mwKillAge = l.age; addMoney(l, 80 * TAEL); return `ขุนนางไม่ได้ตื่นขึ้นมาอีก — ห่อทองรอคุณอยู่ที่ศาลเจ้าร้างตามนัด${shiftAlign(l, -12)}${addHeat(l, 30)}`; }
   l.flags.lastCrime = "ลอบสังหารขุนนาง";
   addHeat(l, 45);
   return "ยามทั้งจวนตื่น — คุณหนีออกมาได้ แต่ทั่วเมืองรู้แล้วว่ามีคนพยายามฆ่าขุนนาง";

@@ -62,6 +62,12 @@ export interface Person {
   traits?: string[];
   /** เป้าหมายชีวิตของคนนี้ */
   goal?: string;
+  /** เป้าหมายรอง ความกลัว ค่านิยม เส้นที่ไม่ข้าม และความลับ (MURIM_PLAN §18.1 · EXPANSION §4.1) */
+  sideGoals?: string[];
+  fear?: string;
+  values?: string[];
+  limit?: string;
+  secret?: { text: string; known: boolean };
 }
 
 export type Wealth = "poor" | "middle" | "rich" | "elite";
