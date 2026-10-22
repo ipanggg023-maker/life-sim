@@ -4,7 +4,7 @@ import { loadSharedEvents } from "../content/shared";
 import { mainGoal } from "../content/murim/life/goals";
 import { plansFor, setPlan } from "../content/murim/life/plan";
 import { visibleChoices } from "./events";
-import { ageUp, createLife, resolveChoice, spendTime, tryForBaby } from "./game";
+import { ageUp, createLife, resolveChoice, spendTime, tryForBaby, applyJob, workHard } from "./game";
 import { feel, relOf, remember, reveal, traitsOf } from "./npc";
 import { nextFloat } from "./rng";
 import type { Life } from "./types";
@@ -63,6 +63,10 @@ describe("Murim Phase 2: เป้าหมายชีวิต · NPC มี�
         const sp = l.people.find((p) => p.relation === "spouse" && p.alive);
         if (sp && l.age <= 40 && nextFloat(r) < 0.5) tryForBaby(l, sp);
         if (l.age >= 18) l.money += 40_000;
+        // เหมือนผู้เล่น: สมัครงานที่ตรงกับเป้าหมายชีวิต
+        const goalJob = { healer: "herbalist", official: "official" }[mainGoal(l)?.id ?? ""];
+        if (goalJob && l.age >= 16 && l.job?.careerId !== goalJob) applyJob(l, goalJob);
+        if (l.job && nextFloat(r) < 0.5) workHard(l);
         const before = l.log.length;
         ageUp(l);
         npcActs += l.log.slice(before).filter((e) => /^(🐍|🔥|🎐|💔 .*เก็บข้าวของ|ข่าวจากคนรู้จัก)/.test(e.text) || e.text.includes("แอบใส่เงิน")).length;

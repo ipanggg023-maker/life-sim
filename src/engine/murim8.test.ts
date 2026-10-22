@@ -15,6 +15,9 @@ const murimEvents = () => {
   return allEvents().filter((e) => (!e.world || e.world === "murim") && !e.notIn?.includes("murim") && eligibilityFilters.every((f) => f(l, e)));
 };
 
+/** ฉากที่ตัวเลือกถูกกรองจากข้อมูลในฉากเอง และรับประกันว่ามีอย่างน้อยหนึ่งตัวเลือกเสมอ */
+const ALWAYS_OFFERED = new Set(["mk.assessment/style"]);
+
 describe("Murim Phase 8: เนื้อเรื่อง 600+ และ % ตามความสามารถ", () => {
   it("มีเรื่องในยุทธภพอย่างน้อย 600 เรื่อง", () => {
     expect(murimEvents().length).toBeGreaterThanOrEqual(600);
@@ -36,16 +39,16 @@ describe("Murim Phase 8: เนื้อเรื่อง 600+ และ % ต�
         } catch { /* ตัวเลือกที่ต้องมีคนในฉาก */ }
       }
     }
-    const story = fixed.filter((f) => /^(dl|sl|el|ch|rr|yt|ad|ms|rg)\./.test(f));
+    const story = fixed.filter((f) => /^(dl|sl|el|ch|rr|yt|ad|ms|rg|jb|ft|fm|cr|tv|mk|rk|sc|mw)\./.test(f));
     expect(story, story.join("\n")).toEqual([]);
   });
 
   it("ทุกฉากของเรื่องใหม่มีอย่างน้อยหนึ่งตัวเลือกที่เลือกได้เสมอ (ไม่ติดเงิน/เงื่อนไข)", () => {
     const stuck: string[] = [];
     for (const e of murimEvents()) {
-      if (!/^(dl|sl|el|ch|rr|yt|ad|ms|rg|gen)\./.test(e.id) || e.auto) continue;
+      if (!/^(dl|sl|el|ch|rr|yt|ad|ms|rg|gen|jb|ft|fm|cr|tv|mk|rk|sc|mw)\./.test(e.id) || e.auto) continue;
       const scenes = { start: e.choices ?? [], ...Object.fromEntries(Object.entries(e.scenes ?? {}).map(([k, s]) => [k, s.choices])) };
-      for (const [k, list] of Object.entries(scenes)) if (!(list as Choice[]).some((c) => !c.show && !c.req)) stuck.push(`${e.id}/${k}`);
+      for (const [k, list] of Object.entries(scenes)) if (!ALWAYS_OFFERED.has(`${e.id}/${k}`) && !(list as Choice[]).some((c) => !c.show && !c.req)) stuck.push(`${e.id}/${k}`);
     }
     expect(stuck, stuck.join("\n")).toEqual([]);
   });

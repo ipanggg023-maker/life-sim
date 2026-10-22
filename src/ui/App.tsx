@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ageUp, createLife, pastSelfOf, resolveChoice, toPastLife, type BirthOptions } from "../engine/game";
+import { ageUp, createLife, pastSelfOf, resolveChoice, toPastLife, type BirthOptions, migrateLife } from "../engine/game";
 import { currentScene, labelOf, type Outcome } from "../engine/events";
 import { buildDisciple, inheritMurim, recordChronicle } from "../content/murim/life/generations";
 import { applySoul, buildHeir, buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
@@ -38,6 +38,7 @@ import { ActivitiesTab } from "./tabs/ActivitiesTab";
 import { CareerTab } from "./tabs/CareerTab";
 import { PeopleTab } from "./tabs/PeopleTab";
 import { PowerTab } from "./tabs/PowerTab";
+import { JianghuTab } from "./tabs/JianghuTab";
 import { PhoneTab } from "./tabs/PhoneTab";
 import { SoulTab } from "./tabs/SoulTab";
 
@@ -68,7 +69,7 @@ export function App() {
       setGraveyard(grave);
       setSoul(s);
       if (cur) {
-        setLife(cur);
+        setLife(migrateLife(cur));
         setStarted(true);
       }
       setLoading(false);
@@ -385,6 +386,7 @@ export function App() {
           {tab === "career" && <CareerTab life={life} act={act} />}
           {tab === "people" && <PeopleTab life={life} act={act} />}
           {tab === "power" && <PowerTab life={life} act={act} />}
+          {tab === "jianghu" && <JianghuTab life={life} act={act} />}
           {tab === "activities" && <ActivitiesTab life={life} act={act} />}
           {tab === "phone" && <PhoneTab life={life} act={act} />}
           {tab === "soul" && (
@@ -424,6 +426,7 @@ const TAB_TITLES: Record<TabId, string> = {
   career: "การเรียน & อาชีพ",
   people: "ความสัมพันธ์",
   power: "พลัง",
+  jianghu: "ยุทธภพ",
   activities: "กิจกรรม",
   phone: "มือถือ",
   soul: "วิญญาณ",

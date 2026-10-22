@@ -23,7 +23,8 @@ loadOrdinaryWorld();
 loadSharedEvents();
 
 const QUEST_JOB: Record<WorldId, string> = { hunter: "hunter", murim: "wanderer", court: "adventurer", tower: "climber", apocalypse: "survivor", ordinary: "o_mma" };
-const WORLDS: WorldId[] = ["hunter", "murim", "court", "tower"];
+// ยุทธภพใช้เนื้อเรื่องชุดใหม่ทั้งหมด (ไม่มีคู่ปรับ/ภารกิจลับแบบเก่า) — ทดสอบระบบเหล่านี้ในโลกอื่น
+const WORLDS: WorldId[] = ["hunter", "apocalypse", "court", "tower"];
 
 /** บอทเลือกสุ่ม แต่ชอบตัวเลือก "ใช้สกิล" ถ้ามี */
 function play(life: Life, r: { rng: number }, onYear?: (l: Life) => void) {

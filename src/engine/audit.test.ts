@@ -7,7 +7,6 @@ import { startCourtQuest } from "../content/court/quest";
 import { loadHunterWorld } from "../content/hunter";
 import { startGate } from "../content/hunter/events/gates";
 import { loadMurimWorld } from "../content/murim";
-import { startQuest } from "../content/murim/quest";
 import { loadOrdinaryWorld } from "../content/ordinary";
 import { startChallenge } from "../content/ordinary/system";
 import { loadSharedEvents } from "../content/shared";
@@ -163,7 +162,7 @@ describe("ตรวจทุก event", () => {
     // ภารกิจ/Gate/หอคอย/ฉากย่อย/ภารกิจระบบ ที่เปิดจากปุ่ม
     const starters: Array<[WorldId, (l: Life) => void]> = [
       ["hunter", (l) => startGate(l, Math.max(0, l.power?.rank ?? 0))],
-      ["murim", (l) => startQuest(l, Math.max(0, l.power?.rank ?? 0))],
+      ["murim", (l) => { l.queue.push({ eventId: ["cr.rob", "cr.steal", "tv.move", "cr.trial"][l.age % 4], ctx: {} }); }],
       ["court", (l) => startCourtQuest(l, Math.max(0, l.power?.rank ?? 0))],
       ["apocalypse", (l) => startScenario(l, Math.max(0, l.power?.rank ?? 0))],
       ["tower", (l) => startClimb(l, Math.max(0, l.power?.rank ?? 0))],

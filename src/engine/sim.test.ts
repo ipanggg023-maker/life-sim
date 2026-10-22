@@ -40,7 +40,7 @@ function playLife(seed: number, opts: { hunterBot?: boolean; world?: WorldId } =
   while (life.alive && guard++ < 200) {
     drain(life, r);
     if (!life.alive) break;
-    for (const a of ACTIVITIES) if (!a.id.startsWith("free_") && !activityLocked(life, a) && nextFloat(r) < 0.3) doActivity(life, a.id);
+    for (const a of ACTIVITIES) if (!a.id.startsWith("free_") && !activityLocked(life, a) && nextFloat(r) < 0.3) { doActivity(life, a.id); drain(life, r); }
     const questJob = { hunter: "hunter", murim: "wanderer", court: "adventurer", tower: "climber", apocalypse: "survivor", ordinary: "o_mma" }[life.worldId];
     if (life.power && opts.hunterBot && !["hunter", "disciple", "wanderer", "knight", "court_mage", "adventurer"].includes(life.job?.careerId ?? "")) applyJob(life, questJob);
     const careers = CAREERS.filter((c) => worldMatches(c.world, life.worldId));
@@ -161,7 +161,8 @@ describe("จำลองชีวิต", () => {
     let turned = 0;
     let reachedTp = 0;
     const tracks: Record<string, number> = {};
-    const worlds: WorldId[] = ["hunter", "murim", "court"];
+    // ยุทธภพไม่มีจุดพลิกชะตาแบบเก่าแล้ว (เขียนใหม่ทั้งหมด)
+    const worlds: WorldId[] = ["hunter", "tower", "court"];
     for (let s = 1; s <= 600; s++) {
       const world = worlds[s % 3];
       const life = playLife(s * 49979687, { hunterBot: true, world });

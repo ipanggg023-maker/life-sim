@@ -2,7 +2,7 @@ import { useState } from "react";
 import { RARITY_LABEL, talentById, talentFlavor } from "../../content/talents";
 import { canEnterGate, dailyQuest, enterGate, gatesLeft, train } from "../../content/hunter/events/gates";
 import { RANKS, classById, combatPower, skillsOf, subClassOf, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
-import { QI_NEED, breakLevel } from "../../content/murim/events";
+import { QI_NEED } from "../../content/murim/martial/arts";
 import { SECLUSION_YEARS, canSeclude, isSecluded, startSeclusion } from "../../content/shared/fate";
 import { TITLES, titlesOf } from "../../content/titles";
 import { TOP_FLOOR, floorCap, floorOf, tierOfFloor } from "../../content/tower/climb";
@@ -286,8 +286,6 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
     <div className="tab-content">
       <MartialRecord life={life} />
       {p && <MurimActions life={life} act={act} />}
-      <MurimCard life={life} act={act} />
-      <WorldCard life={life} />
       <TitlesCard life={life} act={act} />
       {known.length > 0 && (
         <>
@@ -320,7 +318,7 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
 }
 
 /** สถานการณ์ใต้หล้า: สำนักต่างๆ และราชสำนัก */
-function WorldCard({ life }: { life: Life }) {
+export function WorldCard({ life }: { life: Life }) {
   const fs = factions(life);
   return (
     <div className="card">
@@ -384,9 +382,7 @@ function TrainPanel({ life, act }: { life: Life; act: Act }) {
 
 /** ฝึก · ปิดด่าน · รับงานยุทธภพ · สำนัก (ยุทธภพ) */
 function MurimActions({ life, act }: { life: Life; act: Act }) {
-  const w = worldOf(life.worldId);
   const p = life.power!;
-  const canQuest = w.questJobs.includes(life.job?.careerId ?? "");
   const guild = guildById(p.guild);
   return (
     <>
@@ -396,24 +392,6 @@ function MurimActions({ life, act }: { life: Life; act: Act }) {
         </button>
       </div>
       <TrainPanel life={life} act={act} />
-      <div className="section-title">งานยุทธภพ · เหลือ {Math.max(0, gatesLeft(life))} ครั้งในปีนี้</div>
-      {!canQuest && <p className="muted small">ต้องเป็นศิษย์สำนัก จอมยุทธ์พเนจร หรือนักฆ่ารับจ้างก่อน (แท็บ 💼 อาชีพ)</p>}
-      {Array.from({ length: Math.min(p.rank + 2, RANKS.length) }, (_, r) => r).map((r) => {
-        const blocked = canEnterGate(life, r);
-        return (
-          <div className="job" key={r}>
-            <div className="job-main">
-              <div className="job-name">งานระดับ{rankLabel(life, r)}</div>
-              <div className="job-sub">
-                สำเร็จ {Math.round(fightOdds(life, r) * 100)}% · <span className={survivalOdds(life, r) < 0.8 ? "danger-text" : ""}>รอด {Math.round(survivalOdds(life, r) * 100)}%</span>
-              </div>
-            </div>
-            <button className="btn small" disabled={!!blocked} title={blocked} onClick={() => act((l) => enterGate(l, r))}>
-              รับงาน
-            </button>
-          </div>
-        );
-      })}
       <div className="section-title">สำนัก</div>
       {guild ? (
         <div className="job">
@@ -557,7 +535,6 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
           <span>เลเวล</span>
           <b>
             Lv.{p.level}
-            {murim && p.rank < 8 && <span className="muted small"> (ทะลวงขั้นได้ที่ Lv.{breakLevel(p.rank)})</span>}
           </b>
           <span>พลังต่อสู้</span>
           <b>{combatPower(life)}</b>

@@ -2,11 +2,11 @@
 // โลกจำ: สำนัก ราชสำนัก ยุค วิกฤต ส่งต่อไปยังรุ่นถัดไป · สิ่งที่ส่งต่อได้: เงิน ตำรา วิชาที่สอนไว้ อาวุธประจำตระกูล สำนัก ความแค้น บุญคุณ เป้าหมายที่ค้าง
 // สิ่งที่ไม่ส่งต่อ: ความชำนาญทั้งหมด ความสัมพันธ์ส่วนตัว ความภักดีของศิษย์ ตำแหน่งที่ต้องได้รับการยอมรับ
 import type { GameEvent } from "../../../engine/events";
-import { createLife } from "../../../engine/game";
+import { createLife, rollTierHooks, yearHooks } from "../../../engine/game";
 import { feel, relOf, remember } from "../../../engine/npc";
 import { pick, randInt } from "../../../engine/rng";
 import type { Life, Person, Soul } from "../../../engine/types";
-import { addFame, createPerson, displayName, log, money, people, shortName } from "../../../engine/util";
+import { addFame, addStat, createPerson, displayName, log, money, people, shortName } from "../../../engine/util";
 import { awaken, rankLabel } from "../../hunter/power";
 import { addQi, artInfo, artsOf, learn } from "../martial/arts";
 import { mySect, saveSect } from "../m17core";
@@ -49,6 +49,7 @@ export function recordChronicle(s: Soul, l: Life) {
     text: `${displayName(l)} ${epithet} (${born}–${died}) ${realm}${sect ? ` ผู้ก่อตั้ง「${sect.n}」` : ""}${won.length ? ` · ทำสำเร็จ: ${won.join(", ")}` : ""} — ${l.causeOfDeath ?? "จากไป"}`,
     src: l.flags.ascended ? "ตำนานบนยอดเขา" : sect ? "ทะเบียนสำนัก" : "ป้ายวิญญาณในหอบรรพชน",
   });
+  for (const e of l.chron ?? []) pushC(s, { year: e.year, kind: "life", text: `${displayName(l)}: ${e.text}`, src: "บันทึกส่วนตัว" });
   if (l.flags.foundedDynasty) pushC(s, { year: died, kind: "legend", text: `${displayName(l)} ตั้งราชวงศ์ใหม่ขึ้นปกครองแผ่นดิน`, src: "พงศาวดารหลวง" });
   if (l.flags.heavenlyDemon) pushC(s, { year: died, kind: "legend", text: `${displayName(l)} เคยเป็นมารสวรรค์ ประมุขลัทธิมาร`, src: "คำเล่าลือของสาวกมาร" });
   if (l.flags.slewDemonLord) pushC(s, { year: died, kind: "legend", text: `${displayName(l)} สังหารจอมมารที่หุบเขาเมฆดำ`, src: "ศิลาจารึกพันธมิตรยุทธจักร" });
@@ -225,4 +226,22 @@ export function lifeSummary(l: Life) {
   return { goals, people: people_, promises, assets, family, era: l.mw ? ERA[l.mw.era].name : "" };
 }
 
-void addFame;
+// ───── ผลลัพธ์ 4 ระดับ (ยุทธภพ) ─────
+rollTierHooks.push((l, tier) => {
+  if (l.worldId !== "murim" || !l.alive) return "";
+  if (tier === "great") { addStat(l, "happiness", 3); addFame(l, 1); return " — และดีเกินกว่าที่หวัง (ความสุข + · ชื่อเสียง +)"; }
+  if (tier === "disaster") { addStat(l, "health", -4); addStat(l, "happiness", -3); return " — และแย่กว่าที่กลัว (สุขภาพ − · ความสุข −)"; }
+  return "";
+});
+
+// ───── บันทึกยุทธภพระหว่างมีชีวิต: เหตุการณ์สำคัญของปีนี้ลงบันทึกทันที ─────
+yearHooks.push((l) => {
+  if (l.worldId !== "murim") return;
+  const yr = calYear(l) - 1;
+  const list = (l.chron ??= []);
+  for (const e of l.log.filter((x) => x.age === l.age - 1 && x.kind === "milestone")) {
+    const text = e.text.replace(/s+/g, " ").slice(0, 140);
+    if (!list.some((x) => x.text === text)) list.push({ year: yr, text });
+  }
+  if (list.length > 60) list.splice(0, list.length - 60);
+});

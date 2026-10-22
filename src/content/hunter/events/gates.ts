@@ -3,7 +3,6 @@ import { kill, openHiddenSlot, runEvent } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { HunterClass, Life } from "../../../engine/types";
 import { addFame, addStat, checkChance, clamp, hasTalent, log } from "../../../engine/util";
-import { startQuest } from "../../murim/quest";
 import { startCourtQuest } from "../../court/quest";
 import { startClimb } from "../../tower/climb";
 import { startScenario } from "../../apocalypse/scenario";
@@ -339,6 +338,8 @@ const QUEST_MSG = {
 };
 
 export function canEnterGate(life: Life, gateRank: number): string | undefined {
+  // ยุทธภพไม่มีกระดานงานแบบเก่า — งานมาจากแท็บ "ทำ" (ล่าค่าหัว คุ้มกัน ท้าประลอง) และเรื่องราว
+  if (life.worldId === "murim") return "ยุทธภพรับงานผ่านแท็บทำและเรื่องราว";
   const msg = QUEST_MSG[life.worldId ?? "hunter"];
   if (!life.power) return msg.noPower;
   if (!worldOf(life.worldId).questJobs.includes(life.job?.careerId ?? "")) return msg.noJob;
@@ -353,8 +354,7 @@ export function canEnterGate(life: Life, gateRank: number): string | undefined {
 export function enterGate(life: Life, gateRank: number) {
   if (canEnterGate(life, gateRank)) return;
   life.doneThisYear.push("gate");
-  if (life.worldId === "murim") startQuest(life, gateRank);
-  else if (life.worldId === "court") startCourtQuest(life, gateRank);
+  if (life.worldId === "court") startCourtQuest(life, gateRank);
   else if (life.worldId === "tower") startClimb(life, gateRank);
   else if (life.worldId === "apocalypse") startScenario(life, gateRank);
   else if (life.worldId === "ordinary") startChallenge(life, gateRank);

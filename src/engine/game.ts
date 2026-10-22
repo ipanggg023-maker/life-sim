@@ -462,6 +462,8 @@ export const yearHooks: Array<(life: Life) => void> = [];
 /** ปีที่ "แก่ช้าลง" จากพลัง/วิชา (ลดความเสี่ยงตายตามวัย) */
 export const lifespanHooks: Array<(life: Life) => number> = [];
 /** เมื่อมีคนรู้จักเสียชีวิต (violent = ถูกฆ่า) — ให้ content ใช้กระตุ้นเรื่องราว เช่น เปลี่ยนเป้าหมายชีวิต */
+/** ผลเสริมตามระดับผลลัพธ์ (งดงาม/พลาดหนัก) — คืนข้อความต่อท้าย */
+export const rollTierHooks: Array<(life: Life, tier: "great" | "ok" | "fail" | "disaster") => string> = [];
 export const kinDeathHooks: Array<(life: Life, p: Person, violent: boolean, killer?: string) => void> = [];
 
 export function ageUp(life: Life) {
@@ -516,6 +518,15 @@ function oddsOf(life: Life, c: Choice, ctx: Ctx): number | undefined {
   return;
 }
 
+/** เซฟเก่า: ทิ้ง event ที่ถูกลบออกจากเกมไปแล้ว (เช่น เนื้อเรื่องยุทธภพชุดเก่า) — กันจอค้าง */
+export function migrateLife(life: Life): Life {
+  life.queue = life.queue.filter((q) => {
+    const e = getEvent(q.eventId);
+    return !!e && (!q.scene || q.scene === "start" || !!e.scenes?.[q.scene]);
+  });
+  return life;
+}
+
 export function resolveChoice(life: Life, choiceIndex: number): Outcome | undefined {
   const q = life.queue[0];
   if (!q) return;
@@ -533,9 +544,16 @@ export function resolveChoice(life: Life, choiceIndex: number): Outcome | undefi
   }
   const hadPower = !!life.power;
   const p = oddsOf(life, c, q.ctx);
-  const success = p === undefined ? true : chance(life, p);
+  const r = p === undefined ? undefined : nextFloat(life);
+  const success = r === undefined ? true : r < p!;
   const out = c.run(life, q.ctx, success);
-  if (p !== undefined) out.roll = { ok: success, p };
+  if (r !== undefined) {
+    // 4 ระดับ: ทอยได้ดีมาก = งดงาม · พลาดแบบห่างมาก = พลาดหนัก (MURIM_PLAN §14)
+    const tier = success ? (r < p! * 0.3 ? "great" : "ok") : r > p! + (1 - p!) * 0.7 ? "disaster" : "fail";
+    out.roll = { ok: success, p: p!, tier };
+    const extra = rollTierHooks.reduce((t, f) => t + f(life, tier), "");
+    if (extra) out.text += extra;
+  }
   if (out.next && life.alive) q.scene = out.next;
   else {
     life.queue.shift();
@@ -688,6 +706,8 @@ export function askMoney(life: Life, p: Person): Outcome {
 
 export function propose(life: Life, p: Person): Outcome {
   if (life.doneThisYear.includes("propose")) return { text: "รอปีหน้าค่อยลองใหม่นะ" };
+  if (life.worldId === "murim" && life.job?.careerId === "monk") return { text: "คุณบวชอยู่ — ต้องสึกก่อนจึงจะแต่งงานได้ (ลาออกจากอาชีพ)" };
+  if (Number(life.flags.mourningUntil ?? -1) > life.age) return { text: "คุณยังไว้ทุกข์ให้พ่อแม่อยู่ — ธรรมเนียมห้ามแต่งงานจนครบสามปี" };
   life.doneThisYear.push("propose");
   if (chance(life, clamp((p.bond - 30) / 60, 0.05, 0.95))) {
     const already = life.people.filter((x) => x.alive && x.relation === "spouse" && x.id !== p.id);

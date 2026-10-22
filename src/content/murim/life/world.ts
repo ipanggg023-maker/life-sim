@@ -5,7 +5,7 @@ import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { clamp, log, people } from "../../../engine/util";
 
-export type EraId = "peace" | "decline" | "chaos" | "recovery";
+export type EraId = "peace" | "decline" | "chaos" | "recovery" | "war";
 export type CrisisId = "famine" | "rebellion" | "plague" | "cult";
 
 /** ระยะของวิกฤต: สัญญาณเตือน → เตรียมตัว → วิกฤต → ผลลัพธ์ → ผลระยะยาว */
@@ -30,6 +30,8 @@ export interface MurimWorld {
   court?: import("../world/court").Court;
   /** วิกฤตที่ผ่านมาแล้ว (ปีปฏิทิน) — ใช้ในบันทึกยุทธภพ */
   past?: { id: CrisisId; year: number }[];
+  /** ยุคสามแคว้น: แคว้นที่แบ่งแผ่นดิน (world/war.ts) */
+  kingdoms?: import("../world/war").Kingdom[];
 }
 
 export const ERA: Record<EraId, { name: string; desc: string }> = {
@@ -37,6 +39,7 @@ export const ERA: Record<EraId, { name: string; desc: string }> = {
   decline: { name: "ยุคเสื่อมโทรม", desc: "ขุนนางโกงกิน ภาษีหนัก โจรผู้ร้ายชุกชุม ราษฎรเริ่มบ่น" },
   chaos: { name: "กลียุค", desc: "ราชสำนักคุมแผ่นดินไม่อยู่ ขุนศึกตั้งตนเป็นใหญ่ ชีวิตคนราคาถูกกว่าข้าวหนึ่งถัง" },
   recovery: { name: "ยุคฟื้นฟู", desc: "สงครามสงบลง ผู้คนกลับบ้านเกิด หัวเมืองเริ่มสร้างใหม่" },
+  war: { name: "ยุคสามแคว้น", desc: "ราชวงศ์ล่ม แผ่นดินแตกเป็นสามแคว้น ขุนศึกแย่งชิงคนเก่ง ทุกคนต้องเลือกข้าง" },
 };
 
 export const CRISIS: Record<CrisisId, { name: string; warn: string; prep: string; hit: string; end: string; tail: string }> = {
@@ -81,7 +84,7 @@ export const calYear = (l: Life) => l.birthYear + l.age;
 export function worldOfLife(l: Life): MurimWorld {
   if (!l.mw) {
     const era = pick(l, ["peace", "peace", "decline", "decline", "chaos", "recovery"] as EraId[]);
-    const base = { peace: [70, 25, 75, 20], decline: [50, 50, 50, 35], chaos: [30, 75, 25, 50], recovery: [55, 40, 55, 30] }[era];
+    const base = { peace: [70, 25, 75, 20], decline: [50, 50, 50, 35], chaos: [30, 75, 25, 50], recovery: [55, 40, 55, 30], war: [30, 70, 15, 45] }[era];
     l.mw = { era, eraSince: calYear(l) - randInt(l, 0, 15), food: base[0], unrest: base[1], legitimacy: base[2], cult: base[3] };
   }
   return l.mw;
@@ -104,6 +107,7 @@ export const crisisNow = (l: Life, id?: CrisisId) => {
 };
 
 function nextEra(w: MurimWorld): EraId {
+  if (w.era === "war") return "war"; // ยุคสามแคว้นจบเมื่อมีผู้รวมแผ่นดินเท่านั้น (world/war.ts)
   if (w.legitimacy < 30 && w.unrest > 65) return "chaos";
   if (w.era === "chaos" && (w.legitimacy >= 30 || w.unrest <= 65)) return "recovery";
   if (w.era === "recovery" && w.unrest < 40 && w.food > 55) return "peace";
@@ -133,6 +137,11 @@ function crisisToll(l: Life, id: CrisisId) {
 }
 
 const NEWS: Record<EraId, string[]> = {
+  war: [
+    "ข่าวจากแนวรบ: ทัพสองแคว้นปะทะกันที่ช่องเขา ศพทหารทับถมจนแม่น้ำเปลี่ยนสี",
+    "ข่าวจากโรงน้ำชา: เจ้าแคว้นตั้งรางวัลทองคำพันตำลึงให้คนที่นำหัวแม่ทัพข้าศึกมาได้",
+    "ข่าวลือ: เสนาธิการหนุ่มคนหนึ่งชนะศึกสามครั้งโดยไม่ต้องเสียทหารสักคน",
+  ],
   peace: [
     "ข่าวจากโรงน้ำชา: ปีนี้ข้าวราคาถูก ชาวนาจัดงานไหว้เทพเจ้าแห่งผืนดินกันทั้งอำเภอ",
     "ข่าวจากโรงน้ำชา: สำนักใหญ่สองสำนักแต่งงานลูกศิษย์ข้ามสำนักกัน งานเลี้ยงเจ็ดวันเจ็ดคืน",

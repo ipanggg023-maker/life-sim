@@ -364,6 +364,10 @@ p { margin: 0.25em 0; }
 .roll { display: inline-block; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin: 4px 0 0; }
 .roll.ok { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
 .roll.fail { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); }
+.roll.great { box-shadow: 0 0 0 1px var(--good); }
+.roll.disaster { box-shadow: 0 0 0 1px var(--bad); font-weight: 700; }
+.status-chip { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; margin: 2px 4px 0 0; background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
+.status-chip.calm { background: color-mix(in srgb, var(--muted) 18%, transparent); color: var(--text); }
 .effects { display: flex; flex-wrap: wrap; gap: 6px; margin: -6px 0 16px; }
 .eff { font-size: 12px; padding: 2px 8px; border-radius: 999px; }
 .eff.good { color: var(--good); background: color-mix(in srgb, var(--good) 12%, transparent); }

@@ -13,9 +13,15 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
         </div>
       </div>
     );
+  const list = activitiesFor(life).filter((a) => life.age >= a.minAge - 2);
+  const groups = [...new Set(list.map((a) => a.group ?? ""))];
   return (
-    <div className="tab-content grid">
-      {activitiesFor(life).filter((a) => life.age >= a.minAge - 2).map((a) => {
+    <div className="tab-content">
+      {groups.map((g) => (
+        <div key={g || "all"}>
+          {g && <div className="section-title">{g}</div>}
+          <div className="grid">
+      {list.filter((a) => (a.group ?? "") === g).map((a) => {
         const locked = activityLocked(life, a);
         const odds = a.odds?.(life);
         return (
@@ -30,6 +36,9 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
           </button>
         );
       })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

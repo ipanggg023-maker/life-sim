@@ -12,18 +12,18 @@ import { YOUTH_EVENTS } from "./youth";
 import { ADULT_EVENTS } from "./adult";
 import { SECTLIFE_EVENTS } from "./sectlife";
 import { REGION_EVENTS } from "./regions";
+import { JOB_EVENTS } from "./jobs";
+import { RITE_EVENTS } from "./rites";
 import { PRIME_EVENTS } from "./prime";
 import { TEEN_EVENTS } from "./teen";
 import { YOUNG_EVENTS } from "./young";
 
-export const STORY_EVENTS: GameEvent[] = [...CHILDHOOD_EVENTS, ...TEEN_EVENTS, ...YOUNG_EVENTS, ...PRIME_EVENTS, ...DAILY_EVENTS, ...DAILY2_EVENTS, ...LINKED_EVENTS, ...ELDER_EVENTS, ...CHAIN_EVENTS, ...RARE_EVENTS, ...YOUTH_EVENTS, ...ADULT_EVENTS, ...SECTLIFE_EVENTS, ...REGION_EVENTS];
+export const STORY_EVENTS: GameEvent[] = [...CHILDHOOD_EVENTS, ...TEEN_EVENTS, ...YOUNG_EVENTS, ...PRIME_EVENTS, ...DAILY_EVENTS, ...DAILY2_EVENTS, ...LINKED_EVENTS, ...ELDER_EVENTS, ...CHAIN_EVENTS, ...RARE_EVENTS, ...YOUTH_EVENTS, ...ADULT_EVENTS, ...SECTLIFE_EVENTS, ...REGION_EVENTS, ...JOB_EVENTS, ...RITE_EVENTS];
 
-/** เรื่องเก่าของยุทธภพที่ยังใช้ต่อ (เป็นกลไก ไม่ใช่เรื่องเล่า) */
-const KEEP_OLD = /^(murim\.(assessment|breakthrough|quest)$|m17\.r\.|m17\.s\.|m\.legacy\.)/;
-/** เรื่องเก่าที่ปลดแล้ว: เรื่องยุทธภพชุดเดิม + เรื่องกลางของทุกโลกที่ยุทธภพมีฉบับใหม่แทน */
-const OLD_MURIM = /^(m\.|m2\.|m17\.|m23\.|q\.)/;
-const OLD_SHARED = /^(l23\.|party\.|fate\.(trigger|sss_news|assassins|rank_reveal|second_awakening|rage|black_pill|devour|pact|master|arc_rival)$)/;
+/** ยุทธภพใช้เฉพาะเนื้อหาที่เขียนใหม่ (whitelist) — เรื่องเก่าทั้งหมด และเรื่องกลางของโลกอื่น ไม่เกิดในยุทธภพ */
+const MURIM_NEW = /^(c|t|y|p|e|d|dl|sl|el|ch|rr|yt|ad|ms|rg|hh|goal|npc|duel|body|mw|fx|ct|lg|gen|md|mk|rk|sc|cr|tv|ft|fm|jb)\./;
+const MURIM_KEEP = new Set(["duel", "talk.menu"]);
 
-export const isRetiredInMurim = (id: string) => !KEEP_OLD.test(id) && (OLD_MURIM.test(id) || OLD_SHARED.test(id));
+export const isRetiredInMurim = (id: string) => !MURIM_NEW.test(id) && !MURIM_KEEP.has(id);
 
 eligibilityFilters.push((l, e) => l.worldId !== "murim" || !isRetiredInMurim(e.id));

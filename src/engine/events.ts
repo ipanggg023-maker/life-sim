@@ -12,7 +12,7 @@ export interface Outcome {
   /** สิ่งที่ได้/เสียจริงจากผลนี้ */
   effects?: { good: string[]; bad: string[] };
   /** ผลการลุ้น (ตัวเลือกที่มี %): สำเร็จไหม และโอกาสที่เห็นก่อนเลือก */
-  roll?: { ok: boolean; p: number };
+  roll?: { ok: boolean; p: number; tier: "great" | "ok" | "fail" | "disaster" };
 }
 
 export interface Choice {

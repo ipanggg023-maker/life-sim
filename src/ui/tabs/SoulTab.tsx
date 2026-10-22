@@ -70,6 +70,16 @@ export function SoulTab({
               </p>
             );
           })}
+          {(life.chron?.length ?? 0) > 0 && (
+            <>
+              <div className="section-title">เหตุการณ์สำคัญของชีวิตนี้</div>
+              {life.chron!.slice().reverse().slice(0, 30).map((c, i) => (
+                <p className="small" key={i}>
+                  ⭐ ปี {c.year} · {c.text}
+                </p>
+              ))}
+            </>
+          )}
           {(soul.chronicle?.length ?? 0) > 0 && (
             <>
               <div className="section-title">บันทึกยุทธภพ</div>

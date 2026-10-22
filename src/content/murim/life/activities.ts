@@ -1,0 +1,105 @@
+// แท็บ "ทำ" ของยุทธภพ (เขียนใหม่ทั้งหมด · MURIM_PLAN §7) — แบ่งหมวด: ฝึกฝน · ยุทธภพ · ชีวิต · ครอบครัว · อาชญากรรม
+// ยุทธภพแสดงเฉพาะกิจกรรมชุดนี้ (และหาหมอรักษาบาดแผล) — กิจกรรมกลางของโลกอื่นถูกซ่อน
+import { ACTIVITIES, activityFilters, type Activity } from "../../../engine/activities";
+import { runEvent } from "../../../engine/game";
+import { chance, pick, randInt } from "../../../engine/rng";
+import type { Life } from "../../../engine/types";
+import { addFame, addMoney, addStat, checkChance, clamp, createPerson, people, shortName } from "../../../engine/util";
+import { gainExp } from "../../hunter/power";
+import { addQi, artsOf, practise } from "../martial/arts";
+import { startDuel } from "./duel";
+import { jailed, mourning } from "./law";
+import { regionOf } from "./region";
+import { TAEL } from "../story/kit";
+
+const pow = (l: Life) => l.power?.rank ?? 0;
+const adult = 16;
+const ok = (text: string) => ({ text, kind: "good" as const });
+const bad = (text: string) => ({ text, kind: "bad" as const });
+const meh = (text: string) => ({ text });
+
+const M = (a: Omit<Activity, "world"> & { group: string }): Activity => ({ ...a, world: "murim" });
+
+const MURIM_ACTS: Activity[] = [
+  // ───── ฝึกฝน ─────
+  M({ group: "ฝึกฝน", id: "mw_body", emoji: "🥋", name: "ฝึกร่างกายใต้น้ำตก", desc: "สุขภาพ + พื้นฐาน", minAge: 6, run: (l) => { addStat(l, "health", randInt(l, 2, 5)); l.flags.mwBasics = Number(l.flags.mwBasics ?? 0) + 1; return ok("น้ำตกเย็นจนกระดูกปวด — แต่ทุกเช้าคุณยืนได้นานขึ้นอีกนิด"); } }),
+  M({ group: "ฝึกฝน", id: "mw_meditate", emoji: "🧘", name: "นั่งสมาธิ", desc: "ความสุข + ลมปราณนิ่ง", minAge: 8, run: (l) => { addStat(l, "happiness", randInt(l, 2, 5)); if (l.power) addQi(l, 0.5); return ok(l.power ? "ลมปราณไหลเป็นวงช้าๆ ใจสงบลงเหมือนน้ำในบ่อ" : "คุณนั่งหลับตาจนขาเป็นเหน็บ — แต่ใจเบาขึ้น"); } }),
+  M({ group: "ฝึกฝน", id: "mw_manual", emoji: "📜", name: "อ่านตำรา", desc: "สติปัญญา + ความเข้าใจวิชา", minAge: 6, run: (l) => { addStat(l, "smarts", randInt(l, 1, 3)); const a = artsOf(l)[0]; if (a) practise(l, a.id, 3); return ok("คุณอ่านจนตะเกียงหมดน้ำมัน — ตัวอักษรบางตัวเริ่มมีความหมายใหม่"); } }),
+  M({ group: "ฝึกฝน", id: "mw_spar", emoji: "🤺", name: "ประลองกับเพื่อนร่วมฝึก", desc: "ฝีมือ + อาจบาดเจ็บเล็กน้อย", minAge: 12, available: (l) => !!l.power, odds: (l) => clamp(0.5 + (l.stats.health - 50) / 200, 0.2, 0.9), run: (l) => { gainExp(l, 250); if (chance(l, clamp(0.5 + (l.stats.health - 50) / 200, 0.2, 0.9))) return ok("คุณชนะสองในสามยก — ท่าที่ติดมาหลายเดือนเริ่มลื่นไหล"); addStat(l, "health", -3); return bad("ไม้ฟาดเข้าซี่โครงเต็มแรง — เจ็บแต่ได้บทเรียน"); } }),
+  M({ group: "ฝึกฝน", id: "mw_wander", emoji: "⛰️", name: "ท่องเขาหาวาสนา", desc: "อาจเจอสิ่งไม่คาดฝัน", minAge: 14, odds: (l) => clamp(0.12 + l.stats.luck / 400, 0.05, 0.4), run: (l) => {
+    if (chance(l, clamp(0.12 + l.stats.luck / 400, 0.05, 0.4))) {
+      const r = randInt(l, 0, 2);
+      if (r === 0) { addQi(l, 2); return { text: "ในถ้ำหลังน้ำตกมีบ่อน้ำอุ่นที่ลมปราณหนาแน่นผิดธรรมชาติ — คุณนั่งอยู่เจ็ดวัน", kind: "milestone" as const }; }
+      if (r === 1) { addStat(l, "health", 8); return { text: "โสมป่าอายุร้อยปีขึ้นอยู่ใต้รากต้นสน — คุณต้มกินทั้งราก", kind: "milestone" as const }; }
+      gainExp(l, 600); return { text: "ฤาษีชราตกปลาริมลำธารชี้ท่าคุณผิดสามจุด แล้วหายไปในหมอก", kind: "milestone" as const };
+    }
+    if (chance(l, 0.25)) { addStat(l, "health", -6); return bad("หลงทางสามวัน ข้อเท้าแพลงกลางป่า"); }
+    addStat(l, "happiness", 2); return meh("ภูเขาสวยงาม — แต่ไม่มีอะไรรอคุณอยู่ คราวนี้");
+  } }),
+
+  // ───── ยุทธภพ ─────
+  M({ group: "ยุทธภพ", id: "mw_teahouse", emoji: "🍵", name: "ฟังข่าวในโรงน้ำชา", desc: "ข่าวลือ อาจกลายเป็นงาน", minAge: 10, cost: 200, run: (l) => {
+    addMoney(l, -200);
+    const rumors = ["ad.j.wanted_hunt", "ad.j.inn_secret", "ad.j.escort_small", "ms.m.challenge_board"].filter((id) => !(l.seen[id] ?? 0) || id === "ad.j.escort_small");
+    if (l.age >= 18 && rumors.length && chance(l, 0.45)) { runEvent(l, pick(l, rumors)); return { text: "" }; }
+    addStat(l, "happiness", 2); return meh(pick(l, ["นักเล่านิทานเล่าเรื่องจอมยุทธ์ที่เหาะข้ามแม่น้ำเหลือง", "โต๊ะข้างๆ เถียงกันว่าสำนักไหนเก่งที่สุด", `ข่าวว่า${regionOf(l).name}ปีนี้ข้าวแพงขึ้นอีก`]));
+  } }),
+  M({ group: "ยุทธภพ", id: "mw_challenge", emoji: "⚔️", name: "ท้าประลองจอมยุทธ์", desc: "ชนะได้ชื่อเสียง แพ้อาจเจ็บ", minAge: adult, available: (l) => !!l.power, run: (l) => { startDuel(l, { foe: pick(l, ["จอมยุทธ์พเนจร", "ศิษย์สำนักใหญ่", "นักดาบไร้นาม"]), rank: clamp(pow(l) + randInt(l, -1, 1), 0, 8), lethal: false, on: "brawl" }); return { text: "" }; } }),
+  M({ group: "ยุทธภพ", id: "mw_bounty", emoji: "📯", name: "ล่าค่าหัว", desc: "เงินดี ถึงตาย", minAge: 18, available: (l) => !!l.power && pow(l) >= 2, run: (l) => { startDuel(l, { foe: pick(l, ["โจรร้ายมีค่าหัว", "ฆาตกรหนีคดี", "หัวหน้าโจรภูเขา"]), rank: clamp(pow(l) + randInt(l, 0, 1), 0, 8), lethal: true, on: "bandit" }); return { text: "" }; } }),
+  M({ group: "ยุทธภพ", id: "mw_travel", emoji: "🧭", name: "ย้ายถิ่นไปภูมิภาคอื่น", desc: "เปลี่ยนที่อยู่ เรื่องราวเปลี่ยนตาม", minAge: adult, run: (l) => { runEvent(l, "tv.move"); return { text: "" }; } }),
+
+  // ───── ชีวิต ─────
+  M({ group: "ชีวิต", id: "mw_doctor", emoji: "🌿", name: "หาหมอจีน", desc: "สุขภาพ +", minAge: 0, cost: 2000, run: (l) => { if (l.age >= 18) addMoney(l, -2000); addStat(l, "health", randInt(l, 4, 10)); return ok("หมอแมะชีพจรนาน แล้วจ่ายยาต้มขมปี๋มาสามหม้อ"); } }),
+  M({ group: "ชีวิต", id: "mw_shrine", emoji: "🏮", name: "ไหว้บรรพชน/ดูดวง", desc: "ความสุข + บางทีโชค", minAge: 5, run: (l) => { addStat(l, "happiness", randInt(l, 2, 5)); if (chance(l, 0.2)) { addStat(l, "luck", 1); return ok("ธูปสามดอกไหม้เท่ากันพอดี — ซินแสบอกว่าลางดี"); } return ok("ควันธูปลอยขึ้นช้าๆ ใจคุณสงบลง"); } }),
+  M({ group: "ชีวิต", id: "mw_tavern", emoji: "🍶", name: "ดื่มที่โรงเตี๊ยม", desc: "ความสุข + อาจได้เพื่อน", minAge: adult, cost: 1000, available: (l) => !mourning(l), run: (l) => {
+    addMoney(l, -1000); addStat(l, "happiness", randInt(l, 3, 7));
+    if (chance(l, 0.2)) { const p = createPerson(l, "friend", { age: l.age + randInt(l, -5, 5), bond: 50 }); return ok(`คุณร่วมโต๊ะกับ${shortName(p)} คุยกันถูกคอจนไก่ขัน`); }
+    if (chance(l, 0.15)) { addStat(l, "health", -3); return bad("สุราหมักร้อยปีแรงเกินคาด — ตื่นมาในคอกม้า"); }
+    return ok("เสียงพิณจากชั้นบนกับสุราอุ่นๆ — คืนธรรมดาที่ดี");
+  } }),
+  M({ group: "ชีวิต", id: "mw_gamble", emoji: "🎲", name: "เล่นถั่วในบ่อน", desc: "เสี่ยงโชค", minAge: adult, cost: 2000, available: (l) => !mourning(l), odds: (l) => clamp(0.3 + (l.stats.luck - 50) / 250, 0.1, 0.6), run: (l) => {
+    addMoney(l, -2000);
+    if (chance(l, clamp(0.3 + (l.stats.luck - 50) / 250, 0.1, 0.6))) { const w = randInt(l, 3, 8); addMoney(l, w * TAEL); return ok(`ถ้วยเปิด — ถูก! ได้ ${w} ตำลึง`); }
+    if (chance(l, 0.1)) { l.flags.gambleDebt = true; addMoney(l, -5 * TAEL); return bad("เสียแล้วยังยืมเงินบ่อนเล่นต่อ — คนทวงหนี้จำหน้าคุณได้แล้ว"); }
+    return meh("ถ้วยเปิด… เสียตามระเบียบ");
+  } }),
+  M({ group: "ชีวิต", id: "mw_pill", emoji: "💊", name: "ซื้อยาวิเศษที่ตลาดยา", desc: "ยาทะลวงชีพจร (อาจได้ของปลอม)", minAge: 18, cost: 50 * TAEL, available: (l) => !!l.power && !l.power.items.includes("ยาเม็ดทะลวงชีพจร"), odds: (l) => clamp(0.4 + (l.stats.smarts - 50) / 150 + (l.flags.medicKnow ? 0.2 : 0), 0.1, 0.9), run: (l) => {
+    addMoney(l, -50 * TAEL);
+    if (chance(l, clamp(0.4 + (l.stats.smarts - 50) / 150 + (l.flags.medicKnow ? 0.2 : 0), 0.1, 0.9))) { l.power!.items.push("ยาเม็ดทะลวงชีพจร"); return ok("ยาเม็ดสีทองกลิ่นหอมเย็น — ของจริง เก็บไว้ใช้ตอนทะลวงขั้น"); }
+    return bad("ยาเม็ดเป็นแป้งผสมน้ำผึ้ง — พ่อค้าหายตัวไปจากตลาดในวันรุ่งขึ้น");
+  } }),
+  M({ group: "ชีวิต", id: "mw_gear", emoji: "🗡️", name: "ซื้ออาวุธคู่กาย", desc: "อาวุธดีช่วยในการต่อสู้", minAge: 14, cost: 30 * TAEL, available: (l) => !!l.power && !l.power.items.some((i) => /กระบี่|ดาบ|ทวน/.test(i)), run: (l) => { addMoney(l, -30 * TAEL); const w = pick(l, ["กระบี่เหล็กกล้าสามฟุต", "ดาบหลังหนาตีมือ", "ทวนเหล็กยาวเก้าศอก"]); l.power!.items.push(w); return ok(`${w}พอดีมือราวกับทำมาให้คุณ`); } }),
+  M({ group: "ชีวิต", id: "mw_rest", emoji: "😌", name: "พักผ่อนอยู่บ้าน", desc: "ความสุข + สุขภาพเล็กน้อย", minAge: 3, run: (l) => { addStat(l, "happiness", randInt(l, 2, 4)); addStat(l, "health", 1); return ok("ปีนี้คุณนอนกลางวันใต้ต้นท้อบ่อยกว่าปกติ — และไม่เสียใจเลย"); } }),
+
+  // ───── ครอบครัว ─────
+  M({ group: "ครอบครัว", id: "mw_matchmaker", emoji: "💮", name: "ไปหาแม่สื่อ", desc: "หาคู่ครอง", minAge: adult, cost: 3000, available: (l) => !people(l, "partner").length && !people(l, "spouse").length && !mourning(l) && l.job?.careerId !== "monk", odds: (l) => checkChance(l, "looks", 45, l.wealth === "rich" || l.wealth === "elite" ? 0.2 : 0), run: (l) => {
+    addMoney(l, -3000);
+    if (chance(l, checkChance(l, "looks", 45, l.wealth === "rich" || l.wealth === "elite" ? 0.2 : 0))) { const p = createPerson(l, "partner", { gender: l.gender === "m" ? "f" : "m", age: l.age + randInt(l, -3, 3), bond: 55 }); return ok(`แม่สื่อพาไปดูตัว${shortName(p)} — สองบ้านพอใจกันมาก`); }
+    return bad("ฝ่ายนั้นดูดวงแล้วบอกว่าธาตุไม่ถูกกัน");
+  } }),
+  M({ group: "ครอบครัว", id: "mw_filial", emoji: "🍲", name: "ดูแลพ่อแม่", desc: "ความกตัญญู + ชื่อเสียง", minAge: 12, available: (l) => people(l, "father").length + people(l, "mother").length > 0, run: (l) => { for (const p of [...people(l, "father"), ...people(l, "mother")]) p.bond = Math.min(100, p.bond + 6); addFame(l, 1); addStat(l, "happiness", 2); return ok("คุณต้มโจ๊กไก่ป้อนพ่อแม่ทุกเช้า — เพื่อนบ้านพูดถึงลูกกตัญญูบ้านนี้"); } }),
+  M({ group: "ครอบครัว", id: "mw_adopt", emoji: "🧸", name: "รับเด็กกำพร้ามาเลี้ยง", desc: "ลูกบุญธรรม", minAge: 22, cost: 5 * TAEL, run: (l) => { addMoney(l, -5 * TAEL); const k = createPerson(l, "child", { age: randInt(l, 1, 8), bond: 50 }); k.tags = ["adopted"]; addFame(l, 1); return ok(`${shortName(k)}จากวัดร้างจับมือคุณแน่นตลอดทางกลับบ้าน`); } }),
+  M({ group: "ครอบครัว", id: "mw_disown", emoji: "✂️", name: "ตัดพ่อตัดลูก", desc: "ขีดชื่อลูกออกจากผังตระกูล", minAge: 35, available: (l) => people(l, "child").some((p) => p.age >= 14), run: (l) => { runEvent(l, "fm.disown"); return { text: "" }; } }),
+
+  // ───── อาชญากรรม ─────
+  M({ group: "อาชญากรรม", id: "mw_steal", emoji: "🤏", name: "ล้วงกระเป๋า/ขโมย", desc: "ได้เงิน เสี่ยงถูกจับ", minAge: 8, run: (l) => { runEvent(l, "cr.steal"); return { text: "" }; } }),
+  M({ group: "อาชญากรรม", id: "mw_rob", emoji: "🗡️", name: "ดักปล้นคนเดินทาง", desc: "เงินมาก บาปมาก", minAge: adult, run: (l) => { runEvent(l, "cr.rob"); return { text: "" }; } }),
+  M({ group: "อาชญากรรม", id: "mw_poison", emoji: "☠️", name: "วางยาศัตรู", desc: "ถ้าพลาด ศัตรูจะรู้", minAge: adult, run: (l) => { runEvent(l, "cr.poison"); return { text: "" }; } }),
+  M({ group: "อาชญากรรม", id: "mw_hit", emoji: "🌑", name: "รับงานลอบสังหาร", desc: "ทองหนัก ถึงตาย", minAge: 18, available: (l) => !!l.power, run: (l) => { runEvent(l, "cr.assassinate"); return { text: "" }; } }),
+  M({ group: "อาชญากรรม", id: "mw_frame", emoji: "🎭", name: "ใส่ร้ายคนอื่น", desc: "ส่งศัตรูเข้าคุก", minAge: 18, run: (l) => { runEvent(l, "cr.frame"); return { text: "" }; } }),
+];
+
+// หาหมอรักษาบาดแผล (ลงทะเบียนใน bodyEvents) ย้ายมาอยู่หมวดชีวิต ต่อจากหาหมอจีน
+const heal = ACTIVITIES.findIndex((a) => a.id === "m_heal");
+const healAct = heal >= 0 ? ACTIVITIES.splice(heal, 1)[0] : undefined;
+if (healAct) MURIM_ACTS.splice(MURIM_ACTS.findIndex((a) => a.id === "mw_doctor") + 1, 0, { ...healAct, group: "ชีวิต" });
+ACTIVITIES.push(...MURIM_ACTS);
+
+/** ยุทธภพเห็นเฉพาะกิจกรรมชุดใหม่ + หาหมอรักษาบาดแผล · ในคุกทำได้แค่ฝึก/สมาธิ/อ่าน/พัก */
+const KEEP = new Set(["m_heal"]);
+const IN_JAIL = new Set(["mw_body", "mw_meditate", "mw_manual", "mw_rest"]);
+activityFilters.push((l, a) => {
+  if (l.worldId !== "murim") return true;
+  if (!a.id.startsWith("mw_") && !KEEP.has(a.id)) return false;
+  return !jailed(l) || IN_JAIL.has(a.id);
+});

@@ -13,6 +13,8 @@ export interface Activity {
   /** ไม่ใส่ = ทุกโลกยุคปัจจุบัน · "all" = ทุกโลก */
   world?: WorldId | "all";
   cost?: number;
+  /** หมวดในแท็บ "ทำ" (ไม่ใส่ = ไม่แบ่งหมวด) */
+  group?: string;
   /** % สำเร็จที่แสดงให้ผู้เล่นเห็น */
   odds?: (life: Life) => number;
   available?: (life: Life) => boolean;
@@ -152,15 +154,17 @@ export const ACTIVITIES: Activity[] = [
 const REALISTIC_OFF = /^(club_|kid_|biz_|free_course|free_move|free_splurge)/;
 const inWorld = (a: Activity, w: WorldId) => (a.world === "all" || worldMatches(a.world, w)) && !(isRealistic(w) && REALISTIC_OFF.test(a.id));
 /** ระหว่างติดคุกทำได้แค่ไม่กี่อย่าง */
-const JAIL_OK = /^(gym|read|free_create|.*_rest)$/;
+const JAIL_OK = /^(gym|read|free_create|.*_rest|mw_body|mw_meditate|mw_manual)$/;
 
 /** อายุที่เริ่มทำอะไรเองได้ */
 export const BABY_AGE = 3;
 
-export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => inWorld(a, life.worldId));
+/** ตัวกรองจาก content (เช่น ยุทธภพซ่อนกิจกรรมของโลกอื่น) — คืน false = ไม่แสดง */
+export const activityFilters: Array<(life: Life, a: Activity) => boolean> = [];
+export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => inWorld(a, life.worldId) && activityFilters.every((f) => f(life, a)));
 
 export function activityLocked(life: Life, a: Activity): string | undefined {
-  if (!inWorld(a, life.worldId)) return "ไม่มีในโลกนี้";
+  if (!inWorld(a, life.worldId) || !activityFilters.every((f) => f(life, a))) return "ไม่มีในโลกนี้";
   // ทารกยังทำอะไรเองไม่ได้ — พ่อแม่ดูแลทุกอย่าง
   if (life.age < BABY_AGE) return "ยังเป็นเด็กเล็ก";
   if (Number(life.flags.jailUntil ?? -1) > life.age && !JAIL_OK.test(a.id)) return "ติดคุกอยู่";

@@ -221,6 +221,8 @@ export interface Life {
   body?: import("./body").Body;
   /** เป้าหมายชีวิต: ตัวแรกที่ยังไม่จบ = เป้าหมายหลัก (MURIM_PLAN §18.1) */
   goals?: import("../content/murim/life/goals").LifeGoal[];
+  /** เหตุการณ์สำคัญของชีวิตนี้ (ลงบันทึกยุทธภพทันที — MURIM_PLAN §18.2 ข้อ 7) */
+  chron?: { year: number; text: string }[];
   /** สรุปผลของปีล่าสุด (แสดงใต้บันทึก) */
   report?: import("./report").YearReport;
 }

@@ -16,12 +16,13 @@ import { goalLine } from "../content/murim/life/goals";
 import { disabilities, openInjuries } from "../engine/body";
 import { displayName, loc, money } from "../engine/util";
 
-export type TabId = "career" | "people" | "power" | "activities" | "phone" | "soul";
+export type TabId = "career" | "people" | "power" | "jianghu" | "activities" | "phone" | "soul";
 
 const TABS: { id: TabId; emoji: string; label: string }[] = [
   { id: "career", emoji: "💼", label: "อาชีพ" },
   { id: "people", emoji: "❤️", label: "คน" },
   { id: "power", emoji: "⚔️", label: "พลัง" },
+  { id: "jianghu", emoji: "🏯", label: "ยุทธภพ" },
   { id: "activities", emoji: "🎯", label: "ทำ" },
   { id: "phone", emoji: "📱", label: "มือถือ" },
   { id: "soul", emoji: "👻", label: "วิญญาณ" },
@@ -243,7 +244,21 @@ export function MainScreen({
           <div className="name">
             {displayName(life)} <span className={`gender-tag ${life.gender}`}>{life.gender === "m" ? "♂" : "♀"}</span>
           </div>
-          {title && <div className="title-tag">「{title.name}」</div>}
+          {murim ? (
+            <>
+              {life.flags.m17Epithet && <div className="title-tag">【{String(life.flags.m17Epithet)}】</div>}
+              {life.power && <div className="sub">กำลังภายใน {Math.floor(Number(life.flags.mwQi ?? 0))} ปี</div>}
+              {(!!life.flags.wanted || Number(life.flags.jailUntil ?? -1) > life.age || Number(life.flags.mourningUntil ?? -1) > life.age) && (
+                <div>
+                  {!!life.flags.wanted && <span className="status-chip">📜 ถูกประกาศจับ</span>}
+                  {Number(life.flags.jailUntil ?? -1) > life.age && <span className="status-chip">⛓️ ติดคุก อีก {Number(life.flags.jailUntil) - life.age} ปี</span>}
+                  {Number(life.flags.mourningUntil ?? -1) > life.age && <span className="status-chip calm">🕯️ ไว้ทุกข์</span>}
+                </div>
+              )}
+            </>
+          ) : (
+            title && <div className="title-tag">「{title.name}」</div>
+          )}
           {murim && (disabilities(life).length > 0 || openInjuries(life).length > 0) && (
             <div className="injury-row">
               {disabilities(life).map((d) => (
@@ -304,7 +319,7 @@ export function MainScreen({
           ＋ อายุ 1 ปี
         </button>
         <nav className="tabs">
-          {TABS.filter((t) => t.id !== "phone" || hasPhone(life)).map((t) => (
+          {TABS.filter((t) => (t.id !== "phone" || hasPhone(life)) && (t.id !== "jianghu" || life.worldId === "murim")).map((t) => (
             <button key={t.id} className="tab" onClick={() => onTab(t.id)}>
               <span className="tab-emoji">{t.id === "soul" && isRealistic(life.worldId) ? "📜" : t.emoji}</span>
               <span>{isRealistic(life.worldId) ? (t.id === "soul" ? "บันทึก" : t.id === "power" ? "วิชา" : t.label) : t.label}</span>

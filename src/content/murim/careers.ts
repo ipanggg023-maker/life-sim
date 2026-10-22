@@ -1,6 +1,3 @@
-import { ACTIVITIES } from "../../engine/activities";
-import { chance, randInt } from "../../engine/rng";
-import { addFame, addMoney, addStat, checkChance, createPerson, hasTalent, people, shortName } from "../../engine/util";
 import { CAREERS } from "../hunter/careers";
 import { RETAINER, guildById } from "../hunter/power";
 
@@ -57,104 +54,33 @@ CAREERS.push(
   { id: "innkeeper", name: "เจ้าของโรงเตี๊ยม", emoji: "🏮", minAge: 18, world: "murim", titles: ["เด็กเสิร์ฟ", "พ่อครัว", "ผู้จัดการร้าน", "เถ้าแก่", "เจ้าของโรงเตี๊ยมดัง"], baseSalary: 140_000, key: "luck", dc: 30, salary: (l, b) => b * (0.6 + l.stats.luck / 80) },
   { id: "herbalist", name: "หมอยาสมุนไพร", emoji: "🌿", minAge: 16, world: "murim", titles: ["ลูกมือร้านยา", "หมอยา", "หมอมีชื่อ", "หมอหลวงท้องถิ่น", "หมอเทวดา"], baseSalary: 200_000, key: "smarts", dc: 55 },
   { id: "storyteller", name: "นักเล่านิทานในโรงน้ำชา", emoji: "📜", minAge: 16, world: "murim", titles: ["นักเล่าฝึกหัด", "นักเล่าประจำร้าน", "นักเล่าดัง", "ปรมาจารย์นิทาน", "ผู้บันทึกตำนานยุทธภพ"], baseSalary: 90_000, key: "looks", dc: 40, salary: (l, b) => b * (1 + Math.max(0, l.fame) / 20) },
-  { id: "official", name: "ขุนนาง", emoji: "📯", minAge: 18, world: "murim", titles: ["เสมียนอำเภอ", "นายอำเภอ", "เจ้าเมือง", "ข้าหลวงมณฑล", "เสนาบดี"], baseSalary: 350_000, key: "smarts", dc: 60, mundaneOnly: true },
+  { id: "official", name: "ขุนนาง", emoji: "📯", minAge: 18, world: "murim", titles: ["เสมียนอำเภอ", "นายอำเภอ", "เจ้าเมือง", "ข้าหลวงมณฑล", "เสนาบดี"], baseSalary: 350_000, key: "smarts", dc: 60, mundaneOnly: true, needs: (l) => (l.flags.xiucai ? undefined : "ต้องสอบขุนนางระดับอำเภอผ่านก่อน (เป็นบัณฑิต)") },
 );
 
-// ───────────────────────── กิจกรรมในยุทธภพ ─────────────────────────
 
-ACTIVITIES.push(
-  {
-    id: "m_train",
-    world: "murim",
-    emoji: "🥋",
-    name: "ฝึกกำลังกายใต้น้ำตก",
-    desc: "สุขภาพ +",
-    minAge: 8,
-    run: (l) => { addStat(l, "health", randInt(l, 2, 6)); return { text: "คุณยืนรับน้ำตกเย็นเฉียบทุกเช้า ร่างกายแกร่งขึ้น", kind: "good" }; },
-  },
-  {
-    id: "m_read",
-    world: "murim",
-    emoji: "📜",
-    name: "อ่านตำราโบราณ",
-    desc: "สติปัญญา +",
-    minAge: 6,
-    run: (l) => { addStat(l, "smarts", randInt(l, 1, 4)); return { text: "คุณท่องตำราซุนจื่อจนจำได้ทั้งเล่ม", kind: "good" }; },
-  },
-  {
-    id: "m_shrine",
-    world: "murim",
-    emoji: "🏮",
-    name: "จุดธูปไหว้บรรพชน",
-    desc: "ความสุข + อาจมีโชค",
-    minAge: 5,
-    run: (l) => {
-      addStat(l, "happiness", randInt(l, 3, 6));
-      if (chance(l, 0.25)) { addStat(l, "luck", 1); return { text: "ธูปทั้งสามดอกไหม้เท่ากันพอดี — ลางดี", kind: "good" }; }
-      return { text: "คุณไหว้บรรพชนด้วยความเคารพ", kind: "good" };
-    },
-  },
-  {
-    id: "m_doctor",
-    world: "murim",
-    emoji: "🌿",
-    name: "ไปหาหมอจีน",
-    desc: "สุขภาพ ++",
-    minAge: 0,
-    cost: 2000,
-    run: (l) => {
-      if (l.age >= 18) addMoney(l, -2000);
-      addStat(l, "health", randInt(l, 5, 12));
-      return { text: "หมอแมะชีพจรแล้วจ่ายยาต้มขมปี๋ให้สามหม้อ", kind: "good" };
-    },
-  },
-  {
-    id: "m_tavern",
-    world: "murim",
-    emoji: "🍶",
-    name: "ดื่มสุราที่โรงเตี๊ยม",
-    desc: "ความสุข + ฟังข่าวยุทธภพ",
-    minAge: 16,
-    cost: 1000,
-    run: (l) => {
-      addMoney(l, -1000);
-      addStat(l, "happiness", randInt(l, 3, 8));
-      if (chance(l, 0.2)) { const p = createPerson(l, "friend", { age: l.age + randInt(l, -5, 5), bond: 50 }); return { text: `คุณร่วมโต๊ะกับ${shortName(p)} คุยกันถูกคอจนสาบานเป็นพี่น้อง`, kind: "good" }; }
-      if (chance(l, 0.2)) { addStat(l, "health", -4); return { text: "สุราหมักร้อยปีแรงเกินคาด คุณตื่นมาในคอกม้า", kind: "bad" }; }
-      return { text: "คุณฟังนักเล่านิทานเล่าเรื่องจอมยุทธ์ไร้เทียมทาน", kind: "good" };
-    },
-  },
-  {
-    id: "m_matchmaker",
-    world: "murim",
-    emoji: "💮",
-    name: "ไปหาแม่สื่อ",
-    desc: "หาคู่",
-    minAge: 16,
-    cost: 3000,
-    available: (l) => !people(l, "partner").length && !people(l, "spouse").length,
-    odds: (l) => checkChance(l, "looks", 45, l.wealth === "rich" || l.wealth === "elite" ? 0.2 : 0),
-    run: (l) => {
-      addMoney(l, -3000);
-      if (chance(l, checkChance(l, "looks", 45, l.wealth === "rich" || l.wealth === "elite" ? 0.2 : 0))) {
-        const p = createPerson(l, "partner", { gender: l.gender === "m" ? "f" : "m", age: l.age + randInt(l, -3, 3), bond: 55 });
-        return { text: `แม่สื่อพาคุณไปดูตัว${shortName(p)} ทั้งสองบ้านพอใจกันมาก`, kind: "good" };
-      }
-      return { text: "ฝ่ายนั้นดูดวงแล้วบอกว่าธาตุไม่ถูกกัน", kind: "bad" };
-    },
-  },
-  {
-    id: "m_gamble",
-    world: "murim",
-    emoji: "🎲",
-    name: "เล่นถั่วในบ่อนพนัน",
-    desc: "เสี่ยงโชค",
-    minAge: 16,
-    cost: 500,
-    run: (l) => {
-      addMoney(l, -500);
-      if (chance(l, 0.04 + (l.stats.luck - 50) / 1000 + (hasTalent(l, "lucky") ? 0.03 : 0))) { addMoney(l, 50_000); addFame(l, 1); return { text: "คุณแทงถูกติดกันเจ็ดตา ทั้งบ่อนจ้องหน้า ได้เงินมา 50 ตำลึง!", kind: "good" }; }
-      return { text: "ถ้วยเปิด… เสียตามระเบียบ" };
-    },
-  },
+// ───────────────────────── อาชีพเพิ่มเติม (MURIM_PLAN §6) ─────────────────────────
+// ทุกอาชีพมีบันได 5 ขั้น · บางอาชีพมีเงื่อนไขจริงของโลก: สอบขุนนาง · ถือพรหมจรรย์ · ฝ่ายมาร · ยุคสงคราม
+const war = (l: { mw?: { era: string } }) => l.mw?.era === "war" || l.mw?.era === "chaos";
+CAREERS.push(
+  { id: "fisher", name: "ชาวประมง", emoji: "🎣", minAge: 12, world: "murim", titles: ["ลูกเรือหาปลา", "ชาวประมง", "เจ้าของเรือ", "นายท่าเรือประมง", "เจ้าแห่งท่าเรือ"], baseSalary: 65_000, key: "health", dc: 10 },
+  { id: "hunter_m", name: "นายพราน", emoji: "🏹", minAge: 14, world: "murim", titles: ["เด็กตามพราน", "นายพราน", "พรานเจนป่า", "พรานล่าเสือ", "ราชาแห่งพงไพร"], baseSalary: 80_000, key: "health", dc: 30 },
+  { id: "porter", name: "กุลีแบกหาม", emoji: "🧺", minAge: 12, world: "murim", titles: ["กุลีรายวัน", "กุลีประจำท่า", "หัวหน้ากุลี", "นายหน้าแรงงาน", "เจ้าพ่อท่าเรือ"], baseSalary: 55_000, key: "health", dc: 5 },
+  { id: "gambler", name: "นักพนันอาชีพ", emoji: "🎲", minAge: 18, world: "murim", titles: ["นักพนันตามบ่อน", "เซียนลูกเต๋า", "นักพนันมีชื่อ", "เจ้ามือ", "เจ้าของบ่อน"], baseSalary: 90_000, key: "luck", dc: 50, salary: (l, b) => b * (0.3 + l.stats.luck / 50) },
+  { id: "smith", name: "ช่างตีเหล็ก", emoji: "⚒️", minAge: 14, world: "murim", titles: ["ลูกมือโรงตีเหล็ก", "ช่างตีเหล็ก", "ช่างตีอาวุธ", "ปรมาจารย์ช่างกระบี่", "ช่างกระบี่ในตำนาน"], baseSalary: 110_000, key: "health", dc: 40, needs: (l) => (l.flags.smithSkill || l.stats.health >= 55 ? undefined : "ต้องเคยฝึกงานโรงตีเหล็ก หรือร่างกายแข็งแรงพอ") },
+  { id: "tailor", name: "ช่างตัดเสื้อ", emoji: "🧵", minAge: 14, world: "murim", titles: ["ลูกมือร้านผ้า", "ช่างตัดเสื้อ", "ช่างฝีมือดี", "ช่างตัดชุดขุนนาง", "ช่างหลวง"], baseSalary: 85_000, key: "smarts", dc: 30 },
+  { id: "carpenter", name: "ช่างไม้", emoji: "🪚", minAge: 14, world: "murim", titles: ["ลูกมือช่างไม้", "ช่างไม้", "ช่างสร้างบ้าน", "นายช่างวัด", "นายช่างวังหลวง"], baseSalary: 90_000, key: "health", dc: 25 },
+  { id: "merchant", name: "พ่อค้า", emoji: "🧳", minAge: 16, world: "murim", titles: ["พ่อค้าเร่", "พ่อค้าแผงลอย", "พ่อค้ามีร้าน", "นายกองคาราวาน", "ประธานสมาคมพ่อค้า"], baseSalary: 130_000, key: "smarts", dc: 40, salary: (l, b) => b * (l.mw?.era === "peace" || l.mw?.era === "recovery" ? 1.3 : l.mw?.era === "chaos" || l.mw?.era === "war" ? 0.6 : 1) },
+  { id: "constable", name: "มือปราบ", emoji: "🪪", minAge: 18, world: "murim", titles: ["มือปราบฝึกหัด", "มือปราบ", "มือปราบอาวุโส", "หัวหน้ามือปราบ", "หัวหน้ามือปราบประจำมณฑล"], baseSalary: 150_000, key: "health", dc: 45, needs: (l) => (l.flags.wanted ? "คุณถูกประกาศจับอยู่" : Number(l.flags.heat ?? 0) >= 30 ? "ทางการยังจับตามองคุณอยู่" : undefined) },
+  { id: "soldier", name: "ทหาร", emoji: "🛡️", minAge: 16, world: "murim", titles: ["พลทหาร", "นายสิบ", "นายร้อย", "นายพัน", "แม่ทัพ"], baseSalary: 100_000, key: "health", dc: 20, salary: (l, b) => b * (war(l) ? 1.6 : 1) },
+  { id: "teacher", name: "ครูสอนหนังสือ", emoji: "🖌️", minAge: 18, world: "murim", titles: ["ครูหมู่บ้าน", "ครูประจำตำบล", "ครูมีชื่อ", "อาจารย์สำนักศึกษา", "ปราชญ์แห่งแผ่นดิน"], baseSalary: 95_000, key: "smarts", dc: 55 },
+  { id: "monk", name: "พระวัดวัชระ / นักพรต", emoji: "📿", minAge: 12, world: "murim", titles: ["เณร", "ภิกษุ", "ภิกษุอาวุโส", "เจ้าอาวาส", "พระมหาเถระ"], baseSalary: 20_000, key: "smarts", dc: 30, needs: (l) => (l.people.some((p) => p.alive && (p.relation === "spouse" || p.relation === "partner")) ? "ต้องถือพรหมจรรย์ — มีคู่ครองอยู่" : undefined) },
+  { id: "beggar_sect", name: "พรรคกระยาจก", emoji: "🥣", minAge: 10, world: "murim", titles: ["ศิษย์ถุงเดียว", "ศิษย์สามถุง", "ศิษย์ห้าถุง", "ผู้อาวุโสเจ็ดถุง", "ผู้อาวุโสเก้าถุง"], baseSalary: 15_000, key: "luck", dc: 20 },
+  { id: "bandit", name: "โจรภูเขา", emoji: "🏴", minAge: 16, world: "murim", titles: ["ลูกน้องโจร", "โจรภูเขา", "หัวหน้าหมู่โจร", "รองหัวหน้าค่าย", "ราชาโจร"], baseSalary: 160_000, key: "health", dc: 30 },
+  { id: "pirate", name: "โจรสลัดแม่น้ำ", emoji: "⛵", minAge: 16, world: "murim", titles: ["ลูกเรือโจร", "โจรสลัด", "นายท้ายเรือโจร", "กัปตันโจรสลัด", "เจ้าแห่งแม่น้ำ"], baseSalary: 170_000, key: "health", dc: 35, needs: (l) => (l.flags.region === "jiangnan" || l.flags.region === "south" ? undefined : "ต้องอยู่เจียงหนานหรือป่าทางใต้ (มีแม่น้ำใหญ่)") },
+  { id: "thief", name: "หัวขโมย", emoji: "🦝", minAge: 12, world: "murim", titles: ["เด็กล้วงกระเป๋า", "หัวขโมย", "จอมโจรย่องเบา", "จอมโจรไร้เงา", "ราชาโจรแห่งเมืองหลวง"], baseSalary: 90_000, key: "luck", dc: 35 },
+  { id: "poisoner", name: "นักปรุงพิษ", emoji: "🧪", minAge: 18, world: "murim", titles: ["ลูกมือปรุงยา", "นักปรุงพิษ", "ผู้เชี่ยวชาญพิษ", "ปรมาจารย์พิษ", "ราชาพิษ"], baseSalary: 180_000, key: "smarts", dc: 60, needs: (l) => (l.flags.medicKnow || l.flags.tangInLaw || l.flags.region === "sichuan" ? undefined : "ต้องรู้เรื่องสมุนไพร หรือเกี่ยวข้องกับตระกูลถัง") },
+  { id: "cultist", name: "สาวกลัทธิมาร", emoji: "🩸", minAge: 14, world: "murim", titles: ["สาวกใหม่", "สาวกชั้นใน", "ผู้พิทักษ์ธรรมมาร", "ราชันมาร", "เสาหลักลัทธิ"], baseSalary: 120_000, key: "happiness", dc: 20, needs: (l) => (Number(l.flags.m17Align ?? 0) <= -15 || l.flags.region === "west" ? undefined : "ลัทธิไม่ไว้ใจคนที่ยังยึดธรรมะ") },
 );
+
+/** อาชีพสายมืด: ทางการรู้มากขึ้นทุกปีที่ทำ */
+export const DARK_JOBS = new Set(["bandit", "pirate", "thief", "poisoner", "cultist", "m_assassin"]);

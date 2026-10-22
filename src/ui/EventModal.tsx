@@ -81,6 +81,8 @@ export interface Resolved {
   out: Outcome;
 }
 
+const TIER = { great: "🌟 สำเร็จงดงาม", ok: "✅ สำเร็จ", fail: "❌ พลาด", disaster: "💀 พลาดหนัก" } as const;
+
 export function OutcomeModal({ resolved, onNext }: { resolved: Resolved; onNext: () => void }) {
   return (
     <div className="overlay modal-overlay">
@@ -89,8 +91,8 @@ export function OutcomeModal({ resolved, onNext }: { resolved: Resolved; onNext:
         <p className="modal-prompt">{resolved.prompt}</p>
         <p className="modal-choice">➜ {resolved.choice}</p>
         {resolved.out.roll && (
-          <p className={`roll ${resolved.out.roll.ok ? "ok" : "fail"}`}>
-            {resolved.out.roll.ok ? "✅ สำเร็จ" : "❌ ไม่สำเร็จ"} · โอกาส {Math.round(resolved.out.roll.p * 100)}%
+          <p className={`roll ${resolved.out.roll.ok ? "ok" : "fail"} ${resolved.out.roll.tier}`}>
+            {TIER[resolved.out.roll.tier]} · โอกาส {Math.round(resolved.out.roll.p * 100)}%
           </p>
         )}
         <p className={`modal-outcome ${resolved.out.kind ?? ""}`}>{resolved.out.text}</p>

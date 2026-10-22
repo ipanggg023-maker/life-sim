@@ -149,6 +149,19 @@ const foeOf = (l: Life) => l.people.find((p) => p.id === mainGoal(l)?.pid);
 
 export const GOAL_EVENTS: GameEvent[] = [
   {
+    id: "goal.exam",
+    minAge: 15,
+    maxAge: 50,
+    maxTimes: 4,
+    weight: (l) => (mainGoal(l)?.id === "official" && !l.flags.xiucai && l.stats.smarts >= 50 ? 14 : 0),
+    title: "สนามสอบ",
+    text: () => "ประกาศสอบขุนนางระดับอำเภอปีนี้ติดหน้าที่ว่าการ — คุณอ่านตำรามาทั้งปีเพื่อวันนี้",
+    choices: [
+      { label: "เข้าสอบ", check: { stat: "smarts", dc: 60 }, run: (l, _c, ok) => { if (ok) { l.flags.xiucai = true; addFame(l, 3); addStat(l, "happiness", 8); return { text: "ชื่อคุณอยู่ในประกาศผล — คุณเป็นบัณฑิตแล้ว ประตูที่ว่าการเปิดให้", kind: "milestone" }; } addStat(l, "happiness", -4); return { text: "สามวันในห้องสอบ — ชื่อไม่อยู่ในประกาศ ปีหน้ายังมีอีก", kind: "bad" }; } },
+      { label: "ปีนี้ยังไม่พร้อม อ่านต่ออีกปี", run: (l) => { addStat(l, "smarts", 2); return { text: "คุณอ่านต่อใต้แสงเทียน — ตัวอักษรเริ่มเข้าใจง่ายขึ้น" }; } },
+    ],
+  },
+  {
     id: "goal.choose",
     minAge: 13,
     maxAge: 90,
