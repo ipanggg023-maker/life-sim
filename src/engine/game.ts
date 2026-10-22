@@ -8,7 +8,7 @@ import { isRealistic, worldMatches, worldOf } from "../content/worlds";
 import { feel, relOf, remember } from "./npc";
 import { birthplaceOf } from "../content/murim/life/region";
 import { SAVE_VERSION, repairLife } from "./validate";
-import { gift } from "../content/murim/life/gifts";
+import { MURIM_GENERIC_TALENTS, convertOldTalents, gift } from "../content/murim/life/gifts";
 
 /** ระบบความรู้สึกหลายแกนของ NPC ใช้เฉพาะโลกสมจริง (โลกอื่นใช้ความสนิทแบบเดิม) */
 const npcOn = (l: Life) => isRealistic(l.worldId);
@@ -85,9 +85,6 @@ function rollRarity(life: Life, odds: Record<Rarity, number>): Rarity {
   const order: Rarity[] = ["mythic", "divine", "legendary", "rare", "common"];
   return weightedPick(life, order, (r) => odds[r])!;
 }
-
-/** พรสวรรค์ทั่วไปที่เข้ากับยุทธภพ (ผลจริงอยู่ในระบบกลาง) */
-const MURIM_GENERIC_TALENTS = new Set(["sturdy", "memory", "cute", "optimist", "sweettalk", "diligent", "genius", "charm", "lucky", "merchant", "heaven_child", "protagonist_face", "tragic_genius", "golden_spoon"]);
 
 function rollTalent(life: Life, odds: Record<Rarity, number>, exclude: string[], allowPower: boolean): string {
   const rarity = rollRarity(life, odds);
@@ -540,6 +537,8 @@ export function migrateLife(life: Life): Life {
     return !!e && (!q.scene || q.scene === "start" || !!e.scenes?.[q.scene]);
   });
   repairLife(life);
+  // พรสวรรค์ชุดเก่า/โลกอื่นในเซฟยุทธภพ → พรสวรรค์ยุทธภพที่มีผลจริง
+  convertOldTalents(life);
   // เซฟรุ่นเก่า: เล่นต่อได้จนจบชีวิตนี้ (ระบบใหม่เริ่มนับจากตอนโหลด) — รุ่นถัดไปเกิดเป็นเซฟรุ่นใหม่เต็มตัว
   if ((life.sv ?? 1) < SAVE_VERSION) {
     if (life.worldId === "murim" && life.alive) life.flags.legacySave = life.sv ?? 1;

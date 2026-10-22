@@ -10,7 +10,7 @@ import { sponsorBonus } from "../sponsors";
 import { passiveBonus } from "../passives";
 import { TALENTS } from "../talents";
 import { effSys, sysSkillTier, sysSkillsOf } from "../gameStats";
-import { gift } from "../murim/life/gifts";
+import { gift, giftAll } from "../murim/life/gifts";
 
 /** เพื่อนร่วมทีมที่ยังมีชีวิต (นับสูงสุด 3 คน) */
 export const partySize = (life: Life) => Math.min(3, life.people.filter((p) => p.relation === "ally" && p.alive).length);
@@ -421,9 +421,10 @@ export const trackOf = (life: Life): AwakenTrack => (life.flags.awakenTrack as A
  */
 export function rollAwakenTrack(life: Life) {
   const w = worldOf(life.worldId);
-  const powerTalent = POWER_TALENTS.some((id) => owns(life, id));
+  const root = giftAll(life, "root");
+  const powerTalent = POWER_TALENTS.some((id) => owns(life, id)) || root >= 1;
   const track = weightedPick(life, ["early", "normal", "late", "never"] as AwakenTrack[], (t) =>
-    ({ early: 5, normal: 70, late: 15, never: powerTalent ? 0 : 10 })[t],
+    ({ early: 5 + root * 10, normal: 70, late: root >= 2 ? 0 : 15, never: powerTalent ? 0 : 10 })[t],
   )!;
   life.flags.awakenTrack = track;
   const [lo, hi] = track === "early" ? w.awakenEarly : track === "late" ? w.awakenLate : w.awakenAge;

@@ -5,12 +5,12 @@ import { fightOdds, survivalOdds } from "../content/hunter/power";
 import { MURIM_TALENTS, gift } from "../content/murim/life/gifts";
 import { hearRumor, rumorsOf, type Truth } from "../content/murim/life/rumors";
 import { worldOfLife } from "../content/murim/life/world";
-import { addQi, learnRate, qiYears } from "../content/murim/martial/arts";
+import { addQi, learnRate, qiYears, rootOf } from "../content/murim/martial/arts";
 import { talentById } from "../content/talents";
 import { careerById } from "../content/hunter/careers";
 import { injure, tickBody } from "./body";
-import { labelOf, visibleChoices } from "./events";
-import { ageUp, choiceChance, createLife, lifespanHooks, resolveChoice, runEvent, salaryOf } from "./game";
+import { getEvent, labelOf, visibleChoices } from "./events";
+import { ageUp, choiceChance, createLife, lifespanHooks, migrateLife, resolveChoice, runEvent, salaryOf } from "./game";
 import { nextFloat } from "./rng";
 import type { Life } from "./types";
 import { createPerson } from "./util";
@@ -77,6 +77,73 @@ describe("พรสวรรค์ยุทธภพมีผลจริง · 
     const h = createLife({ seed: 9, worldId: "hunter" });
     h.talents = [{ id: "mt_born_fighter", revealed: true }];
     expect(gift(h, "fight")).toBe(0);
+  });
+
+  it("เซฟเก่า: พรสวรรค์โลกอื่นถูกแปลงเป็นพรสวรรค์ยุทธภพที่มีผลจริง (ชุดทั่วไปที่เข้ากันคงไว้ · แปลงครั้งเดียว · โลกอื่นไม่แตะ)", () => {
+    const l = murim(77);
+    l.talents = [
+      { id: "genius", revealed: true },
+      { id: "early_bird", revealed: true },
+      { id: "dimples", revealed: true },
+      { id: "mana_heart", revealed: false },
+    ];
+    delete l.sv;
+    migrateLife(l);
+    const ids = l.talents.map((t) => t.id);
+    expect(ids[0]).toBe("genius");
+    expect(ids.slice(1).every((id) => talentById(id)?.world === "murim")).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(l.talents[3].revealed).toBe(false);
+    expect(gift(l, "qi")).toBeGreaterThan(0); // ตื่นเช้า → ลมหายใจยาว
+    expect(l.log.at(-1)!.text).toContain("ตีความตามโลกยุทธภพ");
+    const before = JSON.stringify(l.talents);
+    migrateLife(l);
+    expect(JSON.stringify(l.talents)).toBe(before);
+    const h = createLife({ seed: 3, worldId: "hunter" });
+    h.talents = [{ id: "mana_heart", revealed: true }];
+    migrateLife(h);
+    expect(h.talents[0].id).toBe("mana_heart");
+  });
+
+  it("พรสวรรค์รากฐานกระดูกสอดคล้องกับตัวละคร: ศิลาตอบเสมอ รากฐานสูงตาม · ช่องลับถูกเผย · คนที่พลาดไปแล้วได้เปิดชีพจรทีหลัง", () => {
+    let cultivated = 0, alive = 0, minRoot = 9;
+    for (let s = 1; s <= 80; s++) {
+      const l = createLife({ seed: 500 + s * 11, worldId: "murim", talents: ["mt_immortal_body"] });
+      worldOfLife(l);
+      const r = { rng: s };
+      let g = 0;
+      while (l.alive && l.age < 16 && g++ < 20) {
+        let k = 0;
+        while (l.queue.length && k++ < 60) { const o = visibleChoices(l, l.queue[0]); resolveChoice(l, o[Math.floor(nextFloat(r) * o.length)].index); }
+        if (l.alive) ageUp(l);
+      }
+      let k = 0;
+      while (l.queue.length && k++ < 60) { const o = visibleChoices(l, l.queue[0]); resolveChoice(l, o[Math.floor(nextFloat(r) * o.length)].index); }
+      if (!l.alive) continue;
+      alive++;
+      if (l.power) { cultivated++; minRoot = Math.min(minRoot, rootOf(l)); }
+    }
+    console.log("SIM immortal body", { alive, cultivated, minRoot });
+    expect(cultivated).toBe(alive);
+    expect(minRoot).toBeGreaterThanOrEqual(2);
+
+    // ช่องลับที่เป็นรากฐาน ถูกเผยที่ศิลาวัดกระดูก
+    const h = murim(31);
+    h.talents = [{ id: "mt_heaven_bones", revealed: false }];
+    h.age = Number(h.flags.ceremonyAge ?? 12);
+    runEvent(h, "mk.assessment");
+    resolveChoice(h, visibleChoices(h, h.queue[0])[0].index);
+    expect(h.talents[0].revealed).toBe(true);
+
+    // ตัวละครเก่าที่ศิลาไม่ตอบ (หรือพลาดไปแล้ว) — ผู้อาวุโสพเนจรเปิดชีพจรให้
+    const old = murim(32);
+    old.age = 25; old.flags.awakenDone = true; delete old.power;
+    old.talents = [{ id: "mt_immortal_body", revealed: true }];
+    expect(getEvent("mk.talent_root")!.when!(old)).toBe(true);
+    runEvent(old, "mk.talent_root");
+    resolveChoice(old, visibleChoices(old, old.queue[0])[0].index);
+    expect(old.power).toBeTruthy();
+    expect(rootOf(old)).toBeGreaterThanOrEqual(2);
   });
 
   it("ร่างร้อยพิษไม่ติดพิษ · เนื้อหนังหายไวทำให้แผลหายเร็วกว่า", () => {

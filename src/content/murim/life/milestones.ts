@@ -8,16 +8,24 @@ import { addFame, addStat, clamp } from "../../../engine/util";
 import { CLASSES, awaken, classById, gainExp, guildById, guildsFor, offerClasses, rankLabel, rankUp, rollAwakening, settleNone, trackOf } from "../../hunter/power";
 import { QI_NEED, addQi, comprehension, qiYears, rootOf } from "../martial/arts";
 import { woundFrom } from "../../../engine/body";
-import { gift } from "./gifts";
+import { gift, giftAll } from "./gifts";
+import { revealTalent } from "../../../engine/game";
+import { talentById } from "../../talents";
 
 const rank = (l: Life) => l.power?.rank ?? -1;
 const STYLES: HunterClass[] = CLASSES.filter((c) => c.world === "murim").map((c) => c.id);
 
 function roll(l: Life, c: Ctx, bonus: number) {
-  c.rank = trackOf(l) === "late" ? -1 : rollAwakening(l, bonus);
+  const root = giftAll(l, "root");
+  // รากฐานที่ซ่อนอยู่ในช่องลับ — ศิลาเผยออกมา
+  const hidden = l.talents.find((t) => !t.revealed && (talentById(t.id)?.mx?.root ?? 0) > 0);
+  if (hidden) { revealTalent(l, hidden.id); c.revealed = talentById(hidden.id)!.name; }
+  // รากฐานกระดูก = พื้นขั้นต่ำที่การันตี · กระดูกระดับตำนาน (2+) ยังดันผลสุ่มขึ้นอีกหนึ่งขั้น
+  const r = trackOf(l) === "late" && root < 1 ? -1 : rollAwakening(l, bonus + (root >= 2 ? 1 : 0));
+  c.rank = root >= 1 ? Math.max(r, root) : r;
   c.offer = offerClasses(l).join(",");
 }
-const after = (_l: Life, c: Ctx, text: string): Outcome => ({ text, next: Number(c.rank) < 0 ? "closed" : "open" });
+const after = (_l: Life, c: Ctx, text: string): Outcome => ({ text: c.revealed ? `${text} — ศิลาสว่างจ้าจนผู้อาวุโสต้องหรี่ตา: ร่างกายของคุณซ่อน「${c.revealed}」ไว้ตั้งแต่เกิด` : text, next: Number(c.rank) < 0 ? "closed" : "open" });
 
 const styleChoices = STYLES.map((id) => ({
   label: `${classById(id).emoji} ${classById(id).name} — ${classById(id).desc}`,
@@ -89,7 +97,7 @@ export const LATE_ROOT: GameEvent = {
   minAge: 14,
   maxAge: 40,
   forced: true,
-  when: (l) => !l.power && !!l.flags.notYet && Number(l.flags.mwBasics ?? 0) >= 6 && l.age >= Number(l.flags.ceremonyAge ?? 12) + 2,
+  when: (l) => !l.power && !!l.flags.notYet && Number(l.flags.mwBasics ?? 0) >= (giftAll(l, "root") >= 1 ? 2 : 6) && l.age >= Number(l.flags.ceremonyAge ?? 12) + 2,
   title: "ชีพจรที่เปิดช้า",
   text: () => "เช้ามืดวันหนึ่งระหว่างยืนท่าม้า ความร้อนพุ่งขึ้นจากท้องน้อยจนตัวสั่น เส้นที่เคยอุดตันเหมือนมีน้ำไหลผ่านเป็นครั้งแรก",
   choices: [
@@ -192,4 +200,33 @@ export const SECLUDE_EVENTS: GameEvent[] = [
   },
 ];
 
-export const MILESTONE_EVENTS: GameEvent[] = [ASSESS_EVENT, LATE_ROOT, BREAK_EVENT, ...SECLUDE_EVENTS];
+/** คนที่มีรากฐานกระดูกจากพรสวรรค์ แต่พลาดโอกาสเปิดชีพจร (เซฟเก่า/ศิลาไม่ตอบ) — ผู้อาวุโสพเนจรเห็นแวบเดียวก็รู้ */
+export const TALENT_ROOT: GameEvent = {
+  id: "mk.talent_root",
+  minAge: 13,
+  maxAge: 60,
+  forced: true,
+  maxTimes: 1,
+  when: (l) => !l.power && giftAll(l, "root") >= 1 && l.age > Number(l.flags.ceremonyAge ?? 12),
+  title: "กระดูกที่ถูกมองข้าม",
+  text: (l) => {
+    const t = l.talents.map((x) => talentById(x.id)).find((x) => (x?.mx?.root ?? 0) > 0);
+    return `ผู้อาวุโสพเนจรคนหนึ่งเดินผ่านมา จับข้อมือคุณแล้วชะงัก "กระดูกแบบ${t?.name ?? "นี้"} — ทำไมไม่มีใครเปิดชีพจรให้เจ้า" เขาวางฝ่ามือบนหลังคุณ ความร้อนไหลเข้ามาเหมือนแม่น้ำที่เพิ่งพังเขื่อน`;
+  },
+  choices: [
+    {
+      label: "นั่งสมาธิรับพลังนั้น",
+      run: (l) => {
+        for (const t of l.talents) if (!t.revealed && (talentById(t.id)?.mx?.root ?? 0) > 0) revealTalent(l, t.id);
+        const root = giftAll(l, "root");
+        const id = offerClasses(l)[0];
+        awaken(l, Math.max(root, rollAwakening(l, root)), id);
+        l.flags.mwBasics = Number(l.flags.mwBasics ?? 0) + 2;
+        return { text: `ชีพจรทุกเส้นเปิดในคืนเดียว — รากฐานขั้น${rankLabel(l, rootOf(l))} คุณเริ่มเส้นทางสาย${classById(id).name} ช้ากว่าคนอื่น แต่กระดูกแบบนี้ไล่ทันได้`, kind: "milestone" };
+      },
+    },
+    { label: "ขอบคุณ แต่ขอใช้ชีวิตธรรมดาต่อไป", run: (l) => { l.flags.awakenDone = true; return { text: "ผู้อาวุโสถอนหายใจยาว \"น่าเสียดาย\" แล้วเดินจากไปในหมอก" }; } },
+  ],
+};
+
+export const MILESTONE_EVENTS: GameEvent[] = [ASSESS_EVENT, LATE_ROOT, TALENT_ROOT, BREAK_EVENT, ...SECLUDE_EVENTS];
