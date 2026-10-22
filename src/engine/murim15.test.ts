@@ -82,7 +82,7 @@ describe("กลุ่ม 4: UI ระบบเวลา ความเสถ�
 
   it("% ที่แสดงคือ % ที่ใช้จริง และอัตราชนะตรงกับที่แสดงเมื่อเล่นจำนวนมาก (EXPANSION §17)", () => {
     const rolls: { shown: number; used: number; ok: boolean }[] = [];
-    for (let s = 1; s <= 120; s++) {
+    for (let s = 1; s <= 200; s++) {
       const l = murim(s * 7919);
       const r = { rng: s };
       let g = 0;
@@ -97,7 +97,9 @@ describe("กลุ่ม 4: UI ระบบเวลา ความเสถ�
       const shown = b.reduce((s, x) => s + x.shown, 0) / b.length;
       const won = b.filter((x) => x.ok).length / b.length;
       rep.push(`${Math.round(buckets[i] * 100)}-${Math.round(Math.min(1, buckets[i + 1]) * 100)}%: shown ${(shown * 100).toFixed(1)} won ${(won * 100).toFixed(1)} (n=${b.length})`);
-      expect(Math.abs(won - shown), rep[rep.length - 1]).toBeLessThan(0.05);
+      // ขอบเขตตามสถิติ (3.5 sigma ตามขนาดตัวอย่าง) — อคติจริงจะเกินขอบนี้เมื่อตัวอย่างมากพอ
+      const tol = Math.max(0.03, 3.5 * Math.sqrt((shown * (1 - shown)) / b.length));
+      expect(Math.abs(won - shown), rep[rep.length - 1]).toBeLessThan(tol);
     }
     console.log("SIM odds calibration", rolls.length, "\n" + rep.join("\n"));
     expect(rep.length).toBeGreaterThanOrEqual(3);

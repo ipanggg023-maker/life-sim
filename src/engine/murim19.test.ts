@@ -89,9 +89,12 @@ describe("NPC มีชีวิตของตัวเอง · ผลที�
     for (let s = 1; s <= 120; s++) {
       const l = murim(s * 6007);
       for (let i = 0; i < 6; i++) createPerson(l, "friend", { age: 5 + i, bond: 60 });
+      // ครึ่งหนึ่งเล่นแบบตั้งใจ: ไว้ชีวิตศัตรูหนึ่งคนตอนอายุ 20 (บอทสุ่มแทบไม่เคยดวลจนชนะ)
+      const sparedAt = s % 2 ? 20 : -1;
       const r = { rng: s };
       let g = 0;
       while (l.alive && g++ < 100) {
+        if (l.age === sparedAt) plantSeed(l, "spared", "ศัตรูที่ไว้ชีวิต");
         const before = seedsOf(l).map((x) => ({ id: x.id, y: x.y }));
         year(l, r);
         for (const b of before) if (!seedsOf(l).some((x) => x.id === b.id) && l.alive) { ripeGap += l.birthYear + l.age - b.y; ripeN++; }
@@ -112,7 +115,7 @@ describe("NPC มีชีวิตของตัวเอง · ผลที�
     expect(feud).toBeGreaterThan(5);
     expect(npcEv).toBeGreaterThan(10);
     expect(jobs).toBeGreaterThan(100);
-    expect(dcEv).toBeGreaterThan(5);
+    expect(dcEv).toBeGreaterThan(15);
     expect(ripeGap / Math.max(1, ripeN)).toBeGreaterThanOrEqual(8);
     expect(calm40 / Math.max(1, lives40)).toBeGreaterThanOrEqual(2);
   });
