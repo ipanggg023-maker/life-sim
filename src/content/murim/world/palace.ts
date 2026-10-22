@@ -241,7 +241,7 @@ function tickPalace(l: Life) {
     }
   }
   // คนใหม่เข้ามาแทนที่ว่าง (ไม่ให้วังร้าง)
-  for (const role of ["eunuch", "minister", "general", "consort"] as PRole[]) {
+  for (const role of (l.flags.emperorSelf ? ["eunuch", "minister", "general"] : ["eunuch", "minister", "general", "consort"]) as PRole[]) {
     const have = p.cast.filter((n) => n.role === role && n.alive && !n.out).length;
     const need = role === "eunuch" || role === "minister" || role === "consort" ? 2 : 1;
     if (have < need && chance(l, 0.5)) {

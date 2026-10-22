@@ -84,7 +84,7 @@ describe("หักหลังในราชสำนักเพื่อข�
       if (courtRank(l) !== 5) continue;
       regent++;
       expect(courtOf(l).regent).toBe(displayName(l));
-      scheme(l, "ขึ้นครองบัลลังก์", { rng: s * 3 });
+      scheme(l, "ประกาศขึ้นครองบัลลังก์", { rng: s * 3 });
       if (l.alive && l.flags.emperorSelf) emperor = l;
     }
     expect(regent).toBeGreaterThan(0);
@@ -97,7 +97,7 @@ describe("หักหลังในราชสำนักเพื่อข�
     const reigns = c.reigns.length;
     for (let y = 0; y < 30 && l.alive; y++) { l.stats.health = 95; drain(l, { rng: y }); ageUp(l); drain(l, { rng: y + 1 }); }
     if (l.alive && l.flags.emperorSelf) {
-      expect(courtOf(l).emperor.name).toBe(`ฮ่องเต้${l.firstName}`);
+      expect(courtOf(l).emperor.name).toBe(`ฮ่องเต้${displayName(l)}`);
       expect(courtOf(l).reigns.length).toBe(reigns);
     }
     if (!l.flags.emperorSelf) expect(l.flags.lostThrone).toBe(true); // ราชวงศ์ล่มระหว่างรัชกาล = เสียบัลลังก์
@@ -107,7 +107,7 @@ describe("หักหลังในราชสำนักเพื่อข�
     const heir = buildHeir(l, kid.id);
     inheritMurim(l, heir, "heir", kid.id);
     expect(heir.flags.emperorSelf).toBe(true);
-    expect(courtOf(heir).emperor.name).toBe(`ฮ่องเต้${heir.firstName}`);
+    expect(courtOf(heir).emperor.name).toBe(`ฮ่องเต้${displayName(heir)}`);
   });
 
   it("ร่องรอยของแผนนำไปสู่การถูกเปิดโปง และทุกทางเลือกปิดเรื่องได้", () => {

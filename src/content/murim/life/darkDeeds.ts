@@ -39,7 +39,7 @@ export function darkTargets(l: Life): Target[] {
   if (l.mw && l.mw.era !== "war") {
     const c = courtOf(l);
     const inside = palaceAccess(l) ? 0.1 : 0;
-    out.push({ id: "court:emperor", name: c.emperor.name, label: `${c.emperor.name} (โอรสสวรรค์)`, prot: 0.92 - inside, high: true });
+    if (!l.flags.emperorSelf) out.push({ id: "court:emperor", name: c.emperor.name, label: `${c.emperor.name} (โอรสสวรรค์)`, prot: 0.92 - inside, high: true });
     const heir = princesOf(l).find((x) => x.named);
     if (heir) out.push({ id: `court:prince:${heir.id}`, name: heir.name, label: `${heir.name} (รัชทายาท)`, prot: 0.75 - inside, high: true });
     const top = castOf(l).filter((n) => n.role === "minister" || n.role === "eunuch").sort((a, b) => b.inf - a.inf)[0];

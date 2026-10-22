@@ -6,13 +6,14 @@ import type { Ctx, GameEvent } from "../../../engine/events";
 import { yearHooks } from "../../../engine/game";
 import { chance, pick } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
-import { addMoney, clamp, displayName, log } from "../../../engine/util";
+import { addMoney, clamp, displayName, log, people } from "../../../engine/util";
 import { plantSeed } from "../life/seedStore";
 import { calYear } from "../life/world";
 import { B, BIG, C, E, FIGHT, G, K, N, P, PAY, near, type Res } from "../story/kit";
 import { TAEL } from "../story/kit";
 import { courtOf, palaceAccess } from "./court";
 import { castOf, npcById, palaceOf, patronOf, princesOf, type PNpc } from "./palace";
+import { emperorTitle, syncThrone } from "./emperor";
 
 export const COURT_RANKS = ["ขุนนางชั้นผู้น้อย", "คนสนิทในวัง", "ขุนนางชั้นผู้ใหญ่", "เสนาบดี", "มหาเสนาบดี", "ผู้สำเร็จราชการ", "ฮ่องเต้"];
 export const courtRank = (l: Life) => Number(l.flags.courtRank ?? 0);
@@ -59,18 +60,27 @@ function seize(l: Life) {
   l.mw!.unrest = clamp(l.mw!.unrest + 10, 0, 100);
 }
 /** ชิงบัลลังก์: ตั้งราชวงศ์ของตัวเอง */
-function usurp(l: Life) {
+function usurp(l: Life, o: { legit?: number; unrest?: number; how?: string } = {}) {
   const c = courtOf(l);
-  c.reigns.push({ name: c.emperor.name, from: c.emperor.since, to: calYear(l), how: `ถูกโค่นบัลลังก์ — ${displayName(l)}ตั้งราชวงศ์ใหม่` });
+  c.reigns.push({ name: c.emperor.name, from: c.emperor.since, to: calYear(l), how: o.how ?? `ถูกโค่นบัลลังก์ — ${displayName(l)}ตั้งราชวงศ์ใหม่` });
   c.dynasty = `ราชวงศ์${l.lastName || l.firstName}`;
-  c.emperor = { name: `ฮ่องเต้${l.firstName}`, age: l.age, temper: "wise", health: 100, since: calYear(l) };
+  c.emperor = { name: emperorTitle(l), age: l.age, temper: "wise", health: 100, since: calYear(l) };
   c.regent = undefined;
   palaceOf(l).princes = [];
   l.flags.emperorSelf = true;
   l.flags.foundedDynasty = true;
-  l.mw!.legitimacy = clamp(l.mw!.legitimacy - 25, 0, 100);
-  l.mw!.unrest = clamp(l.mw!.unrest + 20, 0, 100);
+  l.mw!.legitimacy = clamp(l.mw!.legitimacy - (o.legit ?? 25), 0, 100);
+  l.mw!.unrest = clamp(l.mw!.unrest + (o.unrest ?? 20), 0, 100);
+  syncThrone(l);
 }
+const eunuch = (l: Life) => castOf(l).filter((n) => n.role === "eunuch").sort((a, b) => b.inf - a.inf)[0];
+/** พรรคพวกที่ใช้ยึดอำนาจได้: แม่ทัพ หรือขันทีคุมประตูวัง */
+const ally = (l: Life) => { const g = npcById(l, l.flags.generalAlly); if (g?.alive && !g.out) return g; const e = npcById(l, l.flags.eunuchAlly); return e?.alive && !e.out ? e : undefined; };
+/** ลูกที่ส่งเข้าวังได้ (อายุ 14–30) */
+const marriageable = (l: Life) => people(l, "child").find((p) => p.alive && p.age >= 14 && p.age <= 30 && !p.tags?.includes("in_palace"));
+/** โอกาสขึ้นบัลลังก์: ชื่อเสียง สติปัญญา ลางร้ายที่ปล่อยไว้ พรรคพวก หักด้วยความชอบธรรมของราชวงศ์เดิมและร่องรอย */
+const throneOdds = (base: number) => (l: Life) => clamp(base + l.fame / 300 + (l.stats.smarts - 50) / 250 - (l.mw?.legitimacy ?? 50) / 400 + (l.flags.omenSpread ? 0.08 : 0) + (ally(l) ? 0.06 : 0) - schemeHeat(l) / 250, 0.05, 0.85);
+const ego = (l: Life) => emperorTitle(l);
 
 const fail = (text: string, d: { heat?: number; rank?: number; grudgeOn?: (l: Life, c: Ctx) => PNpc | undefined } = {}): Res =>
   act(B(text, { align: -2 }), (l, c) => { heat(l, d.heat ?? 30); if (d.rank) setRank(l, courtRank(l) + d.rank, "แผนพัง"); feel(d.grudgeOn?.(l, c), { grudge: 60, trust: -50 }); });
@@ -121,17 +131,35 @@ export const SCHEME_EVENTS: GameEvent[] = [
         heat(l, 10);
       }), fail("แม่ทัพส่งของขวัญคืนพร้อมจดหมายสั้นๆ: \"ข้ารับใช้บัลลังก์ ไม่ใช่คน\"", { heat: 15 }), { show: (l) => !!general(l) && !l.flags.generalAlly && courtRank(l) >= 2 }),
 
-      P("ยึดอำนาจ — ล้อมวังในคืนเดียว", (l) => clamp(0.3 + courtRank(l) * 0.05 + (l.stats.smarts - 50) / 200 + (npcById(l, l.flags.generalAlly)?.inf ?? 0) / 300 - schemeHeat(l) / 250, 0.1, 0.85), act(BIG((l) => `ทหารของแม่ทัพล้อมวังก่อนรุ่งสาง ประตูทุกบานเปิดให้คุณ — ${courtOf(l).emperor.name}ประทับบนบัลลังก์ แต่คนที่ออกคำสั่งตอนนี้คือคุณ`, { fame: 15 }), (l) => {
+      P("ยึดอำนาจ — ล้อมวังในคืนเดียว", (l) => clamp(0.3 + courtRank(l) * 0.05 + (l.stats.smarts - 50) / 200 + (ally(l)?.inf ?? 0) / 300 - schemeHeat(l) / 250, 0.1, 0.85), act(BIG((l) => `ทหารของแม่ทัพล้อมวังก่อนรุ่งสาง ประตูทุกบานเปิดให้คุณ — ${courtOf(l).emperor.name}ประทับบนบัลลังก์ แต่คนที่ออกคำสั่งตอนนี้คือคุณ`, { fame: 15 }), (l) => {
         seize(l);
         heat(l, 30);
         setRank(l, 5, "คุณยึดอำนาจทั้งราชสำนัก");
-      }), act(B("ทหารครึ่งหนึ่งไม่ยอมยกดาบใส่วัง — คุณหนีออกทางประตูหลังพร้อมแผลที่หลัง ชื่อคุณอยู่บนใบประกาศจับทั่วแผ่นดิน", { hp: -25, flag: ["wanted", "palaceWithdrawn"], wound: ["ribs", "broken", 2] }), (l) => { l.flags.courtRank = 0; l.flags.heat = 90; l.flags.lastCrime = "กบฏ"; }), { tone: "danger", survival: () => 0.8, show: (l) => courtRank(l) >= 4 && courtRank(l) < 5 && !!npcById(l, l.flags.generalAlly)?.alive, pros: "เป็นผู้สำเร็จราชการ คุมทั้งแผ่นดิน", cons: "พลาด = กบฏ ถูกตามล่าทั้งแผ่นดิน" }),
+      }), act(B("ทหารครึ่งหนึ่งไม่ยอมยกดาบใส่วัง — คุณหนีออกทางประตูหลังพร้อมแผลที่หลัง ชื่อคุณอยู่บนใบประกาศจับทั่วแผ่นดิน", { hp: -25, flag: ["wanted", "palaceWithdrawn"], wound: ["ribs", "broken", 2] }), (l) => { l.flags.courtRank = 0; l.flags.heat = 90; l.flags.lastCrime = "กบฏ"; }), { tone: "danger", survival: () => 0.8, show: (l) => courtRank(l) >= 4 && courtRank(l) < 5 && !!ally(l), pros: "เป็นผู้สำเร็จราชการ คุมทั้งแผ่นดิน", cons: "พลาด = กบฏ ถูกตามล่าทั้งแผ่นดิน" }),
 
-      P("ขึ้นครองบัลลังก์เอง", (l) => clamp(0.35 + l.fame / 300 + (l.mw?.legitimacy ?? 50) / -400 + 0.15 - schemeHeat(l) / 250, 0.1, 0.8), act(BIG((l) => `ขุนนางทั้งท้องพระโรงคุกเข่า — วันนี้คุณคือฮ่องเต้${l.firstName} ผู้ตั้งราชวงศ์ใหม่ ประวัติศาสตร์จะเขียนว่าคุณเป็นผู้กอบกู้ หรือกบฏ ขึ้นกับว่าใครเป็นคนเขียน`, { fame: 30 }), (l) => {
+      P("ประกาศขึ้นครองบัลลังก์กลางท้องพระโรง", throneOdds(0.5), act(BIG((l) => `ขุนนางทั้งท้องพระโรงคุกเข่า — วันนี้คุณคือ${ego(l)} ผู้ตั้งราชวงศ์ใหม่ ประวัติศาสตร์จะเขียนว่าคุณเป็นผู้กอบกู้ หรือกบฏ ขึ้นกับว่าใครเป็นคนเขียน`, { fame: 30 }), (l) => {
         usurp(l);
         heat(l, 20);
         setRank(l, 6, "คุณขึ้นครองบัลลังก์มังกร");
-      }), act(B("ขุนนางฝ่ายราชวงศ์เดิมลุกฮือ — คุณถูกจับในห้องบรรทมของตัวเอง", { die: "ถูกประหารข้อหาชิงบัลลังก์" }), () => {}), { tone: "danger", survival: (l) => clamp(0.35 + l.fame / 300 - schemeHeat(l) / 250 + 0.15, 0.1, 0.8), show: (l) => courtRank(l) === 5, pros: "เป็นฮ่องเต้ ตั้งราชวงศ์ของตัวเอง", cons: "พลาด = ประหาร" }),
+      }), act(B("ขุนนางฝ่ายราชวงศ์เดิมลุกฮือ — คุณถูกจับในห้องบรรทมของตัวเอง", { die: "ถูกประหารข้อหาชิงบัลลังก์" }), () => {}), { tone: "danger", survival: throneOdds(0.5), show: (l) => courtRank(l) === 5, pros: "เป็นฮ่องเต้ ตั้งราชวงศ์ของตัวเอง", cons: "พลาด = ประหาร" }),
+
+      // ───── ทางขึ้นบัลลังก์แบบอื่น ─────
+      P("บีบหุ่นเชิดให้สละราชสมบัติให้ในพิธีหน้าศาลบรรพชน", throneOdds(0.35), act(BIG((l) => `ฮ่องเต้หุ่นเชิดอ่านราชโองการสละราชสมบัติด้วยเสียงสั่น — "ฟ้าเลือก${displayName(l)}" ไม่มีเลือดสักหยด ราษฎรเรียกวันนี้ว่าวันที่ฟ้าเปลี่ยนโดยชอบ และเรียกคุณว่า${ego(l)}`, { fame: 25 }), (l) => { usurp(l, { legit: 5, unrest: 5, how: `สละราชสมบัติให้${displayName(l)}ในพิธีหน้าศาลบรรพชน` }); heat(l, 5); setRank(l, 6, "คุณรับราชสมบัติจากมือหุ่นเชิด"); }), act(B("หุ่นเชิดหนีออกจากวังกลางดึกไปหาขุนนางฝ่ายราชวงศ์เดิม — ประกาศว่าคุณบังคับขู่เข็ญ หัวเมืองครึ่งหนึ่งไม่ยอมรับคุณอีก", { fame: -8 }), (l) => { heat(l, 35); if (l.mw) l.mw.unrest = clamp(l.mw.unrest + 15, 0, 100); }), { show: (l) => courtRank(l) === 5 && courtOf(l).emperor.temper === "puppet", pros: "ขึ้นบัลลังก์อย่างชอบธรรม ราชวงศ์มั่นคง", cons: "พลาด = หุ่นเชิดหนีไปตั้งตัวต่อต้าน" }),
+      P("ยกทัพเข้าวัง ชิงบัลลังก์ด้วยดาบ", (l) => clamp(throneOdds(0.45)(l) + (npcById(l, l.flags.generalAlly)?.alive ? 0.15 : 0), 0.05, 0.9), act(BIG((l) => `ทหารห้าพันนายล้อมวังตอนเที่ยงคืน — ราชวงศ์เก่าสิ้นสุดในคืนเดียว เช้ามาคุณนั่งบัลลังก์ด้วยเกราะที่ยังเปื้อนเลือด ทั้งแผ่นดินรู้ว่า${ego(l)}ได้บัลลังก์มาด้วยดาบ`, { fame: 20, align: -8 }), (l) => { usurp(l, { legit: 35, unrest: 25, how: `ถูกโค่นด้วยกำลังทหาร — ${displayName(l)}ยึดวังในคืนเดียว` }); heat(l, 25); setRank(l, 6, "คุณยึดบัลลังก์ด้วยกำลังทหาร"); }), act(B("ทหารรักษาวังสู้ถึงคนสุดท้าย — กบฏของคุณแตกพ่ายก่อนรุ่งสาง", { die: "ตายในการยกทัพบุกวังชิงบัลลังก์" }), () => {}), { tone: "danger", survival: (l) => clamp(throneOdds(0.45)(l) + (npcById(l, l.flags.generalAlly)?.alive ? 0.15 : 0), 0.05, 0.9), show: (l) => courtRank(l) === 5 && !!ally(l), pros: "ได้บัลลังก์แน่นอนกว่า", cons: "ความชอบธรรมพังหนัก · พลาด = ตายในวัง" }),
+      C("อยู่เบื้องหลังต่อไป — ให้หุ่นเชิดนั่งบัลลังก์", act(N("คุณถวายบังคมหุ่นเชิดทุกเช้า แล้วกลับไปออกคำสั่งทุกบ่าย — อำนาจเต็มมือ โดยไม่ต้องเป็นเป้าของฟ้า", {}), (l) => { if (l.mw) l.mw.legitimacy = clamp(l.mw.legitimacy + 3, 0, 100); heat(l, -10); }), { show: (l) => courtRank(l) === 5 }),
+
+      // ───── หักหลังแบบอื่นระหว่างทาง ─────
+      K("ยุแยงองค์ชายให้แย่งบัลลังก์กันเอง", "smarts", 58, act(G("จดหมายนิรนามสองฉบับ คนละวัง คนละเรื่อง — สามเดือนต่อมาองค์ชายสองพระองค์ไม่มองหน้ากัน และทั้งสองฝ่ายต่างส่งคนมาซื้อใจคุณ", { align: -3 }), (l) => { const p = palaceOf(l); p.pressure = clamp(p.pressure + 20, 0, 100); heat(l, 15); setRank(l, courtRank(l) + 1, "ทั้งสองขั้วต้องการคุณ"); }), fail("ลายมือในจดหมายนิรนามถูกเทียบได้ — องค์ชายทั้งสองรู้ว่าใครเป็นคนยุ", { heat: 30 }), { show: (l) => princesOf(l).length >= 2 && courtRank(l) >= 1 && courtRank(l) < 5, pros: "ขึ้นหนึ่งขั้น · วังปั่นป่วน", cons: "ร่องรอย · ถ้าพลาด ทั้งสองฝ่ายเกลียดคุณ" }),
+
+      P("ซื้อใจขันทีคุมประตูวัง (30 ตำลึง)", odds(0.55), act(G((l) => `${name(eunuch(l))}รับกล่องทองแล้วยิ้มบาง — "ประตูไหนที่ท่านอยากให้เปิดตอนดึก ข้าจำได้ทุกบาน"`, { tael: -30 }), (l) => { const e = eunuch(l)!; feel(e, { trust: 25, debt: 30 }); l.flags.eunuchAlly = e.id; heat(l, 10); }), act(fail("ขันทีรับทอง แล้วนำกล่องไปถวายฮ่องเต้พร้อมชื่อคุณ", { heat: 30 }), (l) => addMoney(l, -30 * TAEL)), { req: (l) => (l.money < 30 * TAEL ? "ต้องมีเงิน 30 ตำลึง" : undefined), show: (l) => !!eunuch(l) && !ally(l) && courtRank(l) >= 2, pros: "มีพรรคพวกในวังชั้นใน ใช้ยึดอำนาจแทนแม่ทัพได้", cons: "ถ้าขันทีขายคุณ ร่องรอยหนัก" }),
+
+      P("ส่งลูกเข้าวังเป็นสนม/ผูกดองกับตระกูลฮองเฮา", (l) => clamp(0.35 + (l.stats.looks - 50) / 200 + courtRank(l) * 0.05 + l.fame / 400, 0.1, 0.85), act(G((l) => `${marriageable(l)?.name ?? "ลูกของคุณ"}เข้าวังในเกี้ยวแดง — ตอนนี้คุณเป็นญาติของราชวงศ์ ขุนนางที่เคยมองข้ามคุณเริ่มโค้งต่ำลง`, {}), (l) => { const k = marriageable(l); if (k) { k.tags = [...(k.tags ?? []), "in_palace"]; k.bond = Math.max(0, k.bond - 10); } setRank(l, courtRank(l) + 1, "คุณกลายเป็นญาติของราชวงศ์"); heat(l, 5); }), fail("ฮองเฮาไม่ยอมให้ตระกูลคุณเข้ามาแข่งบารมี — ลูกของคุณถูกส่งกลับบ้านพร้อมคำดูถูก", { heat: 10 }), { show: (l) => !!marriageable(l) && courtRank(l) >= 2 && courtRank(l) < 5, pros: "ขึ้นหนึ่งขั้นโดยไม่ต้องฆ่าใคร", cons: "ชีวิตลูกกลายเป็นหมากการเมือง" }),
+
+      P("ปล่อยข่าวลางร้ายว่าฟ้าทอดทิ้งราชวงศ์", odds(0.5), act(G("ไก่ตัวเมียขันกลางวัง บ่อน้ำหน้าศาลบรรพชนกลายเป็นสีเลือด — คนทั้งเมืองหลวงกระซิบว่าอาณัติแห่งฟ้ากำลังจะย้ายไปหาคนใหม่", { align: -3 }), (l) => { if (l.mw) l.mw.legitimacy = clamp(l.mw.legitimacy - 12, 0, 100); l.flags.omenSpread = true; heat(l, 15); }), fail("หมอผีที่คุณจ้างถูกจับและสารภาพว่าใครจ่ายเงิน", { heat: 35 }), { show: (l) => courtRank(l) >= 2 && !l.flags.omenSpread, pros: "ราชวงศ์อ่อนลง ขึ้นบัลลังก์ง่ายขึ้นภายหลัง", cons: "ร่องรอย · แผ่นดินปั่นป่วน" }),
+
+      P("ให้หมอหลวงวางยาฮ่องเต้ทีละน้อย", odds(0.4), act(G((l) => `ยาบำรุงพระวรกายทุกเช้าเติมผงสีขาวหนึ่งหยิบมือ — ${courtOf(l).emperor.name}ทรงประชวรบ่อยขึ้นทุกเดือน และไม่มีหมอคนไหนหาสาเหตุเจอ`, { align: -10 }), (l) => { const c = courtOf(l); c.emperor.health = clamp(c.emperor.health - 40, 0, 100); plantSeed(l, "killed", c.emperor.name); heat(l, 30); }), act(fail("หมอหลวงคนหนึ่งชิมยาก่อนถวาย แล้วล้มลงต่อหน้าองครักษ์ — การสอบสวนเริ่มขึ้นในคืนนั้น", { heat: 50 }), (l) => { l.flags.schemeExposed = true; }), { tone: "danger", show: (l) => courtRank(l) >= 3 && courtRank(l) < 5 && courtOf(l).emperor.health > 20, pros: "ฮ่องเต้สวรรคตเร็วขึ้น ฝ่ายที่คุณหนุนได้ขึ้น", cons: "ปลงพระชนม์ · ถ้าพลาด ถูกเปิดโปงทันที" }),
+
+      K("ทรยศพรรคพวก — นำแผนกบฏของพวกเขาไปถวายฮ่องเต้", "smarts", 55, act(G((l) => `คุณคุกเข่าถวายรายชื่อผู้ร่วมคิด — ${name(ally(l))}ถูกจับในคืนนั้น ฮ่องเต้จับมือคุณและเรียกคุณว่าขุนนางผู้ภักดีที่สุด`, { align: -5, fame: 4 }), (l) => { const a = ally(l); if (a) { a.out = true; feel(a, { grudge: 90, trust: -100 }); plantSeed(l, "betrayed", a.name); } delete l.flags.generalAlly; delete l.flags.eunuchAlly; l.flags.schemeHeat = 0; setRank(l, courtRank(l) + 1, "คุณขายพรรคพวกเพื่อความดีความชอบ"); }), fail("พรรคพวกของคุณรู้ตัวก่อน — และพาชื่อคุณลงไปด้วย", { heat: 45, grudgeOn: (l) => ally(l) }), { show: (l) => !!ally(l) && courtRank(l) >= 2 && courtRank(l) < 5, pros: "ล้างร่องรอยทั้งหมด · ขึ้นหนึ่งขั้น", cons: "หักหลังคนที่ร่วมคิดกับคุณ" }),
 
       C("ยังไม่ใช่เวลา", N("คุณเก็บแผนไว้ในใจ — ในวังนี้ คนที่รีบมักตายก่อน")),
     ],

@@ -13,6 +13,7 @@ import { REL_LABEL, coverTracks, hearRumor } from "./rumors";
 import { palaceAccess } from "../world/court";
 import { patronOf, spyPalace } from "../world/palace";
 import { canScheme } from "../world/palaceSchemes";
+import { abdicate, crownHeir, isEmperor, royalKids } from "../world/emperor";
 import { TAEL } from "../story/kit";
 import { gift } from "./gifts";
 
@@ -27,6 +28,7 @@ export function examLevel(l: Life): string | undefined {
   return undefined;
 }
 const ok = (text: string) => ({ text, kind: "good" as const });
+const big = (text: string) => ({ text, kind: "milestone" as const });
 const bad = (text: string) => ({ text, kind: "bad" as const });
 const meh = (text: string) => ({ text });
 
@@ -62,11 +64,15 @@ const MURIM_ACTS: Activity[] = [
   M({ group: "ยุทธภพ", id: "mw_challenge", emoji: "⚔️", name: "ท้าประลองจอมยุทธ์", desc: "ชนะได้ชื่อเสียง แพ้อาจเจ็บ", minAge: adult, available: (l) => !!l.power, run: (l) => { startDuel(l, { foe: pick(l, ["จอมยุทธ์พเนจร", "ศิษย์สำนักใหญ่", "นักดาบไร้นาม"]), rank: clamp(pow(l) + randInt(l, -1, 1), 0, 8), lethal: false, on: "brawl" }); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_bounty", emoji: "📯", name: "ล่าค่าหัว", desc: "เงินดี ถึงตาย", minAge: 18, available: (l) => !!l.power && pow(l) >= 2, run: (l) => { startDuel(l, { foe: pick(l, ["โจรร้ายมีค่าหัว", "ฆาตกรหนีคดี", "หัวหน้าโจรภูเขา"]), rank: clamp(pow(l) + randInt(l, 0, 1), 0, 8), lethal: true, on: "bandit" }); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_investigate", emoji: "🔍", name: "รับสืบคดี", desc: "หาคนร้ายจากเบาะแส", minAge: 16, available: (l) => l.stats.smarts >= 40, run: (l) => { runEvent(l, "iv.case"); return { text: "" }; } }),
-  M({ group: "ราชสำนัก", id: "mw_patron", emoji: "🎁", name: "เยี่ยมผู้อุปถัมภ์ในวัง", desc: "ของขวัญรักษาน้ำใจ", minAge: 18, cost: 10 * TAEL, available: (l) => palaceAccess(l) && !!patronOf(l)?.alive && !patronOf(l)?.out, run: (l) => { addMoney(l, -10 * TAEL); const p = patronOf(l)!; p.you.trust = Math.min(100, p.you.trust + 8); p.known = true; return ok(`${p.name}รับของขวัญด้วยรอยยิ้ม — "${p.goal}" คือเรื่องที่เขาเล่าให้ฟังทั้งบ่าย`); } }),
+  M({ group: "ราชสำนัก", id: "mw_patron", emoji: "🎁", name: "เยี่ยมผู้อุปถัมภ์ในวัง", desc: "ของขวัญรักษาน้ำใจ", minAge: 18, cost: 10 * TAEL, available: (l) => palaceAccess(l) && !l.flags.emperorSelf && !!patronOf(l)?.alive && !patronOf(l)?.out, run: (l) => { addMoney(l, -10 * TAEL); const p = patronOf(l)!; p.you.trust = Math.min(100, p.you.trust + 8); p.known = true; return ok(`${p.name}รับของขวัญด้วยรอยยิ้ม — "${p.goal}" คือเรื่องที่เขาเล่าให้ฟังทั้งบ่าย`); } }),
   M({ group: "ราชสำนัก", id: "mw_palace_spy", emoji: "👂", name: "สืบข่าวในวัง", desc: "รู้ว่าใครหนุนใคร", minAge: 18, available: palaceAccess, odds: (l) => clamp(0.4 + (l.stats.smarts - 50) / 150 + (l.job?.careerId === "jinyiwei" ? 0.2 : 0), 0.1, 0.9), run: (l) => { if (chance(l, clamp(0.4 + (l.stats.smarts - 50) / 150 + (l.job?.careerId === "jinyiwei" ? 0.2 : 0), 0.1, 0.9))) return ok(`ข่าวในวัง: ${spyPalace(l)}`); return bad("นางกำนัลที่คุณถามเอาเรื่องไปเล่าต่อ — มีคนรู้ว่าคุณกำลังสืบ"); } }),
-  M({ group: "ราชสำนัก", id: "mw_memorial", emoji: "📜", name: "ถวายฎีกา", desc: "ทูลเรื่องทุกข์ราษฎร", minAge: 20, available: (l) => palaceAccess(l) && (l.job?.careerId === "official" || l.fame >= 30), run: (l) => { runEvent(l, "ct.p_memorial"); return { text: "" }; } }),
+  M({ group: "ราชสำนัก", id: "mw_memorial", emoji: "📜", name: "ถวายฎีกา", desc: "ทูลเรื่องทุกข์ราษฎร", minAge: 20, available: (l) => palaceAccess(l) && !l.flags.emperorSelf && (l.job?.careerId === "official" || l.fame >= 30), run: (l) => { runEvent(l, "ct.p_memorial"); return { text: "" }; } }),
   M({ group: "ราชสำนัก", id: "mw_scheme", emoji: "🗡️", name: "วางแผนชิงอำนาจ", desc: "หักหลัง ใส่ร้าย ยึดอำนาจ — ขึ้นเป็นใหญ่", minAge: 18, available: canScheme, run: (l) => { runEvent(l, "ct.s_menu"); return { text: "" }; } }),
-  M({ group: "ราชสำนัก", id: "mw_court_leave", emoji: "🚪", name: "ถอนตัวจากการเมืองในวัง", desc: "ไม่ยุ่งอีก แต่โลกยังเดินต่อ", minAge: 18, time: 0, available: palaceAccess, run: (l) => { l.flags.palaceWithdrawn = true; delete l.flags.palaceBack; delete l.flags.palacePatron; return meh("คุณคืนป้ายผ่านประตูวัง — ข่าวในวังจากนี้จะมาถึงคุณแบบข่าวลือเหมือนชาวบ้านทั่วไป"); } }),
+  M({ group: "ราชสำนัก", id: "mw_rule", emoji: "📯", name: "ว่าราชการ ออกราชโองการ", desc: "ภาษี นิรโทษ ห้ามสำนัก ขุดคลอง", minAge: 18, available: isEmperor, run: (l) => { runEvent(l, "ct.e_edict"); return { text: "" }; } }),
+  M({ group: "ราชสำนัก", id: "mw_name_heir", emoji: "🐉", name: "แต่งตั้งรัชทายาท", desc: "เลือกลูกที่จะสืบบัลลังก์", minAge: 18, available: (l) => isEmperor(l) && royalKids(l).some((p) => p.age >= 6), run: (l) => { runEvent(l, "ct.e_heir"); return { text: "" }; } }),
+  M({ group: "ราชสำนัก", id: "mw_incognito", emoji: "🎭", name: "ปลอมตัวออกนอกวัง", desc: "ดูชีวิตราษฎรด้วยตาตัวเอง", minAge: 18, available: isEmperor, run: (l) => { runEvent(l, "ct.e_incognito"); return { text: "" }; } }),
+  M({ group: "ราชสำนัก", id: "mw_abdicate", emoji: "🍂", name: "สละราชสมบัติให้รัชทายาท", desc: "เป็นไท่ซ่างหวง ใช้ชีวิตที่เหลืออย่างสงบ", minAge: 30, time: 0, available: (l) => isEmperor(l) && !!crownHeir(l) && crownHeir(l)!.age >= 16, run: (l) => { const h = crownHeir(l)!; abdicate(l, h); return big(`คุณถอดมงกุฎวางบนศีรษะของ${h.name}ต่อหน้าศาลบรรพชน — ตอนนี้คุณคือไท่ซ่างหวง พระเจ้าหลวงผู้สละราชสมบัติ ลูกของคุณนั่งบัลลังก์ และคุณได้นอนหลับสนิทเป็นครั้งแรกในรอบหลายปี`); } }),
+  M({ group: "ราชสำนัก", id: "mw_court_leave", emoji: "🚪", name: "ถอนตัวจากการเมืองในวัง", desc: "ไม่ยุ่งอีก แต่โลกยังเดินต่อ", minAge: 18, time: 0, available: (l) => palaceAccess(l) && !l.flags.emperorSelf, run: (l) => { l.flags.palaceWithdrawn = true; delete l.flags.palaceBack; delete l.flags.palacePatron; return meh("คุณคืนป้ายผ่านประตูวัง — ข่าวในวังจากนี้จะมาถึงคุณแบบข่าวลือเหมือนชาวบ้านทั่วไป"); } }),
   M({ group: "ยุทธภพ", id: "mw_visit", emoji: "⛩️", name: "เยือนสำนักอื่น", desc: "ผูกมิตร แลกเปลี่ยนวิชา", minAge: 14, cost: 2000, run: (l) => { runEvent(l, "jh.visit"); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_alliance", emoji: "🛡️", name: "รับงานพันธมิตรยุทธจักร", desc: "คุ้มกัน สืบข่าว ไกล่เกลี่ย", minAge: 16, available: (l) => Number(l.flags.m17Align ?? 0) >= 0 && (!!l.power || l.stats.smarts >= 55), run: (l) => { runEvent(l, "jh.alliance"); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_cult_hunt", emoji: "🔥", name: "ล่าลัทธิมาร", desc: "ช่วยคน เสี่ยงชีวิต", minAge: 16, available: (l) => !!l.power && Number(l.flags.m17Align ?? 0) >= 0 && l.power.guild !== "cult", run: (l) => { runEvent(l, "jh.cult_hunt"); return { text: "" }; } }),

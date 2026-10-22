@@ -130,6 +130,8 @@ function tickCourt(l: Life) {
 
 /** มีช่องทางเข้าวัง: ขุนนาง หมอที่มีชื่อ ยอดฝีมือที่ถูกเรียกตัว หรือเคยรับใช้ราชสำนัก */
 export const palaceAccess = (l: Life) =>
+  !!l.flags.emperorSelf ||
+  (!l.flags.palaceWithdrawn && Number(l.flags.courtRank ?? 0) >= 5) ||
   !l.flags.palaceWithdrawn &&
   (!!l.flags.palaceAccess ||
     (l.job?.careerId === "official" && l.job.level >= 2) ||

@@ -15,6 +15,8 @@ import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
 import { goalLine } from "../content/murim/life/goals";
 import { disabilities, openInjuries } from "../engine/body";
 import { displayName, loc, money, shortName } from "../engine/util";
+import { courtOf } from "../content/murim/world/court";
+import { COURT_RANKS } from "../content/murim/world/palaceSchemes";
 
 export type TabId = "career" | "people" | "power" | "jianghu" | "activities" | "phone" | "soul";
 
@@ -272,7 +274,12 @@ export function MainScreen({
 
   const job = life.job ? careerById(life.job.careerId) : undefined;
   const murim = life.worldId === "murim";
-  const subtitle = job
+  const rank = murim ? Number(life.flags.courtRank ?? 0) : 0;
+  const subtitle = murim && life.flags.emperorSelf && life.mw
+    ? `👑 ฮ่องเต้แห่ง${courtOf(life).dynasty}`
+    : murim && rank >= 4
+    ? COURT_RANKS[rank]
+    : job
     ? job.titles[life.job!.level - 1]
     : life.education.stage === "university"
       ? "นักศึกษา"

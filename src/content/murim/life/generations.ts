@@ -151,11 +151,18 @@ export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | 
   // ตระกูลถูกกวาดล้างเพราะลอบสังหารคนชั้นสูง — ลูกที่หนีรอดสืบเรื่องต่อ
   if (dead.flags.familyPurged && how === "heir") { next.flags.plPurgedFor = String(dead.flags.familyPurged); next.flags.plCourt = "purged"; }
   // ผู้เล่นเป็นฮ่องเต้: ลูกขึ้นครองราชย์ต่อ · ศิษย์/คนรุ่นหลัง = ราชสำนักต้องหาคนใหม่ · ผู้สำเร็จราชการตาย = อำนาจคืนสู่วัง
-  if (dead.flags.emperorSelf || Number(dead.flags.courtRank ?? 0) >= 5) {
+  // สละราชสมบัติให้ลูกไปแล้ว: ถ้ารุ่นใหม่คือลูกคนนั้น เขาคือฮ่องเต้อยู่แล้ว
+  if (dead.flags.abdicatedTo && how === "heir" && heir?.id === dead.flags.abdicatedTo) {
+    const ct = courtOf(next);
+    ct.emperor = { name: `ฮ่องเต้${displayName(next)}`, age: next.age, temper: "wise", health: 100, since: Number(dead.flags.abdicatedAt ?? next.birthYear + next.age) };
+    next.flags.emperorSelf = true;
+    next.flags.courtRank = 6;
+    next.flags.palaceAccess = true;
+  } else if (dead.flags.emperorSelf || Number(dead.flags.courtRank ?? 0) >= 5) {
     const ct = courtOf(next);
     ct.regent = undefined;
     if (dead.flags.emperorSelf && how === "heir") {
-      ct.emperor = { name: `ฮ่องเต้${next.firstName}`, age: next.age, temper: "wise", health: 100, since: next.birthYear + next.age };
+      ct.emperor = { name: `ฮ่องเต้${displayName(next)}`, age: next.age, temper: "wise", health: 100, since: next.birthYear + next.age };
       next.flags.emperorSelf = true;
       next.flags.courtRank = 6;
       next.flags.palaceAccess = true;

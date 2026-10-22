@@ -4,7 +4,7 @@ import type { GameEvent, Outcome } from "../../../engine/events";
 import { kill, yearHooks } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
-import { addFame, addMoney, addStat, clamp, log } from "../../../engine/util";
+import { addFame, addMoney, addStat, clamp, displayName, log } from "../../../engine/util";
 import { gainExp } from "../../hunter/power";
 import { shiftAlign } from "../m17core";
 import { calYear, worldOfLife } from "../life/world";
@@ -45,7 +45,9 @@ yearHooks.push((l) => {
   if (!murim(l) || !l.alive) return;
   const w = worldOfLife(l);
   const yr = calYear(l);
-  if (w.era === "chaos" && yr - w.eraSince >= 7 && w.legitimacy < 25 && chance(l, 0.35)) {
+  // ราชวงศ์ใหม่ของผู้เล่นมีเวลาหกปีให้กู้แผ่นดินก่อนจะแตก (ไม่ล่มในปีถัดจากขึ้นครองราชย์)
+  const freshThrone = !!l.flags.emperorSelf && !!w.court && yr - w.court.emperor.since < 6;
+  if (w.era === "chaos" && !freshThrone && yr - w.eraSince >= 7 && w.legitimacy < 25 && chance(l, 0.35)) {
     w.era = "war";
     w.eraSince = yr;
     w.kingdoms = LORDS.map((k) => ({ ...k, power: clamp(k.power + randInt(l, -8, 8), 10, 80) }));
@@ -65,7 +67,7 @@ yearHooks.push((l) => {
     w.legitimacy = 55;
     w.unrest = 35;
     const self = l.flags.isLord === top.id;
-    if (w.court) { w.court.reigns.push({ name: w.court.emperor.name, from: w.court.emperor.since, to: yr, how: `แผ่นดินแตก ${top.lord}รวมแผ่นดิน` }); w.court.emperor = { name: `ฮ่องเต้${self ? l.firstName : top.lord}`, age: self ? l.age : top.lordAge ?? randInt(l, 40, 60), temper: "wise", health: 75, since: yr }; w.court.heir = undefined; w.court.regent = undefined; if (self) w.court.dynasty = `ราชวงศ์${l.lastName || l.firstName}`; }
+    if (w.court) { w.court.reigns.push({ name: w.court.emperor.name, from: w.court.emperor.since, to: yr, how: `แผ่นดินแตก ${top.lord}รวมแผ่นดิน` }); w.court.emperor = { name: `ฮ่องเต้${self ? displayName(l) : top.lord}`, age: self ? l.age : top.lordAge ?? randInt(l, 40, 60), temper: "wise", health: 75, since: yr }; w.court.heir = undefined; w.court.regent = undefined; if (self) w.court.dynasty = `ราชวงศ์${l.lastName || l.firstName}`; }
     if (self) { l.flags.emperorSelf = true; l.flags.foundedDynasty = true; delete l.flags.isLord; }
     const mine = l.flags.lord === top.id || self;
     log(l, self ? `🐉 คุณรวมแผ่นดินเป็นหนึ่งด้วยดาบของตัวเอง — ขึ้นครองราชย์เป็นฮ่องเต้องค์แรกของราชวงศ์ใหม่ สงครามสามแคว้นสิ้นสุด` : `🏯 ${top.lord}แห่ง${top.name}รวมแผ่นดินเป็นหนึ่ง สถาปนาราชวงศ์ใหม่ — สงครามสามแคว้นสิ้นสุด${mine ? " และคุณยืนอยู่ข้างผู้ชนะ" : l.flags.lord ? " ฝ่ายที่คุณรับใช้พ่ายแพ้" : ""}`, "milestone");

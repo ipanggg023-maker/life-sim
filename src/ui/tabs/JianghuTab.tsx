@@ -14,6 +14,7 @@ import { TEMPER, courtOf, palaceAccess } from "../../content/murim/world/court";
 import { COURT_RANKS, HEAT_LABEL, courtRank, schemeHeat } from "../../content/murim/world/palaceSchemes";
 import { activeWar, mySide, sideNames, warsOf } from "../../content/murim/world/sectWar";
 import { FAVOR_LABEL, viewCourt } from "../../content/murim/world/kingdomCourt";
+import { crownHeir, royalKids } from "../../content/murim/world/emperor";
 import { lordFavor } from "../../content/murim/world/war";
 import { PRESSURE_LABEL, ROLE_NAME, castOf, palaceOf, palaceRoleOf, patronOf, princeById, princesOf, support } from "../../content/murim/world/palace";
 
@@ -123,6 +124,7 @@ function RumorCard({ life, act }: { life: Life; act: Act }) {
 
 /** ราชสำนักและวังหลัง: คนนอกเห็นแค่ข่าวทั่วไป · คนที่เข้าวังได้เห็นแรงหนุนและคนในวังที่รู้จัก (EXPANSION §8.5) */
 function CourtCard({ life }: { life: Life }) {
+  if (life.flags.emperorSelf) return <ThroneCard life={life} />;
   const c = courtOf(life);
   const p = palaceOf(life);
   const inside = palaceAccess(life);
@@ -189,6 +191,59 @@ function CourtCard({ life }: { life: Life }) {
           รัชกาลก่อน: {c.reigns.slice(-3).map((r) => `${r.name} (${r.from}–${r.to}, ${r.how.split(" — ")[0]})`).join(" · ")}
         </p>
       )}
+    </div>
+  );
+}
+
+/** ราชสำนักเมื่อคุณคือฮ่องเต้: พระนาม ปีที่ครองราชย์ รัชทายาท ลูกๆ ความชอบธรรม คนในวังที่ภักดีหรือคิดคด */
+function ThroneCard({ life }: { life: Life }) {
+  const c = courtOf(life);
+  const w = life.mw;
+  const p = palaceOf(life);
+  const heir = crownHeir(life);
+  const kids = royalKids(life);
+  const yr = life.birthYear + life.age;
+  const bar = (v: number, good: boolean) => (
+    <div className="bar small-bar" aria-label={String(v)}>
+      <div className={`fill ${good ? (v >= 50 ? "high" : "mid") : v >= 60 ? "low" : "mid"}`} style={{ width: `${v}%` }} />
+    </div>
+  );
+  const cast = castOf(life).filter((n) => n.role === "minister" || n.role === "eunuch" || n.role === "general" || n.role === "empress").slice(0, 6);
+  return (
+    <div className="card">
+      <div className="card-title">👑 ราชสำนักของคุณ · {c.dynasty}</div>
+      <p className="small">
+        คุณคือ <b>{c.emperor.name}</b> · ครองราชย์ปีที่ {Math.max(1, yr - c.emperor.since + 1)} · ท้องพระคลัง{p.treasury >= 60 ? "มั่งคั่ง" : p.treasury >= 30 ? "พอใช้" : "ร่อยหรอ"}
+      </p>
+      {w && (
+        <>
+          <div className="faction-row">
+            <span className="faction-name small">ความชอบธรรมของราชวงศ์</span>
+            {bar(w.legitimacy, true)}
+          </div>
+          <div className="faction-row">
+            <span className="faction-name small">ความไม่สงบในแผ่นดิน</span>
+            {bar(w.unrest, false)}
+          </div>
+        </>
+      )}
+      <p className="small">
+        รัชทายาท: {heir ? <b>{heir.gender === "f" ? "องค์หญิง" : "องค์ชาย"}{heir.name} ({heir.age} ปี)</b> : <span className="danger-text">ยังไม่แต่งตั้ง</span>}
+      </p>
+      {kids.length > 0 && (
+        <p className="small muted">
+          ลูกของคุณ: {kids.map((k) => `${k.gender === "f" ? "องค์หญิง" : "องค์ชาย"}${k.name} (${k.age})`).join(" · ")}
+        </p>
+      )}
+      {cast.length > 0 && <div className="section-title">คนในราชสำนัก</div>}
+      {cast.map((n) => (
+        <p className="small" key={n.id}>
+          <b>{n.name}</b> <span className="muted">({n.title})</span>
+          {n.backs === "self" || n.amb >= 75 ? <span className="danger-text"> · ทะเยอทะยาน</span> : n.you.trust >= 20 ? " · ภักดีต่อคุณ" : ""}
+          {n.you.grudge >= 20 && <span className="danger-text"> · แค้นคุณ</span>}
+        </p>
+      ))}
+      {c.reigns.length > 0 && <p className="muted small">รัชกาลก่อน: {c.reigns.slice(-3).map((r) => `${r.name} (${r.from}–${r.to}, ${r.how.split(" — ")[0]})`).join(" · ")}</p>}
     </div>
   );
 }

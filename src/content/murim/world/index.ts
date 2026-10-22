@@ -11,5 +11,6 @@ import { PALACE_EVENTS } from "./palace";
 import { SCHEME_EVENTS } from "./palaceSchemes";
 import { WAR_EVENTS2 } from "./sectWar";
 import { KINGDOM_COURT_EVENTS } from "./kingdomCourt";
+import { EMPEROR_EVENTS } from "./emperor";
 
-export const WORLD_EVENTS: GameEvent[] = [...FACTION_EVENTS, ...COURT_EVENTS, ...LEGEND_EVENTS, ...RANKING_EVENTS, ...MYSECT_EVENTS, ...WAR_EVENTS, ...JIANGHU_EVENTS, ...PALACE_EVENTS, ...SCHEME_EVENTS, ...WAR_EVENTS2, ...KINGDOM_COURT_EVENTS];
+export const WORLD_EVENTS: GameEvent[] = [...FACTION_EVENTS, ...COURT_EVENTS, ...LEGEND_EVENTS, ...RANKING_EVENTS, ...MYSECT_EVENTS, ...WAR_EVENTS, ...JIANGHU_EVENTS, ...PALACE_EVENTS, ...SCHEME_EVENTS, ...WAR_EVENTS2, ...KINGDOM_COURT_EVENTS, ...EMPEROR_EVENTS];
