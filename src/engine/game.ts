@@ -475,6 +475,8 @@ export const kinDeathHooks: Array<(life: Life, p: Person, violent: boolean, kill
 export function ageUp(life: Life) {
   if (!life.alive || life.queue.length) return;
   life.age++;
+  // จำกิจกรรม/งานของปีที่ผ่านมา (ปุ่ม "ซ้ำปีก่อน" ในยุทธภพ)
+  if (life.worldId === "murim") life.flags.lastActs = life.doneThisYear.filter((x) => x.startsWith("act:") || x.startsWith("job:")).join("|");
   life.doneThisYear = [];
   life.flags.income = 0;
 

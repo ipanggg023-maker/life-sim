@@ -173,6 +173,8 @@ describe("กลุ่ม 4: UI ระบบเวลา ความเสถ�
       let g = 0;
       while (l.alive && g++ < 120) year(l, r);
       claimAward(soul, l, false);
+      // ทดสอบการสืบสาย ไม่ใช่อัตรารอดของเด็ก — ถ้าลูกตายหมด ให้มีทายาทที่โตแล้วหนึ่งคน
+      if (!heirsOf(l).length) createPerson(l, "child", { age: 20, bond: 70 });
       const kids = heirsOf(l);
       if (!kids.length) break;
       const next = buildHeir(l, kids[0].id);

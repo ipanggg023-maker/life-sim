@@ -5,6 +5,9 @@ import { BODY_EVENTS, CRISIS_EVENTS, DUEL_EVENTS, GOAL_EVENTS, HOUSEHOLD_EVENTS,
 import { MILESTONE_EVENTS } from "./life/milestones";
 import { GOAL2_EVENTS } from "./life/goalEvents";
 import { RUMOR_EVENTS } from "./life/rumors";
+import { FAITH_EVENTS } from "./life/faith";
+import { TORTURE_EVENTS } from "./life/torture";
+import { RITE_EVENTS } from "./life/rites";
 import { CRIME_EVENTS, FAMILY_RITE_EVENTS, TRAVEL_EVENTS } from "./life/law";
 import "./life/activities"; // แท็บ "ทำ" ของยุทธภพ
 import { GENERATION_EVENTS } from "./life/generations";
@@ -17,5 +20,5 @@ let loaded = false;
 export function loadMurimWorld() {
   if (loaded) return;
   loaded = true;
-  registerEvents([...MILESTONE_EVENTS, ...CRISIS_EVENTS, ...GOAL_EVENTS, ...NPC_EVENTS, ...DUEL_EVENTS, ...BODY_EVENTS, ...STORY_EVENTS, ...MARTIAL_EVENTS, ...HOUSEHOLD_EVENTS, ...WORLD_EVENTS, ...GENERATION_EVENTS, ...CRIME_EVENTS, ...TRAVEL_EVENTS, ...FAMILY_RITE_EVENTS, ...GOAL2_EVENTS, ...RUMOR_EVENTS], "murim");
+  registerEvents([...MILESTONE_EVENTS, ...CRISIS_EVENTS, ...GOAL_EVENTS, ...NPC_EVENTS, ...DUEL_EVENTS, ...BODY_EVENTS, ...STORY_EVENTS, ...MARTIAL_EVENTS, ...HOUSEHOLD_EVENTS, ...WORLD_EVENTS, ...GENERATION_EVENTS, ...CRIME_EVENTS, ...TRAVEL_EVENTS, ...FAMILY_RITE_EVENTS, ...GOAL2_EVENTS, ...RUMOR_EVENTS, ...FAITH_EVENTS, ...TORTURE_EVENTS, ...RITE_EVENTS], "murim");
 }

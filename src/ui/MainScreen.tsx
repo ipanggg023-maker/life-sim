@@ -11,7 +11,7 @@ import type { Life, LogEntry, StatKey } from "../engine/types";
 import type { YearReport } from "../engine/report";
 import { worldSummary } from "../content/murim/life/world";
 import { regionOf } from "../content/murim/life/region";
-import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
+import { currentPlan, lastYearActs, plansFor, repeatLastYear, setPlan } from "../content/murim/life/plan";
 import { goalLine } from "../content/murim/life/goals";
 import { disabilities, openInjuries } from "../engine/body";
 import { displayName, loc, money, shortName } from "../engine/util";
@@ -249,6 +249,19 @@ function PlanBar({ life, onAgeUp }: { life: Life; onAgeUp: (years?: number) => v
       >
         ⏩ 3 ปี
       </button>
+      {lastYearActs(life).length > 0 && (
+        <button
+          className="btn small ghost"
+          disabled={life.queue.length > 0}
+          title="ทำกิจกรรมและงานชุดเดิมของปีก่อน (ไม่รวมอาชญากรรม) แล้วอายุขึ้นหนึ่งปี"
+          onClick={() => {
+            repeatLastYear(life);
+            onAgeUp(1);
+          }}
+        >
+          🔁 ซ้ำปีก่อน
+        </button>
+      )}
       {cur && (
         <div className="plan-hint">
           ✅ {cur.pros} · ❌ {cur.cons}
@@ -312,7 +325,9 @@ export function MainScreen({
       <header className="top">
         <div className="who" style={{ flex: 1, minWidth: 0 }}>
           <div className="name">
-            {displayName(life)} <span className={`gender-tag ${life.gender}`}>{life.gender === "m" ? "♂" : "♀"}</span>
+            {displayName(life)}
+            {murim && life.flags.courtesyName && <span className="courtesy"> · {String(life.flags.courtesyName)}</span>}{" "}
+            <span className={`gender-tag ${life.gender}`}>{life.gender === "m" ? "♂" : "♀"}</span>
           </div>
           {murim ? (
             <>

@@ -10,6 +10,7 @@ import { addFame, addMoney, addStat, clamp, log, money, shortName } from "../../
 import { shiftAlign } from "../m17core";
 import { DUEL_END, startDuel } from "./duel";
 import { spreadAboutYou } from "./rumors";
+import { needsInterrogation } from "./torture";
 import { REGIONS, regionOf } from "./region";
 import { TAEL } from "../story/kit";
 import { DARK_JOBS } from "../careers";
@@ -181,7 +182,9 @@ function caught(l: Life, crime: string, heat: number): Outcome {
 function arrest(l: Life, surrendered = false): Outcome {
   if (surrendered) l.flags.heat = Math.max(0, heatOf(l) - 10);
   // แทรกหลังฉากปัจจุบัน (ฉากปัจจุบันจะถูกนำออกจากคิวหลังเลือก)
-  l.queue.splice(1, 0, { eventId: "cr.trial", ctx: {} });
+  // คดีหนัก: ถูกสอบสวนในห้องใต้ดินก่อนขึ้นศาล (torture.ts)
+  if (needsInterrogation(l)) l.queue.splice(1, 0, { eventId: "tt.interrogate", ctx: {} }, { eventId: "cr.trial", ctx: {} });
+  else l.queue.splice(1, 0, { eventId: "cr.trial", ctx: {} });
   return no(surrendered ? "คุณยื่นมือให้ใส่ตรวน — นักล่าค่าหัวดูผิดหวังที่ไม่ได้สู้" : "โซ่ตรวนรัดข้อมือ คุณถูกลากไปที่ว่าการอำเภอ");
 }
 

@@ -5,6 +5,8 @@ import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, log, money, shortName } from "../../../engine/util";
 import { gainExp } from "../../hunter/power";
 import { familyOf, priceIndex } from "./world";
+import { ACTIVITIES, activityLocked, doActivity } from "../../../engine/activities";
+import { JOB_ACTIONS, doJobAction, jobActionLocked } from "./jobActions";
 
 export interface YearPlan {
   id: string;
@@ -162,4 +164,33 @@ export function applyPlan(l: Life) {
     delete l.flags.plan;
     log(l, "ช่วงวัยของคุณเปลี่ยนไปแล้ว — ถึงเวลาเลือกว่าปีต่อไปจะใช้ชีวิตแบบไหน");
   }
+}
+
+// ───────── ซ้ำปีก่อน (MURIM_PLAN §20 ข้อ 6: ทางลัดแบบ BitLife "ทำเหมือนเดิมแล้วอายุขึ้น") ─────────
+
+/** กิจกรรม/งานที่ทำเมื่อปีที่แล้ว */
+export const lastYearActs = (l: Life) => String(l.flags.lastActs ?? "").split("|").filter(Boolean);
+
+/** ทำกิจกรรมและงานชุดเดิมของปีก่อน (ข้ามอาชญากรรม · ข้ามสิ่งที่ทำไม่ได้แล้ว · หยุดเมื่อมีฉากให้ตัดสินใจ) */
+export function repeatLastYear(l: Life): { done: string[]; skipped: string[] } {
+  const done: string[] = [], skipped: string[] = [];
+  for (const x of lastYearActs(l)) {
+    if (!l.alive || l.queue.length) break;
+    const id = x.slice(4);
+    if (x.startsWith("act:")) {
+      const a = ACTIVITIES.find((y) => y.id === id);
+      if (!a) continue;
+      if (a.group === "อาชญากรรม" || activityLocked(l, a)) { skipped.push(a.name); continue; }
+      doActivity(l, a.id);
+      done.push(a.name);
+    } else {
+      const j = JOB_ACTIONS.find((y) => y.id === id);
+      if (!j) continue;
+      if (jobActionLocked(l, j)) { skipped.push(j.name); continue; }
+      doJobAction(l, j.id);
+      done.push(j.name);
+    }
+  }
+  if (done.length || skipped.length) log(l, `🔁 ทำเหมือนปีก่อน: ${done.join(", ") || "-"}${skipped.length ? ` (ข้าม: ${skipped.join(", ")})` : ""}`);
+  return { done, skipped };
 }
