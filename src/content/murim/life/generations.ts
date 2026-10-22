@@ -11,6 +11,7 @@ import { awaken, rankLabel } from "../../hunter/power";
 import { addQi, artInfo, artsOf, learn } from "../martial/arts";
 import { mySect, saveSect } from "../m17core";
 import { courtOf } from "../world/court";
+import { courtLegacy } from "../world/palace";
 import { legacyToWorld } from "../world/jianghu";
 import { factions } from "../world/factions";
 import { goalById, setGoal } from "./goals";
@@ -142,6 +143,9 @@ export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | 
   const open = dead.goals?.find((g) => !g.end && g.id === "revenge");
   if (open && how !== "era") next.flags.plRevenge = displayName(dead);
   next.flags.plName = displayName(dead);
+  // การเมืองในวังของรุ่นก่อนตามมาถึงลูกหลาน (EXPANSION §8.5.8)
+  const cl = courtLegacy(dead);
+  if (cl && how !== "era") next.flags.plCourt = cl;
   next.flags.plHow = how;
   if (dead.flags.m17Epithet) next.flags.plEpithet = String(dead.flags.m17Epithet);
 }

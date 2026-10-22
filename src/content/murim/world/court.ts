@@ -25,6 +25,8 @@ export interface Court {
   inner: number;
   edict?: "ban_sects" | "heavy_tax" | "draft" | "amnesty";
   regent?: string;
+  /** คนในวัง รัชทายาทหลายองค์ แรงกดดันการสืบทอด (world/palace.ts · กลุ่ม 5) */
+  palace?: import("./palace").Palace;
   /** ประวัติการเปลี่ยนรัชกาล (ใช้ในบันทึกยุทธภพ) */
   reigns: { name: string; from: number; to: number; how: string }[];
 }
@@ -67,6 +69,9 @@ const EDICT_TEXT: Record<NonNullable<Court["edict"]>, string> = {
   amnesty: "ราชโองการ: นิรโทษกรรมทั่วแผ่นดินฉลองรัชกาลใหม่ นักโทษคดีเล็กได้รับอิสรภาพ",
 };
 
+/** ระบบวังหลัง (palace.ts) รับช่วงการสืบราชบัลลังก์ — คืนคำอธิบายว่าเปลี่ยนรัชกาลอย่างไร */
+export const courtHooks: { succeed?: (l: Life, c: Court, year: number) => string } = {};
+
 /** ทุกปี: ฮ่องเต้แก่ลง ป่วย สวรรคต · การสืบราชบัลลังก์ตามแรงหนุน · ราชโองการตามนิสัยฮ่องเต้ */
 function tickCourt(l: Life) {
   if (l.worldId !== "murim" || !l.alive || !l.mw) return;
@@ -91,6 +96,13 @@ function tickCourt(l: Life) {
   const dies = c.emperor.health <= 0 || chance(l, Math.max(0, c.emperor.age - 60) / 80);
   if (!dies) return;
   const old = c.emperor;
+  if (courtHooks.succeed) {
+    const how = courtHooks.succeed(l, c, yr);
+    c.reigns.push({ name: old.name, from: old.since, to: yr, how });
+    const known = palaceAccess(l);
+    log(l, `🏯 ${old.name}สวรรคตในพรรษา ${old.age} — ${known ? how : how.split(" — ")[0]} · ${c.emperor.name}ขึ้นครองราชย์`, /สงคราม|รัฐประหาร/.test(how) ? "bad" : "milestone");
+    return;
+  }
   const backers = c.heir ? (c.heir.backer === "empress" ? c.inner : c.heir.backer === "ministers" ? c.ministers : (c.inner + c.military) / 2) : 0;
   let how = "";
   if (c.heir && c.heir.legit >= 60 && backers >= 45) {
@@ -115,7 +127,13 @@ function tickCourt(l: Life) {
 }
 
 /** มีช่องทางเข้าวัง: ขุนนาง หมอที่มีชื่อ ยอดฝีมือที่ถูกเรียกตัว หรือเคยรับใช้ราชสำนัก */
-export const palaceAccess = (l: Life) => !!l.flags.palaceAccess || (l.job?.careerId === "official" && l.job.level >= 2) || (l.job?.careerId === "herbalist" && l.job.level >= 4);
+export const palaceAccess = (l: Life) =>
+  !l.flags.palaceWithdrawn &&
+  (!!l.flags.palaceAccess ||
+    (l.job?.careerId === "official" && l.job.level >= 2) ||
+    (l.job?.careerId === "herbalist" && l.job.level >= 4) ||
+    ["imperial_guard", "jinyiwei", "palace_physician"].includes(l.job?.careerId ?? "") ||
+    (l.job?.careerId === "merchant" && l.job.level >= 3 && !!l.flags.palaceSupplier));
 
 const court = (l: Life) => courtOf(l);
 
