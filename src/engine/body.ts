@@ -192,12 +192,13 @@ export function treat(l: Life, tier: 0 | 1 | 2): { text: string; ok: boolean } {
   const b = bodyOf(l);
   const h = HEALERS[tier];
   const open = b.injuries.filter((i) => i.sev < 3 && i.heal > 0);
-  const perm = b.injuries.filter((i) => i.sev === 3 && ["blind", "shattered", "tendon", "deaf"].includes(i.kind));
+  const perm = b.injuries.filter((i) => i.sev === 3 && ["blind", "shattered", "tendon", "deaf", "poison"].includes(i.kind));
   if (!chance(l, h.odds)) return { text: `${h.name}ส่ายหน้า ยาที่ให้มาไม่ได้ช่วยอะไรมากนัก`, ok: false };
   if (tier === 2 && perm.length) {
     const i = pick(l, perm);
     b.injuries = b.injuries.filter((x) => x !== i);
     if (i.part === "dantian") b.external = false;
+    if (i.kind === "poison") return { text: "หมอเทวดากรีดปลายนิ้วทั้งสิบ เลือดดำไหลออกมาสามวันสามคืนจนกลายเป็นสีแดง — พิษที่ฝังในร่างมาหลายปีถูกขับออกจนหมด", ok: true };
     return { text: `เข็มทองสามสิบหกเล่มกับยาที่ต้มเจ็ดวันเจ็ดคืน — ${PART_NAME[i.part]}ของคุณกลับมาใช้ได้อีกครั้ง ปาฏิหาริย์มีจริง`, ok: true };
   }
   if (!open.length) return { text: `${h.name}ตรวจแล้วบอกว่าไม่มีแผลที่ยังรักษาได้`, ok: false };

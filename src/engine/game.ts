@@ -471,6 +471,8 @@ export function runEvent(life: Life, eventId: string, ctx: Ctx = {}, prepared = 
 export const yearHooks: Array<(life: Life) => void> = [];
 /** ปีที่ "แก่ช้าลง" จากพลัง/วิชา (ลดความเสี่ยงตายตามวัย) */
 export const lifespanHooks: Array<(life: Life) => number> = [];
+/** สาเหตุการตายตามสภาพจริงของตัวละคร (พิษ บาดแผล ภูมิภาค) — คืน undefined ถ้าไม่มีอะไรเฉพาะ จะใช้รายการกลางของโลก */
+export const deathCauseHooks: Array<(life: Life) => string | undefined> = [];
 /** เมื่อมีคนรู้จักเสียชีวิต (violent = ถูกฆ่า) — ให้ content ใช้กระตุ้นเรื่องราว เช่น เปลี่ยนเป้าหมายชีวิต */
 /** ผลเสริมตามระดับผลลัพธ์ (งดงาม/พลาดหนัก) — คืนข้อความต่อท้าย */
 export const rollTierHooks: Array<(life: Life, tier: "great" | "ok" | "fail" | "disaster") => string> = [];
@@ -507,7 +509,8 @@ export function ageUp(life: Life) {
   if (chance(life, mortality(life.age - younger, life.stats.health))) {
     const w = worldOf(life.worldId);
     const ruins = life.flags.doomed && !life.flags.rebuilt && w.deathRuins;
-    kill(life, ruins ? pick(life, ruins) : life.age < 50 ? pick(life, w.deathYoung) : pick(life, w.deathOld));
+    const why = ruins ? undefined : deathCauseHooks.map((h) => h(life)).find(Boolean);
+    kill(life, ruins ? pick(life, ruins) : why ?? (life.age < 50 ? pick(life, w.deathYoung) : pick(life, w.deathOld)));
     return;
   }
 

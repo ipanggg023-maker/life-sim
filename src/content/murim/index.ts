@@ -26,6 +26,7 @@ import { MARTIAL_EVENTS } from "./martial/training";
 import { WORLD_EVENTS } from "./world";
 import "./life/gifts";
 import "./life/giftHooks";
+import "./life/deathCause";
 
 let loaded = false;
 

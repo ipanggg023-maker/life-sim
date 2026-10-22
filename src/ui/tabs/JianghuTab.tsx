@@ -13,12 +13,13 @@ import { WorldCard } from "./PowerTab";
 import { TEMPER, courtOf, palaceAccess } from "../../content/murim/world/court";
 import { COURT_RANKS, HEAT_LABEL, courtRank, schemeHeat } from "../../content/murim/world/palaceSchemes";
 import { activeWar, mySide, sideNames, warsOf } from "../../content/murim/world/sectWar";
+import { FAVOR_LABEL, viewCourt } from "../../content/murim/world/kingdomCourt";
+import { lordFavor } from "../../content/murim/world/war";
 import { PRESSURE_LABEL, ROLE_NAME, castOf, palaceOf, palaceRoleOf, patronOf, princeById, princesOf, support } from "../../content/murim/world/palace";
 
 export function JianghuTab({ life, act }: { life: Life; act: Act }) {
   const r = regionOf(life);
   const w = life.mw;
-  const kingdoms = w?.kingdoms ?? [];
   const heat = heatOf(life);
   return (
     <div className="tab-content">
@@ -35,28 +36,7 @@ export function JianghuTab({ life, act }: { life: Life; act: Act }) {
         {life.flags.exiled && <p className="small danger-text">ถูกเนรเทศ ห้ามกลับบ้านเกิด</p>}
         <p className="muted small">ย้ายถิ่นได้ที่แท็บ 🎯 ทำ → ยุทธภพ</p>
       </div>
-      {kingdoms.length > 0 && (
-        <div className="card">
-          <div className="card-title">สงครามสามแคว้น</div>
-          {kingdoms.map((k) => (
-            <div className="faction-row" key={k.id}>
-              <span className="faction-name">
-                {k.name} <span className="muted small">· {k.lord}{life.flags.lord === k.id ? " · นายของคุณ" : ""}</span>
-              </span>
-              <div className="bar small-bar">
-                <div className={`fill ${life.flags.lord === k.id ? "high" : "mid"}`} style={{ width: `${k.power}%` }} />
-              </div>
-            </div>
-          ))}
-          {life.flags.lord ? (
-            <p className="small">
-              ตำแหน่ง: {life.flags.warRole === "strategist" ? "เสนาธิการ" : life.flags.warRole === "general" ? "แม่ทัพ" : life.flags.warRole === "officer" ? "นายทหาร" : "พลทหาร"} · ผลงาน {Number(life.flags.warRank ?? 0)}
-            </p>
-          ) : (
-            <p className="muted small">คุณยังไม่ได้รับใช้แคว้นใด</p>
-          )}
-        </div>
-      )}
+      <KingdomsCard life={life} />
       <RumorCard life={life} act={act} />
       <WorldCard life={life} />
       {w && w.era !== "war" && <WarCard life={life} />}
@@ -208,6 +188,58 @@ function CourtCard({ life }: { life: Life }) {
         <p className="muted small">
           รัชกาลก่อน: {c.reigns.slice(-3).map((r) => `${r.name} (${r.from}–${r.to}, ${r.how.split(" — ")[0]})`).join(" · ")}
         </p>
+      )}
+    </div>
+  );
+}
+
+/** สงครามสามแคว้น: ราชสำนักของแต่ละแคว้น (เจ้าแคว้น รัชทายาท ขุนพล เมืองหลวง ข่าวศึก) และตำแหน่งของคุณ */
+function KingdomsCard({ life }: { life: Life }) {
+  const ks = (life.mw?.kingdoms ?? []).map(viewCourt);
+  if (!ks.length) return null;
+  const role = life.flags.isLord ? "เจ้าแคว้น" : life.flags.warRole === "strategist" ? (life.flags.warChief ? "เสนาธิการใหญ่" : "เสนาธิการ") : life.flags.warRole === "general" ? (life.flags.warChief ? "แม่ทัพใหญ่" : "แม่ทัพ") : life.flags.warRole === "officer" ? "นายทหาร" : "พลทหาร";
+  return (
+    <div className="card">
+      <div className="card-title">⚔️ สงครามสามแคว้น</div>
+      {ks.map((k) => {
+        const mine = life.flags.lord === k.id;
+        const last = k.news?.[k.news.length - 1];
+        const fellTo = k.fellTo ? ks.find((x) => x.id === k.fellTo) : undefined;
+        return (
+          <div className="kingdom" key={k.id}>
+            <div className={`faction-row${k.fallen ? " solo" : ""}`}>
+              <span className="faction-name">
+                {k.name} <span className="muted small">· เมืองหลวง{k.capital}{mine ? " · แคว้นของคุณ" : ""}</span>
+              </span>
+              {!k.fallen && (
+                <div className="bar small-bar" aria-label={`กำลัง ${k.power}`}>
+                  <div className={`fill ${mine ? "high" : "mid"}`} style={{ width: `${k.power}%` }} />
+                </div>
+              )}
+            </div>
+            {k.fallen ? (
+              <p className="small danger-text">ล่มสลายปี {k.fallen}{fellTo ? ` — ถูก${fellTo.name}ผนวก` : ""}</p>
+            ) : (
+              <>
+                <p className="small">
+                  👑 {life.flags.isLord === k.id ? "คุณ" : k.lord}{k.lordAge ? ` (${k.lordAge} ปี)` : ""} · <span className="muted">{k.trait}</span>
+                </p>
+                <p className="small muted">
+                  {k.heir ? `รัชทายาท ${k.heir}${k.heirAge ? ` (${k.heirAge})` : ""} · ` : ""}เสนาธิการ {k.strategist} · แม่ทัพใหญ่ {k.general}
+                </p>
+              </>
+            )}
+            {last && <p className="small muted">📜 ปี {last.y}: {last.t}</p>}
+          </div>
+        );
+      })}
+      {life.flags.lord ? (
+        <p className="small">
+          ตำแหน่งของคุณ: <b>{role}</b> · ผลงาน {Number(life.flags.warRank ?? 0)}
+          {!life.flags.isLord && <> · เจ้าแคว้น<span className={lordFavor(life) < 25 ? "danger-text" : ""}>{FAVOR_LABEL(lordFavor(life))}</span></>}
+        </p>
+      ) : (
+        <p className="muted small">คุณยังไม่ได้รับใช้แคว้นใด</p>
       )}
     </div>
   );

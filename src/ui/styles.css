@@ -637,6 +637,11 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 .faction-row { display: grid; grid-template-columns: 1fr 70px 56px; gap: 6px; align-items: center; padding: 3px 0; }
 .faction-name { font-size: 13px; }
 .small-bar { height: 6px; }
+.kingdom { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.kingdom:last-of-type { border-bottom: 0; }
+.kingdom p { margin: 2px 0; }
+.kingdom .faction-row { grid-template-columns: 1fr 70px; }
+.kingdom .faction-row.solo { grid-template-columns: 1fr; }
 .good-text { color: var(--good); }
 .goal-strip { margin: 0 12px 6px; padding: 4px 10px; font-size: 12px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line); }
 .person-mind { padding: 6px 12px 0; display: grid; gap: 4px; }

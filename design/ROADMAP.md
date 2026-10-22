@@ -26,4 +26,9 @@ Decisions the player made (these override older docs where they differ):
 
 Also done on request: early childhood awakening (talent or a mysterious teacher), officials open to anyone who passed the exam.
 
-Earlier backlog still open: a Three Kingdoms court summary, chronic-poison deaths among careful players.
+Earlier backlog, now done:
+- Three Kingdoms courts: each kingdom has a capital, an ageing lord and heir, a chief strategist and general, and war news. Lords die and heirs succeed (or an uncle seizes the throne), weak kingdoms fall, and your lord's trust brings rewards or suspicion. A general can seize the capital and, by unifying the land, become emperor.
+- Chronic-poison deaths: the cause was a label, not the mechanics. Natural deaths picked "accumulated poison" or "qi burst apart" at random. Causes now come from the body (real poison, internal wounds, a shattered dantian), the region's illnesses, age and realm. The divine healer can now purge permanent poison.
+- Era events: 33 events, plus 8 kingdom-court events, that make peace, decline, chaos, the Three Kingdoms and recovery feel different to live through.
+
+Still open: fixes from the player's own playtest.

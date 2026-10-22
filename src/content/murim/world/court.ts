@@ -59,6 +59,7 @@ export function courtOf(l: Life): Court {
 /** ข้อความสถานการณ์ราชสำนักสั้นๆ */
 export function courtSummary(l: Life): string {
   const c = courtOf(l);
+  if (l.mw?.era === "war") return `${c.dynasty}ล่มสลายแล้ว — แผ่นดินแตกเป็นสามแคว้น (ดูราชสำนักของแต่ละแคว้นด้านบน)`;
   return `${c.dynasty} · ${c.emperor.name} (${TEMPER[c.emperor.temper]}, ${c.emperor.age} พรรษา)${c.regent ? ` · ผู้สำเร็จราชการ: ${c.regent}` : ""}${c.heir ? ` · รัชทายาท ${c.heir.name}` : " · ยังไม่มีรัชทายาท"}`;
 }
 
