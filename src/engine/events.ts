@@ -9,6 +9,10 @@ export interface Outcome {
   kind?: LogKind;
   /** ตอนพิเศษ: ไปฉากถัดไป (ไม่ใส่ = จบตอน) */
   next?: string;
+  /** สิ่งที่ได้/เสียจริงจากผลนี้ */
+  effects?: { good: string[]; bad: string[] };
+  /** ผลการลุ้น (ตัวเลือกที่มี %): สำเร็จไหม และโอกาสที่เห็นก่อนเลือก */
+  roll?: { ok: boolean; p: number };
 }
 
 export interface Choice {

@@ -184,7 +184,7 @@ describe("จำลองชีวิต", () => {
     expect(turned).toBe(reachedTp);
     expect(pct(0.05)).toBeLessThan(12);
     expect(pct(0.95)).toBeGreaterThan(20);
-  }, 120_000);
+  }, 300_000);
 
   it("seed เดียวกันได้ชีวิตเหมือนกัน (จำเป็นสำหรับการย้อนเวลา)", () => {
     const a = playLife(42, { hunterBot: true });

@@ -66,8 +66,8 @@ describe("Murim Phase 7: ข้ามรุ่น", () => {
 
       const kids = heirsOf(dead);
       if (kids.length) {
-        const h = buildHeir(dead, kids[0].id);
-        inheritMurim(dead, h, "heir", kids[0].id);
+        const h = buildHeir(dead, kid.id);
+        inheritMurim(dead, h, "heir", kid.id);
         expect(h.mw).toBeTruthy();
         expect(h.mwArts?.some((a) => a.id === "a_long_fist")).toBe(true);
         live(h, r, 30);

@@ -535,6 +535,7 @@ export function resolveChoice(life: Life, choiceIndex: number): Outcome | undefi
   const p = oddsOf(life, c, q.ctx);
   const success = p === undefined ? true : chance(life, p);
   const out = c.run(life, q.ctx, success);
+  if (p !== undefined) out.roll = { ok: success, p };
   if (out.next && life.alive) q.scene = out.next;
   else {
     life.queue.shift();

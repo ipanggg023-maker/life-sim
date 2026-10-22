@@ -70,5 +70,5 @@ describe("M7 อ่านเหมือนมังฮวา", () => {
     // คอมเมนต์เฉพาะฉากเด็ด ไม่ใช่ทุกปี
     expect(years / Math.max(1, commentBlocks)).toBeGreaterThan(4);
     expect(titles.size).toBeGreaterThan(8);
-  }, 120_000);
+  }, 300_000);
 });

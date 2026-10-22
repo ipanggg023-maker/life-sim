@@ -49,8 +49,6 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
             const survive = c.survival?.(life, q.ctx);
             const missing = c.req?.(life, q.ctx);
             const vague = c.unknown?.(life, q.ctx);
-            const pros = typeof c.pros === "function" ? c.pros(life, q.ctx) : c.pros;
-            const cons = typeof c.cons === "function" ? c.cons(life, q.ctx) : c.cons;
             return (
               <button
                 key={index}
@@ -62,8 +60,6 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
                 }}
               >
                 <span>{loc(life, labelOf(c, life, q.ctx))}</span>
-                {pros && <span className="pros">✅ {pros}</span>}
-                {cons && <span className="cons">❌ {cons}</span>}
                 {missing && <span className="cons">🔒 {missing}</span>}
                 {survive !== undefined && survive < 0.95 && (
                   <span className="warn">[คำเตือน: อัตรารอดชีวิต {vague ? vagueLabel(survive) : `${Math.round(survive * 100)}%`}]</span>
@@ -92,7 +88,26 @@ export function OutcomeModal({ resolved, onNext }: { resolved: Resolved; onNext:
         {resolved.title && <h3>{resolved.title}</h3>}
         <p className="modal-prompt">{resolved.prompt}</p>
         <p className="modal-choice">➜ {resolved.choice}</p>
+        {resolved.out.roll && (
+          <p className={`roll ${resolved.out.roll.ok ? "ok" : "fail"}`}>
+            {resolved.out.roll.ok ? "✅ สำเร็จ" : "❌ ไม่สำเร็จ"} · โอกาส {Math.round(resolved.out.roll.p * 100)}%
+          </p>
+        )}
         <p className={`modal-outcome ${resolved.out.kind ?? ""}`}>{resolved.out.text}</p>
+        {resolved.out.effects && (resolved.out.effects.good.length > 0 || resolved.out.effects.bad.length > 0) && (
+          <p className="effects">
+            {resolved.out.effects.good.map((t) => (
+              <span className="eff good" key={t}>
+                {t}
+              </span>
+            ))}
+            {resolved.out.effects.bad.map((t) => (
+              <span className="eff bad" key={t}>
+                {t}
+              </span>
+            ))}
+          </p>
+        )}
         <button className="btn primary" onClick={onNext}>
           ต่อไป
         </button>

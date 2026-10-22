@@ -3,7 +3,7 @@
 import type { GameEvent } from "../../../engine/events";
 import { randInt } from "../../../engine/rng";
 import { people } from "../../../engine/util";
-import { A, B, BIG, C, E, FIGHT, G, K, N, NEXT, P, S, both, flagged, nm, notFlagged, poor, rich, withPerson, call } from "./kit";
+import { ab, A, B, BIG, C, E, FIGHT, G, K, N, NEXT, P, S, both, flagged, nm, notFlagged, poor, rich, withPerson, call } from "./kit";
 
 const parents = withPerson(["father", "mother"]);
 const mom = withPerson(["mother"]);
@@ -174,7 +174,7 @@ const LATE: GameEvent[] = [
     C("วิ่งกลับไปบอกท่านพ่อ", N("ท่านพ่อไปที่ศาลเจ้ากับคุณ — ไม่มีใครอยู่ที่นั่นแล้ว เหลือแต่รอยเท้าบนฝุ่นที่หายไปกลางทาง")),
   ], { when: flagged("beggarInvited"), forced: true, title: "ศาลเจ้าร้าง" }),
   E("c.l.beggar_master_3", [9, 14], "สามปีผ่านไป ขอทานแก่มาเคาะประตูบ้านกลางดึก ตัวเต็มไปด้วยเลือด \"พวกมันตามข้าเจอแล้ว… ถุงผ้านี้ เก็บไว้ อย่าเปิดจนกว่าเจ้าจะอายุยี่สิบ\"", [
-    P("ซ่อนเขาไว้ในโรงฟืน", () => 0.5, BIG("ชายชุดดำสามคนค้นทั้งหมู่บ้านแล้วจากไป ก่อนรุ่งสาง อาจารย์ของคุณหายไปอีกครั้ง — ทิ้งถุงผ้าไว้กับคุณ", { flag: ["beggarBag", "beggarAlive"], align: 4 }), B("พวกมันเจอเขาในโรงฟืน… คุณได้ยินเสียงสุดท้ายของเขาผ่านฝาไม้ เหลือแต่ถุงผ้าในมือคุณ", { flag: ["beggarBag", "beggarDead"], joy: -12, goal: ["revenge", "ให้อาจารย์ขอทานที่ถูกฆ่าในโรงฟืน"] }), { tone: "danger", pros: "อาจช่วยชีวิตอาจารย์", cons: "ถ้าพวกมันเจอ ครอบครัวคุณก็อันตราย" }),
+    P("ซ่อนเขาไว้ในโรงฟืน", ab(0.5, "smarts"), BIG("ชายชุดดำสามคนค้นทั้งหมู่บ้านแล้วจากไป ก่อนรุ่งสาง อาจารย์ของคุณหายไปอีกครั้ง — ทิ้งถุงผ้าไว้กับคุณ", { flag: ["beggarBag", "beggarAlive"], align: 4 }), B("พวกมันเจอเขาในโรงฟืน… คุณได้ยินเสียงสุดท้ายของเขาผ่านฝาไม้ เหลือแต่ถุงผ้าในมือคุณ", { flag: ["beggarBag", "beggarDead"], joy: -12, goal: ["revenge", "ให้อาจารย์ขอทานที่ถูกฆ่าในโรงฟืน"] }), { tone: "danger", pros: "อาจช่วยชีวิตอาจารย์", cons: "ถ้าพวกมันเจอ ครอบครัวคุณก็อันตราย" }),
     C("รับถุงไว้ แล้วไล่เขาไป", B("เขามองคุณนิ่งๆ แล้วเดินออกไปในความมืด — เช้าวันรุ่งขึ้นมีศพขอทานลอยอยู่ในแม่น้ำ", { flag: ["beggarBag", "beggarDead"], joy: -8, align: -2 })),
   ], { when: both(flagged("beggarMaster"), notFlagged("beggarBag")), forced: true, title: "คืนเลือด" }),
   E("c.l.bandit_raid", [6, 12], "กลางดึก เสียงม้านับสิบตัวควบเข้ามาในหมู่บ้าน ไฟลุกท่วมยุ้งข้าวหลังแรก — โจรภูเขาบุก!", [

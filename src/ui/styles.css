@@ -361,6 +361,13 @@ p { margin: 0.25em 0; }
 .modal-outcome.bad { color: var(--bad); }
 .modal-outcome.milestone { color: var(--milestone); }
 .modal-outcome.system { color: var(--sys-text); }
+.roll { display: inline-block; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin: 4px 0 0; }
+.roll.ok { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.roll.fail { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); }
+.effects { display: flex; flex-wrap: wrap; gap: 6px; margin: -6px 0 16px; }
+.eff { font-size: 12px; padding: 2px 8px; border-radius: 999px; }
+.eff.good { color: var(--good); background: color-mix(in srgb, var(--good) 12%, transparent); }
+.eff.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); }
 
 .choices { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; opacity: 0; transition: opacity 0.25s; }
 .choices.in { opacity: 1; }

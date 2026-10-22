@@ -3,11 +3,20 @@
 import { eligibilityFilters, type GameEvent } from "../../../engine/events";
 import { CHILDHOOD_EVENTS } from "./childhood";
 import { DAILY_EVENTS } from "./daily";
+import { DAILY2_EVENTS } from "./daily2";
+import { LINKED_EVENTS } from "./linked";
+import { ELDER_EVENTS } from "./elder";
+import { CHAIN_EVENTS } from "./chains";
+import { RARE_EVENTS } from "./rare";
+import { YOUTH_EVENTS } from "./youth";
+import { ADULT_EVENTS } from "./adult";
+import { SECTLIFE_EVENTS } from "./sectlife";
+import { REGION_EVENTS } from "./regions";
 import { PRIME_EVENTS } from "./prime";
 import { TEEN_EVENTS } from "./teen";
 import { YOUNG_EVENTS } from "./young";
 
-export const STORY_EVENTS: GameEvent[] = [...CHILDHOOD_EVENTS, ...TEEN_EVENTS, ...YOUNG_EVENTS, ...PRIME_EVENTS, ...DAILY_EVENTS];
+export const STORY_EVENTS: GameEvent[] = [...CHILDHOOD_EVENTS, ...TEEN_EVENTS, ...YOUNG_EVENTS, ...PRIME_EVENTS, ...DAILY_EVENTS, ...DAILY2_EVENTS, ...LINKED_EVENTS, ...ELDER_EVENTS, ...CHAIN_EVENTS, ...RARE_EVENTS, ...YOUTH_EVENTS, ...ADULT_EVENTS, ...SECTLIFE_EVENTS, ...REGION_EVENTS];
 
 /** เรื่องเก่าของยุทธภพที่ยังใช้ต่อ (เป็นกลไก ไม่ใช่เรื่องเล่า) */
 const KEEP_OLD = /^(murim\.(assessment|breakthrough|quest)$|m17\.r\.|m17\.s\.|m\.legacy\.)/;

@@ -82,18 +82,23 @@ export function apply(l: Life, c: Ctx, fx: Fx): string {
 }
 
 /** ผลลัพธ์ (แนบ fx ไว้ให้ตัวเลือกสรุปข้อดี/ข้อเสียจากผลจริงได้) */
-type Res = ((l: Life, c: Ctx) => Outcome) & { fx?: Fx };
+export type Res = ((l: Life, c: Ctx) => Outcome) & { fx?: Fx };
 type Txt = string | ((l: Life, c: Ctx) => string);
 const txt = (t: Txt, l: Life, c: Ctx) => (typeof t === "string" ? t : t(l, c));
 const withFx = (f: (l: Life, c: Ctx) => Outcome, fx: Fx): Res => Object.assign(f, { fx });
 
 /** ผลดี · ผลร้าย · ธรรมดา · จุดเปลี่ยนสำคัญ */
-export const G = (t: Txt, fx: Fx = {}): Res => withFx((l, c) => ({ text: txt(t, l, c) + apply(l, c, fx), kind: "good" }), fx);
-export const B = (t: Txt, fx: Fx = {}): Res => withFx((l, c) => ({ text: txt(t, l, c) + apply(l, c, fx), kind: "bad" }), fx);
-export const N = (t: Txt, fx: Fx = {}): Res => withFx((l, c) => ({ text: txt(t, l, c) + apply(l, c, fx) }), fx);
-export const BIG = (t: Txt, fx: Fx = {}): Res => withFx((l, c) => ({ text: txt(t, l, c) + apply(l, c, fx), kind: "milestone" }), fx);
+// ผลจริงที่เกิดขึ้น (ได้/เสีย) แสดงหลังเลือก — ก่อนเลือกผู้เล่นเห็นแค่ % สำเร็จ
+const out = (t: Txt, fx: Fx, kind?: Outcome["kind"]) => withFx((l, c) => ({ text: txt(t, l, c) + apply(l, c, fx), kind, effects: fxHints(fx) }), fx);
+export const G = (t: Txt, fx: Fx = {}): Res => out(t, fx, "good");
+export const B = (t: Txt, fx: Fx = {}): Res => out(t, fx, "bad");
+export const N = (t: Txt, fx: Fx = {}): Res => out(t, fx);
+export const BIG = (t: Txt, fx: Fx = {}): Res => out(t, fx, "milestone");
 /** ไปฉากถัดไปของเรื่องเดียวกัน */
-export const NEXT = (scene: string, t: Txt, fx: Fx = {}): Res => withFx((l, c) => ({ text: txt(t, l, c) + apply(l, c, fx), next: scene }), fx);
+export const NEXT = (scene: string, t: Txt, fx: Fx = {}): Res => withFx((l, c) => ({ text: txt(t, l, c) + apply(l, c, fx), next: scene, effects: fxHints(fx) }), fx);
+
+/** โอกาสตามความสามารถจริงของตัวละคร: ฐาน + ค่าสถานะ (50 = ไม่บวกไม่ลบ) + ขั้นฝีมือ */
+export const ab = (base: number, stat: StatKey = "smarts", w = 0.4) => (l: Life) => clamp(base + ((l.stats[stat] - 50) / 100) * w + (l.power?.rank ?? 0) * 0.02, 0.05, 0.95);
 
 /** สรุปผลจริงของตัวเลือกเป็นข้อดี/ข้อเสียสั้นๆ (ไม่แต่งเพิ่ม — มาจาก fx ที่จะเกิดจริง) */
 export function fxHints(fx: Fx | undefined): { good: string[]; bad: string[] } {
