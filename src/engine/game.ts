@@ -732,6 +732,8 @@ export function propose(life: Life, p: Person): Outcome {
   if (chance(life, clamp((p.bond - 30) / 60, 0.05, 0.95))) {
     const already = life.people.filter((x) => x.alive && x.relation === "spouse" && x.id !== p.id);
     p.relation = "spouse";
+    // ยุคนี้ไม่มีกฎหมายรับรองคนเพศเดียวกัน — เป็นพิธีลับต่อฟ้าดิน
+    if (p.gender === life.gender) p.tags = [...(p.tags ?? []).filter((x) => x !== "secret_union"), "secret_union"];
     if (npcOn(life)) remember(life, p, "married", "แต่งงานกัน", 3, { love: 10, trust: 8, loyalty: 20 });
     // ยุทธภพ: มีคู่สมรสอยู่แล้ว = เข้าบ้านเป็นฮูหยินรอง และคนเดิมจดจำเรื่องนี้
     if (npcOn(life) && already.length) {
@@ -816,6 +818,7 @@ export function cutTies(life: Life, p: Person): Outcome {
 export function tryForBaby(life: Life, p: Person): Outcome {
   if (life.doneThisYear.includes("baby")) return { text: "ปีนี้ลองไปแล้ว" };
   life.doneThisYear.push("baby");
+  if (p.gender === life.gender) return { text: "คุณสองคนมีลูกด้วยกันเองไม่ได้ — แต่เด็กกำพร้าในวัดยังรอบ้านอยู่ (รับเลี้ยงได้ที่แท็บทำ → ครอบครัว)" };
   const motherAge = life.gender === "f" ? life.age : p.age;
   const fertile = motherAge <= 44 ? 0.55 - Math.max(0, motherAge - 35) * 0.05 : 0;
   if (chance(life, fertile)) {

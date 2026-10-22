@@ -18,9 +18,9 @@ Decisions the player made (these override older docs where they differ):
 
 | Phase | Content | Status |
 |---|---|---|
-| A | Events that really change people (deaths are real) · dark actions on any target · execution + family purge · NPC gender everywhere | in progress |
-| B | Romance drama: forbidden love, affairs and jealousy, arranged/political marriage, same-sex love | next |
-| C | NPCs who cultivate martial arts and lifelong rivals who grow alongside you | planned |
+| A | Events that really change people (deaths are real) · dark actions on any target · execution + family purge · NPC gender everywhere | done |
+| B | Romance drama: forbidden love, affairs and jealousy, arranged/political marriage, same-sex love | done |
+| C | NPCs who cultivate martial arts and lifelong rivals who grow alongside you | next |
 | D | Large-scale sect wars — sects rally allies, the player picks a side or leads | planned |
 | ongoing | More detailed events · fixes from the player's own playtest | ongoing |
 

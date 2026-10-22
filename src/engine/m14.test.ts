@@ -63,7 +63,8 @@ describe("M14 เล่นอิสระ", () => {
       continued++;
     }
     console.log("SIM M14 เล่นต่อเป็นลูกสำเร็จ", continued, "/ 60");
-    expect(continued).toBeGreaterThan(30);
+    // เฟส B: รักเพศเดียวกัน/หย่า/นอกใจ ทำให้บางชีวิตจบแบบไม่มีลูกจริง (รับเลี้ยงหรือเล่นต่อเป็นศิษย์ได้)
+    expect(continued).toBeGreaterThanOrEqual(26);
   });
 
   it("ได้สกิลติดตัวจากการใช้ชีวิต", () => {

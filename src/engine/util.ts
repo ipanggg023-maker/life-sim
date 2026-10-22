@@ -123,7 +123,7 @@ function murimLabel(p: Person): string | undefined {
   switch (p.relation) {
     case "father": return "ท่านพ่อ";
     case "mother": return "ท่านแม่";
-    case "spouse": return p.gender === "m" ? "ท่านพี่ (สามี)" : p.tags?.includes("secondary") ? "ฮูหยินรอง" : "ฮูหยิน";
+    case "spouse": return p.tags?.includes("secret_union") ? "คู่ชีวิต (สาบานต่อฟ้าดิน)" : p.gender === "m" ? "ท่านพี่ (สามี)" : p.tags?.includes("secondary") ? "ฮูหยินรอง" : "ฮูหยิน";
     case "partner": return "คนรัก";
     case "friend": return "สหาย";
     case "ally": return p.tags?.includes("master") ? "ท่านอาจารย์" : p.tags?.includes("disciple") ? "ศิษย์" : p.tags?.includes("sworn") ? "พี่น้องร่วมสาบาน" : "สหายร่วมทาง";
