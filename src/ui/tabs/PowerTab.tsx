@@ -296,7 +296,7 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
               return (
                 <div className="talent" key={i}>
                   <div className="t-name">{info.name}</div>
-                  <div className="t-desc">{talentFlavor(info.desc)}</div>
+                  <div className="t-desc">{info.world ? info.desc : talentFlavor(info.desc)}</div>
                 </div>
               );
             })}

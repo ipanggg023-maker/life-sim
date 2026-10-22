@@ -8,6 +8,7 @@ import { isRealistic, worldMatches, worldOf } from "../content/worlds";
 import { feel, relOf, remember } from "./npc";
 import { birthplaceOf } from "../content/murim/life/region";
 import { SAVE_VERSION, repairLife } from "./validate";
+import { gift } from "../content/murim/life/gifts";
 
 /** ระบบความรู้สึกหลายแกนของ NPC ใช้เฉพาะโลกสมจริง (โลกอื่นใช้ความสนิทแบบเดิม) */
 const npcOn = (l: Life) => isRealistic(l.worldId);
@@ -85,9 +86,14 @@ function rollRarity(life: Life, odds: Record<Rarity, number>): Rarity {
   return weightedPick(life, order, (r) => odds[r])!;
 }
 
+/** พรสวรรค์ทั่วไปที่เข้ากับยุทธภพ (ผลจริงอยู่ในระบบกลาง) */
+const MURIM_GENERIC_TALENTS = new Set(["sturdy", "memory", "cute", "optimist", "sweettalk", "diligent", "genius", "charm", "lucky", "merchant", "heaven_child", "protagonist_face", "tragic_genius", "golden_spoon"]);
+
 function rollTalent(life: Life, odds: Record<Rarity, number>, exclude: string[], allowPower: boolean): string {
   const rarity = rollRarity(life, odds);
-  const ok = (t: (typeof TALENTS)[number]) => !exclude.includes(t.id) && (allowPower || !t.power);
+  // ยุทธภพสุ่มเฉพาะพรสวรรค์ของยุทธภพ (+ชุดทั่วไปที่เข้ากับโลก) · โลกอื่นไม่ได้พรสวรรค์ยุทธภพ
+  const fits = (t: (typeof TALENTS)[number]) => (life.worldId === "murim" ? t.world === "murim" || MURIM_GENERIC_TALENTS.has(t.id) : t.world !== "murim");
+  const ok = (t: (typeof TALENTS)[number]) => fits(t) && !exclude.includes(t.id) && (allowPower || !t.power || life.worldId === "murim");
   const pool = TALENTS.filter((t) => t.rarity === rarity && ok(t));
   const fallback = TALENTS.filter(ok);
   return pick(life, pool.length ? pool : fallback).id;
@@ -306,6 +312,7 @@ export function salaryOf(life: Life, career: Career, level: number) {
   let base = career.baseSalary * (1 + 0.35 * (level - 1));
   if (career.salary) base = career.salary(life, base);
   if (hasTalent(life, "merchant")) base *= 1.25;
+  base *= 1 + gift(life, "income");
   base *= 1 + titleBonus(life, "money") + sponsorBonus(life, "money") + passiveBonus(life, "money");
   // กิจการที่ขยายด้วยงานเฉพาะอาชีพ (ที่นา เรือ สาขา ห้องพัก ลูกศิษย์) — รายได้เพิ่ม 15% ต่อขั้น
   base *= 1 + Number(life.flags[`jobUp_${career.id}`] ?? 0) * 0.15;
@@ -780,7 +787,7 @@ export function giveGift(life: Life, p: Person): Outcome {
 export function confess(life: Life, p: Person): Outcome {
   if (life.doneThisYear.includes("confess")) return { text: "ปีนี้หัวใจคุณเหนื่อยพอแล้ว" };
   life.doneThisYear.push("confess");
-  const odds = clamp((p.bond - 35) / 55 + (life.stats.looks - 50) / 200, 0.05, 0.9);
+  const odds = clamp((p.bond - 35) / 55 + (life.stats.looks - 50) / 200 + gift(life, "romance"), 0.05, 0.95);
   if (chance(life, odds)) {
     p.relation = "partner";
     p.bond = clamp(p.bond + 10, 0, 100);

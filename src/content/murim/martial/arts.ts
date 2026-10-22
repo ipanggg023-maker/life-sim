@@ -4,6 +4,7 @@ import { injure } from "../../../engine/body";
 import { chance, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { clamp, log } from "../../../engine/util";
+import { gift } from "../life/gifts";
 
 export type ArtType = "sword" | "saber" | "fist" | "palm" | "finger" | "spear" | "staff" | "qinggong" | "hidden" | "poison" | "medicine" | "internal";
 export type School = "orthodox" | "unorthodox" | "demonic" | "neutral";
@@ -98,7 +99,9 @@ export function learn(l: Life, id: string, src: string, quiet = false): string {
 
 export const qiYears = (l: Life) => Number(l.flags.mwQi ?? 0);
 export function addQi(l: Life, years: number) {
-  l.flags.mwQi = Math.round((qiYears(l) + years) * 10) / 10;
+  // พรสวรรค์: ลมปราณสะสมเร็ว/ช้าลง (ไม่กระทบตอนเสียลมปราณ)
+  const m = years > 0 ? Math.max(0.2, 1 + gift(l, "qi")) : 1;
+  l.flags.mwQi = Math.round((qiYears(l) + years * m) * 10) / 10;
 }
 
 /** ความเข้าใจ (0–100): ความเร็วในการเรียน และโอกาสคิดค้นวิชาเอง — เกิดมาไม่เท่ากัน ค่อยๆ ลึกซึ้งขึ้นตามวัยและการศึกษา */
@@ -127,7 +130,7 @@ export function martialBonus(l: Life): number {
 }
 
 /** ความเร็วในการเรียน (คูณ) */
-export const learnRate = (l: Life) => 0.6 + comprehension(l) / 100 + rootOf(l) * 0.05;
+export const learnRate = (l: Life) => (0.6 + comprehension(l) / 100 + rootOf(l) * 0.05) * (1 + gift(l, "learn"));
 
 /** ฝึกวิชาหนึ่งวิชา — เพิ่มความชำนาญตามความเข้าใจ */
 export function practise(l: Life, id: string, base: number): number {
@@ -163,7 +166,7 @@ export function tickMartial(l: Life) {
     addQi(l, (0.15 + (hasInternal ? 0.25 : 0) + (l.flags.plan === "train" ? 0.75 : 0)) * (1 + rootOf(l) * 0.14));
   }
   if (l.age % 10 === 0 && l.age >= 20 && Number(l.flags.mwComp) < 95) l.flags.mwComp = Number(l.flags.mwComp) + 1;
-  if (conflicted(l) && chance(l, 0.08)) {
+  if (conflicted(l) && chance(l, 0.08 * Math.max(0, 1 + gift(l, "deviation")))) {
     l.stats.health = clamp(l.stats.health - randInt(l, 6, 14), 0, 100);
     log(l, "🔥 ลมปราณธรรมะกับมารในตัวคุณปะทะกันกลางดึก — เลือดทะลักออกจากปาก ธาตุไฟเข้าแทรก", "bad");
     if (chance(l, 0.3)) injure(l, "meridians", "internal", 2, "ลมปราณต่างขั้วปะทะกัน");

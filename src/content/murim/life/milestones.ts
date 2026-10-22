@@ -8,6 +8,7 @@ import { addFame, addStat, clamp } from "../../../engine/util";
 import { CLASSES, awaken, classById, gainExp, guildById, guildsFor, offerClasses, rankLabel, rankUp, rollAwakening, settleNone, trackOf } from "../../hunter/power";
 import { QI_NEED, addQi, comprehension, qiYears, rootOf } from "../martial/arts";
 import { woundFrom } from "../../../engine/body";
+import { gift } from "./gifts";
 
 const rank = (l: Life) => l.power?.rank ?? -1;
 const STYLES: HunterClass[] = CLASSES.filter((c) => c.world === "murim").map((c) => c.id);
@@ -109,9 +110,9 @@ const pillIdx = (l: Life) => l.power?.items.findIndex((i) => pills.includes(i)) 
 const breakOdds = (l: Life, bonus = 0) =>
   rank(l) === 7
     ? clamp(0.05 + (l.stats.smarts - 50) / 500 + bonus * 0.5, 0.03, 0.4)
-    : clamp(0.66 - rank(l) * 0.06 + (l.stats.smarts - 50) / 200 + (qiYears(l) - QI_NEED[rank(l)]) / 200 + bonus, 0.08, 0.95);
+    : clamp(0.66 - rank(l) * 0.06 + (l.stats.smarts - 50) / 200 + (qiYears(l) - QI_NEED[rank(l)]) / 200 + bonus + gift(l, "break"), 0.08, 0.95);
 const breakSurvival = (l: Life) =>
-  rank(l) === 7 ? clamp(0.5 + (l.stats.health - 50) / 300, 0.3, 0.75) : clamp(0.92 - rank(l) * 0.04 + (l.stats.health - 50) / 200, 0.4, 0.99);
+  rank(l) === 7 ? clamp(0.5 + (l.stats.health - 50) / 300 - gift(l, "deviation") * 0.1, 0.3, 0.75) : clamp(0.92 - rank(l) * 0.04 + (l.stats.health - 50) / 200 - gift(l, "deviation") * 0.1, 0.4, 0.99);
 
 export const BREAK_EVENT: GameEvent = {
   id: "mk.breakthrough",

@@ -104,7 +104,7 @@ export function BirthScreen({
             <div className={`talent ${info.rarity} fade-in`} key={i}>
               {!real && <div className="t-rarity">{RARITY_LABEL[info.rarity]}</div>}
               <div className="t-name">{info.name}</div>
-              <div className="t-desc">{real ? talentFlavor(info.desc) : info.desc}</div>
+              <div className="t-desc">{real && !info.world ? talentFlavor(info.desc) : info.desc}</div>
             </div>
           );
         })}

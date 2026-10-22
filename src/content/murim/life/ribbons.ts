@@ -35,7 +35,7 @@ const RIBBONS: (Ribbon & { when: (l: Life) => boolean })[] = [
   { id: "loner", emoji: "🐺", name: "หมาป่าเดียวดาย", desc: "ไม่มีใครรอที่บ้าน ไม่มีใครสืบสกุล", when: (l) => l.age >= 50 && !married(l) && kids(l) === 0 },
   { id: "devoted", emoji: "🏠", name: "คนรักครอบครัว", desc: "ความสุขที่แท้อยู่ที่โต๊ะกินข้าว", when: (l) => married(l) && kids(l) >= 2 && l.stats.happiness >= 60 },
   { id: "quiet", emoji: "🌾", name: "ชีวิตเรียบง่าย", desc: "ไม่เคยจับกระบี่ ไม่เคยติดค้างใคร", when: (l) => !l.power && l.age >= 50 },
-  { id: "fighter", emoji: "🥋", name: "จอมยุทธ์", desc: "ฝีมือถึงชั้นสอง เดินทางไหนก็ไม่มีใครกล้ารังแก", when: (l) => (l.power?.rank ?? 0) >= 2 },
+  { id: "fighter", emoji: "🥋", name: "จอมยุทธ์", desc: "ฝีมือถึงชั้นหนึ่ง เดินทางไหนก็ไม่มีใครกล้ารังแก", when: (l) => (l.power?.rank ?? 0) >= 3 },
   { id: "kind", emoji: "🙏", name: "คนดีที่ไม่มีใครรู้จัก", desc: "ไม่เคยดัง แต่หลายคนรอดเพราะคุณ", when: (l) => align(l) >= 25 },
   { id: "rogue", emoji: "🃏", name: "คนเลวธรรมดา", desc: "โกงบ้าง ขโมยบ้าง ไม่ถึงกับเป็นมาร", when: (l) => align(l) <= -25 },
   { id: "worker", emoji: "⚒️", name: "คนทำงานหนัก", desc: "ทั้งชีวิตอยู่กับงานตรงหน้า", when: (l) => (l.job?.years ?? 0) >= 15 },

@@ -12,6 +12,7 @@ import { npcName, shiftAlign } from "../m17core";
 import { ARTS, knows, learn } from "../martial/arts";
 import { TAEL } from "../story/kit";
 import { REGIONS, regionOf } from "./region";
+import { gift } from "./gifts";
 
 export type Truth = "true" | "false" | "trap" | "partial";
 export interface Rumor {
@@ -71,7 +72,7 @@ const SOURCES: { src: string; base: number; motive?: string }[] = [
 
 export function hearRumor(l: Life): Rumor {
   const s = pick(l, SOURCES);
-  const kind = pick(l, ["treasure", "treasure", "villain", "court", "scandal", "sect"] as Rumor["kind"][]);
+  let kind = pick(l, ["treasure", "treasure", "villain", "court", "scandal", "sect"] as Rumor["kind"][]);
   const r = regionOf(l);
   const place = pick(l, REGIONS).name;
   let truth: Truth = chance(l, s.base) ? (chance(l, 0.25) ? "partial" : "true") : kind === "treasure" && chance(l, 0.45) ? "trap" : "false";
@@ -89,7 +90,7 @@ export function hearRumor(l: Life): Rumor {
       const sec = profileOf(p).secret;
       truth = sec && chance(l, 0.7) ? "true" : "false";
       text = `${shortName(p)}${truth === "true" && sec ? sec.text : pick(l, ["แอบติดหนี้บ่อนก้อนใหญ่", "เคยเป็นสาวกลัทธิมาร", "มีลูกนอกสมรส"])}`;
-    } else text = `ขุนนางคลังประจำ${place}ยักยอกเงินภาษีมาสามปี`;
+    } else { kind = "court"; text = `ขุนนางคลังประจำ${place}ยักยอกเงินภาษีมาสามปี`; }
   }
   // ความน่าเชื่อถือที่ "รับรู้" — สัมพันธ์กับความจริงแต่ไม่ตรงเสมอ (ข่าวปลอมบางข่าวดูน่าเชื่อ)
   const rel = clamp(Math.round(s.base * 4 + (truth === "true" ? 0.6 : truth === "partial" ? 0.2 : -0.4) + (chance(l, 0.3) ? randInt(l, -1, 1) : 0)), 1, 4);
@@ -157,9 +158,9 @@ export const RUMOR_EVENTS: GameEvent[] = [
     title: "ตรวจสอบข่าว",
     text: (l, c) => { const r = rumorBy(l, c); return r ? `ข่าว: "${r.text}" — มาจาก${r.src} (${REL_LABEL[r.rel]})${r.motive ? ` · คนปล่อยข่าวอาจ${r.motive}` : ""}` : "ข่าวนี้เลือนหายไปแล้ว"; },
     choices: [
-      { label: "ถามพยานหลายคนแล้วเทียบคำให้การ", skill: ["social"], show: (l, c) => !!rumorBy(l, c), check: { stat: "smarts", dc: 50 }, run: (l, c, s) => { const r = rumorBy(l, c)!; if (s) { mark(l, c.rid, { verified: true }); return ok(`คำให้การสามคนตรงกัน — ข่าวนี้${TRUTH_LABEL[r.truth]}`); } return meh("พยานแต่ละคนเล่าไม่ตรงกัน — ยังสรุปอะไรไม่ได้"); } },
-      { label: "จ้างสายข่าว (5 ตำลึง)", show: (l, c) => !!rumorBy(l, c), req: (l) => (l.money < 5 * TAEL ? "ต้องมีเงิน 5 ตำลึง" : undefined), odds: (l) => clamp(0.6 + (l.stats.luck - 50) / 200, 0.3, 0.9), run: (l, c, s) => { addMoney(l, -5 * TAEL); const r = rumorBy(l, c)!; if (s) { mark(l, c.rid, { verified: true }); return ok(`สายข่าวกลับมาพร้อมคำตอบ — ข่าวนี้${TRUTH_LABEL[r.truth]}`); } return no("สายข่าวรับเงินแล้วหายไป"); } },
-      { label: "ไปดูด้วยตาตัวเอง", skill: ["stealth"], show: (l, c) => !!rumorBy(l, c), odds: (l) => clamp(0.5 + (l.stats.health - 50) / 200 + pow(l) * 0.04, 0.2, 0.92), run: (l, c, s) => { const r = rumorBy(l, c)!; if (s) { mark(l, c.rid, { verified: true }); return ok(`คุณเดินทางไปดูเอง — ข่าวนี้${TRUTH_LABEL[r.truth]}`); } addStat(l, "health", -5); return no("หลงทางกลางป่า — กลับมาเหนื่อยเปล่า"); } },
+      { label: "ถามพยานหลายคนแล้วเทียบคำให้การ", skill: ["social"], show: (l, c) => !!rumorBy(l, c), check: { stat: "smarts", dc: 50, bonus: (l) => gift(l, "info") }, run: (l, c, s) => { const r = rumorBy(l, c)!; if (s) { mark(l, c.rid, { verified: true }); return ok(`คำให้การสามคนตรงกัน — ข่าวนี้${TRUTH_LABEL[r.truth]}`); } return meh("พยานแต่ละคนเล่าไม่ตรงกัน — ยังสรุปอะไรไม่ได้"); } },
+      { label: "จ้างสายข่าว (5 ตำลึง)", show: (l, c) => !!rumorBy(l, c), req: (l) => (l.money < 5 * TAEL ? "ต้องมีเงิน 5 ตำลึง" : undefined), odds: (l) => clamp(0.6 + (l.stats.luck - 50) / 200 + gift(l, "info"), 0.3, 0.95), run: (l, c, s) => { addMoney(l, -5 * TAEL); const r = rumorBy(l, c)!; if (s) { mark(l, c.rid, { verified: true }); return ok(`สายข่าวกลับมาพร้อมคำตอบ — ข่าวนี้${TRUTH_LABEL[r.truth]}`); } return no("สายข่าวรับเงินแล้วหายไป"); } },
+      { label: "ไปดูด้วยตาตัวเอง", skill: ["stealth"], show: (l, c) => !!rumorBy(l, c), odds: (l) => clamp(0.5 + (l.stats.health - 50) / 200 + pow(l) * 0.04 + gift(l, "info"), 0.2, 0.95), run: (l, c, s) => { const r = rumorBy(l, c)!; if (s) { mark(l, c.rid, { verified: true }); return ok(`คุณเดินทางไปดูเอง — ข่าวนี้${TRUTH_LABEL[r.truth]}`); } addStat(l, "health", -5); return no("หลงทางกลางป่า — กลับมาเหนื่อยเปล่า"); } },
       { label: "ปล่อยไว้ก่อน", run: () => meh("ข่าวลือมีอยู่ทุกวัน — บางเรื่องก็ปล่อยให้มันลอยไป") },
     ],
   },
@@ -207,6 +208,48 @@ export const RUMOR_EVENTS: GameEvent[] = [
         const pool = ARTS.filter((a) => a.grade === 3 && !knows(l, a.id));
         if (r.truth !== "false" && pool.length) { const a = pick(l, pool); return big(`ข่าวจริง — คัมภีร์ลับเปลี่ยนมือในห้องลับหลังโรงเตี๊ยม${learn(l, a.id, "ซื้อจากสำนักที่ขาดเงิน")}`); }
         return no("คนขายหายไปพร้อมเงิน — คัมภีร์ที่ได้มาเป็นของปลอมทั้งเล่ม");
+      } },
+      // ───── ทางเลือกที่มีความหมายไม่ว่าข่าวจะจริงหรือไม่ (ข่าวเท็จ/กับดักก็มีทางได้ประโยชน์) ─────
+      { label: "ซุ่มดักคนที่วางกับดัก", skill: ["combat"], tone: "danger", show: (l, c) => { const r = rumorBy(l, c); return r?.kind === "treasure" && (!r.verified || r.truth === "trap"); }, odds: (l) => fightOdds(l, Math.max(1, pow(l))), survival: (l) => survivalOdds(l, Math.max(1, pow(l))), run: (l, c, s) => {
+        const r = rumorBy(l, c)!; mark(l, c.rid, { done: true });
+        if (r.truth !== "trap") return meh(r.truth === "false" ? "คุณซุ่มอยู่สามคืน — ไม่มีใครมา ถ้ำนั้นแค่ว่างเปล่า" : "ไม่มีโจรซุ่มอยู่ — แต่คุณมัวซุ่มจนคนอื่นเข้าไปเอาของในถ้ำไปก่อน");
+        if (s) { addMoney(l, 30 * TAEL); addFame(l, 4); gainExp(l, 500); shiftAlign(l, 2); return ok("โจรที่ปล่อยข่าวลวงคนมาปล้นถูกคุณจับมัดส่งทางการ — ค่าหัวทั้งแก๊ง และคนเดินทางปลอดภัยขึ้น"); }
+        addStat(l, "health", -15); return no("พวกมันมากกว่าที่คิด — คุณหนีออกมาได้พร้อมแผลยาว");
+      } },
+      { label: "บอกชาวบ้านว่าไม่มีโจรคนนี้ ไม่ต้องตื่นตูม", skill: ["social"], show: (l, c) => { const r = rumorBy(l, c); return r?.kind === "villain" && !!r.verified && r.truth === "false"; }, run: (l, c) => {
+        mark(l, c.rid, { done: true }); shiftAlign(l, 2); addFame(l, 2);
+        return ok("ชาวบ้านเลิกปิดประตูตั้งแต่หัวค่ำ ตลาดกลับมาคึกคัก — ผู้ใหญ่บ้านส่งไก่มาให้สองตัว");
+      } },
+      { label: "ไปเตือนขุนนางว่ามีคนจะใส่ร้าย", skill: ["social"], show: (l, c) => rumorBy(l, c)?.kind === "court", check: { stat: "looks", dc: 50 }, run: (l, c, s) => {
+        const r = rumorBy(l, c)!; mark(l, c.rid, { done: true });
+        if (r.truth === "false") { if (s) { addFame(l, 3); shiftAlign(l, 2); l.flags.officialFavor = true; return ok("ขุนนางคนนั้นจับมือคุณแน่น — เขาเตรียมบัญชีไว้ทันก่อนผู้ตรวจการมา และติดหนี้คุณหนึ่งครั้ง"); } return meh("เขาไม่เชื่อว่าคุณหวังดี — แต่ก็เตรียมตัวรับการตรวจไว้"); }
+        shiftAlign(l, -4); return no("ขุนนางคนนั้นยิ้ม แล้วสั่งเผาบัญชีทั้งคืน — คุณเพิ่งช่วยคนโกงลบหลักฐาน");
+      } },
+      { label: "ออกหน้าปกป้องชื่อเสียงเขา", skill: ["social"], show: (l, c) => rumorBy(l, c)?.kind === "scandal", run: (l, c) => {
+        const r = rumorBy(l, c)!; mark(l, c.rid, { done: true }); const p = l.people.find((x) => x.id === r.pid);
+        if (r.truth === "false") { if (p) remember(l, p, "defended", "คุณปกป้องชื่อเสียงเขาจากข่าวลือเท็จ", 3, { trust: 20, love: 10, debt: 15 }); addFame(l, 2); return ok(`คุณยืนยันต่อหน้าทุกคนว่าข่าวนี้ไม่จริง — ${p ? shortName(p) : "เขา"}รู้ว่าใครอยู่ข้างเขาในวันที่แย่ที่สุด`); }
+        if (p) remember(l, p, "defended", "คุณปกป้องเขาแม้รู้ว่าเรื่องจริง", 2, { trust: 10, debt: 10 }); addFame(l, -3);
+        return meh("ข่าวนั้นเป็นเรื่องจริง — คนทั้งเมืองมองว่าคุณโกหกแทนเพื่อน แต่เพื่อนคนนั้นจะไม่ลืม");
+      } },
+      { label: "แจ้งทางการจับแก๊งต้มตุ๋นขายคัมภีร์ปลอม", show: (l, c) => rumorBy(l, c)?.kind === "sect", check: { stat: "smarts", dc: 55 }, run: (l, c, s) => {
+        const r = rumorBy(l, c)!; mark(l, c.rid, { done: true });
+        if (r.truth === "false") { if (s) { addMoney(l, 20 * TAEL); addFame(l, 3); return ok("มือปราบตามรอยจนเจอโรงพิมพ์คัมภีร์ปลอม — คุณได้ส่วนแบ่งค่าปรับ และหลายคนไม่ต้องเสียเงินฟรี"); } return meh("แก๊งรู้ตัวและย้ายไปเมืองอื่นก่อน"); }
+        shiftAlign(l, -1); addFame(l, -2); return no("การขายนั้นเป็นเรื่องจริง — คุณทำให้สำนักที่ลำบากอยู่แล้วต้องอับอายต่อหน้าทางการ");
+      } },
+      { label: "สืบหาว่าใครปล่อยข่าวนี้และทำไม", skill: ["social"], check: { stat: "smarts", dc: 55 }, run: (l, c, s) => {
+        const r = rumorBy(l, c)!;
+        if (!s) return meh("ข่าวผ่านปากคนมาหลายทอดเกินกว่าจะตามถึงต้นตอ");
+        if (r.truth === "false" || r.truth === "trap") {
+          mark(l, c.rid, { done: true, verified: true }); addFame(l, 2); addStat(l, "smarts", 1);
+          return ok(`ต้นตอคือ${r.src}${r.motive ? ` — เพราะ${r.motive}` : " ที่แค่อยากเป็นคนสำคัญในวงเหล้า"} คุณแฉเรื่องนี้ในตลาด คนเริ่มฟังข่าวจากคุณมากกว่าจากเขา`);
+        }
+        mark(l, c.rid, { verified: true, rel: 4 });
+        return ok("ต้นตอเป็นคนที่เห็นกับตาจริง — เขาเล่ารายละเอียดเพิ่มที่ไม่มีใครรู้ ข่าวนี้น่าเชื่อถือแล้ว");
+      } },
+      { label: "ขายข่าวนี้ต่อให้คนอื่น", run: (l, c) => {
+        const r = rumorBy(l, c)!; mark(l, c.rid, { done: true }); addMoney(l, (r.rel >= 3 ? 12 : 6) * TAEL);
+        if (r.truth === "false" || r.truth === "trap") { shiftAlign(l, -3); l.flags.soldBadRumor = Number(l.flags.soldBadRumor ?? 0) + 1; return no(r.truth === "trap" ? "คนที่ซื้อข่าวไปไม่กลับมาอีกเลย — คุณได้เงิน และได้เรื่องหนึ่งที่ต้องแบกไปตลอด" : "คนซื้อเสียเวลาเปล่าแล้วกลับมาด่าคุณถึงหน้าบ้าน — ชื่อเสียงเรื่องข่าวของคุณพังลงหนึ่งขั้น"); }
+        return meh("เงินมาง่าย — แต่โอกาสที่ข่าวนี้ให้ ตกเป็นของคนอื่นไปแล้ว");
       } },
       { label: "เปลี่ยนใจ", run: () => meh("คุณเก็บข่าวนี้ไว้ในใจก่อน") },
     ],

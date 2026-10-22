@@ -3,6 +3,7 @@
 import { chance, pick, randInt } from "./rng";
 import type { Life } from "./types";
 import { clamp, log } from "./util";
+import { gift } from "../content/murim/life/gifts";
 
 export type Part =
   | "eyeL" | "eyeR" | "ears" | "tongue" | "face"
@@ -115,6 +116,8 @@ export function injure(l: Life, part: Part, kind: InjuryKind, sev: 1 | 2 | 3, ca
   const b = bodyOf(l);
   // ส่วนที่เสียไปแล้วเสียซ้ำไม่ได้
   if (sev === 3 && b.injuries.some((i) => i.part === part && i.sev === 3 && i.kind === kind)) return "";
+  // พรสวรรค์ต้านพิษ
+  if (kind === "poison" && chance(l, Math.min(1, gift(l, "poison")))) { log(l, "🛡️ พิษเข้าร่างแล้วถูกขับออกเอง — ร่างกายคุณไม่รับพิษ", "good"); return " [ต้านพิษได้]"; }
   const heal = sev === 3 ? 0 : sev === 2 ? randInt(l, 2, 4) : 1;
   const inj: Injury = { id: `i${l.age}_${seq++}_${part}`, part, kind, sev, heal, since: l.age, cause };
   b.injuries.push(inj);
@@ -160,6 +163,7 @@ export function tickBody(l: Life) {
     }
     if (l.age > 50 && chance(l, 0.4)) continue; // คนแก่แผลหายช้า
     i.heal--;
+    if (i.heal > 0 && chance(l, Math.min(0.9, gift(l, "heal")))) i.heal--; // พรสวรรค์: แผลหายไว
     if (i.heal <= 0) {
       b.injuries = b.injuries.filter((x) => x !== i);
       log(l, `🩹 ${injuryLabel({ ...i, heal: 0, sev: i.sev }).replace(/ \(.*\)$/, "")}หายดีแล้ว`, "good");

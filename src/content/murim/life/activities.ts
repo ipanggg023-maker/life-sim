@@ -13,6 +13,7 @@ import { REL_LABEL, coverTracks, hearRumor } from "./rumors";
 import { palaceAccess } from "../world/court";
 import { patronOf, spyPalace } from "../world/palace";
 import { TAEL } from "../story/kit";
+import { gift } from "./gifts";
 
 const pow = (l: Life) => l.power?.rank ?? 0;
 const adult = 16;
@@ -85,9 +86,9 @@ const MURIM_ACTS: Activity[] = [
   M({ group: "ชีวิต", id: "mw_rest", emoji: "😌", name: "พักผ่อนอยู่บ้าน", desc: "ความสุข + สุขภาพเล็กน้อย", minAge: 3, run: (l) => { addStat(l, "happiness", randInt(l, 2, 4)); addStat(l, "health", 1); return ok("ปีนี้คุณนอนกลางวันใต้ต้นท้อบ่อยกว่าปกติ — และไม่เสียใจเลย"); } }),
 
   // ───── ครอบครัว ─────
-  M({ group: "ครอบครัว", id: "mw_matchmaker", emoji: "💮", name: "ไปหาแม่สื่อ", desc: "หาคู่ครอง", minAge: adult, cost: 3000, available: (l) => !people(l, "partner").length && !people(l, "spouse").length && !mourning(l) && l.job?.careerId !== "monk", odds: (l) => checkChance(l, "looks", 45, l.wealth === "rich" || l.wealth === "elite" ? 0.2 : 0), run: (l) => {
+  M({ group: "ครอบครัว", id: "mw_matchmaker", emoji: "💮", name: "ไปหาแม่สื่อ", desc: "หาคู่ครอง", minAge: adult, cost: 3000, available: (l) => !people(l, "partner").length && !people(l, "spouse").length && !mourning(l) && l.job?.careerId !== "monk", odds: (l) => checkChance(l, "looks", 45, (l.wealth === "rich" || l.wealth === "elite" ? 0.2 : 0) + gift(l, "romance")), run: (l) => {
     addMoney(l, -3000);
-    if (chance(l, checkChance(l, "looks", 45, l.wealth === "rich" || l.wealth === "elite" ? 0.2 : 0))) { const p = createPerson(l, "partner", { gender: l.gender === "m" ? "f" : "m", age: l.age + randInt(l, -3, 3), bond: 55 }); return ok(`แม่สื่อพาไปดูตัว${shortName(p)} — สองบ้านพอใจกันมาก`); }
+    if (chance(l, checkChance(l, "looks", 45, (l.wealth === "rich" || l.wealth === "elite" ? 0.2 : 0) + gift(l, "romance")))) { const p = createPerson(l, "partner", { gender: l.gender === "m" ? "f" : "m", age: l.age + randInt(l, -3, 3), bond: 55 }); return ok(`แม่สื่อพาไปดูตัว${shortName(p)} — สองบ้านพอใจกันมาก`); }
     return bad("ฝ่ายนั้นดูดวงแล้วบอกว่าธาตุไม่ถูกกัน");
   } }),
   M({ group: "ครอบครัว", id: "mw_filial", emoji: "🍲", name: "ดูแลพ่อแม่", desc: "ความกตัญญู + ชื่อเสียง", minAge: 12, available: (l) => people(l, "father").length + people(l, "mother").length > 0, run: (l) => { for (const p of [...people(l, "father"), ...people(l, "mother")]) p.bond = Math.min(100, p.bond + 6); addFame(l, 1); addStat(l, "happiness", 2); return ok("คุณต้มโจ๊กไก่ป้อนพ่อแม่ทุกเช้า — เพื่อนบ้านพูดถึงลูกกตัญญูบ้านนี้"); } }),

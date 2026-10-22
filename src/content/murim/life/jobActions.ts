@@ -12,6 +12,7 @@ import { startDuel } from "./duel";
 import { addHeat } from "./law";
 import { TAEL } from "../story/kit";
 import { timeLeft } from "../../../engine/activities";
+import { gift } from "./gifts";
 
 export interface JobAction {
   id: string;
@@ -32,7 +33,9 @@ export interface JobAction {
 
 const lv = (l: Life) => l.job?.level ?? 1;
 /** โอกาสตามค่าสถานะ + ตำแหน่ง */
-const by = (stat: StatKey, base = 0.4, perLv = 0.06) => (l: Life) => clamp(base + (l.stats[stat] - 50) / 150 + (lv(l) - 1) * perLv, 0.05, 0.95);
+const MED = ["herbalist", "palace_physician", "taoist", "monk"];
+const by = (stat: StatKey, base = 0.4, perLv = 0.06) => (l: Life) =>
+  clamp(base + (l.stats[stat] - 50) / 150 + (lv(l) - 1) * perLv + gift(l, "work") + (MED.includes(l.job?.careerId ?? "") ? gift(l, "medicine") : 0), 0.05, 0.95);
 const ok = (text: string): Outcome => ({ text, kind: "good" });
 const no = (text: string): Outcome => ({ text, kind: "bad" });
 const meh = (text: string): Outcome => ({ text });

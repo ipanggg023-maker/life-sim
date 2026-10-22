@@ -10,6 +10,7 @@ import { sponsorBonus } from "../sponsors";
 import { passiveBonus } from "../passives";
 import { TALENTS } from "../talents";
 import { effSys, sysSkillTier, sysSkillsOf } from "../gameStats";
+import { gift } from "../murim/life/gifts";
 
 /** เพื่อนร่วมทีมที่ยังมีชีวิต (นับสูงสุด 3 คน) */
 export const partySize = (life: Life) => Math.min(3, life.people.filter((p) => p.relation === "ally" && p.alive).length);
@@ -382,14 +383,14 @@ export function combatPower(life: Life): number {
 export const gatePower = (gateRank: number) => gateRank * RANK_STEP + 10;
 
 export function fightOdds(life: Life, gateRank: number, mod = 0) {
-  return clamp(0.5 + (combatPower(life) - gatePower(gateRank)) / 40 + mod + skillBoost(life), 0.03, 0.97);
+  return clamp(0.5 + (combatPower(life) - gatePower(gateRank)) / 40 + mod + skillBoost(life) + gift(life, "fight"), 0.03, 0.97);
 }
 
 export function survivalOdds(life: Life, gateRank: number, mod = 0) {
   const p = life.power;
   const cls = p ? classById(p.hunterClass) : undefined;
   const g = guildOf(life);
-  return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300 + partySize(life) * 0.03 + titleBonus(life, "survival") + sponsorBonus(life, "survival") + passiveBonus(life, "survival") + sumSkills(life, "survival"), 0.05, 0.99);
+  return clamp(fightOdds(life, gateRank, mod) + 0.3 + (cls?.survival ?? 0) + (g?.safety ?? 0) + (life.stats.health - 50) / 300 + partySize(life) * 0.03 + gift(life, "survival") + titleBonus(life, "survival") + sponsorBonus(life, "survival") + passiveBonus(life, "survival") + sumSkills(life, "survival"), 0.05, 0.99);
 }
 
 export const expToNext = (level: number) => 60 + level * 40;

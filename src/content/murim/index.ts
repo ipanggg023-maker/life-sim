@@ -14,6 +14,8 @@ import { GENERATION_EVENTS } from "./life/generations";
 import { STORY_EVENTS } from "./story";
 import { MARTIAL_EVENTS } from "./martial/training";
 import { WORLD_EVENTS } from "./world";
+import "./life/gifts";
+import "./life/giftHooks";
 
 let loaded = false;
 
