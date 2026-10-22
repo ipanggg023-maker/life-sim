@@ -9,6 +9,7 @@ import type { Legacy, Life, Memory, Soul, Wealth } from "./types";
 import { clamp, displayName, log, money, people, shortName } from "./util";
 import { seriesOf } from "../content/manhwa";
 import { awaken, offerClasses, rankLabel, rollAwakening } from "../content/hunter/power";
+import { ribbonOf } from "../content/murim/life/ribbons";
 
 export function newSoul(): Soul {
   return {
@@ -51,6 +52,7 @@ export function claimAward(soul: Soul, life: Life, regress: boolean): number {
   rememberSeen(soul, life);
   soul.collection = [...new Set([...(soul.collection ?? []), ...foundThisLife(life)])];
   soul.talentBook = [...new Set([...(soul.talentBook ?? []), ...life.talents.map((t) => t.id)])];
+  if (life.worldId === "murim") soul.ribbons = [...new Set([...(soul.ribbons ?? []), ribbonOf(life).id])];
   return gained;
 }
 

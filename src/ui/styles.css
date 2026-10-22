@@ -915,3 +915,51 @@ body.no-comments .comments-head { margin-bottom: 0; }
 .cont-title { font-size: 16px; font-weight: 800; color: var(--text); }
 .cont-desc { font-size: 13px; color: var(--muted); line-height: 1.4; }
 .continue-hint { text-align: center; font-size: 12px; color: var(--muted); }
+
+/* งบเวลากิจกรรมต่อปี */
+.time-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; font-size: 14px; }
+.time-dots span { opacity: 0.25; filter: grayscale(1); }
+.time-dots span.on { opacity: 1; filter: none; }
+
+/* ตัวกรองบันทึก + ชื่อที่แตะได้ */
+.log-filters { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 6px; scrollbar-width: none; }
+.log-filters::-webkit-scrollbar { display: none; }
+.log-filters .chip { flex: none; border: 1px solid var(--line, #d8c9a8); background: transparent; color: inherit; border-radius: 999px; padding: 4px 10px; font-size: 13px; min-height: 30px; }
+.log-filters .chip.on { background: var(--accent, #8b2e1f); border-color: var(--accent, #8b2e1f); color: #fff; }
+.name-link { all: unset; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; font-weight: 600; }
+.name-link:focus-visible { outline: 2px solid var(--accent, #8b2e1f); }
+
+/* ผังตระกูล */
+.lineage summary { cursor: pointer; list-style: none; }
+.lineage summary::-webkit-details-marker { display: none; }
+.lineage summary::after { content: " ▾"; opacity: 0.6; }
+.lineage[open] summary::after { content: " ▴"; }
+.kin-row { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-top: 1px dashed var(--line, #d8c9a8); }
+.kin-label { flex: none; width: 56px; font-size: 13px; opacity: 0.7; padding-top: 6px; }
+.kin-list { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.kin-anc { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.kin-chip { border: 1px solid var(--line, #d8c9a8); background: transparent; color: inherit; border-radius: 10px; padding: 5px 9px; font-size: 14px; min-height: 34px; }
+.kin-chip small { opacity: 0.65; }
+.kin-chip.dead { opacity: 0.55; }
+.kin-chip.me { font-weight: 700; border-color: var(--accent, #8b2e1f); }
+.person.focused { outline: 2px solid var(--accent, #8b2e1f); border-radius: 12px; }
+
+/* ยืนยันตัวเลือกเสี่ยงตาย */
+.choice.armed { outline: 2px solid #b3261e; background: rgba(179, 38, 30, 0.08); }
+.choice .confirm { display: block; color: #b3261e; font-weight: 700; font-size: 13px; margin-top: 4px; }
+
+/* ริบบิ้นตอนตาย */
+.ribbon-card { display: flex; gap: 14px; align-items: center; margin: 12px 0; padding: 14px 16px; border-radius: 14px; border: 2px solid #c9a227; background: linear-gradient(135deg, rgba(201, 162, 39, 0.16), rgba(201, 162, 39, 0.04)); }
+.ribbon-emoji { font-size: 44px; line-height: 1; flex: none; }
+.ribbon-name { font-weight: 800; font-size: 18px; margin-bottom: 2px; }
+
+/* คำแนะนำผู้เล่นใหม่ */
+.onboard { text-align: center; }
+.onboard-emoji { font-size: 48px; margin: 4px 0 6px; }
+.onboard-dots { display: flex; justify-content: center; gap: 6px; margin: 10px 0 14px; }
+.onboard-dots span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.2; }
+.onboard-dots span.on { opacity: 0.8; }
+.onboard-row { justify-content: space-between; gap: 10px; }
+.onboard-row .btn { flex: 1; min-height: 44px; }
+
+.legacy-strip { font-size: 12.5px; padding: 6px 10px; margin: 4px 0; border-radius: 8px; background: rgba(120, 120, 120, 0.12); }

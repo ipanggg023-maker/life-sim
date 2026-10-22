@@ -13,6 +13,8 @@ export interface Activity {
   /** ไม่ใส่ = ทุกโลกยุคปัจจุบัน · "all" = ทุกโลก */
   world?: WorldId | "all";
   cost?: number;
+  /** เวลาที่ใช้ในงบเวลาของปี (ไม่ใส่ = 1 · 0 = ไม่กินเวลา) */
+  time?: number;
   /** หมวดในแท็บ "ทำ" (ไม่ใส่ = ไม่แบ่งหมวด) */
   group?: string;
   /** % สำเร็จที่แสดงให้ผู้เล่นเห็น */
@@ -163,6 +165,16 @@ export const BABY_AGE = 3;
 export const activityFilters: Array<(life: Life, a: Activity) => boolean> = [];
 export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => inWorld(a, life.worldId) && activityFilters.every((f) => f(life, a)));
 
+/** งบเวลากิจกรรมรองต่อปี (EXPANSION §3.1) — โลกที่ไม่ตั้ง = ไม่จำกัด */
+export const timeBudget: { fn?: (life: Life) => number | undefined } = {};
+const costOf = (x: string) => (x.startsWith("act:") ? ACTIVITIES.find((a) => a.id === x.slice(4))?.time ?? 1 : x.startsWith("job:") ? 1 : 0);
+export const timeUsed = (life: Life) => life.doneThisYear.reduce((s, x) => s + costOf(x), 0);
+/** เวลาที่เหลือปีนี้ · undefined = โลกนี้ไม่จำกัด */
+export function timeLeft(life: Life): number | undefined {
+  const max = timeBudget.fn?.(life);
+  return max === undefined ? undefined : Math.max(0, max - timeUsed(life));
+}
+
 export function activityLocked(life: Life, a: Activity): string | undefined {
   if (!inWorld(a, life.worldId) || !activityFilters.every((f) => f(life, a))) return "ไม่มีในโลกนี้";
   // ทารกยังทำอะไรเองไม่ได้ — พ่อแม่ดูแลทุกอย่าง
@@ -171,6 +183,8 @@ export function activityLocked(life: Life, a: Activity): string | undefined {
   if (life.age < a.minAge) return `อายุ ${a.minAge}+`;
   if (a.available && !a.available(life)) return "ตอนนี้ทำไม่ได้";
   if (life.doneThisYear.includes(`act:${a.id}`)) return "ปีนี้ทำแล้ว";
+  const left = timeLeft(life);
+  if (left !== undefined && left < (a.time ?? 1)) return "ปีนี้ไม่มีเวลาเหลือ";
   if (a.cost && life.age >= 18 && life.money < a.cost) return `ต้องมี ${money(life, a.cost)}`;
   return;
 }

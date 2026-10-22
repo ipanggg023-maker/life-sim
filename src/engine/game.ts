@@ -7,6 +7,7 @@ import type { Country, Faculty, Gender, SysStat, Legacy, Life, PastLife, Person,
 import { isRealistic, worldMatches, worldOf } from "../content/worlds";
 import { feel, relOf, remember } from "./npc";
 import { birthplaceOf } from "../content/murim/life/region";
+import { SAVE_VERSION, repairLife } from "./validate";
 
 /** ระบบความรู้สึกหลายแกนของ NPC ใช้เฉพาะโลกสมจริง (โลกอื่นใช้ความสนิทแบบเดิม) */
 const npcOn = (l: Life) => isRealistic(l.worldId);
@@ -108,6 +109,7 @@ export function createLife(opts: BirthOptions = {}): Life {
   const seed = opts.seed ?? newSeed();
   const life: Life = {
     version: 1,
+    sv: SAVE_VERSION,
     id: "",
     worldId: opts.worldId ?? "hunter",
     seed,
@@ -528,6 +530,12 @@ export function migrateLife(life: Life): Life {
     const e = getEvent(q.eventId);
     return !!e && (!q.scene || q.scene === "start" || !!e.scenes?.[q.scene]);
   });
+  repairLife(life);
+  // เซฟรุ่นเก่า: เล่นต่อได้จนจบชีวิตนี้ (ระบบใหม่เริ่มนับจากตอนโหลด) — รุ่นถัดไปเกิดเป็นเซฟรุ่นใหม่เต็มตัว
+  if ((life.sv ?? 1) < SAVE_VERSION) {
+    if (life.worldId === "murim" && life.alive) life.flags.legacySave = life.sv ?? 1;
+    life.sv = SAVE_VERSION;
+  }
   return life;
 }
 

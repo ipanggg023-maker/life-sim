@@ -14,6 +14,7 @@ import type { Life, Soul, WorldId } from "../engine/types";
 import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds";
 import { displayName, loc, money, people } from "../engine/util";
 import { disciplesOf, lifeSummary } from "../content/murim/life/generations";
+import { RIBBON_COUNT, ribbonOf } from "../content/murim/life/ribbons";
 
 export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}` | `heir:${string}` | `disciple:${string}`;
 
@@ -76,6 +77,8 @@ export function DeathScreen({
         </p>
         <p className="cause">{loc(life, life.causeOfDeath ?? "")}</p>
       </div>
+
+      {life.worldId === "murim" && <RibbonCard life={life} soul={soul} />}
 
       {real && <ContinuePanel life={life} open={open} busy={busy} go={go} />}
 
@@ -337,6 +340,22 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
       ))}
       {heirs.length === 0 && pupils.length === 0 && <p className="muted small">ไม่มีลูกหรือศิษย์ที่โตพอจะสืบต่อ — ครั้งหน้ามีครอบครัวหรือรับศิษย์ไว้ จะเล่นต่อเป็นพวกเขาได้</p>}
       <div className="continue-hint">↓ เลื่อนลงเพื่อดูสรุปชีวิต</div>
+    </div>
+  );
+}
+
+/** ริบบิ้นของชีวิตนี้ + จำนวนที่สะสมได้ทั้งหมด */
+function RibbonCard({ life, soul }: { life: Life; soul: Soul }) {
+  const r = ribbonOf(life);
+  const got = new Set([...(soul.ribbons ?? []), r.id]).size;
+  return (
+    <div className="ribbon-card">
+      <div className="ribbon-emoji" aria-hidden>{r.emoji}</div>
+      <div>
+        <div className="ribbon-name">ริบบิ้น: {r.name}</div>
+        <div className="small">{r.desc}</div>
+        <div className="small muted">สะสมแล้ว {got}/{RIBBON_COUNT} แบบ</div>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { createContext, memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { careerById } from "../content/hunter/careers";
 import { rankLabel } from "../content/hunter/power";
 import { isRealistic, worldOf } from "../content/worlds";
@@ -14,7 +14,7 @@ import { regionOf } from "../content/murim/life/region";
 import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
 import { goalLine } from "../content/murim/life/goals";
 import { disabilities, openInjuries } from "../engine/body";
-import { displayName, loc, money } from "../engine/util";
+import { displayName, loc, money, shortName } from "../engine/util";
 
 export type TabId = "career" | "people" | "power" | "jianghu" | "activities" | "phone" | "soul";
 
@@ -47,6 +47,59 @@ export function StatBar({ k, value }: { k: StatKey; value: number }) {
 }
 
 const LOG_PAGE = 20;
+
+/** ชื่อคนในบันทึกแตะได้ — เปิดดูคนนั้นในแท็บคน */
+type Names = { re?: RegExp; ids: Map<string, string>; open?: (id: string) => void };
+const NameCtx = createContext<Names>({ ids: new Map() });
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function namesOf(life: Life, open?: (id: string) => void): Names {
+  const ids = new Map<string, string>();
+  // คนที่ยังมีชีวิตก่อน · ชื่อสั้นต้องยาวพอไม่ให้ไปชนคำธรรมดา
+  for (const p of [...life.people].sort((a, b) => Number(b.alive) - Number(a.alive)))
+    for (const n of [p.name, shortName(p)]) if (n && n.length >= 3 && !ids.has(n)) ids.set(n, p.id);
+  if (!ids.size || !open) return { ids };
+  return { ids, open, re: new RegExp(`(${[...ids.keys()].sort((a, b) => b.length - a.length).map(esc).join("|")})`) };
+}
+function Linked({ text }: { text: string }) {
+  const n = useContext(NameCtx);
+  if (!n.re || !n.open) return <>{text}</>;
+  const parts = text.split(n.re);
+  if (parts.length === 1) return <>{text}</>;
+  return (
+    <>
+      {parts.map((s, i) =>
+        i % 2 ? (
+          <button key={i} className="name-link" onClick={() => n.open!(n.ids.get(s)!)}>
+            {s}
+          </button>
+        ) : (
+          s
+        ),
+      )}
+    </>
+  );
+}
+
+/** ตัวกรองบันทึก (EXPANSION §15): ตามประเภท หรือเฉพาะเรื่องของคนหนึ่ง */
+type LogFilter = "all" | "key" | "fight" | "people" | "news";
+const FILTERS: { id: LogFilter; label: string }[] = [
+  { id: "all", label: "ทั้งหมด" },
+  { id: "key", label: "⭐ สำคัญ" },
+  { id: "fight", label: "⚔️ ต่อสู้" },
+  { id: "people", label: "❤️ ผู้คน" },
+  { id: "news", label: "🗞️ ข่าว" },
+];
+const FIGHT = /ดวล|ต่อสู้|ปะทะ|บาดเจ็บ|ฆ่า|สังหาร|กระบี่|ดาบ|ฝ่ามือ|โจร|ศัตรู|ลอบ/;
+const NEWS = /ข่าว|ลือ|ประกาศ|ทำเนียบ|ยุค|ราชสำนัก|สงคราม/;
+function keep(e: LogEntry, f: LogFilter, n: Names, whoNames: string[]): boolean {
+  if (whoNames.length) return whoNames.some((x) => e.text.includes(x));
+  if (f === "all") return true;
+  if (f === "key") return e.kind === "milestone" || e.kind === "chapter" || e.kind === "arc";
+  if (e.kind === "chapter" || e.kind === "arc" || e.kind === "comments") return false;
+  if (f === "fight") return FIGHT.test(e.text);
+  if (f === "news") return NEWS.test(e.text);
+  return !!n.re && n.re.test(e.text);
+}
 
 /** กลุ่มบันทึกของปีหนึ่ง — ปีที่ผ่านไปแล้วไม่ต้องวาดใหม่ */
 const LogGroup = memo(
@@ -89,7 +142,11 @@ export function LogLine({ e }: { e: LogEntry }) {
       </div>
     );
   if (e.kind === "comments") return <Comments items={parseComments(e)} />;
-  return <p className={`log-line ${e.kind}`}>{e.text}</p>;
+  return (
+    <p className={`log-line ${e.kind}`}>
+      <Linked text={e.text} />
+    </p>
+  );
 }
 
 // ซ่อน/แสดงความคิดเห็นผู้อ่านทั้งเกม (จำไว้ในเครื่อง)
@@ -205,10 +262,16 @@ export function MainScreen({
   life,
   onAgeUp,
   onTab,
+  who = null,
+  setWho,
+  onPerson,
 }: {
   life: Life;
   onAgeUp: (years?: number) => void;
   onTab: (t: TabId) => void;
+  who?: string | null;
+  setWho?: (id: string | null) => void;
+  onPerson?: (id: string) => void;
 }) {
   const title = titleById(life.flags.title as string | undefined);
   const logRef = useRef<HTMLDivElement>(null);
@@ -216,9 +279,16 @@ export function MainScreen({
   const quest = secretQuestStatus(life);
   // แสดงเฉพาะช่วงหลังของบันทึก — ชีวิตยาวๆ มีเป็นพันบรรทัด วาดทั้งหมดทุกครั้งทำให้แลค
   const [showYears, setShowYears] = useState(LOG_PAGE);
-  const groups = groupByAge(life.log);
+  const [filter, setFilter] = useState<LogFilter>("all");
+  const peopleKey = life.people.map((p) => p.id + p.name).join("|");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const names = useMemo(() => namesOf(life, onPerson), [peopleKey, onPerson ? 1 : 0]);
+  const whoP = who ? life.people.find((p) => p.id === who) : undefined;
+  const whoNames = whoP ? [whoP.name, shortName(whoP)].filter((x) => x.length >= 2) : [];
+  const shown = filter === "all" && !whoNames.length ? life.log : life.log.filter((e) => keep(e, filter, names, whoNames));
+  const groups = groupByAge(shown);
   const hidden = Math.max(0, groups.length - showYears);
-  useEffect(() => setShowYears(LOG_PAGE), [life.id]);
+  useEffect(() => setShowYears(LOG_PAGE), [life.id, filter, who]);
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
   }, [life.log.length]);
@@ -292,6 +362,7 @@ export function MainScreen({
       </section>
 
       {murim && <WorldStrip life={life} />}
+      {murim && !!life.flags.legacySave && <div className="legacy-strip">💾 เซฟจากเวอร์ชันเก่า — เล่นต่อได้จนจบชีวิตนี้ ระบบใหม่บางอย่างเริ่มนับจากตอนนี้ รุ่นถัดไปจะได้ครบทุกระบบ</div>}
       {murim && goalLine(life) && <div className="goal-strip">🎯 {goalLine(life)}</div>}
 
       {quest && (
@@ -300,7 +371,24 @@ export function MainScreen({
         </div>
       )}
 
+      {murim && (
+        <div className="log-filters">
+          {whoP ? (
+            <button className="chip on" onClick={() => setWho?.(null)}>
+              📜 เรื่องของ{shortName(whoP)} ✕
+            </button>
+          ) : (
+            FILTERS.map((f) => (
+              <button key={f.id} className={`chip ${filter === f.id ? "on" : ""}`} onClick={() => setFilter(f.id)}>
+                {f.label}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+      <NameCtx.Provider value={names}>
       <div className="log" ref={logRef}>
+        {groups.length === 0 && <p className="muted small">ยังไม่มีบันทึกในหมวดนี้</p>}
         {hidden > 0 && (
           <button className="btn small ghost log-more" onClick={() => setShowYears(showYears + LOG_PAGE)}>
             📜 ดูบันทึกก่อนหน้า ({hidden} ปี)
@@ -312,6 +400,7 @@ export function MainScreen({
         {!murim && teaser && <p className="cliffhanger">{loc(life, teaser)}</p>}
         {life.report && life.report.to === life.age && life.report.lines.length > 0 && <ReportCard report={life.report} />}
       </div>
+      </NameCtx.Provider>
 
       <footer className="bottom">
         {murim && life.alive && <PlanBar life={life} onAgeUp={onAgeUp} />}

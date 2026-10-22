@@ -1,15 +1,20 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { runEvent, argue, askMoney, breakUp, propose, spendTime, tryForBaby, confess, cutTies, giveGift } from "../../engine/game";
 import type { Life, Person, Relation } from "../../engine/types";
 import { relationLabel, shortName } from "../../engine/util";
 import type { Act } from "../App";
 import { AXIS, goalOf, notableAxes, traitName, traitsOf, profileOf, relOf } from "../../engine/npc";
 import { isRealistic } from "../../content/worlds";
+import { lineageOf } from "../../content/murim/life/generations";
 
 const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "father", "mother", "sibling", "friend", "rival"];
 
-export function PeopleTab({ life, act }: { life: Life; act: Act }) {
-  const [open, setOpen] = useState<string | null>(null);
+export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; act: Act; focus?: string | null; onShowLog?: (id: string) => void }) {
+  const [open, setOpen] = useState<string | null>(focus);
+  // แตะชื่อจากบันทึก → เลื่อนไปหาคนนั้น
+  useEffect(() => {
+    if (focus) document.getElementById(`person-${focus}`)?.scrollIntoView({ block: "center" });
+  }, [focus]);
   const list = [...life.people].sort(
     (a, b) => Number(b.alive) - Number(a.alive) || ORDER.indexOf(a.relation) - ORDER.indexOf(b.relation),
   );
@@ -18,9 +23,10 @@ export function PeopleTab({ life, act }: { life: Life; act: Act }) {
 
   return (
     <div className="tab-content">
+      {life.worldId === "murim" && <LineageCard life={life} pick={(id) => { setOpen(id); document.getElementById(`person-${id}`)?.scrollIntoView({ block: "center" }); }} />}
       {list.map((p) => (
-        <div className={`person ${p.alive ? "" : "dead"}`} key={p.id}>
-          <button className="person-row" onClick={() => setOpen(open === p.id ? null : p.id)} disabled={!p.alive}>
+        <div className={`person ${p.alive ? "" : "dead"} ${focus === p.id ? "focused" : ""}`} key={p.id} id={`person-${p.id}`}>
+          <button className="person-row" onClick={() => setOpen(open === p.id ? null : p.id)}>
             <div>
               <div className="person-name">
                 {p.name} {p.alive ? "" : "🕯️"}
@@ -39,7 +45,15 @@ export function PeopleTab({ life, act }: { life: Life; act: Act }) {
             )}
           </button>
           {open === p.id && p.alive && isRealistic(life.worldId) && <PersonMind p={p} />}
+          {open === p.id && !p.alive && <div className="person-mind small muted">จากไปแล้ว — เหลือไว้เพียงความทรงจำ</div>}
           {open === p.id && p.alive && <PersonActions life={life} p={p} act={act} />}
+          {open === p.id && onShowLog && life.worldId === "murim" && (
+            <div className="person-actions">
+              <button className="btn small ghost" onClick={() => onShowLog(p.id)}>
+                📜 ดูเรื่องของ{shortName(p)}ในบันทึก
+              </button>
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -146,5 +160,67 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
         </button>
       )}
     </div>
+  );
+}
+
+/** ผังตระกูลและสายอาจารย์–ศิษย์ พร้อมสถานะชีวิต (EXPANSION §15) */
+function LineageCard({ life, pick }: { life: Life; pick: (id: string) => void }) {
+  const anc = lineageOf(life);
+  const by = (f: (p: Person) => boolean) => life.people.filter(f);
+  const parents = by((p) => p.relation === "father" || p.relation === "mother");
+  const sibs = by((p) => p.relation === "sibling");
+  const mates = by((p) => p.relation === "spouse" || p.relation === "partner");
+  const kids = by((p) => p.relation === "child").sort((a, b) => b.age - a.age);
+  const masters = by((p) => !!p.tags?.includes("master"));
+  const pupils = by((p) => !!p.tags?.includes("disciple"));
+  const Chip = ({ p }: { p: Person }) => (
+    <button className={`kin-chip ${p.alive ? "" : "dead"}`} onClick={() => pick(p.id)}>
+      {p.alive ? "" : "🕯️ "}
+      {shortName(p)}
+      <small> {relationLabel(p, life)} · {p.age}</small>
+    </button>
+  );
+  const Row = ({ label, list }: { label: string; list: Person[] }) =>
+    list.length ? (
+      <div className="kin-row">
+        <span className="kin-label">{label}</span>
+        <div className="kin-list">
+          {list.map((p) => (
+            <Chip p={p} key={p.id} />
+          ))}
+        </div>
+      </div>
+    ) : null;
+  return (
+    <details className="card lineage">
+      <summary className="card-title">🌳 ผังตระกูล · สายอาจารย์–ศิษย์</summary>
+      {anc.length > 0 && (
+        <div className="kin-row">
+          <span className="kin-label">รุ่นก่อน</span>
+          <div className="kin-anc">
+            {anc.map((a, i) => (
+              <div className="small" key={i}>
+                🕯️ <b>{a.n}</b> ({a.y}){a.r ? ` · ขั้น${a.r}` : ""} — {a.cause}
+                <span className="muted"> ↓ {a.how === "heir" ? "ทายาท" : "ศิษย์"}สืบต่อ</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <Row label="อาจารย์" list={masters} />
+      <Row label="พ่อแม่" list={parents} />
+      <div className="kin-row">
+        <span className="kin-label">คุณ</span>
+        <div className="kin-list">
+          <span className="kin-chip me">{life.lastName}{life.firstName}<small> · {life.age}</small></span>
+          {mates.map((p) => (
+            <Chip p={p} key={p.id} />
+          ))}
+        </div>
+      </div>
+      <Row label="พี่น้อง" list={sibs} />
+      <Row label="ลูก" list={kids} />
+      <Row label="ศิษย์" list={pupils} />
+    </details>
   );
 }

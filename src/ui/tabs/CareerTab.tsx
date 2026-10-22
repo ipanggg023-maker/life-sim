@@ -5,6 +5,8 @@ import type { Life, SchoolStage } from "../../engine/types";
 import { money } from "../../engine/util";
 import type { Act } from "../App";
 import { doJobAction, jobActionLocked, jobActionsFor } from "../../content/murim/life/jobActions";
+import { timeBudget, timeLeft } from "../../engine/activities";
+import { TimeBar } from "./ActivitiesTab";
 
 const STAGE_LABEL: Record<SchoolStage, string> = {
   none: "ยังไม่เข้าเรียน",
@@ -67,7 +69,8 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
 
       {job && jobActionsFor(life).length > 0 && (
         <>
-          <div className="section-title">งานของ{career?.name ?? "อาชีพนี้"} · ปีละครั้งต่ออย่าง</div>
+          <div className="section-title">งานของ{career?.name ?? "อาชีพนี้"} · ปีละครั้งต่ออย่าง · ใช้เวลาเดียวกับแท็บทำ</div>
+          {timeLeft(life) !== undefined && <TimeBar left={timeLeft(life)!} max={timeBudget.fn?.(life) ?? 0} />}
           <div className="grid">
             {jobActionsFor(life).map((a) => {
               const locked = jobActionLocked(life, a);

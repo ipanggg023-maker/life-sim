@@ -33,6 +33,7 @@ import { cancelUpload, cloudEnabled, currentUser, downloadSave, isGuest, newerIn
 import { LoginScreen } from "./CloudCard";
 import { EventModal, OutcomeModal, type Resolved } from "./EventModal";
 import { MainScreen, type TabId } from "./MainScreen";
+import { Onboarding } from "./Onboarding";
 import { Sheet } from "./Sheet";
 import { ActivitiesTab } from "./tabs/ActivitiesTab";
 import { CareerTab } from "./tabs/CareerTab";
@@ -57,6 +58,9 @@ export function App() {
   const [toast, setToast] = useState<Outcome | null>(null);
   const [shake, setShake] = useState(false);
   const [resolved, setResolved] = useState<Resolved | null>(null);
+  /** คนที่เปิดดูจากการแตะชื่อในบันทึก · คนที่ใช้กรองบันทึก */
+  const [focus, setFocus] = useState<string | null>(null);
+  const [who, setWho] = useState<string | null>(null);
   const [birthOpts, setBirthOpts] = useState<BirthOptions>({});
   /** มรดกของยุคก่อน (ใช้ซ้ำตอนสุ่มเกิดใหม่) */
   const prepRef = useRef<((l: Life) => void) | undefined>(undefined);
@@ -379,12 +383,12 @@ export function App() {
 
   return (
     <div className={`app ${shake ? "shake" : ""}`}>
-      <MainScreen life={life} onAgeUp={onAgeUp} onTab={setTab} />
+      <MainScreen life={life} onAgeUp={onAgeUp} onTab={(t) => { setFocus(null); setTab(t); }} who={who} setWho={setWho} onPerson={(id) => { setFocus(id); setTab("people"); }} />
 
       {tab && !life.queue.length && !resolved && (
         <Sheet title={isRealistic(life.worldId) && tab === "soul" ? "บันทึก" : isRealistic(life.worldId) && tab === "power" ? "วิชายุทธ์" : TAB_TITLES[tab]} onClose={() => setTab(null)}>
           {tab === "career" && <CareerTab life={life} act={act} />}
-          {tab === "people" && <PeopleTab life={life} act={act} />}
+          {tab === "people" && <PeopleTab life={life} act={act} focus={focus} onShowLog={(id) => { setWho(id); setTab(null); }} />}
           {tab === "power" && <PowerTab life={life} act={act} />}
           {tab === "jianghu" && <JianghuTab life={life} act={act} />}
           {tab === "activities" && <ActivitiesTab life={life} act={act} />}
@@ -416,6 +420,8 @@ export function App() {
       ) : (
         life.queue.length > 0 && <EventModal life={life} onChoose={onChoose} />
       )}
+
+      {life.worldId === "murim" && !tab && !resolved && !life.queue.length && <Onboarding />}
 
       {toast && <div className={`toast ${toast.kind ?? ""}`}>{toast.text}</div>}
     </div>

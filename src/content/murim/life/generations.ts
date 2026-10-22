@@ -88,9 +88,20 @@ export function carryWorld(dead: Life, next: Life, yearsLater: number) {
   w.crisis = undefined;
 }
 
+/** บรรพบุรุษในสายตระกูล/สายอาจารย์ (เก่าสุดก่อน) — how = รุ่นถัดไปเป็นอะไรของคนนี้ */
+export interface Ancestor { n: string; y: string; r: string; how: "heir" | "disciple"; cause: string }
+export function lineageOf(l: Life): Ancestor[] {
+  try { return JSON.parse(String(l.flags.mwLineage ?? "[]")) as Ancestor[]; } catch { return []; }
+}
+
 /** มรดกของยุทธภพ (เรียกหลังสร้างชีวิตรุ่นถัดไป) */
 export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | "era", pid?: string) {
   if (dead.worldId !== "murim") return;
+  // ยุคใหม่ = คนแปลกหน้า ไม่ได้สืบสายใคร (แต่โลกยังจำผ่านบันทึกยุทธภพ)
+  if (how !== "era") {
+    const chain = [...lineageOf(dead), { n: displayName(dead), y: `${dead.birthYear}–${dead.birthYear + dead.age}`, r: dead.power ? rankLabel(dead, dead.power.rank) : "", how, cause: dead.causeOfDeath ?? "" }];
+    next.flags.mwLineage = JSON.stringify(chain.slice(-8));
+  }
   carryWorld(dead, next, how === "era" ? next.birthYear - (dead.birthYear + dead.age) : 0);
   legacyToWorld(dead, next, how === "era");
   const heir = pid ? dead.people.find((p) => p.id === pid) : undefined;

@@ -1,6 +1,6 @@
 // แท็บ "ทำ" ของยุทธภพ (เขียนใหม่ทั้งหมด · MURIM_PLAN §7) — แบ่งหมวด: ฝึกฝน · ยุทธภพ · ชีวิต · ครอบครัว · อาชญากรรม
 // ยุทธภพแสดงเฉพาะกิจกรรมชุดนี้ (และหาหมอรักษาบาดแผล) — กิจกรรมกลางของโลกอื่นถูกซ่อน
-import { ACTIVITIES, activityFilters, type Activity } from "../../../engine/activities";
+import { ACTIVITIES, activityFilters, timeBudget, type Activity } from "../../../engine/activities";
 import { runEvent } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
@@ -113,3 +113,16 @@ activityFilters.push((l, a) => {
   if (!a.id.startsWith("mw_") && !KEEP.has(a.id)) return false;
   return !jailed(l) || IN_JAIL.has(a.id);
 });
+
+// เวลาในหนึ่งปีมีจำกัด (EXPANSION §3.1): เดินทางไกล/งานใหญ่กินเวลาสองส่วน
+const LONG = ["mw_wander", "mw_travel", "mw_investigate", "mw_visit", "mw_alliance", "mw_cult_hunt", "mw_steal_manual"];
+for (const a of ACTIVITIES) if (LONG.includes(a.id)) a.time = 2;
+/** งบเวลากิจกรรมรอง: ผู้ใหญ่ 5 ส่วน · เด็กและคนชราน้อยกว่า · ป่วยหนักหรือติดคุกเหลือน้อย */
+export function murimTimeBudget(l: Life): number | undefined {
+  if (l.worldId !== "murim") return undefined;
+  let t = l.age < 10 ? 2 : l.age < 16 ? 3 : l.age >= 85 ? 2 : l.age >= 70 ? 3 : 5;
+  if (l.stats.health < 30) t -= 1;
+  if (jailed(l)) t = Math.min(t, 2);
+  return Math.max(1, t);
+}
+timeBudget.fn = murimTimeBudget;

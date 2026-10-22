@@ -11,6 +11,7 @@ import { shiftAlign } from "../m17core";
 import { startDuel } from "./duel";
 import { addHeat } from "./law";
 import { TAEL } from "../story/kit";
+import { timeLeft } from "../../../engine/activities";
 
 export interface JobAction {
   id: string;
@@ -148,6 +149,7 @@ export function jobActionLocked(l: Life, a: JobAction): string | undefined {
   if (!l.job || !a.jobs.includes(l.job.careerId)) return "ไม่ใช่งานของคุณ";
   if (Number(l.flags.jailUntil ?? -1) > l.age) return "ติดคุกอยู่";
   if (l.doneThisYear.includes(`job:${a.id}`)) return "ปีนี้ทำแล้ว";
+  if ((timeLeft(l) ?? 1) < 1) return "ปีนี้ไม่มีเวลาเหลือ";
   if (a.minLevel && l.job.level < a.minLevel) return `ต้องเป็นตำแหน่งขั้น ${a.minLevel} ขึ้นไป`;
   if (a.cost && l.money < a.cost * TAEL) return `ต้องมี ${money(l, a.cost * TAEL)}`;
   if (l.queue.length) return "กำลังมีเหตุการณ์อยู่";

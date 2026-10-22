@@ -34,6 +34,9 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
   const { shown, done, skip } = useTypewriter(text);
   // ตัวเลือกที่กดได้ก่อน แล้วตามด้วยตัวที่ยังขาดเงื่อนไข (ล็อกไว้พร้อมเหตุผล) ตามลำดับเดิม
   const choices = [...visibleChoices(life, q), ...lockedChoices(life, q)].sort((a, b) => a.index - b.index);
+  // ตัวเลือกเสี่ยงตาย: แตะครั้งแรกเพื่อเตือน แตะอีกครั้งจึงเลือกจริง (EXPANSION §15)
+  const [armed, setArmed] = useState<string | null>(null);
+  const sceneKey = `${q.eventId}/${q.scene ?? "start"}`;
 
   return (
     <div className="overlay modal-overlay">
@@ -49,13 +52,17 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
             const survive = c.survival?.(life, q.ctx);
             const missing = c.req?.(life, q.ctx);
             const vague = c.unknown?.(life, q.ctx);
+            const deadly = c.tone === "danger" || (survive !== undefined && survive < 0.9);
+            const isArmed = armed === `${sceneKey}#${index}`;
             return (
               <button
                 key={index}
-                className={`choice ${c.tone ?? ""} ${missing ? "locked" : ""}`}
+                className={`choice ${c.tone ?? ""} ${missing ? "locked" : ""} ${isArmed ? "armed" : ""}`}
                 disabled={!done || !!missing}
                 onClick={(ev) => {
                   ev.stopPropagation();
+                  if (deadly && !isArmed) return setArmed(`${sceneKey}#${index}`);
+                  setArmed(null);
                   onChoose(index);
                 }}
               >
@@ -64,6 +71,7 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
                 {survive !== undefined && survive < 0.95 && (
                   <span className="warn">[คำเตือน: อัตรารอดชีวิต {vague ? vagueLabel(survive) : `${Math.round(survive * 100)}%`}]</span>
                 )}
+                {isArmed && <span className="confirm">⚠️ อาจถึงตาย — แตะอีกครั้งเพื่อยืนยัน</span>}
                 {pct !== undefined && <span className="pct">{vague ? `โอกาสสำเร็จ: ${vagueLabel(pct)} (ยังประเมินคู่ต่อสู้ไม่ได้)` : `สำเร็จ ${Math.round(pct * 100)}%`}</span>}
               </button>
             );

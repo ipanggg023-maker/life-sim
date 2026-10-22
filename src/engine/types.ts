@@ -160,6 +160,8 @@ export interface Power {
 
 export interface Life {
   version: 1;
+  /** รุ่นโครงสร้างเซฟ (engine/validate SAVE_VERSION) — ไม่มี = เซฟก่อนยกเครื่องยุทธภพ */
+  sv?: number;
   id: string;
   worldId: WorldId;
   /** ประเทศที่เกิด — ไม่มี = ไทย (เซฟเก่า และโลกแฟนตาซี) */
@@ -288,6 +290,8 @@ export interface Soul {
   collection?: string[];
   /** สมุดพรสวรรค์: พรสวรรค์ที่เคยได้ในทุกชาติ */
   talentBook?: string[];
+  /** ริบบิ้นที่สะสมได้ (ชีวิตละหนึ่ง แบบ BitLife) */
+  ribbons?: string[];
   /** บันทึกยุทธภพ: ชีวิตทุกชีวิตและเหตุการณ์โลกที่ผ่านมา (MURIM_PLAN §9) */
   chronicle?: import("../content/murim/life/generations").ChronEntry[];
   perks: {
