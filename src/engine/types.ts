@@ -68,6 +68,8 @@ export interface Person {
   values?: string[];
   limit?: string;
   secret?: { text: string; known: boolean };
+  /** วิชายุทธ์ของ NPC (ยุทธภพ): ขั้น 0–8 · สาย · สำนัก · ความคืบหน้าสู่ขั้นถัดไป (0–100) */
+  martial?: { rank: number; style: string; sect?: string; xp: number };
 }
 
 export type Wealth = "poor" | "middle" | "rich" | "elite";

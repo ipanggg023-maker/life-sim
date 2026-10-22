@@ -8,11 +8,12 @@ import { pick, randInt } from "../../../engine/rng";
 import type { Life, Person, Soul } from "../../../engine/types";
 import { addFame, addStat, createPerson, displayName, log, money, people, shortName } from "../../../engine/util";
 import { awaken, rankLabel } from "../../hunter/power";
-import { addQi, artInfo, artsOf, learn } from "../martial/arts";
+import { QI_NEED, addQi, artInfo, artsOf, learn } from "../martial/arts";
 import { mySect, saveSect } from "../m17core";
 import { courtOf } from "../world/court";
 import { courtLegacy } from "../world/palace";
 import { inheritSeeds } from "./seeds";
+import { carryMartial } from "./npcMartial";
 import { legacyToWorld } from "../world/jianghu";
 import { factions } from "../world/factions";
 import { goalById, setGoal } from "./goals";
@@ -160,6 +161,8 @@ export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | 
       next.flags.palaceAccess = true;
     } else if (dead.flags.emperorSelf) ct.emperor.health = 0;
   }
+  // ลูก/ศิษย์ที่ฝึกวิชามาแล้ว เริ่มชีวิตด้วยขั้นของตัวเอง (npcMartial.ts)
+  if (how !== "era") carryMartial(next, heir);
   // ความแค้นและบุญคุณที่ยังไม่สุก ตกถึงลูก/ศิษย์ (seeds.ts)
   if (how !== "era") inheritSeeds(dead, next);
   next.flags.plHow = how;
@@ -195,6 +198,8 @@ export function buildDisciple(dead: Life, pid: string): Life {
   awaken(life, rank, dead.power?.hunterClass ?? "m_sword");
   life.flags.mwRoot = Math.max(1, Math.min(4, rank + randInt(life, 0, 1)));
   addQi(life, Math.max(3, (d.age - 10) * 0.8));
+  // ศิษย์ที่ฝึกมาเองจนถึงขั้นหนึ่งแล้ว ไม่ถอยกลับไปเป็นผู้ฝึกหัด
+  if (d.martial && d.martial.rank > (life.power?.rank ?? 0)) { life.power!.rank = d.martial.rank; life.flags.mwRoot = Math.max(Number(life.flags.mwRoot ?? 0), d.martial.rank); life.flags.mwQi = Math.max(Number(life.flags.mwQi ?? 0), QI_NEED[Math.min(8, d.martial.rank)]); }
   life.log = [];
   log(life, `คุณคือ ${displayName(life)} อายุ ${life.age} ปี ศิษย์ของ${displayName(dead)} ผู้เพิ่งจากไป — ทุกสิ่งที่อาจารย์สอน ตอนนี้อยู่ในมือคุณ`, "milestone");
   inheritMurim(dead, life, "disciple", pid);

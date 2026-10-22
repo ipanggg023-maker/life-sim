@@ -6,6 +6,7 @@ import type { Act } from "../App";
 import { AXIS, goalOf, notableAxes, traitName, traitsOf, profileOf, relOf } from "../../engine/npc";
 import { isRealistic } from "../../content/worlds";
 import { lineageOf } from "../../content/murim/life/generations";
+import { martialLabel } from "../../content/murim/life/npcMartial";
 
 const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "father", "mother", "sibling", "friend", "rival"];
 
@@ -35,6 +36,8 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
                 {relationLabel(p, life)} · อายุ {p.age}
                 {p.job ? ` · ${p.job}` : ""}
                 {p.tags?.some((t) => t.startsWith("away:")) ? " · ย้ายไปอยู่ไกล" : ""}
+                {p.tags?.includes("life_rival") ? " · 🔥 คู่ปรับตลอดชีวิต" : ""}
+                {p.martial ? ` · ⚔️ ${martialLabel(life, p)}` : ""}
               </div>
             </div>
             {p.alive && (
