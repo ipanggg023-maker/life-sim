@@ -18,6 +18,8 @@ const married = (l: Life) => people(l, "spouse", false).length > 0;
 
 /** เรียงตามลำดับความโดดเด่น — ชีวิตหนึ่งได้อันแรกที่เข้าเงื่อนไข */
 const RIBBONS: (Ribbon & { when: (l: Life) => boolean })[] = [
+  { id: "emperor", emoji: "👑", name: "โอรสสวรรค์", desc: "ขึ้นครองบัลลังก์มังกร ตั้งราชวงศ์ของตัวเอง", when: (l) => !!l.flags.emperorSelf || !!l.flags.lostThrone },
+  { id: "regent", emoji: "🐉", name: "ผู้อยู่เบื้องหลังบัลลังก์", desc: "ฮ่องเต้ทรงลงพระนาม แต่คนตัดสินคือคุณ", when: (l) => Number(l.flags.courtRank ?? 0) >= 5 },
   { id: "legend", emoji: "🐉", name: "ตำนานยุทธภพ", desc: "ฝีมือข้ามพ้นจุดสูงสุด ชื่อถูกจารึกไว้หลายร้อยปี", when: (l) => (l.power?.rank ?? 0) >= 6 },
   { id: "demon", emoji: "😈", name: "มารร้าย", desc: "ทั้งใต้หล้าสาปแช่งชื่อนี้", when: (l) => align(l) <= -60 && Number(l.flags.mwKills ?? 0) >= 2 },
   { id: "hero", emoji: "🦸", name: "วีรชน", desc: "คนธรรมดาจุดธูปให้ทุกปี", when: (l) => align(l) >= 60 && l.fame >= 50 },

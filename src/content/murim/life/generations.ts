@@ -147,6 +147,17 @@ export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | 
   // การเมืองในวังของรุ่นก่อนตามมาถึงลูกหลาน (EXPANSION §8.5.8)
   const cl = courtLegacy(dead);
   if (cl && how !== "era") next.flags.plCourt = cl;
+  // ผู้เล่นเป็นฮ่องเต้: ลูกขึ้นครองราชย์ต่อ · ศิษย์/คนรุ่นหลัง = ราชสำนักต้องหาคนใหม่ · ผู้สำเร็จราชการตาย = อำนาจคืนสู่วัง
+  if (dead.flags.emperorSelf || Number(dead.flags.courtRank ?? 0) >= 5) {
+    const ct = courtOf(next);
+    ct.regent = undefined;
+    if (dead.flags.emperorSelf && how === "heir") {
+      ct.emperor = { name: `ฮ่องเต้${next.firstName}`, age: next.age, temper: "wise", health: 100, since: next.birthYear + next.age };
+      next.flags.emperorSelf = true;
+      next.flags.courtRank = 6;
+      next.flags.palaceAccess = true;
+    } else if (dead.flags.emperorSelf) ct.emperor.health = 0;
+  }
   // ความแค้นและบุญคุณที่ยังไม่สุก ตกถึงลูก/ศิษย์ (seeds.ts)
   if (how !== "era") inheritSeeds(dead, next);
   next.flags.plHow = how;

@@ -8,5 +8,6 @@ import { RANKING_EVENTS } from "./ranking";
 import { WAR_EVENTS } from "./war";
 import { JIANGHU_EVENTS } from "./jianghu";
 import { PALACE_EVENTS } from "./palace";
+import { SCHEME_EVENTS } from "./palaceSchemes";
 
-export const WORLD_EVENTS: GameEvent[] = [...FACTION_EVENTS, ...COURT_EVENTS, ...LEGEND_EVENTS, ...RANKING_EVENTS, ...MYSECT_EVENTS, ...WAR_EVENTS, ...JIANGHU_EVENTS, ...PALACE_EVENTS];
+export const WORLD_EVENTS: GameEvent[] = [...FACTION_EVENTS, ...COURT_EVENTS, ...LEGEND_EVENTS, ...RANKING_EVENTS, ...MYSECT_EVENTS, ...WAR_EVENTS, ...JIANGHU_EVENTS, ...PALACE_EVENTS, ...SCHEME_EVENTS];

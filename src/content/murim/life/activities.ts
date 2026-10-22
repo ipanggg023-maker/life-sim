@@ -12,6 +12,7 @@ import { jailed, mourning } from "./law";
 import { REL_LABEL, coverTracks, hearRumor } from "./rumors";
 import { palaceAccess } from "../world/court";
 import { patronOf, spyPalace } from "../world/palace";
+import { canScheme } from "../world/palaceSchemes";
 import { TAEL } from "../story/kit";
 import { gift } from "./gifts";
 
@@ -64,6 +65,7 @@ const MURIM_ACTS: Activity[] = [
   M({ group: "ราชสำนัก", id: "mw_patron", emoji: "🎁", name: "เยี่ยมผู้อุปถัมภ์ในวัง", desc: "ของขวัญรักษาน้ำใจ", minAge: 18, cost: 10 * TAEL, available: (l) => palaceAccess(l) && !!patronOf(l)?.alive && !patronOf(l)?.out, run: (l) => { addMoney(l, -10 * TAEL); const p = patronOf(l)!; p.you.trust = Math.min(100, p.you.trust + 8); p.known = true; return ok(`${p.name}รับของขวัญด้วยรอยยิ้ม — "${p.goal}" คือเรื่องที่เขาเล่าให้ฟังทั้งบ่าย`); } }),
   M({ group: "ราชสำนัก", id: "mw_palace_spy", emoji: "👂", name: "สืบข่าวในวัง", desc: "รู้ว่าใครหนุนใคร", minAge: 18, available: palaceAccess, odds: (l) => clamp(0.4 + (l.stats.smarts - 50) / 150 + (l.job?.careerId === "jinyiwei" ? 0.2 : 0), 0.1, 0.9), run: (l) => { if (chance(l, clamp(0.4 + (l.stats.smarts - 50) / 150 + (l.job?.careerId === "jinyiwei" ? 0.2 : 0), 0.1, 0.9))) return ok(`ข่าวในวัง: ${spyPalace(l)}`); return bad("นางกำนัลที่คุณถามเอาเรื่องไปเล่าต่อ — มีคนรู้ว่าคุณกำลังสืบ"); } }),
   M({ group: "ราชสำนัก", id: "mw_memorial", emoji: "📜", name: "ถวายฎีกา", desc: "ทูลเรื่องทุกข์ราษฎร", minAge: 20, available: (l) => palaceAccess(l) && (l.job?.careerId === "official" || l.fame >= 30), run: (l) => { runEvent(l, "ct.p_memorial"); return { text: "" }; } }),
+  M({ group: "ราชสำนัก", id: "mw_scheme", emoji: "🗡️", name: "วางแผนชิงอำนาจ", desc: "หักหลัง ใส่ร้าย ยึดอำนาจ — ขึ้นเป็นใหญ่", minAge: 18, available: canScheme, run: (l) => { runEvent(l, "ct.s_menu"); return { text: "" }; } }),
   M({ group: "ราชสำนัก", id: "mw_court_leave", emoji: "🚪", name: "ถอนตัวจากการเมืองในวัง", desc: "ไม่ยุ่งอีก แต่โลกยังเดินต่อ", minAge: 18, time: 0, available: palaceAccess, run: (l) => { l.flags.palaceWithdrawn = true; delete l.flags.palaceBack; delete l.flags.palacePatron; return meh("คุณคืนป้ายผ่านประตูวัง — ข่าวในวังจากนี้จะมาถึงคุณแบบข่าวลือเหมือนชาวบ้านทั่วไป"); } }),
   M({ group: "ยุทธภพ", id: "mw_visit", emoji: "⛩️", name: "เยือนสำนักอื่น", desc: "ผูกมิตร แลกเปลี่ยนวิชา", minAge: 14, cost: 2000, run: (l) => { runEvent(l, "jh.visit"); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_alliance", emoji: "🛡️", name: "รับงานพันธมิตรยุทธจักร", desc: "คุ้มกัน สืบข่าว ไกล่เกลี่ย", minAge: 16, available: (l) => Number(l.flags.m17Align ?? 0) >= 0 && (!!l.power || l.stats.smarts >= 55), run: (l) => { runEvent(l, "jh.alliance"); return { text: "" }; } }),

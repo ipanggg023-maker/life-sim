@@ -78,6 +78,7 @@ function tickCourt(l: Life) {
   const c = courtOf(l);
   const w = l.mw;
   const yr = calYear(l);
+  if (l.flags.emperorSelf) return; // ผู้เล่นคือฮ่องเต้ — palaceSchemes.ts ดูแลเอง
   c.emperor.age++;
   if (c.heir) c.heir.age++;
   c.emperor.health = clamp(c.emperor.health - (c.emperor.age > 55 ? randInt(l, 2, 6) : randInt(l, -2, 3)), 0, 100);

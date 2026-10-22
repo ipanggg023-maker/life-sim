@@ -11,6 +11,7 @@ import { REL_LABEL, TRUTH_LABEL, fameNewsOf, rumorsOf } from "../../content/muri
 import { runEvent } from "../../engine/game";
 import { WorldCard } from "./PowerTab";
 import { TEMPER, courtOf, palaceAccess } from "../../content/murim/world/court";
+import { COURT_RANKS, HEAT_LABEL, courtRank, schemeHeat } from "../../content/murim/world/palaceSchemes";
 import { PRESSURE_LABEL, ROLE_NAME, castOf, palaceOf, palaceRoleOf, patronOf, princeById, princesOf, support } from "../../content/murim/world/palace";
 
 export function JianghuTab({ life, act }: { life: Life; act: Act }) {
@@ -180,9 +181,10 @@ function CourtCard({ life }: { life: Life }) {
       {inside ? (
         <>
           <p className="small">
-            บทบาทของคุณ: {role ? ROLE_NAME[role] : "-"}
+            บทบาทของคุณ: {role ? ROLE_NAME[role] : "-"} · ตำแหน่ง: <b>{COURT_RANKS[courtRank(life)]}</b>
             {patron && ` · ผู้อุปถัมภ์: ${patron.name}`}
           </p>
+          {schemeHeat(life) > 0 && <p className={`small ${schemeHeat(life) >= 30 ? "danger-text" : "muted"}`}>ร่องรอยของแผนที่ผ่านมา: {HEAT_LABEL(schemeHeat(life))}</p>}
           {known.length > 0 && <div className="section-title">คนในวังที่คุณรู้จัก</div>}
           {known.map((n) => (
             <p className="small" key={n.id}>

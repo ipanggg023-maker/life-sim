@@ -37,6 +37,8 @@ yearHooks.push((l) => {
     w.era = "war";
     w.eraSince = yr;
     w.kingdoms = LORDS.map((k) => ({ ...k, power: clamp(k.power + randInt(l, -8, 8), 10, 80) }));
+    // ราชวงศ์ที่ล่มคือราชวงศ์ของคุณเอง — คุณเสียบัลลังก์ แต่ยังมีชีวิต
+    if (l.flags.emperorSelf) { delete l.flags.emperorSelf; l.flags.courtRank = 0; l.flags.lostThrone = true; log(l, "👑 ราชวงศ์ของคุณล่มสลายในมือคุณเอง — คุณหนีออกจากวังที่ลุกเป็นไฟ เหลือเพียงชื่อในประวัติศาสตร์", "bad"); }
     log(l, `⚔️ ราชวงศ์ล่มสลาย แผ่นดินแตกเป็นสามแคว้น — ${LORDS.map((k) => `${k.name} (${k.lord})`).join(" · ")} ต่างประกาศว่าตนคือผู้สืบทอดฟ้า`, "milestone");
     return;
   }
@@ -49,7 +51,7 @@ yearHooks.push((l) => {
     w.eraSince = yr;
     w.legitimacy = 55;
     w.unrest = 35;
-    if (w.court) { w.court.reigns.push({ name: w.court.emperor.name, from: w.court.emperor.since, to: yr, how: `แผ่นดินแตก ${top.lord}รวมแผ่นดิน` }); w.court.emperor = { name: `ฮ่องเต้${top.lord.slice(-2)}`, age: randInt(l, 40, 60), temper: "wise", health: 75, since: yr }; w.court.heir = undefined; w.court.regent = undefined; }
+    if (w.court) { w.court.reigns.push({ name: w.court.emperor.name, from: w.court.emperor.since, to: yr, how: `แผ่นดินแตก ${top.lord}รวมแผ่นดิน` }); w.court.emperor = { name: `ฮ่องเต้${top.lord}`, age: randInt(l, 40, 60), temper: "wise", health: 75, since: yr }; w.court.heir = undefined; w.court.regent = undefined; }
     const mine = l.flags.lord === top.id;
     log(l, `🏯 ${top.lord}แห่ง${top.name}รวมแผ่นดินเป็นหนึ่ง สถาปนาราชวงศ์ใหม่ — สงครามสามแคว้นสิ้นสุด${mine ? " และคุณยืนอยู่ข้างผู้ชนะ" : l.flags.lord ? " ฝ่ายที่คุณรับใช้พ่ายแพ้" : ""}`, "milestone");
     if (mine) { addFame(l, 15); addMoney(l, 100 * TAEL); l.flags.unifier = true; }
