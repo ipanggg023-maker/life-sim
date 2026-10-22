@@ -944,10 +944,6 @@ body.no-comments .comments-head { margin-bottom: 0; }
 .kin-chip.me { font-weight: 700; border-color: var(--accent, #8b2e1f); }
 .person.focused { outline: 2px solid var(--accent, #8b2e1f); border-radius: 12px; }
 
-/* ยืนยันตัวเลือกเสี่ยงตาย */
-.choice.armed { outline: 2px solid #b3261e; background: rgba(179, 38, 30, 0.08); }
-.choice .confirm { display: block; color: #b3261e; font-weight: 700; font-size: 13px; margin-top: 4px; }
-
 /* ริบบิ้นตอนตาย */
 .ribbon-card { display: flex; gap: 14px; align-items: center; margin: 12px 0; padding: 14px 16px; border-radius: 14px; border: 2px solid #c9a227; background: linear-gradient(135deg, rgba(201, 162, 39, 0.16), rgba(201, 162, 39, 0.04)); }
 .ribbon-emoji { font-size: 44px; line-height: 1; flex: none; }

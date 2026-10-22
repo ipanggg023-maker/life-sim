@@ -12,7 +12,7 @@ none of these scores is final; §19 itself says 10/10 can't be promised and requ
 | Generations / chronicle | 15% | 7 | Lineage (up to 8 ancestors) on the family tree, legends carried across eras, founded sects become factions, feuds and debts inherited | Court/dynasty succession across generations |
 | Balance | 10% | 8 | Shown % = used % (exact, tested); win rate within 5 points of shown across 3,600+ rolls; careful bot median age ~80, random ~53; peak realm ~4% | Per-career income table review |
 | Content | 10% | 7 | 19 causes of death in 80 random lives; 23 ribbons, 6+ appear naturally | More calm/slice-of-life years for 40+ |
-| UI / UX | 8% | 7 | Mobile layout, log filters, tap-a-name, family/lineage tree, deadly-choice confirm, onboarding, ribbon at death | Real phone playtest; accessibility pass |
+| UI / UX | 8% | 7 | Mobile layout, log filters, tap-a-name, family/lineage tree, onboarding, ribbon at death | Real phone playtest; accessibility pass |
 | Stability | 7% | 8 | `validateLife` after every simulated year in 11 edge setups (disabled child, rich, poor with debt, early murder, lifelong merchant/healer, many kids, no heir, destroyed sect, plague); save/load mid-event; repair on load; save version + legacy mode | Migration tests for future schema bumps |
 | Performance | 5% | 9 | Worst save ~42 KB after a full life; ~0.8 ms per simulated year | — |
 
