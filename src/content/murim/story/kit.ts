@@ -133,6 +133,22 @@ interface ChOpts {
   tone?: "special" | "danger";
   /** โอกาสรอดชีวิตที่จะเตือน */
   survival?: (l: Life, c: Ctx) => number;
+  /** สกิลชนิดไหนช่วยได้ (ไม่ใส่ = เดาจากคำในตัวเลือก · [] = ไม่มีสกิลไหนช่วย) */
+  skill?: string[];
+}
+
+/** สกิลใช้ได้เฉพาะการกระทำที่เข้ากัน: สู้ · หนี · ลอบเร้น · รักษา · เจรจา */
+const SKILL_WORDS: [RegExp, string[]][] = [
+  [/สู้|บุก|ฟัน|ดวล|ขึ้นกำแพง|ไล่ด้วยไม้|จับโยน|ปล้นด้วยกำลัง|ตามล่า|ต่อสู้|ออกรบ|ประลอง|ปราบ/, ["combat"]],
+  [/หนี(?!ไปด้วยกัน)|หลบหนี|หลบซ่อน|ไล่ตาม(?!เส้นทาง)|สลัดให้หลุด/, ["escape"]],
+  [/แอบเข้าไป|แอบตาม|แอบขโมย|ลอบ|ย่อง|ล้วง|ซ่อน|ปลอมตัว|สะกดรอย|ขโมย/, ["stealth"]],
+  [/รักษา|ดูดพิษ|เฝ้าไข้|ห้ามเลือด|ปรุงยา/, ["medical", "heal"]],
+  [/เจรจา|โน้มน้าว|ต่อรอง|ไกล่เกลี่ย|ขอโทษ|ห้ามด้วยคำพูด|โต้วาที|แฉ/, ["social"]],
+];
+export function skillTagsFor(label: Txt): string[] | undefined {
+  if (typeof label !== "string") return undefined;
+  const tags = SKILL_WORDS.filter(([re]) => re.test(label)).flatMap(([, t]) => t);
+  return tags.length ? [...new Set(tags)] : undefined;
 }
 
 /** ตัวเลือกธรรมดา — ถ้าไม่ได้เขียนข้อดี/ข้อเสียเอง จะสรุปจากผลจริง */
@@ -151,6 +167,7 @@ const oddsHints = (ok: Res, fail: Res) => {
 export const K = (label: Txt, stat: StatKey, dc: number, ok: Res, fail: Res, o: ChOpts = {}): Choice => ({
   label: typeof label === "string" ? label : (l, c) => label(l, c),
   check: { stat, dc },
+  skill: skillTagsFor(label),
   run: (l, c, s) => (s ? ok(l, c) : fail(l, c)),
   ...oddsHints(ok, fail),
   ...o,
@@ -160,6 +177,7 @@ export const K = (label: Txt, stat: StatKey, dc: number, ok: Res, fail: Res, o: 
 export const P = (label: Txt, odds: (l: Life, c: Ctx) => number, ok: Res, fail: Res, o: ChOpts = {}): Choice => ({
   label: typeof label === "string" ? label : (l, c) => label(l, c),
   odds,
+  skill: skillTagsFor(label),
   run: (l, c, s) => (s ? ok(l, c) : fail(l, c)),
   ...oddsHints(ok, fail),
   ...o,

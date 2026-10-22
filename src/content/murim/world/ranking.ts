@@ -57,7 +57,7 @@ export const RANKING_EVENTS: GameEvent[] = [
     text: (l, c) => `${myPlace(l) ? `ตอนนี้คุณอยู่${place(myPlace(l))}` : "ชื่อคุณยังไม่อยู่ในทำเนียบ"} — คนถัดไปคือ ${c.label} อายุ ${c.a} ปี อันดับ ${c.pl} ใครชนะคนนั้น ได้ที่นั่งนั้นไป`,
     choices: [
       {
-        label: "ส่งสาส์นท้าบนยอดเขา ถึงตายไม่ว่า",
+        label: "ส่งสาส์นท้าบนยอดเขา ถึงตายไม่ว่า", skill: ["combat"],
         tone: "danger",
         odds: (l, c) => masterOdds(l, tgt(l, c)),
         survival: (l, c) => masterSurvival(l, tgt(l, c), 0.1),
@@ -71,7 +71,7 @@ export const RANKING_EVENTS: GameEvent[] = [
         },
       },
       {
-        label: "ขอประลองแบบแตะแล้วหยุด",
+        label: "ขอประลองแบบแตะแล้วหยุด", skill: ["combat"],
         odds: (l, c) => masterOdds(l, tgt(l, c), -0.08),
         run: (l, c, s) => {
           l.flags.m17LastChallenge = l.age;
@@ -98,7 +98,7 @@ export const RANKING_EVENTS: GameEvent[] = [
     text: (l, c) => `ลูกดอกพร้อมสาส์นปักลงบนประตูบ้าน — ${c.label} ขอชิง${place(myPlace(l))}ของคุณภายในเดือนนี้`,
     choices: [
       {
-        label: "รับคำท้า",
+        label: "รับคำท้า", skill: ["combat"],
         tone: "danger",
         odds: (l, c) => masterOdds(l, tgt(l, c), 0.05),
         survival: (l, c) => masterSurvival(l, tgt(l, c), 0.15),

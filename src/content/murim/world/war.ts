@@ -107,7 +107,7 @@ export const WAR_EVENTS: GameEvent[] = [
         if (s) { k.power = clamp(k.power + 12, 5, 95); l.flags.warRank = Number(l.flags.warRank ?? 0) + 1; addFame(l, 6); return big(`ลมตะวันออกเฉียงใต้พัดมาตามที่คุณคำนวณ — เรือข้าศึกลุกเป็นไฟทั้งแม่น้ำ ${k.lord}จับมือคุณต่อหน้าทัพทั้งหมด`); }
         k.power = clamp(k.power - 10, 5, 95); addFame(l, -4); return no("ลมไม่มาตามนัด — ทัพคุณเสียคนไปครึ่ง สายตาของนายทัพคนอื่นเริ่มเย็นชา");
       } },
-      { label: "บุกนำหน้าทัพ", show: (l) => l.flags.warRole !== "strategist", tone: "danger", odds: (l) => clamp(0.35 + pow(l) * 0.08 + (l.stats.health - 50) / 200, 0.1, 0.9), survival: (l) => clamp(0.75 + pow(l) * 0.03 + (l.stats.health - 50) / 300, 0.5, 0.97), run: (l, _c, s) => {
+      { label: "บุกนำหน้าทัพ", skill: ["combat"], show: (l) => l.flags.warRole !== "strategist", tone: "danger", odds: (l) => clamp(0.35 + pow(l) * 0.08 + (l.stats.health - 50) / 200, 0.1, 0.9), survival: (l) => clamp(0.75 + pow(l) * 0.03 + (l.stats.health - 50) / 300, 0.5, 0.97), run: (l, _c, s) => {
         const k = myLord(l)!;
         if (s) { k.power = clamp(k.power + 6, 5, 95); l.flags.warRank = Number(l.flags.warRank ?? 0) + 1; if (Number(l.flags.warRank) >= 3) l.flags.warRole = "general"; gainExp(l, 500); addFame(l, 4); return big(`คุณฝ่าแนวข้าศึกเป็นคนแรก ธงข้าศึกล้มในมือคุณ${l.flags.warRole === "general" ? " — เจ้าแคว้นแต่งตั้งคุณเป็นแม่ทัพ" : ""}`); }
         if (!chance(l, clamp(0.75 + pow(l) * 0.03 + (l.stats.health - 50) / 300, 0.5, 0.97))) { kill(l, `ตายในศึกริมแม่น้ำ ใต้ธงของ${k.lord}`); return no("ลูกธนูดอกหนึ่งมาจากที่ไหนสักแห่ง…"); }
@@ -125,8 +125,8 @@ export const WAR_EVENTS: GameEvent[] = [
     title: "เมืองถูกล้อม",
     text: () => "ทัพของแคว้นศัตรูล้อมเมืองที่คุณอยู่มาสี่สิบวัน ข้าวในยุ้งหมด ผู้คนเริ่มกินหนูและเปลือกไม้",
     choices: [
-      { label: "ขึ้นกำแพงช่วยรักษาเมือง", odds: (l) => clamp(0.4 + pow(l) * 0.07 + (l.stats.health - 50) / 200, 0.1, 0.9), run: (l, _c, s) => (s ? ok(`เมืองรอด — ทัพศัตรูถอยไปในวันที่สี่สิบเจ็ด${shiftAlign(l, 2)}`) : no("กำแพงด้านตะวันตกแตก คุณหนีออกมาได้ทางท่อระบายน้ำ — ทรัพย์สินหายหมด")) },
-      { label: "ลอบหนีออกกลางคืนพร้อมครอบครัว", odds: (l) => clamp(0.5 + (l.stats.smarts - 50) / 150, 0.15, 0.9), run: (_l, _c, s) => (s ? meh("ทั้งครอบครัวรอดออกมาได้ — บ้านที่อยู่มาทั้งชีวิตลุกเป็นไฟอยู่ข้างหลัง") : no("หน่วยลาดตระเวนจับได้ — ต้องจ่ายค่าไถ่ทุกอย่างที่มี")) },
+      { label: "ขึ้นกำแพงช่วยรักษาเมือง", skill: ["combat"], odds: (l) => clamp(0.4 + pow(l) * 0.07 + (l.stats.health - 50) / 200, 0.1, 0.9), run: (l, _c, s) => (s ? ok(`เมืองรอด — ทัพศัตรูถอยไปในวันที่สี่สิบเจ็ด${shiftAlign(l, 2)}`) : no("กำแพงด้านตะวันตกแตก คุณหนีออกมาได้ทางท่อระบายน้ำ — ทรัพย์สินหายหมด")) },
+      { label: "ลอบหนีออกกลางคืนพร้อมครอบครัว", skill: ["escape"], odds: (l) => clamp(0.5 + (l.stats.smarts - 50) / 150, 0.15, 0.9), run: (_l, _c, s) => (s ? meh("ทั้งครอบครัวรอดออกมาได้ — บ้านที่อยู่มาทั้งชีวิตลุกเป็นไฟอยู่ข้างหลัง") : no("หน่วยลาดตระเวนจับได้ — ต้องจ่ายค่าไถ่ทุกอย่างที่มี")) },
       { label: "เปิดประตูเมืองให้ศัตรู แลกกับชีวิตตัวเอง", run: (l) => { addMoney(l, 50 * TAEL); addFame(l, -10); return no(`เมืองถูกปล้นสามวัน — คุณได้ทองและชีวิต แต่ไม่มีใครในเมืองนี้มองหน้าคุณอีก${shiftAlign(l, -12)}`); } },
     ],
   },
@@ -152,7 +152,7 @@ export const WAR_EVENTS: GameEvent[] = [
     title: "แม่ทัพประจันหน้า",
     text: () => "แม่ทัพข้าศึกขี่ม้าออกมากลางสนาม ท้าดวลตัวต่อตัวต่อหน้าทัพสองฝ่าย — ใครแพ้ ทัพนั้นถอย",
     choices: [
-      { label: "ขี่ม้าออกไปรับคำท้า", tone: "danger", odds: (l) => clamp(0.4 + pow(l) * 0.07, 0.1, 0.92), survival: (l) => clamp(0.7 + pow(l) * 0.04, 0.5, 0.97), run: (l, _c, s) => {
+      { label: "ขี่ม้าออกไปรับคำท้า", skill: ["combat"], tone: "danger", odds: (l) => clamp(0.4 + pow(l) * 0.07, 0.1, 0.92), survival: (l) => clamp(0.7 + pow(l) * 0.04, 0.5, 0.97), run: (l, _c, s) => {
         if (s) { const k = myLord(l)!; k.power = clamp(k.power + 10, 5, 95); addFame(l, 10); return big("สามสิบเพลง — ทวนของคุณปัดหมวกเกราะข้าศึกกระเด็น ทัพข้าศึกแตกพ่ายโดยไม่ต้องรบ"); }
         if (!chance(l, clamp(0.7 + pow(l) * 0.04, 0.5, 0.97))) { kill(l, "ตายในการดวลแม่ทัพกลางสนามรบ"); return no("ทวนข้าศึกแทงทะลุเกราะอก…"); }
         addStat(l, "health", -20); return no("คุณตกม้า — ทหารลากกลับค่ายได้ทัน แต่ทัพของคุณต้องถอย");
@@ -183,7 +183,7 @@ export const WAR_EVENTS: GameEvent[] = [
     title: "ขบวนเสบียง",
     text: () => "คุณได้รับคำสั่งคุ้มกันขบวนเสบียงผ่านเขตข้าศึก — ถ้าเสบียงไม่ถึง ทัพหน้าจะอดตาย",
     choices: [
-      { label: "ใช้ทางหลัก เร็วแต่เสี่ยง", odds: (l) => clamp(0.45 + pow(l) * 0.07, 0.15, 0.9), run: (l, _c, s) => { const k = myLord(l)!; if (s) { k.power = clamp(k.power + 4, 5, 95); l.flags.warRank = Number(l.flags.warRank ?? 0) + 1; return ok("เสบียงถึงทัพหน้าทันเวลา — แม่ทัพจำชื่อคุณได้"); } k.power = clamp(k.power - 5, 5, 95); addStat(l, "health", -10); return no("ข้าศึกดักกลางทาง เผาเกวียนไปครึ่งหนึ่ง"); } },
+      { label: "ใช้ทางหลัก เร็วแต่เสี่ยง", skill: ["combat"], odds: (l) => clamp(0.45 + pow(l) * 0.07, 0.15, 0.9), run: (l, _c, s) => { const k = myLord(l)!; if (s) { k.power = clamp(k.power + 4, 5, 95); l.flags.warRank = Number(l.flags.warRank ?? 0) + 1; return ok("เสบียงถึงทัพหน้าทันเวลา — แม่ทัพจำชื่อคุณได้"); } k.power = clamp(k.power - 5, 5, 95); addStat(l, "health", -10); return no("ข้าศึกดักกลางทาง เผาเกวียนไปครึ่งหนึ่ง"); } },
       { label: "อ้อมทางป่า ช้าแต่ปลอดภัย", odds: (l) => clamp(0.5 + (l.stats.smarts - 50) / 150, 0.2, 0.92), run: (_l, _c, s) => (s ? ok("ช้ากว่ากำหนดสองวัน แต่ไม่เสียเกวียนสักเล่ม") : no("ป่าลึกกว่าที่คิด — เสบียงไปถึงตอนทัพหน้าถอยแล้ว")) },
     ],
   },
@@ -196,7 +196,7 @@ export const WAR_EVENTS: GameEvent[] = [
     title: "ทูตไปแคว้นศัตรู",
     text: (l) => `${myLord(l)?.lord ?? "นายของคุณ"}ส่งคุณไปเป็นทูตเจรจาพันธมิตรกับแคว้นที่สาม — ในราชสำนักนั้น ครึ่งหนึ่งอยากตัดหัวทูตแคว้นอื่น`,
     choices: [
-      { label: "โต้วาทีกับขุนนางทั้งราชสำนัก", odds: (l) => clamp(0.35 + (l.stats.smarts - 50) / 100, 0.1, 0.92), survival: (l) => clamp(0.85 + (l.stats.smarts - 50) / 300, 0.6, 0.98), run: (l, _c, s) => { if (s) { const k = myLord(l); if (k) k.power = clamp(k.power + 15, 5, 95); addFame(l, 8); return big("คุณโต้ขุนนางสิบสองคนจนเงียบทั้งห้อง — พันธมิตรสำเร็จ ชื่อคุณดังไปทั้งสามแคว้น"); } if (!chance(l, 0.8)) { kill(l, "ถูกประหารกลางราชสำนักแคว้นศัตรูขณะเป็นทูต"); return no("เจ้าแคว้นโบกมือ — ดาบเพชฌฆาตยกขึ้น"); } return no("การเจรจาล่ม คุณถูกขับไล่กลับมาพร้อมความอับอาย"); } },
+      { label: "โต้วาทีกับขุนนางทั้งราชสำนัก", skill: ["social"], odds: (l) => clamp(0.35 + (l.stats.smarts - 50) / 100, 0.1, 0.92), survival: (l) => clamp(0.85 + (l.stats.smarts - 50) / 300, 0.6, 0.98), run: (l, _c, s) => { if (s) { const k = myLord(l); if (k) k.power = clamp(k.power + 15, 5, 95); addFame(l, 8); return big("คุณโต้ขุนนางสิบสองคนจนเงียบทั้งห้อง — พันธมิตรสำเร็จ ชื่อคุณดังไปทั้งสามแคว้น"); } if (!chance(l, 0.8)) { kill(l, "ถูกประหารกลางราชสำนักแคว้นศัตรูขณะเป็นทูต"); return no("เจ้าแคว้นโบกมือ — ดาบเพชฌฆาตยกขึ้น"); } return no("การเจรจาล่ม คุณถูกขับไล่กลับมาพร้อมความอับอาย"); } },
       { label: "ใช้ของขวัญและสินบน", odds: (l) => clamp(0.3 + l.money / 300_000 + (l.stats.looks - 50) / 200, 0.1, 0.85), run: (l, _c, s) => { addMoney(l, -30 * TAEL); return s ? ok("ทองคำเปิดประตูที่คำพูดเปิดไม่ได้ — พันธมิตรได้ แต่ไม่มั่นคงนัก") : no("ขุนนางรับทองแล้วเปลี่ยนใจในวันรุ่งขึ้น"); } },
     ],
   },

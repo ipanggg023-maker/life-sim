@@ -29,6 +29,8 @@ function baseChoice(l: Life, scene: Scene, ctx: Ctx): { c: Choice; tags: string[
   const visible = scene.choices.filter((c) => !c.show || c.show(l, ctx));
   const tagged = visible.find((c) => c.skill && (c.odds || c.check));
   if (tagged) return { c: tagged, tags: typeof tagged.skill === "function" ? tagged.skill(l, ctx) : tagged.skill! };
+  // ยุทธภพ: สกิลต่อสู้ใช้ได้เฉพาะในการต่อสู้จริง (ฉากดวลมีคู่ต่อสู้ใน ctx) — ฉากเสี่ยงอื่น เช่น ทะลวงขั้น แผ่นดินไหว ไม่นับ
+  if (l.worldId === "murim" && (ctx.fr === undefined || !ctx.foe)) return;
   const fight = visible.find((c) => c.tone === "danger" && c.odds);
   return fight && { c: fight, tags: ["combat"] };
 }

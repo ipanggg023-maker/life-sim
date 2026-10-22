@@ -44,8 +44,8 @@ export const CRIME_EVENTS: GameEvent[] = [
     title: "มือไว",
     text: () => "ตลาดเช้าคนแน่น ถุงเงินห้อยอยู่ที่เอวพ่อค้าผ้าไหมอ้วนๆ คนหนึ่ง — อีกฝั่งถนน ยามสองคนกำลังกินซาลาเปา",
     choices: [
-      { label: "ล้วงถุงเงินพ่อค้า", odds: (l) => crimeOdds(l, 0.55, "luck"), run: (l, _c, s) => { if (s) { const t = randInt(l, 3, 12); addMoney(l, t * TAEL); return ok(`ถุงเงินหนักมือ — ${t} ตำลึง${shiftAlign(l, -2)}${addHeat(l, 4)}`); } return caught(l, "ล้วงกระเป๋า", 12); } },
-      { label: "ขโมยของจากแผงแล้ววิ่ง", odds: (l) => crimeOdds(l, 0.6, "health"), run: (l, _c, s) => { if (s) { addMoney(l, 2 * TAEL); return ok(`คุณวิ่งหายเข้าตรอกพร้อมผ้าไหมหนึ่งพับ${shiftAlign(l, -1)}${addHeat(l, 3)}`); } return caught(l, "ขโมยของ", 8); } },
+      { label: "ล้วงถุงเงินพ่อค้า", skill: ["stealth"], odds: (l) => crimeOdds(l, 0.55, "luck"), run: (l, _c, s) => { if (s) { const t = randInt(l, 3, 12); addMoney(l, t * TAEL); return ok(`ถุงเงินหนักมือ — ${t} ตำลึง${shiftAlign(l, -2)}${addHeat(l, 4)}`); } return caught(l, "ล้วงกระเป๋า", 12); } },
+      { label: "ขโมยของจากแผงแล้ววิ่ง", skill: ["stealth"], odds: (l) => crimeOdds(l, 0.6, "health"), run: (l, _c, s) => { if (s) { addMoney(l, 2 * TAEL); return ok(`คุณวิ่งหายเข้าตรอกพร้อมผ้าไหมหนึ่งพับ${shiftAlign(l, -1)}${addHeat(l, 3)}`); } return caught(l, "ขโมยของ", 8); } },
       { label: "เปลี่ยนใจ", run: () => meh("คุณเดินผ่านพ่อค้าไปเฉยๆ — มือยังสั่นอยู่") },
     ],
   },
@@ -73,7 +73,7 @@ export const CRIME_EVENTS: GameEvent[] = [
     prepare: (l): Ctx => { const p = pickFoe(l); return p ? { pid: p.id } : {}; },
     text: (l, c) => { const p = l.people.find((x) => x.id === c.pid); return p ? `${shortName(p)}จะมางานเลี้ยงคืนนี้ — คุณมีห่อผงสีขาวอยู่ในแขนเสื้อ ไม่มีกลิ่น ไม่มีรส` : "คุณมีห่อผงสีขาวในแขนเสื้อ แต่ไม่มีใครที่คุณอยากให้หายไปจริงๆ"; },
     choices: [
-      { label: "ใส่ยาในถ้วยของเขา", tone: "danger", show: (_l, c) => !!c.pid, odds: (l) => crimeOdds(l, 0.5, "smarts") + (l.flags.medicKnow ? 0.1 : 0), run: (l, c, s) => {
+      { label: "ใส่ยาในถ้วยของเขา", skill: ["stealth"], tone: "danger", show: (_l, c) => !!c.pid, odds: (l) => crimeOdds(l, 0.5, "smarts") + (l.flags.medicKnow ? 0.1 : 0), run: (l, c, s) => {
         const p = l.people.find((x) => x.id === c.pid)!;
         if (s) { p.alive = false; return { text: `${shortName(p)}ล้มลงกลางงานเลี้ยง หมอบอกว่าหัวใจวาย — ไม่มีใครสงสัยคุณ${shiftAlign(l, -10)}${addHeat(l, 10)}`, kind: "bad" }; }
         feel(p, { grudge: 60, fear: 20 });
@@ -125,7 +125,7 @@ export const CRIME_EVENTS: GameEvent[] = [
     text: (l) => `นักล่าค่าหัวสามคนเดินเข้าโรงเตี๊ยมที่คุณนั่งอยู่ คนนำถือใบประกาศจับที่มีหน้าคุณ — ค่าหัว ${money(l, Math.round(heatOf(l)) * TAEL)}`,
     choices: [
       { label: "สู้", tone: "danger", run: (l) => { startDuel(l, { foe: "หัวหน้านักล่าค่าหัว", rank: Math.max(1, pow(l)), lethal: true, on: "crimeHunters" }); return meh("โต๊ะคว่ำ ชามแตก คนในร้านวิ่งหนีออกประตูหลัง"); } },
-      { label: "หนีทางหน้าต่าง", odds: (l) => crimeOdds(l, 0.5, "health"), run: (l, _c, s) => (s ? meh(`คุณกระโดดข้ามหลังคาสามหลังหายไปในความมืด${addHeat(l, 2)}`) : arrest(l)) },
+      { label: "หนีทางหน้าต่าง", skill: ["escape"], odds: (l) => crimeOdds(l, 0.5, "health"), run: (l, _c, s) => (s ? meh(`คุณกระโดดข้ามหลังคาสามหลังหายไปในความมืด${addHeat(l, 2)}`) : arrest(l)) },
       { label: "ยอมมอบตัว", run: (l) => arrest(l, true) },
     ],
   },
@@ -140,7 +140,7 @@ export const CRIME_EVENTS: GameEvent[] = [
     choices: [
       { label: "สารภาพ ขอความเมตตา", run: (l) => sentence(l, 0.7) },
       { label: (l) => `ติดสินบนนายอำเภอ (${money(l, sentenceBribe(l))})`, req: (l) => (l.money < sentenceBribe(l) ? "เงินไม่พอ" : undefined), odds: (l) => clamp(0.55 + (l.stats.looks - 50) / 200 - heatOf(l) / 300, 0.1, 0.9), run: (l, _c, s) => { addMoney(l, -sentenceBribe(l)); if (s) { l.flags.heat = Math.max(0, heatOf(l) - 40); delete l.flags.wanted; return ok("นายอำเภอกระแอม \"หลักฐานไม่พอ\" — คุณเดินออกจากศาลได้"); } return sentence(l, 1.3, " นายอำเภอรับเงินแล้วยังตัดสินหนักกว่าเดิม"); } },
-      { label: "แก้ต่างให้ตัวเอง", check: { stat: "smarts", dc: 65 }, run: (l, _c, s) => { if (s) { l.flags.heat = Math.max(0, heatOf(l) - 30); delete l.flags.wanted; return ok("คุณชี้ช่องโหว่ในคำให้การของพยานทีละข้อ — ชาวบ้านโห่ร้องเมื่อนายอำเภอยกฟ้อง"); } return sentence(l, 1.1); } },
+      { label: "แก้ต่างให้ตัวเอง", skill: ["social"], check: { stat: "smarts", dc: 65 }, run: (l, _c, s) => { if (s) { l.flags.heat = Math.max(0, heatOf(l) - 30); delete l.flags.wanted; return ok("คุณชี้ช่องโหว่ในคำให้การของพยานทีละข้อ — ชาวบ้านโห่ร้องเมื่อนายอำเภอยกฟ้อง"); } return sentence(l, 1.1); } },
     ],
   },
   {
@@ -154,7 +154,7 @@ export const CRIME_EVENTS: GameEvent[] = [
     choices: [
       { label: "ฝึกลมปราณในความมืด", run: (l) => { l.flags.mwBasics = Number(l.flags.mwBasics ?? 0) + 1; addStat(l, "happiness", -2); return meh("ไม่มีอะไรให้ทำนอกจากหายใจ — ลมปราณของคุณนิ่งกว่าตอนอยู่ข้างนอก"); } },
       { label: "คุยกับนักโทษห้องข้างๆ", run: (l) => { addStat(l, "smarts", 1); return meh("เขาเคยเป็นจอมโจรที่ปล้นคลังหลวง — เล่าเรื่องให้คุณฟังทุกคืนจนพ้นโทษ"); } },
-      { label: "แหกคุก", tone: "danger", odds: (l) => crimeOdds(l, 0.25, "health"), run: (l, _c, s) => { if (s) { delete l.flags.jailUntil; addHeat(l, 30); return ok("คุณขุดผนังด้วยช้อนมาสองปี คืนนี้มันทะลุ — คุณหายไปในหมอก"); } addStat(l, "health", -10); l.flags.jailUntil = Number(l.flags.jailUntil) + 3; return no("ยามจับได้ — โบยห้าสิบทีและเพิ่มโทษอีกสามปี"); } },
+      { label: "แหกคุก", skill: ["escape"], tone: "danger", odds: (l) => crimeOdds(l, 0.25, "health"), run: (l, _c, s) => { if (s) { delete l.flags.jailUntil; addHeat(l, 30); return ok("คุณขุดผนังด้วยช้อนมาสองปี คืนนี้มันทะลุ — คุณหายไปในหมอก"); } addStat(l, "health", -10); l.flags.jailUntil = Number(l.flags.jailUntil) + 3; return no("ยามจับได้ — โบยห้าสิบทีและเพิ่มโทษอีกสามปี"); } },
     ],
   },
 ];
