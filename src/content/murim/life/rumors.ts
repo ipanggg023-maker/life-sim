@@ -13,6 +13,7 @@ import { ARTS, knows, learn } from "../martial/arts";
 import { TAEL } from "../story/kit";
 import { REGIONS, regionOf } from "./region";
 import { gift } from "./gifts";
+import { plantSeed } from "./seedStore";
 
 export type Truth = "true" | "false" | "trap" | "partial";
 export interface Rumor {
@@ -222,7 +223,7 @@ export const RUMOR_EVENTS: GameEvent[] = [
       } },
       { label: "ไปเตือนขุนนางว่ามีคนจะใส่ร้าย", skill: ["social"], show: (l, c) => rumorBy(l, c)?.kind === "court", check: { stat: "looks", dc: 50 }, run: (l, c, s) => {
         const r = rumorBy(l, c)!; mark(l, c.rid, { done: true });
-        if (r.truth === "false") { if (s) { addFame(l, 3); shiftAlign(l, 2); l.flags.officialFavor = true; return ok("ขุนนางคนนั้นจับมือคุณแน่น — เขาเตรียมบัญชีไว้ทันก่อนผู้ตรวจการมา และติดหนี้คุณหนึ่งครั้ง"); } return meh("เขาไม่เชื่อว่าคุณหวังดี — แต่ก็เตรียมตัวรับการตรวจไว้"); }
+        if (r.truth === "false") { if (s) { addFame(l, 3); shiftAlign(l, 2); l.flags.officialFavor = true; plantSeed(l, "kindness", "ขุนนางที่ถูกใส่ร้าย"); return ok("ขุนนางคนนั้นจับมือคุณแน่น — เขาเตรียมบัญชีไว้ทันก่อนผู้ตรวจการมา และติดหนี้คุณหนึ่งครั้ง"); } return meh("เขาไม่เชื่อว่าคุณหวังดี — แต่ก็เตรียมตัวรับการตรวจไว้"); }
         shiftAlign(l, -4); return no("ขุนนางคนนั้นยิ้ม แล้วสั่งเผาบัญชีทั้งคืน — คุณเพิ่งช่วยคนโกงลบหลักฐาน");
       } },
       { label: "ออกหน้าปกป้องชื่อเสียงเขา", skill: ["social"], show: (l, c) => rumorBy(l, c)?.kind === "scandal", run: (l, c) => {
@@ -248,7 +249,7 @@ export const RUMOR_EVENTS: GameEvent[] = [
       } },
       { label: "ขายข่าวนี้ต่อให้คนอื่น", run: (l, c) => {
         const r = rumorBy(l, c)!; mark(l, c.rid, { done: true }); addMoney(l, (r.rel >= 3 ? 12 : 6) * TAEL);
-        if (r.truth === "false" || r.truth === "trap") { shiftAlign(l, -3); l.flags.soldBadRumor = Number(l.flags.soldBadRumor ?? 0) + 1; return no(r.truth === "trap" ? "คนที่ซื้อข่าวไปไม่กลับมาอีกเลย — คุณได้เงิน และได้เรื่องหนึ่งที่ต้องแบกไปตลอด" : "คนซื้อเสียเวลาเปล่าแล้วกลับมาด่าคุณถึงหน้าบ้าน — ชื่อเสียงเรื่องข่าวของคุณพังลงหนึ่งขั้น"); }
+        if (r.truth === "false" || r.truth === "trap") { if (r.truth === "trap") plantSeed(l, "sold_trap", "คนที่ซื้อข่าว"); shiftAlign(l, -3); l.flags.soldBadRumor = Number(l.flags.soldBadRumor ?? 0) + 1; return no(r.truth === "trap" ? "คนที่ซื้อข่าวไปไม่กลับมาอีกเลย — คุณได้เงิน และได้เรื่องหนึ่งที่ต้องแบกไปตลอด" : "คนซื้อเสียเวลาเปล่าแล้วกลับมาด่าคุณถึงหน้าบ้าน — ชื่อเสียงเรื่องข่าวของคุณพังลงหนึ่งขั้น"); }
         return meh("เงินมาง่าย — แต่โอกาสที่ข่าวนี้ให้ ตกเป็นของคนอื่นไปแล้ว");
       } },
       { label: "เปลี่ยนใจ", run: () => meh("คุณเก็บข่าวนี้ไว้ในใจก่อน") },

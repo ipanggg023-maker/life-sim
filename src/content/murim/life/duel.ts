@@ -9,6 +9,7 @@ import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addStat, clamp, shortName } from "../../../engine/util";
 import { combatPower, gatePower } from "../../hunter/power";
+import { plantSeed } from "./seedStore";
 
 export type DuelResult = "win" | "lose" | "fled" | "draw" | "yield" | "dead";
 
@@ -227,9 +228,9 @@ export const DUEL_EVENT: GameEvent = {
       title: "ชะตาอยู่ในมือคุณ",
       text: (_l, c) => `${c.foe}คุกเข่าอยู่ตรงหน้า เลือดไหลจากมุมปาก "จะฆ่าก็ฆ่าเลย"`,
       choices: [
-        { label: "ปลิดชีพ", tone: "danger", pros: "ตัดปัญหาถาวร", cons: "ครอบครัว/ศิษย์ของเขาอาจตามล้างแค้นในอนาคต", run: (l, c) => { const p = c.pid ? l.people.find((x) => x.id === c.pid) : undefined; if (p) p.alive = false; l.flags.mwKills = Number(l.flags.mwKills ?? 0) + 1; l.flags.mwKillAge = l.age; return finish(l, c, "win", `คุณจบชีวิต${c.foe}ด้วยดาบเดียว — ลมหนาวพัดผ่านลานว่างเปล่า`); } },
-        { label: "ไว้ชีวิต", pros: "อาจได้บุญคุณหรือความนับถือ", cons: "เขาอาจกลับมาแข็งแกร่งกว่าเดิม", run: (l, c) => { const p = c.pid ? l.people.find((x) => x.id === c.pid) : undefined; if (p) remember(l, p, "spared", "ถูกไว้ชีวิต", 3, hasTrait(p, "vengeful") ? { grudge: 20, fear: 20 } : { debt: 50, respect: 15 }); return finish(l, c, "win", `คุณเก็บกระบี่ "ไปเสีย" — ${c.foe}มองคุณด้วยแววตาที่อ่านไม่ออก`); } },
-        { label: "ทำลายวิชา (ทำลายตันเถียน)", tone: "danger", pros: "เขาจะไม่มีวันเป็นภัยอีก", cons: "โหดเหี้ยม — ความแค้นลึกที่สุด ชื่อเสียงฝ่ายธรรมะเสีย", run: (l, c) => { const p = c.pid ? l.people.find((x) => x.id === c.pid) : undefined; if (p) { remember(l, p, "crippled", "ถูกทำลายวิชาจนพิการ", 3, { grudge: 90, fear: 60 }); feel(p, { love: -50 }); p.tags = [...(p.tags ?? []), "crippled"]; } addFame(l, -4); return finish(l, c, "win", `นิ้วของคุณกดลงกลางท้องน้อยของ${c.foe} — เสียงร้องของเขาดังก้องไปทั้งหุบเขา`); } },
+        { label: "ปลิดชีพ", tone: "danger", pros: "ตัดปัญหาถาวร", cons: "ครอบครัว/ศิษย์ของเขาอาจตามล้างแค้นในอนาคต", run: (l, c) => { const p = c.pid ? l.people.find((x) => x.id === c.pid) : undefined; if (p) p.alive = false; l.flags.mwKills = Number(l.flags.mwKills ?? 0) + 1; l.flags.mwKillAge = l.age; plantSeed(l, "killed", String(c.foe)); return finish(l, c, "win", `คุณจบชีวิต${c.foe}ด้วยดาบเดียว — ลมหนาวพัดผ่านลานว่างเปล่า`); } },
+        { label: "ไว้ชีวิต", pros: "อาจได้บุญคุณหรือความนับถือ", cons: "เขาอาจกลับมาแข็งแกร่งกว่าเดิม", run: (l, c) => { const p = c.pid ? l.people.find((x) => x.id === c.pid) : undefined; if (p) remember(l, p, "spared", "ถูกไว้ชีวิต", 3, hasTrait(p, "vengeful") ? { grudge: 20, fear: 20 } : { debt: 50, respect: 15 }); plantSeed(l, "spared", String(c.foe), p?.id); return finish(l, c, "win", `คุณเก็บกระบี่ "ไปเสีย" — ${c.foe}มองคุณด้วยแววตาที่อ่านไม่ออก`); } },
+        { label: "ทำลายวิชา (ทำลายตันเถียน)", tone: "danger", pros: "เขาจะไม่มีวันเป็นภัยอีก", cons: "โหดเหี้ยม — ความแค้นลึกที่สุด ชื่อเสียงฝ่ายธรรมะเสีย", run: (l, c) => { const p = c.pid ? l.people.find((x) => x.id === c.pid) : undefined; if (p) { remember(l, p, "crippled", "ถูกทำลายวิชาจนพิการ", 3, { grudge: 90, fear: 60 }); feel(p, { love: -50 }); p.tags = [...(p.tags ?? []), "crippled"]; } addFame(l, -4); plantSeed(l, "crippled", String(c.foe), p?.id); return finish(l, c, "win", `นิ้วของคุณกดลงกลางท้องน้อยของ${c.foe} — เสียงร้องของเขาดังก้องไปทั้งหุบเขา`); } },
       ],
     },
   },

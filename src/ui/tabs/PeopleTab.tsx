@@ -34,6 +34,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
               <div className="person-sub">
                 {relationLabel(p, life)} · อายุ {p.age}
                 {p.job ? ` · ${p.job}` : ""}
+                {p.tags?.some((t) => t.startsWith("away:")) ? " · ย้ายไปอยู่ไกล" : ""}
               </div>
             </div>
             {p.alive && (
@@ -46,7 +47,8 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
           </button>
           {open === p.id && p.alive && isRealistic(life.worldId) && <PersonMind p={p} />}
           {open === p.id && !p.alive && <div className="person-mind small muted">จากไปแล้ว — เหลือไว้เพียงความทรงจำ</div>}
-          {open === p.id && p.alive && <PersonActions life={life} p={p} act={act} />}
+          {open === p.id && p.alive && p.tags?.some((t) => t.startsWith("away:")) && <div className="person-mind small muted">ย้ายไปตั้งตัวที่อื่นแล้ว — ติดต่อได้แค่จดหมาย รอวันเขากลับมา</div>}
+          {open === p.id && p.alive && !p.tags?.some((t) => t.startsWith("away:")) && <PersonActions life={life} p={p} act={act} />}
           {open === p.id && onShowLog && life.worldId === "murim" && (
             <div className="person-actions">
               <button className="btn small ghost" onClick={() => onShowLog(p.id)}>

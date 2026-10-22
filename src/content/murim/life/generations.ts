@@ -12,6 +12,7 @@ import { addQi, artInfo, artsOf, learn } from "../martial/arts";
 import { mySect, saveSect } from "../m17core";
 import { courtOf } from "../world/court";
 import { courtLegacy } from "../world/palace";
+import { inheritSeeds } from "./seeds";
 import { legacyToWorld } from "../world/jianghu";
 import { factions } from "../world/factions";
 import { goalById, setGoal } from "./goals";
@@ -146,6 +147,8 @@ export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | 
   // การเมืองในวังของรุ่นก่อนตามมาถึงลูกหลาน (EXPANSION §8.5.8)
   const cl = courtLegacy(dead);
   if (cl && how !== "era") next.flags.plCourt = cl;
+  // ความแค้นและบุญคุณที่ยังไม่สุก ตกถึงลูก/ศิษย์ (seeds.ts)
+  if (how !== "era") inheritSeeds(dead, next);
   next.flags.plHow = how;
   if (dead.flags.m17Epithet) next.flags.plEpithet = String(dead.flags.m17Epithet);
 }

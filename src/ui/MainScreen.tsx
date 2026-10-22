@@ -11,7 +11,7 @@ import type { Life, LogEntry, StatKey } from "../engine/types";
 import type { YearReport } from "../engine/report";
 import { worldSummary } from "../content/murim/life/world";
 import { regionOf } from "../content/murim/life/region";
-import { currentPlan, lastYearActs, plansFor, repeatLastYear, setPlan } from "../content/murim/life/plan";
+import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
 import { goalLine } from "../content/murim/life/goals";
 import { disabilities, openInjuries } from "../engine/body";
 import { displayName, loc, money, shortName } from "../engine/util";
@@ -201,20 +201,8 @@ function ReportCard({ report }: { report: YearReport }) {
   );
 }
 
-/** ความเสี่ยงที่รู้ได้ก่อนข้ามเวลา */
-function skipRisks(life: Life): string[] {
-  const r: string[] = [];
-  if (life.stats.health < 35) r.push("สุขภาพย่ำแย่ — อาจตายระหว่างนี้");
-  if (life.money < 0 || life.debt > Math.max(0, life.money)) r.push("เงินติดลบ/หนี้มาก");
-  const w = worldSummary(life);
-  if (w.crisis) r.push(`บ้านเมืองกำลังเผชิญ${w.crisis}`);
-  if (life.age >= 60) r.push("อายุมากแล้ว");
-  if (life.people.some((p) => p.alive && (p.relation === "father" || p.relation === "mother") && p.age >= 70)) r.push("พ่อแม่ชราภาพ");
-  return r;
-}
-
-/** แผนหลักของปี + ข้ามเวลา */
-function PlanBar({ life, onAgeUp }: { life: Life; onAgeUp: (years?: number) => void }) {
+/** แผนหลักของปี */
+function PlanBar({ life }: { life: Life }) {
   const list = plansFor(life);
   const cur = currentPlan(life);
   const [, force] = useState(0);
@@ -238,30 +226,6 @@ function PlanBar({ life, onAgeUp }: { life: Life; onAgeUp: (years?: number) => v
           ))}
         </select>
       </label>
-      <button
-        className="btn small ghost"
-        disabled={life.queue.length > 0}
-        onClick={() => {
-          const r = skipRisks(life);
-          if (r.length && !window.confirm(`ข้าม 3 ปี? ความเสี่ยงที่รู้ตอนนี้:\n• ${r.join("\n• ")}\n\n(จะหยุดทันทีถ้ามีเรื่องสำคัญให้ตัดสินใจ)`)) return;
-          onAgeUp(3);
-        }}
-      >
-        ⏩ 3 ปี
-      </button>
-      {lastYearActs(life).length > 0 && (
-        <button
-          className="btn small ghost"
-          disabled={life.queue.length > 0}
-          title="ทำกิจกรรมและงานชุดเดิมของปีก่อน (ไม่รวมอาชญากรรม) แล้วอายุขึ้นหนึ่งปี"
-          onClick={() => {
-            repeatLastYear(life);
-            onAgeUp(1);
-          }}
-        >
-          🔁 ซ้ำปีก่อน
-        </button>
-      )}
       {cur && (
         <div className="plan-hint">
           ✅ {cur.pros} · ❌ {cur.cons}
@@ -418,7 +382,7 @@ export function MainScreen({
       </NameCtx.Provider>
 
       <footer className="bottom">
-        {murim && life.alive && <PlanBar life={life} onAgeUp={onAgeUp} />}
+        {murim && life.alive && <PlanBar life={life} />}
         <button className="age-btn" onClick={() => onAgeUp(1)} disabled={life.queue.length > 0}>
           ＋ อายุ 1 ปี
         </button>

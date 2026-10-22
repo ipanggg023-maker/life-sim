@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { COUNTRIES } from "../../content/countries";
 import { ACHIEVEMENTS, ACH_CATEGORY, catOf, type AchCategory } from "../../content/achievements";
 import { TALENTS, RARITY_LABEL, talentById } from "../../content/talents";
@@ -47,50 +47,47 @@ export function SoulTab({
           <p>
             ชีวิตที่ {graveyard.length + 1} · {displayName(life)} · ปี {life.birthYear}
           </p>
-          {(life.body?.injuries.length ?? 0) > 0 && (
-            <>
-              <div className="section-title">ร่างกาย</div>
-              {life.body!.injuries.map((i) => (
-                <p className="small" key={i.id}>
-                  {i.sev === 3 ? "🩸" : "🤕"} {injuryLabel(i)} · ตั้งแต่อายุ {i.since}
-                  {i.cause && <span className="muted"> — {i.cause}</span>}
-                </p>
-              ))}
-              <div className="section-title">เป้าหมายชีวิต</div>
-            </>
-          )}
-          {(life.goals ?? []).map((g, i) => {
-            const d = goalById(g.id);
-            if (!d) return null;
-            const st = g.end === "won" ? "✅ สำเร็จ" : g.end === "lost" ? "❌ ล้มเหลว" : g.end === "changed" ? "↪️ เปลี่ยนใจ" : `กำลังไล่ตาม (${g.step}/${d.steps.length})`;
-            return (
-              <p className="small" key={i}>
-                {d.emoji} {d.name}{g.side ? " (รอง)" : ""} · ตั้งแต่อายุ {g.since} · {st}
-                {g.why && <span className="muted"> — {g.why}</span>}
+          <Fold
+            title="ร่างกาย"
+            items={(life.body?.injuries ?? []).map((i) => (
+              <p className="small" key={i.id}>
+                {i.sev === 3 ? "🩸" : "🤕"} {injuryLabel(i)} · ตั้งแต่อายุ {i.since}
+                {i.cause && <span className="muted"> — {i.cause}</span>}
               </p>
-            );
-          })}
-          {(life.chron?.length ?? 0) > 0 && (
-            <>
-              <div className="section-title">เหตุการณ์สำคัญของชีวิตนี้</div>
-              {life.chron!.slice().reverse().slice(0, 30).map((c, i) => (
+            ))}
+          />
+          <Fold
+            title="เป้าหมายชีวิต"
+            items={(life.goals ?? []).slice().reverse().flatMap((g, i) => {
+              const d = goalById(g.id);
+              if (!d) return [];
+              const st = g.end === "won" ? "✅ สำเร็จ" : g.end === "lost" ? "❌ ล้มเหลว" : g.end === "changed" ? "↪️ เปลี่ยนใจ" : `กำลังไล่ตาม (${g.step}/${d.steps.length})`;
+              return [
                 <p className="small" key={i}>
-                  ⭐ ปี {c.year} · {c.text}
-                </p>
-              ))}
-            </>
-          )}
-          {(soul.chronicle?.length ?? 0) > 0 && (
-            <>
-              <div className="section-title">บันทึกยุทธภพ</div>
-              {soul.chronicle!.slice().reverse().slice(0, 60).map((c, i) => (
-                <p className="small" key={i}>
-                  {c.kind === "legend" ? "🌟" : c.kind === "life" ? "🪦" : "📯"} ปี {c.year} · {c.text}
-                  <span className="muted"> — {c.src}</span>
-                </p>
-              ))}
-            </>
-          )}
+                  {d.emoji} {d.name}{g.side ? " (รอง)" : ""} · ตั้งแต่อายุ {g.since} · {st}
+                  {g.why && <span className="muted"> — {g.why}</span>}
+                </p>,
+              ];
+            })}
+          />
+          <Fold
+            title="เหตุการณ์สำคัญของชีวิตนี้"
+            items={(life.chron ?? []).slice().reverse().slice(0, 60).map((c, i) => (
+              <p className="small" key={i}>
+                ⭐ ปี {c.year} · {c.text}
+              </p>
+            ))}
+          />
+          <Fold
+            title="บันทึกยุทธภพ"
+            closed
+            items={(soul.chronicle ?? []).slice().reverse().slice(0, 120).map((c, i) => (
+              <p className="small" key={i}>
+                {c.kind === "legend" ? "🌟" : c.kind === "life" ? "🪦" : "📯"} ปี {c.year} · {c.text}
+                <span className="muted"> — {c.src}</span>
+              </p>
+            ))}
+          />
         </div>
       ) : (
         <>
@@ -181,9 +178,10 @@ export function SoulTab({
       )}
 
       {graveyard.length > 0 && (
-        <>
-          <div className="section-title">สุสาน</div>
-          {graveyard.map((g, i) => (
+        <Fold
+          title="สุสาน"
+          show={3}
+          items={graveyard.map((g, i) => (
             <div className="grave" key={g.id}>
               <div className="grave-name">
                 ชาติที่ {graveyard.length - i}: {g.name} · {g.age} ปี
@@ -198,7 +196,7 @@ export function SoulTab({
               </div>
             </div>
           ))}
-        </>
+        />
       )}
 
       {!real && <CollectionCard life={life} soul={soul} />}
@@ -389,5 +387,26 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
         เกิดด้วยค่านี้
       </button>
     </div>
+  );
+}
+
+/** หมวดในบันทึกชีวิตที่ย่อได้: แตะหัวข้อเพื่อพับ · แสดงล่าสุดไม่กี่เรื่อง แล้วกดดูทั้งหมด */
+function Fold({ title, items, show = 5, closed = false }: { title: string; items: ReactNode[]; show?: number; closed?: boolean }) {
+  const [all, setAll] = useState(false);
+  // คุมสถานะเปิด/ปิดเอง (ไม่ให้วาดใหม่แล้วพับกลับ)
+  const [open, setOpen] = useState(!closed);
+  if (!items.length) return null;
+  return (
+    <details className="fold" open={open} onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
+      <summary className="section-title">
+        {title} <span className="muted small">({items.length})</span>
+      </summary>
+      {all ? items : items.slice(0, show)}
+      {items.length > show && (
+        <button className="btn small ghost fold-more" onClick={() => setAll(!all)}>
+          {all ? "ย่อ" : `ดูทั้งหมด (${items.length})`}
+        </button>
+      )}
+    </details>
   );
 }

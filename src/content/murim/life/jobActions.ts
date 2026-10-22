@@ -13,6 +13,7 @@ import { addHeat } from "./law";
 import { TAEL } from "../story/kit";
 import { timeLeft } from "../../../engine/activities";
 import { gift } from "./gifts";
+import { plantSeed } from "./seedStore";
 
 export interface JobAction {
   id: string;
@@ -118,7 +119,7 @@ export const JOB_ACTIONS: JobAction[] = [
   { id: "tao_talisman", jobs: ["taoist"], emoji: "📜", name: "เขียนยันต์ขับไล่สิ่งชั่วร้ายให้ชาวบ้าน", desc: "รายได้และชื่อเสียง", odds: by("luck", 0.55), run: (l, s) => { addMoney(l, (s ? 25 : 8) * TAEL); if (s) { addFame(l, 2); return ok("ลูกสาวผู้ใหญ่บ้านหายจากอาการเพ้อในคืนที่สาม — ชาวบ้านแห่มาขอยันต์จนหมึกหมด"); } return meh("คนไข้ไม่ดีขึ้น — หมอยาบอกว่าเป็นไข้มาลาเรีย ไม่ใช่ผี"); } },
   { id: "tao_divine", jobs: ["taoist"], emoji: "🔮", name: "ดูดวงเสี่ยงทายที่หน้าอาราม", desc: "เงินเล็กน้อย บางทีได้ข่าวสาร", run: (l) => { addMoney(l, 12 * TAEL); if (chance(l, 0.3)) { addStat(l, "smarts", 1); return ok("ลูกค้าคนหนึ่งเป็นภรรยาขุนนาง — นางเล่าเรื่องในจวนให้ฟังมากกว่าที่ควร"); } return meh("ทั้งปีมีแต่คนถามเรื่องคู่ครองกับเลขเด็ด"); } },
   { id: "tao_retreat", jobs: ["taoist"], emoji: "⛰️", name: "ปลีกวิเวกบนยอดเขาหนึ่งฤดู", desc: "อายุยืน ใจสงบ", minLevel: 2, run: (l) => { addStat(l, "health", 4); addStat(l, "happiness", 4); l.flags.taoLongevity = Number(l.flags.taoLongevity ?? 0) + 1; if (l.power) addQi(l, 1); return ok("ร้อยวันบนยอดเขา กินแต่น้ำค้างกับสน — ลมหายใจของคุณยาวขึ้นเหมือนเมฆ"); } },
-  { id: "monk_heal", jobs: ["monk"], emoji: "🍲", name: "ตั้งโรงทานให้คนยากไร้", desc: "ธรรมะและชื่อเสียง", cost: 5, run: (l) => { addFame(l, 2); return ok(`คนจนต่อแถวรับโจ๊กยาวถึงประตูวัด${shiftAlign(l, 4)}`); } },
+  { id: "monk_heal", jobs: ["monk"], emoji: "🍲", name: "ตั้งโรงทานให้คนยากไร้", desc: "ธรรมะและชื่อเสียง", cost: 5, run: (l) => { addFame(l, 2); if (chance(l, 0.35)) plantSeed(l, "kindness", "เด็กกำพร้าที่โรงทาน"); return ok(`คนจนต่อแถวรับโจ๊กยาวถึงประตูวัด${shiftAlign(l, 4)}`); } },
   { id: "beg_intel", jobs: ["beggar_sect"], emoji: "👁️", name: "สืบข่าวให้พรรค", desc: "ผลงานในพรรค", odds: by("luck", 0.5), run: (l, s) => { if (s) { perf(l, 15); l.flags.factionIntel = true; return ok("ข่าวที่คุณได้มาช่วยให้พรรครู้แผนของศัตรูก่อน"); } return meh("ไม่มีข่าวอะไรน่าสนใจ"); } },
   { id: "beg_pouch", jobs: ["beggar_sect"], emoji: "🥣", name: "ขอทดสอบเลื่อนถุง", desc: "ผ่านแล้วได้เลื่อนขั้น", odds: by("health", 0.35, 0.06), run: (l, s) => { if (s && l.job && l.job.level < 5) { l.job.level++; return big(`คุณได้ถุงเพิ่ม — ตอนนี้เป็น${["", "ศิษย์ถุงเดียว", "ศิษย์สามถุง", "ศิษย์ห้าถุง", "ผู้อาวุโสเจ็ดถุง", "ผู้อาวุโสเก้าถุง"][l.job.level]}`); } return no("ผู้อาวุโสส่ายหน้า \"ปีหน้าค่อยมาใหม่\""); } },
 

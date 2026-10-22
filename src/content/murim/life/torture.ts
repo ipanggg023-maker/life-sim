@@ -7,6 +7,7 @@ import type { Life } from "../../../engine/types";
 import { log } from "../../../engine/util";
 import { relOf } from "../../../engine/npc";
 import { B, BIG, C, E, G, K, N, P, PAY, type Res } from "../story/kit";
+import { plantSeed } from "./seedStore";
 
 const heat = (l: Life) => Number(l.flags.heat ?? 0);
 const lowerHeat = (l: Life, n: number) => { l.flags.heat = Math.max(0, heat(l) - n); };
@@ -43,6 +44,7 @@ export const TORTURE_EVENTS: GameEvent[] = [
         r.grudge = Math.min(100, r.grudge + 50);
         r.trust = Math.max(-100, r.trust - 40);
         p.tags = [...(p.tags ?? []), "betrayed_in_jail"];
+        plantSeed(l, "betrayed", p.name, p.id);
         return B(`คุณเอ่ยชื่อ${p.name} — คืนนั้นทหารไปลากตัวเขาออกจากบ้าน เขาจะรู้ว่าใครพูด`, { align: -8, joy: -4 })(l, c);
       }),
       PAY("ติดสินบนผู้คุม", (l) => Math.round(10 + heat(l) / 4), N("ผู้คุมนับเงินแล้วเก็บคีมกลับเข้ากล่อง \"วันนี้ข้ายุ่ง\"")),
