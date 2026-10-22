@@ -156,7 +156,7 @@ export function buildDisciple(dead: Life, pid: string): Life {
   life.flags.generation = Number(dead.flags.generation ?? 1) + 1;
   life.people = [{ id: `m${dead.id}`, name: displayName(dead), gender: dead.gender, relation: "ally", age: dead.age, bond: d.bond, alive: false, tags: ["master"] }];
   life.money = Math.round(Math.max(0, dead.money) * 0.1);
-  life.fame = Math.round(dead.fame * 0.15);
+  life.fame = Math.round(dead.fame * 0.15) || 0;
   // ศิษย์ที่ฝึกกับอาจารย์มาแล้ว: ฝีมือต่ำกว่าอาจารย์สองขั้น ลมปราณตามวัยที่ฝึก
   const rank = Math.max(1, Math.min(3, (dead.power?.rank ?? 2) - 2));
   awaken(life, rank, dead.power?.hunterClass ?? "m_sword");

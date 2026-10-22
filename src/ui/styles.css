@@ -297,7 +297,8 @@ p { margin: 0.25em 0; }
   transition: transform 0.08s;
 }
 .age-btn:active:not(:disabled) { transform: scale(0.97); }
-.tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 8px; }
+/* ทุกแท็บอยู่แถวเดียวเสมอ (ยุทธภพมี 6 แท็บ) */
+.tabs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin-top: 8px; }
 .tab {
   display: flex;
   flex-direction: column;
@@ -309,7 +310,10 @@ p { margin: 0.25em 0; }
   font-size: 12px;
   color: var(--muted);
   border-radius: 10px;
+  min-width: 0;
+  white-space: nowrap;
 }
+@media (max-width: 400px) { .tab { font-size: 11px; } .tab-emoji { font-size: 18px; } }
 .tab:active { background: var(--surface); }
 .tab-emoji { font-size: 20px; }
 
@@ -898,3 +902,16 @@ body.no-comments .comments-head { margin-bottom: 0; }
 .rar-mythic { background: linear-gradient(90deg, #ff5e7e, #ffb547, #5fe08a, #4cc3ff, #b57bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
 .log-more { display: block; margin: 4px auto 10px; }
+
+/* ── หน้าจอหลังตาย: เลือกเล่นต่อ ── */
+.continue { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: var(--surface); border: 2px solid var(--accent); box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 18%, transparent); }
+.continue-head { font-size: 18px; font-weight: 800; text-align: center; color: var(--text); }
+.cont-btn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); color: var(--text); cursor: pointer; transition: transform 0.1s; }
+.cont-btn:active:not(:disabled) { transform: scale(0.98); }
+.cont-btn.heir, .cont-btn.pupil { background: color-mix(in srgb, var(--good) 12%, var(--bg)); border-color: color-mix(in srgb, var(--good) 55%, var(--line)); }
+.cont-btn.era { background: color-mix(in srgb, var(--accent) 12%, var(--bg)); border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+.cont-emoji { font-size: 30px; flex-shrink: 0; width: 40px; text-align: center; }
+.cont-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.cont-title { font-size: 16px; font-weight: 800; color: var(--text); }
+.cont-desc { font-size: 13px; color: var(--muted); line-height: 1.4; }
+.continue-hint { text-align: center; font-size: 12px; color: var(--muted); }

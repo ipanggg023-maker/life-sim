@@ -77,6 +77,8 @@ export function DeathScreen({
         <p className="cause">{loc(life, life.causeOfDeath ?? "")}</p>
       </div>
 
+      {real && <ContinuePanel life={life} open={open} busy={busy} go={go} />}
+
       {!real && (
         <>
           <SeriesCover series={series} world={life.worldId} author={displayName(life)} />
@@ -111,7 +113,7 @@ export function DeathScreen({
       </div>
 
       {real ? (
-        <RealisticEnd life={life} achievements={claimed ? [] : award.achievements.filter((a) => a.cat === life.worldId)} open={open} busy={busy} go={go} />
+        <RealisticEnd life={life} achievements={claimed ? [] : award.achievements.filter((a) => a.cat === life.worldId)} />
       ) : (
         <>
       <div className="sys-window">
@@ -229,21 +231,7 @@ export function DeathScreen({
 }
 
 /** ตอนจบแบบสมจริง (ยุทธภพ): ไม่มีวิญญาณ/ร้าน/ย้อนเวลา — เล่นต่อเป็นลูก หรือคนใหม่ในโลกเดิม */
-function RealisticEnd({
-  life,
-  achievements,
-  open,
-  busy,
-  go,
-}: {
-  life: Life;
-  achievements: { id: string; name: string; desc: string }[];
-  open: boolean;
-  busy: boolean;
-  go: (c: RebirthChoice) => void;
-}) {
-  const heirs = heirsOf(life);
-  const pupils = life.worldId === "murim" ? disciplesOf(life) : [];
+function RealisticEnd({ life, achievements }: { life: Life; achievements: { id: string; name: string; desc: string }[] }) {
   const sum = life.worldId === "murim" ? lifeSummary(life) : undefined;
   return (
     <>
@@ -286,35 +274,6 @@ function RealisticEnd({
           ))}
         </div>
       )}
-      <div className="section-title">เรื่องราวต่อจากนี้</div>
-      {heirs.map((c) => (
-        <button className="path" key={c.id} disabled={busy} onClick={() => go(`heir:${c.id}`)}>
-          <span className="path-title">👶 เล่นต่อเป็น{c.gender === "m" ? "ลูกชาย" : "ลูกสาว"} — {c.name}</span>
-          <span className="path-desc">
-            อายุ {c.age} ปี · รับมรดก{heirs.length > 1 ? `ส่วนแบ่ง 1/${heirs.length}` : "ทั้งหมด"} ชื่อเสียงและความแค้นของตระกูล
-          </span>
-        </button>
-      ))}
-      {pupils.map((d) => (
-        <button className="path" key={d.id} disabled={busy} onClick={() => go(`disciple:${d.id}`)}>
-          <span className="path-title">🥋 เล่นต่อเป็นศิษย์ — {d.name}</span>
-          <span className="path-desc">อายุ {d.age} ปี · ได้วิชาที่สอนไว้ สำนัก และความแค้นของอาจารย์ — แต่ไม่ได้ทรัพย์สมบัติ</span>
-        </button>
-      ))}
-      {open && (
-        <button className="path" disabled={busy} onClick={() => go("nextEra")}>
-          <span className="path-title">🏮 คนใหม่ในยุคถัดไป</span>
-          <span className="path-desc">โลกเดิม หลายสิบปีต่อมา — เรื่องของ{displayName(life)}กลายเป็นตำนานที่คนรุ่นหลังเล่าต่อ</span>
-        </button>
-      )}
-      {OPEN_WORLDS.filter((w) => w !== life.worldId || !open).map((w) => (
-        <button className="path" key={w} disabled={busy} onClick={() => go(`world:${w}`)}>
-          <span className="path-title">
-            {WORLDS[w].emoji} เริ่มชีวิตใหม่ใน{WORLDS[w].name}
-          </span>
-          <span className="path-desc">เริ่มต้นใหม่ทั้งหมด</span>
-        </button>
-      ))}
     </>
   );
 }
@@ -329,6 +288,55 @@ function ShopItem(p: { name: string; desc: string; cost: number; owned?: string;
       <button className="btn small" disabled={p.disabled} onClick={p.onBuy}>
         {p.owned ?? `${p.cost} แต้ม`}
       </button>
+    </div>
+  );
+}
+
+/** เลือกเล่นต่อ (โลกสมจริง) — อยู่บนสุดของหน้าจอหลังตาย ปุ่มใหญ่ อ่านง่าย */
+function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; busy: boolean; go: (c: RebirthChoice) => void }) {
+  const heirs = heirsOf(life);
+  const pupils = life.worldId === "murim" ? disciplesOf(life) : [];
+  return (
+    <div className="continue">
+      <div className="continue-head">เล่นต่ออย่างไร?</div>
+      {heirs.map((c) => (
+        <button className="cont-btn heir" key={c.id} disabled={busy} onClick={() => go(`heir:${c.id}`)}>
+          <span className="cont-emoji">👶</span>
+          <span className="cont-text">
+            <span className="cont-title">เล่นต่อเป็น{c.gender === "m" ? "ลูกชาย" : "ลูกสาว"} · {c.name}</span>
+            <span className="cont-desc">อายุ {c.age} ปี · ได้มรดก{heirs.length > 1 ? ` 1/${heirs.length}` : "ทั้งหมด"} ชื่อเสียง และความแค้นของตระกูล</span>
+          </span>
+        </button>
+      ))}
+      {pupils.map((d) => (
+        <button className="cont-btn pupil" key={d.id} disabled={busy} onClick={() => go(`disciple:${d.id}`)}>
+          <span className="cont-emoji">🥋</span>
+          <span className="cont-text">
+            <span className="cont-title">เล่นต่อเป็นศิษย์ · {d.name}</span>
+            <span className="cont-desc">อายุ {d.age} ปี · ได้วิชาที่สอนไว้ สำนัก และความแค้นของอาจารย์</span>
+          </span>
+        </button>
+      ))}
+      {open && (
+        <button className="cont-btn era" disabled={busy} onClick={() => go("nextEra")}>
+          <span className="cont-emoji">🏮</span>
+          <span className="cont-text">
+            <span className="cont-title">ตัวละครใหม่ · ยุคถัดไป</span>
+            <span className="cont-desc">โลกเดิม หลายสิบปีต่อมา — เรื่องของ{displayName(life)}กลายเป็นตำนาน</span>
+          </span>
+        </button>
+      )}
+      {OPEN_WORLDS.map((w) => (
+        <button className="cont-btn fresh" key={w} disabled={busy} onClick={() => go(`world:${w}`)}>
+          <span className="cont-emoji">{WORLDS[w].emoji}</span>
+          <span className="cont-text">
+            <span className="cont-title">เริ่มใหม่ทั้งหมดใน{WORLDS[w].name}</span>
+            <span className="cont-desc">ตัวละครใหม่ ครอบครัวใหม่ โลกใหม่</span>
+          </span>
+        </button>
+      ))}
+      {heirs.length === 0 && pupils.length === 0 && <p className="muted small">ไม่มีลูกหรือศิษย์ที่โตพอจะสืบต่อ — ครั้งหน้ามีครอบครัวหรือรับศิษย์ไว้ จะเล่นต่อเป็นพวกเขาได้</p>}
+      <div className="continue-hint">↓ เลื่อนลงเพื่อดูสรุปชีวิต</div>
     </div>
   );
 }

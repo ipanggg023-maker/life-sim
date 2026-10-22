@@ -3,7 +3,7 @@ import type { GameEvent, Outcome } from "../../../engine/events";
 import { kill } from "../../../engine/game";
 import { chance, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
-import { addFame, addMoney, addStat, money } from "../../../engine/util";
+import { addFame, addMoney, addStat, clamp, money } from "../../../engine/util";
 import { familyOf, priceIndex, type CrisisId } from "./world";
 
 const good = (text: string): Outcome => ({ text, kind: "good" });
@@ -14,6 +14,9 @@ const stageIs = (l: Life, id: CrisisId, stage: number) => l.mw?.crisis?.id === i
 const once = (id: CrisisId, stage: number) => (l: Life) => stageIs(l, id, stage) && l.flags[`mwDone_${id}_${stage}_${l.mw!.crisis!.since}`] !== true;
 const mark = (l: Life, stage: number) => { const c = l.mw!.crisis!; l.flags[`mwDone_${c.id}_${stage}_${c.since}`] = true; };
 const grain = (l: Life) => Math.round(30_000 * priceIndex(l) * Math.max(1, familyOf(l).length));
+
+/** รอดจากศึกปราบกบฏ: ฝีมือและร่างกายช่วยได้จริง */
+const draftSurvival = (l: Life) => clamp(0.82 + (l.power?.rank ?? 0) * 0.03 + (l.stats.health - 50) / 400, 0.7, 0.97);
 
 export const CRISIS_EVENTS: GameEvent[] = [
   // ───── ทุพภิกขภัย ─────
@@ -70,7 +73,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
     title: "ประกาศเกณฑ์ไพร่พล",
     text: (l) => `ทหารหลวงมาที่หมู่บ้านพร้อมบัญชีรายชื่อ ทุกบ้านต้องส่งชายฉกรรจ์หนึ่งคนไปรบกับกบฏ — ${l.gender === "m" ? "ชื่อคุณอยู่ในบัญชี" : "พี่น้องผู้ชายในบ้านคุณอยู่ในบัญชี"}`,
     choices: [
-      { label: "ไปเป็นทหารตามคำสั่ง", run: (l) => { mark(l, 1); l.flags.mwSoldier = true; addFame(l, 2); if (chance(l, 0.15)) { kill(l, "ตายในสนามรบระหว่างปราบกบฏชาวนา"); return bad("ศึกแรกก็เป็นศึกสุดท้าย"); } addStat(l, "health", -randInt(l, 3, 12)); addMoney(l, 20_000); return meh("คุณกลับมาพร้อมแผลเป็นและเบี้ยเลี้ยงก้อนเล็กๆ — และภาพที่ลืมไม่ลง"); } },
+      { label: "ไปเป็นทหารตามคำสั่ง", survival: (l) => draftSurvival(l), run: (l) => { mark(l, 1); l.flags.mwSoldier = true; addFame(l, 2); if (!chance(l, draftSurvival(l))) { kill(l, "ตายในสนามรบระหว่างปราบกบฏชาวนา"); return bad("ศึกแรกก็เป็นศึกสุดท้าย"); } addStat(l, "health", -randInt(l, 3, 12)); addMoney(l, 20_000); return meh("คุณกลับมาพร้อมแผลเป็นและเบี้ยเลี้ยงก้อนเล็กๆ — และภาพที่ลืมไม่ลง"); } },
       { label: (l) => `จ่ายเงินให้คนอื่นไปแทน (${money(l, 60_000)})`, show: (l) => l.money >= 60_000, run: (l) => { mark(l, 1); addMoney(l, -60_000); return meh("ลูกชายคนเลี้ยงหมูข้างบ้านไปแทน แม่ของเขามองคุณทุกครั้งที่เดินผ่าน"); } },
       { label: "หนีเข้าป่ากับครอบครัว", check: { stat: "luck", dc: 45 }, run: (l, _c, ok) => { mark(l, 1); if (ok) { l.flags.mwPrepared = true; return good("ถ้ำในหุบเขาลึกพอให้ทั้งครอบครัวซ่อนจนกว่าศึกจะสงบ"); } l.flags.mwWanted = true; addStat(l, "happiness", -8); return bad("ทหารตามรอยมาถึง คุณหนีรอดแต่ถูกประกาศเป็นผู้หนีราชการ"); } },
       { label: "แอบไปเข้ากับฝ่ายกบฏ", tone: "danger", run: (l) => { mark(l, 1); l.flags.mwRebel = true; addFame(l, -3); return meh("คืนนั้นคุณโพกผ้าที่หน้าผาก — ถ้ากบฏชนะ คุณคือผู้ก่อตั้งราชวงศ์ ถ้าแพ้… อย่าคิดถึงมัน"); } },

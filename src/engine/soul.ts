@@ -159,7 +159,7 @@ export function buildHeir(dead: Life, childId: string): Life {
   const share = Math.round(estate / Math.max(1, heirs.length));
   const [first, ...rest] = child.name.replace(/\s*\(.+?\)\s*/, " ").trim().split(/\s+/);
   const familyFirst = dead.lastName === first; // เกาหลี/ญี่ปุ่น: นามสกุลขึ้นก่อน
-  const firstName = child.short ?? (familyFirst ? rest.join(" ") : dead.worldId === "murim" ? child.name.slice(dead.lastName.length) : first);
+  const firstName = child.short ?? (familyFirst ? rest.join(" ") : dead.worldId === "murim" ? (child.name.startsWith(dead.lastName) ? child.name.slice(dead.lastName.length) : child.name) : first);
   const life = createLife({
     seed: (dead.seed ^ hashId(child.id)) >>> 0,
     worldId: dead.worldId,
@@ -183,7 +183,7 @@ export function buildHeir(dead: Life, childId: string): Life {
   if (dead.flags.bizData) life.flags.bizData = dead.flags.bizData;
   if (dead.flags.propData) life.flags.propData = dead.flags.propData;
   life.money = share;
-  life.fame = Math.round(dead.fame * 0.3);
+  life.fame = Math.round(dead.fame * 0.3) || 0; // กัน -0
   // คนในครอบครัว: พ่อ/แม่คนเดิม (ผู้เล่นชาติก่อน) + คู่สมรสของเขา + พี่น้อง
   life.people = [];
   const parentRel = dead.gender === "m" ? "father" : "mother";

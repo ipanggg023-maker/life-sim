@@ -158,7 +158,7 @@ export function tickMartial(l: Life) {
   comprehension(l);
   if (l.power) {
     const hasInternal = artsOf(l).some((k) => artInfo(k).type === "internal");
-    addQi(l, (0.15 + (hasInternal ? 0.25 : 0) + (l.flags.plan === "train" ? 0.5 : 0)) * (1 + rootOf(l) * 0.12));
+    addQi(l, (0.15 + (hasInternal ? 0.25 : 0) + (l.flags.plan === "train" ? 0.75 : 0)) * (1 + rootOf(l) * 0.14));
   }
   if (l.age % 10 === 0 && l.age >= 20 && Number(l.flags.mwComp) < 95) l.flags.mwComp = Number(l.flags.mwComp) + 1;
   if (conflicted(l) && chance(l, 0.08)) {
