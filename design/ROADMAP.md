@@ -21,7 +21,9 @@ Decisions the player made (these override older docs where they differ):
 | A | Events that really change people (deaths are real) · dark actions on any target · execution + family purge · NPC gender everywhere | done |
 | B | Romance drama: forbidden love, affairs and jealousy, arranged/political marriage, same-sex love | done |
 | C | NPCs who cultivate martial arts and lifelong rivals who grow alongside you | done |
-| D | Large-scale sect wars — sects rally allies, the player picks a side or leads | next |
+| D | Large-scale sect wars — sects rally allies, the player picks a side or leads | done |
 | ongoing | More detailed events · fixes from the player's own playtest | ongoing |
+
+Also done on request: early childhood awakening (talent or a mysterious teacher), officials open to anyone who passed the exam.
 
 Earlier backlog still open: a Three Kingdoms court summary, chronic-poison deaths among careful players.

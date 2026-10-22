@@ -54,7 +54,7 @@ CAREERS.push(
   { id: "innkeeper", name: "เจ้าของโรงเตี๊ยม", emoji: "🏮", minAge: 18, world: "murim", titles: ["เด็กเสิร์ฟ", "พ่อครัว", "ผู้จัดการร้าน", "เถ้าแก่", "เจ้าของโรงเตี๊ยมดัง"], baseSalary: 140_000, key: "luck", dc: 30, salary: (l, b) => b * (0.6 + l.stats.luck / 80) },
   { id: "herbalist", name: "หมอยาสมุนไพร", emoji: "🌿", minAge: 16, world: "murim", titles: ["ลูกมือร้านยา", "หมอยา", "หมอมีชื่อ", "หมอหลวงท้องถิ่น", "หมอเทวดา"], baseSalary: 200_000, key: "smarts", dc: 55 },
   { id: "storyteller", name: "นักเล่านิทานในโรงน้ำชา", emoji: "📜", minAge: 16, world: "murim", titles: ["นักเล่าฝึกหัด", "นักเล่าประจำร้าน", "นักเล่าดัง", "ปรมาจารย์นิทาน", "ผู้บันทึกตำนานยุทธภพ"], baseSalary: 90_000, key: "looks", dc: 40, salary: (l, b) => b * (1 + Math.max(0, l.fame) / 20) },
-  { id: "official", name: "ขุนนาง", emoji: "📯", minAge: 18, world: "murim", titles: ["เสมียนอำเภอ", "นายอำเภอ", "เจ้าเมือง", "ข้าหลวงมณฑล", "เสนาบดี"], baseSalary: 350_000, key: "smarts", dc: 60, mundaneOnly: true, needs: (l) => (l.flags.xiucai ? undefined : "ต้องสอบขุนนางระดับอำเภอผ่านก่อน (เป็นบัณฑิต)") },
+  { id: "official", name: "ขุนนาง", emoji: "📯", minAge: 18, world: "murim", titles: ["เสมียนอำเภอ", "นายอำเภอ", "เจ้าเมือง", "ข้าหลวงมณฑล", "เสนาบดี"], baseSalary: 350_000, key: "smarts", dc: 60, needs: (l) => (l.flags.xiucai ? undefined : "ต้องสอบขุนนางระดับอำเภอผ่านก่อน (เป็นบัณฑิต)") },
 );
 
 

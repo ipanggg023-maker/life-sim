@@ -2,11 +2,11 @@
 // ผลตรวจกระดูก = รากฐาน (พรสวรรค์) ไม่ใช่ฝีมือ — ทุกคนเริ่มจากผู้ฝึกหัด ขั้นถัดไปต้องใช้กำลังภายในจริง (MURIM_PLAN §4)
 import type { Ctx, GameEvent, Outcome } from "../../../engine/events";
 import { kill } from "../../../engine/game";
-import { chance } from "../../../engine/rng";
+import { chance, pick, randInt } from "../../../engine/rng";
 import type { HunterClass, Life } from "../../../engine/types";
-import { addFame, addStat, clamp } from "../../../engine/util";
+import { addFame, addStat, clamp, createPerson } from "../../../engine/util";
 import { CLASSES, awaken, classById, gainExp, guildById, guildsFor, offerClasses, rankLabel, rankUp, rollAwakening, settleNone, trackOf } from "../../hunter/power";
-import { QI_NEED, addQi, comprehension, qiYears, rootOf } from "../martial/arts";
+import { QI_NEED, addQi, comprehension, learn, qiYears, rootOf } from "../martial/arts";
 import { woundFrom } from "../../../engine/body";
 import { gift, giftAll } from "./gifts";
 import { revealTalent } from "../../../engine/game";
@@ -229,4 +229,74 @@ export const TALENT_ROOT: GameEvent = {
   ],
 };
 
-export const MILESTONE_EVENTS: GameEvent[] = [ASSESS_EVENT, LATE_ROOT, TALENT_ROOT, BREAK_EVENT, ...SECLUDE_EVENTS];
+// ───── ปลุกพลังตั้งแต่เด็ก (คำขอของผู้เล่น) ─────
+/** พรสวรรค์ที่ทำให้ชีพจรเปิดเร็ว: รากฐานกระดูก หรือลมปราณสะสมเร็วมาก */
+export const earlyGift = (l: Life) => giftAll(l, "root") + (giftAll(l, "qi") >= 0.25 ? 1 : 0);
+/** เปิดชีพจรตั้งแต่เด็ก: ได้ขั้นตามรากฐาน + ลมปราณสะสมก่อนคนอื่นหลายปี (ไม่ต้องรอศิลาวัดกระดูกตอนสิบสอง) */
+function wakeChild(l: Life, bonus: number, art?: string): string {
+  for (const t of l.talents) if (!t.revealed && (talentById(t.id)?.mx?.root ?? 0) > 0) revealTalent(l, t.id);
+  const root = giftAll(l, "root");
+  const r = Math.max(root, rollAwakening(l, bonus + (root >= 2 ? 1 : 0)), 0);
+  const id = offerClasses(l)[0];
+  awaken(l, r, id);
+  addQi(l, 1 + root);
+  l.flags.mwBasics = Number(l.flags.mwBasics ?? 0) + 2;
+  if (art) learn(l, art, "ผู้สอนลึกลับ", true);
+  return `รากฐานขั้น${rankLabel(l, r)} · สาย${classById(id).name}`;
+}
+
+/** พรสวรรค์แรง: ลมปราณตื่นเองตอนหกเจ็ดขวบ */
+export const EARLY_SPARK: GameEvent = {
+  id: "mk.early_spark",
+  minAge: 6,
+  maxAge: 9,
+  forced: true,
+  maxTimes: 1,
+  title: "ลมปราณที่ตื่นเอง",
+  when: (l) => !l.power && !l.flags.awakenDone && earlyGift(l) >= 2 && l.age >= 6,
+  text: () => "คืนนั้นคุณนอนไม่หลับ — มีอะไรอุ่นๆ หมุนวนอยู่ใต้สะดือ ไหลไปตามแขนขาเองโดยไม่มีใครสอน ผ้าห่มที่คลุมอยู่เปียกชุ่มทั้งที่อากาศหนาว",
+  choices: [
+    { label: "นั่งนิ่ง ปล่อยให้มันไหลไปจนสุดทาง", run: (l) => ({ text: `รุ่งเช้าคุณลืมตาขึ้นมาเห็นทุกอย่างชัดกว่าเดิม — ชีพจรเปิดเองตั้งแต่เจ็ดขวบ (${wakeChild(l, 0)})`, kind: "milestone" }) },
+    { label: "วิ่งไปปลุกพ่อแม่", run: (l) => { const out = wakeChild(l, 0); addFame(l, 2); return { text: `ท่านพ่อจับข้อมือคุณแล้วหน้าซีด "เด็กคนนี้… ชีพจรเปิดเองแล้ว" ข่าวแพร่ไปทั้งหมู่บ้านในเช้านั้น (${out})`, kind: "milestone" }; } },
+  ],
+};
+
+/** ผู้สอนลึกลับ: เด็กคนไหนก็เจอได้ (โชคดีและมีพรสวรรค์ยิ่งเจอง่าย) */
+export const MYSTERY_TEACHER: GameEvent = {
+  id: "mk.mystery_teacher",
+  minAge: 5,
+  maxAge: 10,
+  maxTimes: 1,
+  title: "ขอทานแก่ใต้สะพาน",
+  weight: (l) => (l.power || l.flags.awakenDone ? 0 : 1.5 + Math.max(0, l.stats.luck - 50) / 25 + earlyGift(l) * 2),
+  prepare: (l) => ({ who: pick(l, ["ขอทานแก่ตาบอดข้างหนึ่ง", "หญิงสวมหมวกม่านดำ", "นักพรตเมาที่นอนใต้สะพาน", "ชายเงียบขรึมแขนข้างเดียว"]) }),
+  text: (_l, c) => `${String(c.who ?? "คนแปลกหน้า")}เรียกคุณเข้าไปหาตอนเดินกลับบ้านคนเดียว "เจ้าหายใจผิดวิธีมาตั้งแต่เกิด — มานั่งตรงนี้ ข้าจะสอนให้ครั้งเดียว"`,
+  choices: [
+    { label: "นั่งลงเรียนอย่างตั้งใจ", run: (l) => { l.flags.hiddenMaster = true; return { text: `สามคืนติดกันที่ใต้สะพาน — คืนที่สามลมหายใจของคุณร้อนขึ้นจนไอน้ำลอยจากหัว คนสอนหายไปโดยไม่บอกชื่อ (${wakeChild(l, 1, "a_breathing")})`, kind: "milestone" }; } },
+    { label: "ขอตามไปเป็นศิษย์", run: (l, c) => { l.flags.hiddenMaster = true; const m = createPerson(l, "ally", { age: randInt(l, 55, 80), bond: 60 }); m.tags = ["master"]; m.job = "ยอดฝีมือที่หลบซ่อนตัว"; return { text: `${String(c.who ?? "คนแปลกหน้า")}มองคุณนาน แล้วหัวเราะ "ก็ได้ — มาทุกคืนเดือนมืด ห้ามบอกใคร" (${wakeChild(l, 1, "a_breathing")})`, kind: "milestone" }; } },
+    { label: "วิ่งหนีกลับบ้าน", run: () => ({ text: "คุณวิ่งจนรองเท้าหลุดข้างหนึ่ง — คืนต่อมาใต้สะพานไม่มีใครอยู่แล้ว" }) },
+  ],
+};
+
+/** เด็กที่ชีพจรเปิดก่อนวัยตรวจกระดูก: สำนักต่างๆ มาทาบทามเองเมื่อถึงวัย */
+export const EARLY_SECT: GameEvent = {
+  id: "mk.early_sect",
+  minAge: 10,
+  maxAge: 15,
+  forced: true,
+  maxTimes: 1,
+  title: "สำนักมาเคาะประตู",
+  when: (l) => !!l.power && !l.power.guild && (l.power.awakenedAt ?? 12) < 10 && l.age >= Number(l.flags.ceremonyAge ?? 12),
+  text: (l) => `ข่าวเด็กที่ชีพจรเปิดตั้งแต่${l.power?.awakenedAt ?? 7}ขวบแพร่ไปถึงภูเขาหลายลูก — ผู้อาวุโสจากหลายสำนักมานั่งรออยู่ในบ้านพร้อมกัน`,
+  choices: [
+    ...guildsFor({ worldId: "murim" }).filter((g) => g.id !== "alliance").map((g) => ({
+      label: `ฝากตัวกับ${g.name} — ${g.desc}`,
+      tone: g.demonic ? ("danger" as const) : undefined,
+      show: (l: Life) => g.minRank <= rootOf(l),
+      run: (l: Life): Outcome => { l.power!.guild = g.id; l.job = { careerId: "disciple", level: 1, performance: 55, years: 0 }; if (g.demonic) addFame(l, -15); return { text: `คุณเดินขึ้นภูเขาของ${g.name}ในฐานะศิษย์ที่ทุกคนจับตามอง`, kind: "good" }; },
+    })),
+    { label: "ไม่ฝากตัวกับใคร ฝึกต่อด้วยตัวเอง", run: (): Outcome => ({ text: "ผู้อาวุโสทุกคนกลับไปมือเปล่า — บางคนเสียดาย บางคนจดชื่อคุณไว้" }) },
+  ],
+};
+
+export const MILESTONE_EVENTS: GameEvent[] = [ASSESS_EVENT, LATE_ROOT, TALENT_ROOT, EARLY_SPARK, MYSTERY_TEACHER, EARLY_SECT, BREAK_EVENT, ...SECLUDE_EVENTS];

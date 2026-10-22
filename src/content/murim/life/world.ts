@@ -34,6 +34,8 @@ export interface MurimWorld {
   kingdoms?: import("../world/war").Kingdom[];
   /** ตำนานของคนรุ่นก่อน (ทำเนียบตำนาน) */
   legends?: import("../world/jianghu").Legend[];
+  /** สงครามระหว่างสำนัก (world/sectWar.ts) — กำลังรบอยู่ไม่เกินหนึ่ง + ประวัติ */
+  wars?: import("../world/sectWar").SectWar[];
 }
 
 export const ERA: Record<EraId, { name: string; desc: string }> = {

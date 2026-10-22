@@ -12,6 +12,7 @@ import { runEvent } from "../../engine/game";
 import { WorldCard } from "./PowerTab";
 import { TEMPER, courtOf, palaceAccess } from "../../content/murim/world/court";
 import { COURT_RANKS, HEAT_LABEL, courtRank, schemeHeat } from "../../content/murim/world/palaceSchemes";
+import { activeWar, mySide, sideNames, warsOf } from "../../content/murim/world/sectWar";
 import { PRESSURE_LABEL, ROLE_NAME, castOf, palaceOf, palaceRoleOf, patronOf, princeById, princesOf, support } from "../../content/murim/world/palace";
 
 export function JianghuTab({ life, act }: { life: Life; act: Act }) {
@@ -58,6 +59,7 @@ export function JianghuTab({ life, act }: { life: Life; act: Act }) {
       )}
       <RumorCard life={life} act={act} />
       <WorldCard life={life} />
+      {w && w.era !== "war" && <WarCard life={life} />}
       {w && w.era !== "war" && <CourtCard life={life} />}
       <MurimCard life={life} act={act} />
       <div className="card m17-card">
@@ -207,6 +209,45 @@ function CourtCard({ life }: { life: Life }) {
           รัชกาลก่อน: {c.reigns.slice(-3).map((r) => `${r.name} (${r.from}–${r.to}, ${r.how.split(" — ")[0]})`).join(" · ")}
         </p>
       )}
+    </div>
+  );
+}
+
+/** สงครามสำนัก: แนวรบ ฝั่งของคุณ ศพสะสม และสงครามที่ผ่านมา */
+function WarCard({ life }: { life: Life }) {
+  const war = activeWar(life);
+  const past = warsOf(life).filter((x) => x.ended).slice(-3).reverse();
+  if (!war && !past.length) return null;
+  const side = mySide(life);
+  const yr = life.birthYear + life.age;
+  return (
+    <div className="card">
+      <div className="card-title">⚔️ สงครามสำนัก</div>
+      {war ? (
+        <>
+          <p className="small">
+            <b>{sideNames(life, war, "a")}</b> ปะทะ <b>{sideNames(life, war, "b")}</b> · ปีที่ {yr - war.since + 1} · ศพ {war.deaths}
+          </p>
+          <p className="muted small">ต้นเหตุ: {war.cause}</p>
+          <div className="faction-row">
+            <span className="faction-name small">แนวรบ</span>
+            <div className="bar small-bar" aria-label={`แนวรบ ${war.front}`}>
+              <div className={`fill ${side === "a" ? "high" : side === "b" ? "low" : "mid"}`} style={{ width: `${Math.round((war.front + 100) / 2)}%` }} />
+            </div>
+          </div>
+          <p className="small">
+            {side ? `คุณอยู่ฝ่าย${sideNames(life, war, side)}` : life.flags.warSide === "none" ? "คุณวางตัวเป็นกลาง" : "คุณยังไม่ได้เลือกข้าง"}
+            {life.flags.deserter ? " · ถูกตราหน้าว่าหนีทัพ" : ""}
+          </p>
+        </>
+      ) : (
+        <p className="muted small">ตอนนี้ยุทธภพสงบ</p>
+      )}
+      {past.map((x) => (
+        <p className="muted small" key={x.id}>
+          {x.since}–{x.ended}: {sideNames(life, x, "a")} ปะทะ {sideNames(life, x, "b")} — {x.result === "truce" ? "สงบศึก" : `${sideNames(life, x, x.result!)} ชนะ`}
+        </p>
+      ))}
     </div>
   );
 }
