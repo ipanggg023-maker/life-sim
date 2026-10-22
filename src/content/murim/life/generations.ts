@@ -11,6 +11,7 @@ import { awaken, rankLabel } from "../../hunter/power";
 import { addQi, artInfo, artsOf, learn } from "../martial/arts";
 import { mySect, saveSect } from "../m17core";
 import { courtOf } from "../world/court";
+import { legacyToWorld } from "../world/jianghu";
 import { factions } from "../world/factions";
 import { goalById, setGoal } from "./goals";
 import { ERA, calYear, CRISIS } from "./world";
@@ -91,6 +92,7 @@ export function carryWorld(dead: Life, next: Life, yearsLater: number) {
 export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | "era", pid?: string) {
   if (dead.worldId !== "murim") return;
   carryWorld(dead, next, how === "era" ? next.birthYear - (dead.birthYear + dead.age) : 0);
+  legacyToWorld(dead, next, how === "era");
   const heir = pid ? dead.people.find((p) => p.id === pid) : undefined;
   // วิชาที่สอนไว้ (ป้ายศิลปะ art:id บนตัวลูก/ศิษย์) — ไม่ได้ความชำนาญมาทั้งหมด
   const taught = (heir?.tags ?? []).filter((t) => t.startsWith("art:")).map((t) => t.slice(4));

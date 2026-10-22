@@ -444,8 +444,10 @@ function checkHiddenTalent(life: Life) {
 }
 
 /** แปลง Outcome หรือ auto ของ event ให้เป็นบันทึกชีวิต */
-export function runEvent(life: Life, eventId: string, ctx: Ctx = {}) {
+export function runEvent(life: Life, eventId: string, ctx: Ctx = {}, prepared = false) {
   const e = getEvent(eventId)!;
+  // ฉากที่เลือกเป้าหมายเอง (prepare) ต้องได้ ctx ด้วย แม้จะเปิดจากปุ่ม — ctx ที่ส่งมาชนะ
+  if (e.prepare && !prepared && Object.keys(ctx).length === 0) ctx = e.prepare(life);
   life.seen[eventId] = (life.seen[eventId] ?? 0) + 1;
   if (e.choices?.length) {
     life.queue.push({ eventId, ctx });
@@ -507,7 +509,7 @@ export function ageUp(life: Life) {
   for (const e of pickEvents(life, count)) {
     if (!stillValid(life, e)) continue;
     const ctx = e.prepare?.(life) ?? {};
-    runEvent(life, e.id, ctx);
+    runEvent(life, e.id, ctx, true);
     if (!life.alive) return;
   }
   checkHiddenTalent(life);

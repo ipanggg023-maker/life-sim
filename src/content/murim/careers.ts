@@ -84,3 +84,12 @@ CAREERS.push(
 
 /** อาชีพสายมืด: ทางการรู้มากขึ้นทุกปีที่ทำ */
 export const DARK_JOBS = new Set(["bandit", "pirate", "thief", "poisoner", "cultist", "m_assassin"]);
+
+// ───────────────────────── อาชีพสายราชสำนักและงานทั่วไปเพิ่มเติม (MURIM_PLAN §6 · §8.7) ─────────────────────────
+CAREERS.push(
+  { id: "woodcutter", name: "คนตัดฟืน", emoji: "🪓", minAge: 12, world: "murim", titles: ["เด็กเก็บฟืน", "คนตัดฟืน", "คนตัดไม้ประจำป่า", "นายหน้าไม้", "เจ้าของป่าไม้"], baseSalary: 50_000, key: "health", dc: 5 },
+  { id: "waiter", name: "เด็กเสิร์ฟโรงน้ำชา", emoji: "🍵", minAge: 12, world: "murim", titles: ["เด็กล้างถ้วย", "เด็กเสิร์ฟ", "หัวหน้าเด็กเสิร์ฟ", "ผู้จัดการโรงน้ำชา", "หุ้นส่วนโรงน้ำชา"], baseSalary: 55_000, key: "looks", dc: 10 },
+  { id: "imperial_guard", name: "องครักษ์หลวง", emoji: "🛡️", minAge: 18, world: "murim", titles: ["ทหารรักษาประตูวัง", "องครักษ์", "หัวหน้าเวรองครักษ์", "รองผู้บัญชาการองครักษ์", "ผู้บัญชาการองครักษ์หลวง"], baseSalary: 260_000, key: "health", dc: 55, needs: (l) => ((l.power?.rank ?? 0) < 3 ? "ต้องมีฝีมือขั้นชั้นหนึ่งขึ้นไป" : l.flags.wanted || l.flags.courtBlacklist ? "ประวัติไม่สะอาดพอจะเข้าวัง" : undefined) },
+  { id: "jinyiwei", name: "องครักษ์เสื้อแพร", emoji: "🕵️", minAge: 20, world: "murim", titles: ["สายลับฝึกหัด", "องครักษ์เสื้อแพร", "หัวหน้ากองสืบ", "รองผู้บัญชาการเสื้อแพร", "ผู้บัญชาการเสื้อแพร"], baseSalary: 320_000, key: "smarts", dc: 65, needs: (l) => ((l.power?.rank ?? 0) < 3 ? "ต้องมีฝีมือขั้นชั้นหนึ่งขึ้นไป" : l.stats.smarts < 55 ? "ต้องฉลาดพอจะสืบคดีการเมือง" : l.flags.wanted ? "ถูกประกาศจับอยู่" : undefined) },
+  { id: "palace_physician", name: "หมอหลวง", emoji: "⚕️", minAge: 25, world: "murim", titles: ["ผู้ช่วยหมอหลวง", "หมอหลวง", "หมอหลวงอาวุโส", "หัวหน้าสำนักหมอหลวง", "หมอประจำพระองค์"], baseSalary: 380_000, key: "smarts", dc: 70, needs: (l) => (l.flags.medicKnow || (l.job?.careerId === "herbalist" && l.job.level >= 3) ? undefined : "ต้องเป็นหมอที่มีชื่อเสียงมาก่อน (หมอยาขั้น 3 ขึ้นไป หรือรู้วิชาแพทย์)") },
+);

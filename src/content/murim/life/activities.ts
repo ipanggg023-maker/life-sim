@@ -46,6 +46,11 @@ const MURIM_ACTS: Activity[] = [
   } }),
   M({ group: "ยุทธภพ", id: "mw_challenge", emoji: "⚔️", name: "ท้าประลองจอมยุทธ์", desc: "ชนะได้ชื่อเสียง แพ้อาจเจ็บ", minAge: adult, available: (l) => !!l.power, run: (l) => { startDuel(l, { foe: pick(l, ["จอมยุทธ์พเนจร", "ศิษย์สำนักใหญ่", "นักดาบไร้นาม"]), rank: clamp(pow(l) + randInt(l, -1, 1), 0, 8), lethal: false, on: "brawl" }); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_bounty", emoji: "📯", name: "ล่าค่าหัว", desc: "เงินดี ถึงตาย", minAge: 18, available: (l) => !!l.power && pow(l) >= 2, run: (l) => { startDuel(l, { foe: pick(l, ["โจรร้ายมีค่าหัว", "ฆาตกรหนีคดี", "หัวหน้าโจรภูเขา"]), rank: clamp(pow(l) + randInt(l, 0, 1), 0, 8), lethal: true, on: "bandit" }); return { text: "" }; } }),
+  M({ group: "ยุทธภพ", id: "mw_visit", emoji: "⛩️", name: "เยือนสำนักอื่น", desc: "ผูกมิตร แลกเปลี่ยนวิชา", minAge: 14, cost: 2000, run: (l) => { runEvent(l, "jh.visit"); return { text: "" }; } }),
+  M({ group: "ยุทธภพ", id: "mw_alliance", emoji: "🛡️", name: "รับงานพันธมิตรยุทธจักร", desc: "คุ้มกัน สืบข่าว ไกล่เกลี่ย", minAge: 16, available: (l) => Number(l.flags.m17Align ?? 0) >= 0 && (!!l.power || l.stats.smarts >= 55), run: (l) => { runEvent(l, "jh.alliance"); return { text: "" }; } }),
+  M({ group: "ยุทธภพ", id: "mw_cult_hunt", emoji: "🔥", name: "ล่าลัทธิมาร", desc: "ช่วยคน เสี่ยงชีวิต", minAge: 16, available: (l) => !!l.power && Number(l.flags.m17Align ?? 0) >= 0 && l.power.guild !== "cult", run: (l) => { runEvent(l, "jh.cult_hunt"); return { text: "" }; } }),
+  M({ group: "ชีวิต", id: "mw_beauty", emoji: "🌸", name: "ประกวดโฉมงาม", desc: "รูปลักษณ์ตัดสิน", minAge: 15, available: (l) => l.age <= 35, run: (l) => { runEvent(l, "jh.beauty"); return { text: "" }; } }),
+  M({ group: "อาชญากรรม", id: "mw_steal_manual", emoji: "📕", name: "ขโมยคัมภีร์ลับของสำนัก", desc: "ได้วิชาลับ สำนักจะตามล่า", minAge: 16, available: (l) => !!l.power, run: (l) => { runEvent(l, "jh.steal_manual"); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_travel", emoji: "🧭", name: "ย้ายถิ่นไปภูมิภาคอื่น", desc: "เปลี่ยนที่อยู่ เรื่องราวเปลี่ยนตาม", minAge: adult, run: (l) => { runEvent(l, "tv.move"); return { text: "" }; } }),
 
   // ───── ชีวิต ─────

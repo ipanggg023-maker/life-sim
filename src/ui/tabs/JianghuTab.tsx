@@ -5,6 +5,7 @@ import { heatOf, jailed, mourning } from "../../content/murim/life/law";
 import type { Life } from "../../engine/types";
 import type { Act } from "../App";
 import { MurimCard } from "./MurimCard";
+import { legendsOf, myYoungPlace, youngList } from "../../content/murim/world/jianghu";
 import { WorldCard } from "./PowerTab";
 
 export function JianghuTab({ life, act }: { life: Life; act: Act }) {
@@ -51,6 +52,29 @@ export function JianghuTab({ life, act }: { life: Life; act: Act }) {
       )}
       <WorldCard life={life} />
       <MurimCard life={life} act={act} />
+      <div className="card m17-card">
+        <div className="card-title">🐉 ทำเนียบมังกรหนุ่ม (อายุไม่เกิน 30)</div>
+        <p className="small muted">{myYoungPlace(life) ? `คุณอยู่อันดับ ${myYoungPlace(life)}` : life.age > 30 ? "คุณพ้นวัยมังกรหนุ่มแล้ว" : "ยังไม่ติดทำเนียบ — ฝีมือต้องสูงกว่าคนรุ่นเดียวกันทั้งแผ่นดิน"}</p>
+        <ol className="m17-rank">
+          {youngList(life).map((y, i) => (
+            <li key={i}>
+              <span className="m17-place">{i + 1}</span>
+              <span className="m17-name">【{y.e}】{y.n}</span>
+              <span className="m17-age small muted">{y.a} ปี</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      {legendsOf(life).length > 0 && (
+        <div className="card m17-card">
+          <div className="card-title">🏛️ ตำนานคนรุ่นก่อน</div>
+          {legendsOf(life).slice().reverse().map((g, i) => (
+            <p className="small" key={i}>
+              ปี {g.year} · {g.e ? `【${g.e}】` : ""}{g.n} — {g.deed}
+            </p>
+          ))}
+        </div>
+      )}
       {(heat > 0 || jailed(life) || mourning(life)) && (
         <div className="card">
           <div className="card-title">สถานะ</div>

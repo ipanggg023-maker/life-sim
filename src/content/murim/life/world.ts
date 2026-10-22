@@ -32,6 +32,8 @@ export interface MurimWorld {
   past?: { id: CrisisId; year: number }[];
   /** ยุคสามแคว้น: แคว้นที่แบ่งแผ่นดิน (world/war.ts) */
   kingdoms?: import("../world/war").Kingdom[];
+  /** ตำนานของคนรุ่นก่อน (ทำเนียบตำนาน) */
+  legends?: import("../world/jianghu").Legend[];
 }
 
 export const ERA: Record<EraId, { name: string; desc: string }> = {

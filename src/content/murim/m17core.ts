@@ -324,6 +324,12 @@ export interface MySect {
   rr: number;
   /** ศิษย์เอก */
   h?: string;
+  /** อาคาร (หอฝึก หอคัมภีร์ โรงยา คลังอาวุธ หอสอดแนม) */
+  b?: string[];
+  /** ขวัญกำลังใจของศิษย์ 0–100 */
+  m?: number;
+  /** กิจการของสำนัก (คุ้มภัย โรงเตี๊ยม ร้านยา) */
+  biz?: string[];
 }
 
 export const SECT_MIN_RANK = 4;

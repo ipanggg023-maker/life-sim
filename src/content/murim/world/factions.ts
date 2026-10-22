@@ -32,6 +32,8 @@ const BASE: Omit<Faction, "rep" | "leader" | "leaderAge" | "status">[] = [
   { id: "beggar", name: "พรรคกระยาจก", side: "orthodox", power: 55, unity: 70 },
   { id: "tang", name: "ตระกูลถังเรือนพิษ", side: "unorthodox", power: 60, unity: 65 },
   { id: "cult", name: "ลัทธิมารสวรรค์", side: "demonic", power: 70, unity: 55 },
+  { id: "families", name: "ห้าตระกูลใหญ่", side: "orthodox", power: 62, unity: 45 },
+  { id: "blackway", name: "พันธมิตรมรรคาดำ", side: "unorthodox", power: 55, unity: 40 },
 ];
 
 const LEADER_NAMES = ["ฮุ่ยหมิง", "เซียวเทียนหลง", "หลิวเฟิงอวิ๋น", "ฉินเจิ้นหยาง", "ถังอู๋เซิน", "เยี่ยนชิงหาน", "ไป๋เส้าหลง", "จางอู๋จี้", "มู่หรงเฉิน", "หลี่ซิ่วหลาน"];
@@ -42,6 +44,8 @@ export function factions(l: Life): Faction[] {
   if (!w.fx) {
     w.fx = BASE.map((b) => ({ ...b, power: clamp(b.power + randInt(l, -10, 10), 20, 95), rep: 0, leader: pick(l, LEADER_NAMES), leaderAge: randInt(l, 45, 75), status: "steady" as const }));
   }
+  // เซฟเก่า: เติมฝ่ายที่เพิ่มทีหลัง (ห้าตระกูลใหญ่ · มรรคาดำ)
+  for (const b of BASE) if (!w.fx.some((f) => f.id === b.id)) w.fx.push({ ...b, rep: 0, leader: pick(l, LEADER_NAMES), leaderAge: randInt(l, 45, 75), status: "steady" });
   return w.fx;
 }
 export const factionById = (l: Life, id: string) => factions(l).find((f) => f.id === id);

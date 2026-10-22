@@ -4,6 +4,7 @@ import {
   RANK_SIZE, SECT_COST, alignLabel, alignment, canFound, foundSect, ledger, masterLabel, masters, myPlace, mySect, sectNameOptions,
 } from "../../content/murim/m17core";
 import type { Life } from "../../engine/types";
+import { SECT_BUILDINGS, SECT_BUSINESS, buildSect, hasBuilding, openSectBusiness, sectMorale } from "../../content/murim/world/jianghu";
 import { money } from "../../engine/util";
 import type { Act } from "../App";
 
@@ -124,6 +125,48 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
           </div>
           <span className="small">{s.r}</span>
         </div>
+        <div className="m17-sect-rep">
+          <span className="small">ขวัญศิษย์</span>
+          <div className="bar">
+            <div className={`fill ${sectMorale(s) >= 60 ? "high" : sectMorale(s) >= 35 ? "mid" : "low"}`} style={{ width: `${sectMorale(s)}%` }} />
+          </div>
+          <span className="small">{sectMorale(s)}</span>
+        </div>
+        <div className="section-title">อาคาร</div>
+        {SECT_BUILDINGS.map((b) => {
+          const owned = hasBuilding(s, b.id);
+          return (
+            <div className="job" key={b.id}>
+              <div className="job-main">
+                <div className="job-name">{owned ? "✅ " : ""}{b.name}</div>
+                <div className="job-sub">{b.desc}</div>
+              </div>
+              {!owned && (
+                <button className="btn small" disabled={life.money < b.cost * 1000} onClick={() => act((l) => buildSect(l, b.id))}>
+                  สร้าง {b.cost} ตำลึง
+                </button>
+              )}
+            </div>
+          );
+        })}
+        <div className="section-title">กิจการของสำนัก</div>
+        {SECT_BUSINESS.map((b) => {
+          const owned = !!s.biz?.includes(b.id);
+          return (
+            <div className="job" key={b.id}>
+              <div className="job-main">
+                <div className="job-name">{owned ? "✅ " : ""}{b.name}</div>
+                <div className="job-sub">{b.desc} · รายได้ราว {b.income} ตำลึง/ปี</div>
+              </div>
+              {!owned && (
+                <button className="btn small" disabled={life.money < b.cost * 1000} onClick={() => act((l) => openSectBusiness(l, b.id))}>
+                  เปิด {b.cost} ตำลึง
+                </button>
+              )}
+            </div>
+          );
+        })}
+        <p className="small muted">ค่าดูแลอาคารและเลี้ยงศิษย์หักจากเงินทุกปี · ขวัญต่ำ ศิษย์จะหนี</p>
       </div>
     );
   }

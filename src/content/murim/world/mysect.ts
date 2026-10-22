@@ -6,6 +6,7 @@ import { chance } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, money } from "../../../engine/util";
 import { gainExp, rankLabel } from "../../hunter/power";
+import { hasBuilding, sectDefense } from "./jianghu";
 import { SECT_COST, canFound, foundSect, hurt, mySect, npcName, saveSect, sectChange, sectNameOptions, shiftAlign } from "../m17core";
 
 const S = (l: Life) => mySect(l)!;
@@ -83,7 +84,7 @@ export const MYSECT_EVENTS: GameEvent[] = [
     title: "คู่อริบุก",
     text: (l) => `${S(l).rv}ส่งคนสามสิบคนมาล้อมสำนักกลางดึก คบไฟเรียงเป็นแนวยาวบนเชิงเขา`,
     choices: [
-      { label: "นำศิษย์ออกรบเอง", skill: ["combat"], tone: "danger", odds: (l) => clamp(0.4 + pow(l) * 0.08 + S(l).d / 300 - S(l).rr / 300, 0.1, 0.92), survival: (l) => clamp(0.8 + pow(l) * 0.03, 0.6, 0.98), run: (l, _c, s) => {
+      { label: "นำศิษย์ออกรบเอง", skill: ["combat"], tone: "danger", odds: (l) => clamp(0.4 + pow(l) * 0.08 + S(l).d / 300 - S(l).rr / 300 + sectDefense(l), 0.1, 0.95), survival: (l) => clamp(0.8 + pow(l) * 0.03, 0.6, 0.98), run: (l, _c, s) => {
         l.flags.scRaid = l.age;
         if (s) { addFame(l, 6); return { text: `เช้ามา ${S(l).rv}ถอยกลับพร้อมคนเจ็บเต็มเกวียน — ชื่อสำนักคุณดังไปทั้งมณฑล${sectChange(l, { r: 6, rr: -15 })}`, kind: "milestone" }; }
         if (!chance(l, clamp(0.8 + pow(l) * 0.03, 0.6, 0.98))) { kill(l, `ตายขณะปกป้องสำนักจาก${S(l).rv}`); return no("คุณยืนขวางประตูสำนักจนลมหายใจสุดท้าย…"); }
@@ -96,7 +97,7 @@ export const MYSECT_EVENTS: GameEvent[] = [
     id: "sc.traitor",
     minAge: 30,
     maxAge: 120,
-    weight: w(4, (l) => S(l).d >= 10),
+    weight: w(4, (l) => S(l).d >= 10 && !hasBuilding(S(l), "watch")),
     title: "คัมภีร์หาย",
     text: (l) => `คัมภีร์วิชาสำนักหายจากหอคัมภีร์ — ศิษย์คนหนึ่งหายไปพร้อมกัน และมีข่าวว่าไปโผล่ที่${S(l).rv}`,
     choices: [
