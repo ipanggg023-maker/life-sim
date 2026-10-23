@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { COMBOS } from "../../content/murim/life/gifts";
 import { RARITY_LABEL, talentById, talentFlavor } from "../../content/talents";
 import { canEnterGate, dailyQuest, enterGate, gatesLeft, train } from "../../content/hunter/events/gates";
 import { RANKS, classById, combatPower, skillsOf, subClassOf, expToNext, fightOdds, guildById, guildsFor, rankLabel, survivalOdds, type Guild } from "../../content/hunter/power";
@@ -282,6 +283,8 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
 function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
   const p = life.power;
   const known = life.talents.filter((t) => t.revealed);
+  const hidden = life.talents.filter((t) => !t.revealed).length;
+  const combos = COMBOS.filter((c) => life.flags[`combo:${c.id}`]);
   return (
     <div className="tab-content">
       <MartialRecord life={life} />
@@ -293,14 +296,24 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
           <div className="talent-row">
             {known.map((t, i) => {
               const info = talentById(t.id)!;
+              const side = t.id.endsWith("_l") ? "ตื่นแล้ว · ทางสว่าง" : t.id.endsWith("_d") ? "ตื่นแล้ว · ทางมืด" : "";
               return (
-                <div className="talent" key={i}>
-                  <div className="t-name">{info.name}</div>
+                <div className={`talent ${info.world ? info.rarity : ""}`} key={i}>
+                  <div className="t-name">{info.name}{side && <span className="muted small"> · {side}</span>}</div>
                   <div className="t-desc">{info.world ? info.desc : talentFlavor(info.desc)}</div>
                 </div>
               );
             })}
           </div>
+        </>
+      )}
+      {hidden > 0 && <p className="muted small">บางอย่างในตัวคุณยังหลับอยู่ — จะตื่นเมื่อถึงเวลาของมัน</p>}
+      {combos.length > 0 && (
+        <>
+          <div className="section-title">พรสวรรค์ประสาน</div>
+          {combos.map((c) => (
+            <p className="small" key={c.id}>✨ <b>{c.name}</b> <span className="muted">— {talentById(c.a)?.name} + {talentById(c.b)?.name}</span></p>
+          ))}
         </>
       )}
       {(p?.items.length ?? 0) > 0 && (

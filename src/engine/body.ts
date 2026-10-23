@@ -117,7 +117,7 @@ export function injure(l: Life, part: Part, kind: InjuryKind, sev: 1 | 2 | 3, ca
   // ส่วนที่เสียไปแล้วเสียซ้ำไม่ได้
   if (sev === 3 && b.injuries.some((i) => i.part === part && i.sev === 3 && i.kind === kind)) return "";
   // พรสวรรค์ต้านพิษ
-  if (kind === "poison" && chance(l, Math.min(1, gift(l, "poison")))) { log(l, "🛡️ พิษเข้าร่างแล้วถูกขับออกเอง — ร่างกายคุณไม่รับพิษ", "good"); return " [ต้านพิษได้]"; }
+  if (kind === "poison" && chance(l, Math.min(1, gift(l, "poison")))) { l.flags.poisonShrugged = Number(l.flags.poisonShrugged ?? 0) + 1; log(l, "🛡️ พิษเข้าร่างแล้วถูกขับออกเอง — ร่างกายคุณไม่รับพิษ", "good"); return " [ต้านพิษได้]"; }
   const heal = sev === 3 ? 0 : sev === 2 ? randInt(l, 2, 4) : 1;
   const inj: Injury = { id: `i${l.age}_${seq++}_${part}`, part, kind, sev, heal, since: l.age, cause };
   b.injuries.push(inj);

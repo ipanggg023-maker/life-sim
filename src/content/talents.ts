@@ -17,6 +17,8 @@ export interface Talent extends TalentFx {
   world?: "murim";
   /** ผลต่อระบบยุทธภพ (murim/life/gifts.ts) เช่น qi 0.25 = ลมปราณสะสมเร็วขึ้น 25% */
   mx?: Partial<Record<string, number>>;
+  /** ไม่สุ่มตอนเกิด (ร่างที่วิวัฒน์แล้วของพรสวรรค์ยุทธภพ) */
+  noRoll?: boolean;
 }
 
 /**

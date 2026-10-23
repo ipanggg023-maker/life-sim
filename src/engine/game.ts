@@ -8,7 +8,7 @@ import { isRealistic, worldMatches, worldOf } from "../content/worlds";
 import { feel, relOf, remember } from "./npc";
 import { birthplaceOf } from "../content/murim/life/region";
 import { SAVE_VERSION, repairLife } from "./validate";
-import { MURIM_GENERIC_TALENTS, convertOldTalents, gift } from "../content/murim/life/gifts";
+import { convertOldTalents, gift } from "../content/murim/life/gifts";
 
 /** ระบบความรู้สึกหลายแกนของ NPC ใช้เฉพาะโลกสมจริง (โลกอื่นใช้ความสนิทแบบเดิม) */
 const npcOn = (l: Life) => isRealistic(l.worldId);
@@ -89,7 +89,8 @@ function rollRarity(life: Life, odds: Record<Rarity, number>): Rarity {
 function rollTalent(life: Life, odds: Record<Rarity, number>, exclude: string[], allowPower: boolean): string {
   const rarity = rollRarity(life, odds);
   // ยุทธภพสุ่มเฉพาะพรสวรรค์ของยุทธภพ (+ชุดทั่วไปที่เข้ากับโลก) · โลกอื่นไม่ได้พรสวรรค์ยุทธภพ
-  const fits = (t: (typeof TALENTS)[number]) => (life.worldId === "murim" ? t.world === "murim" || MURIM_GENERIC_TALENTS.has(t.id) : t.world !== "murim");
+  // ยุทธภพสุ่มเฉพาะพรสวรรค์ยุทธภพที่มีเรื่องราวของตัวเอง (ร่างที่วิวัฒน์แล้วไม่สุ่ม) · ชุดทั่วไปเดิมยังใช้ได้ในเซฟเก่า
+  const fits = (t: (typeof TALENTS)[number]) => (life.worldId === "murim" ? t.world === "murim" && !t.noRoll : t.world !== "murim");
   const ok = (t: (typeof TALENTS)[number]) => fits(t) && !exclude.includes(t.id) && (allowPower || !t.power || life.worldId === "murim");
   const pool = TALENTS.filter((t) => t.rarity === rarity && ok(t));
   const fallback = TALENTS.filter(ok);
@@ -181,7 +182,8 @@ export function createLife(opts: BirthOptions = {}): Life {
   if (opts.inheritTalent && !ids.includes(opts.inheritTalent)) ids.push(opts.inheritTalent);
   for (const id of ids) {
     life.talents.push({ id, revealed: false });
-    revealTalent(life, id);
+    // ยุทธภพ: เห็นตอนเกิดเฉพาะพรสวรรค์ธรรมดา — ของหายากขึ้นไปซ่อนอยู่จนมีเหตุการณ์ปลุก (design/TALENTS.md)
+    if (life.worldId !== "murim" || opts.talents || talentById(id)?.rarity === "common") revealTalent(life, id);
   }
   life.talents.push({ id: rollTalent(life, opts.blessed ? BLESSED_HIDDEN : HIDDEN_RARITY_ODDS, ids, true), revealed: false });
   rollAwakenTrack(life);

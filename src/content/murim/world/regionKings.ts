@@ -171,11 +171,11 @@ export const KING_EVENTS: GameEvent[] = [
     P("ลดศักดินาและทหารของอ๋องทุกองค์พร้อมกัน", (l) => clamp(0.3 + (l.mw?.legitimacy ?? 50) / 150 + (l.stats.smarts - 50) / 250, 0.1, 0.85), with_(BIG("ราชโองการลดอำนาจอ๋องผ่านไปโดยไม่มีใครกล้าขัด — บัลลังก์ของคุณมั่นคงกว่าที่เคย", { fame: 4 }), (l) => { for (const k of kingsOf(l)) { k.power = clamp(k.power - 20, 5, 100); k.loyalty = clamp(k.loyalty - 8, 0, 100); } if (l.mw) l.mw.legitimacy = clamp(l.mw.legitimacy + 3, 0, 100); }), with_(B("อ๋องสองพระองค์รวมทัพกันต่อต้าน — แผ่นดินลุกเป็นไฟ", {}), (l) => { const k = kingsOf(l).slice().sort((a, b) => b.power - a.power)[0]; if (k) { k.rebel = calYear(l); k.loyalty = 5; l.flags.kingRebel = k.region; } if (l.mw) l.mw.unrest = clamp(l.mw.unrest + 15, 0, 100); }), { tone: "danger" }),
     C("ค่อยๆ ลด — แบ่งศักดินาให้ลูกอ๋องทุกคนเท่ากัน", with_(G("ศักดินาใหญ่แตกเป็นศักดินาเล็กในหนึ่งรุ่น — อ๋องรุ่นต่อไปไม่มีใครใหญ่พอจะท้าทายคุณ", { iq: 1 }), (l) => { for (const k of kingsOf(l)) k.power = clamp(k.power - 8, 5, 100); })),
     C("ยังไม่ทำอะไร", N("ฎีกาถูกเก็บเข้าลิ้นชัก — อ๋องทุกองค์ยังมีทหารเท่าเดิม")),
-  ], { when: (l) => emp(l) && kingsOf(l).some((k) => k.power >= 55), weight: 4, maxTimes: 2, title: "ลดอำนาจอ๋อง" }),
+  ], { when: (l) => emp(l) && kingsOf(l).some((k) => k.power >= 55), weight: 7, maxTimes: 2, title: "ลดอำนาจอ๋อง" }),
 
   E("kg.e_hostage", [20, 100], (l) => { const k = kingsOf(l).slice().sort((a, b) => a.loyalty - b.loyalty)[0]; return `${k.name}${kingTitle(k)}ไม่มาเข้าเฝ้าในงานปีใหม่เป็นปีที่สาม — ขุนนางเสนอให้เรียก${k.heir ?? "ลูกชาย"}มาเป็นตัวประกันในเมืองหลวง`; }, [
     K("เรียกตัวประกัน", "smarts", 50, with_(G("ลูกอ๋องมาถึงเมืองหลวงพร้อมของกำนัลสามเกวียน — ตอนนี้พ่อของเขาต้องคิดสองครั้งก่อนทำอะไร", {}), (l) => { const k = kingsOf(l).slice().sort((a, b) => a.loyalty - b.loyalty)[0]; k.loyalty = clamp(k.loyalty + 15, 0, 100); k.power = clamp(k.power - 5, 5, 100); }), with_(B("อ๋องส่งจดหมายตอบว่าลูกป่วย — และเพิ่มทหารรักษาวังอีกหนึ่งหมื่น", {}), (l) => { const k = kingsOf(l).slice().sort((a, b) => a.loyalty - b.loyalty)[0]; k.loyalty = clamp(k.loyalty - 10, 0, 100); })),
     C("ยกองค์หญิงให้แต่งกับลูกอ๋อง ผูกเป็นทองแผ่นเดียวกัน", with_(N("งานแต่งข้ามแผ่นดิน — อ๋องกลายเป็นพ่อตาพ่อดองของคุณ ความภักดีที่ซื้อด้วยลูกสาวมักทนกว่าที่ซื้อด้วยทอง", {}), (l) => { const k = kingsOf(l).slice().sort((a, b) => a.loyalty - b.loyalty)[0]; k.loyalty = clamp(k.loyalty + 30, 0, 100); })),
     C("ปล่อยไป", N("ปีหน้าเขาก็คงไม่มาอีก")),
-  ], { when: (l) => emp(l) && kingsOf(l).some((k) => k.loyalty < 40 && !k.rebel), weight: 4, maxTimes: 2, title: "อ๋องไม่มาเข้าเฝ้า" }),
+  ], { when: (l) => emp(l) && kingsOf(l).some((k) => k.loyalty < 40 && !k.rebel), weight: 7, maxTimes: 2, title: "อ๋องไม่มาเข้าเฝ้า" }),
 ];

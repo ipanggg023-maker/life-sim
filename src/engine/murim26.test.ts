@@ -37,7 +37,7 @@ describe("ปลุกพลังตั้งแต่เด็ก · ขุน
       if (!l.alive) continue;
       alive++;
       if (l.power && (l.power.awakenedAt ?? 99) <= 7) early++;
-      if (l.seen["mk.early_sect"]) invited++;
+      if (l.seen["mk.early_sect"] || l.seen["ta.w_sects"]) invited++;
     }
     console.log("SIM early awakening", { alive, early, invited });
     expect(early).toBeGreaterThan(alive * 0.8);

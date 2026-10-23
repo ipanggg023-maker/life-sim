@@ -51,7 +51,8 @@ describe("M24 พรสวรรค์และสกิลติดตัว", 
       }
       if (m) mythicLives++;
     }
-    const missing = TALENTS.filter((t) => t.rarity !== "mythic" && !got[t.id]).map((t) => t.id);
+    // ร่างที่วิวัฒน์แล้วของยุทธภพไม่สุ่มตอนเกิด (ได้จากการตื่นของพรสวรรค์เดิม)
+    const missing = TALENTS.filter((t) => t.rarity !== "mythic" && !t.noRoll && !got[t.id]).map((t) => t.id);
     console.log("SIM M24 สุ่มเกิด", N, "ครั้ง | ตามระดับ", JSON.stringify(byRarity), "| ชีวิตที่ได้หนึ่งเดียวในโลก", mythicLives, `(1 ใน ${Math.round(N / Math.max(1, mythicLives))})`, "| ไม่เคยออก", missing.join(","));
     expect(missing).toEqual([]);
     expect(mythicLives).toBeGreaterThan(5);

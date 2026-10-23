@@ -32,3 +32,34 @@ Each talent has:
 - **Curse upside**: for curses, the hidden way to turn it around.
 - **World reaction**: who wants you, who hunts you, who fears you.
 - **Combos**: other talents it resonates with, and what the first combo scene does.
+
+## Built (October 2026)
+
+- 30 rollable murim talents: the 20 existing ones plus 10 new.
+  - New ones: Frail Body (curse), Sword Bones, Photographic Memory, Lie Sense, Strategist's Mind, Lone Star (curse), Alchemist's Hands, Smith's Hands, Pure Yang Body, Dragon Aura, Blood Demon Body (curse).
+  - Each has a light and a dark evolved form, 60 forms in all. Evolved forms can't be rolled at birth.
+  - New murim lives roll only murim talents. Older saves keep the generic ones.
+- At birth only common talents are shown. Every rare-or-better talent has its own reveal scene; the old fallbacks (awakening, age 21, near death) still apply.
+- Evolution:
+  - triggered by a deed specific to the talent, or by a crisis (health ≤ 12, losing someone close, a qi deviation);
+  - a fork with light, dark or "not yet" (asks again after six years).
+- Prices, every year:
+  - Nine Yin cold and Pure Yang fire drain health until balanced, by a cure arc or the yin-yang combo.
+  - Killing Star harms people close to you (eased by vows, Blessed, or the light path).
+  - Lone Star erodes bonds.
+  - Blood Demon pulls alignment down unless vows are kept.
+  - Frail Body falls ill often.
+  - Fortune Thief makes those around you unlucky.
+  - Cursed Memory costs happiness.
+  - Painless Body hides wear after 40.
+  - Immortal Body draws a lightning trial at each realm from 3 up.
+- 12 hidden combos, each with a first-time scene; they add bonuses and are recorded in the Soul tab.
+- Storylines: one or two per talent, plus world reactions:
+  - sects competing to recruit you, and the rejected sect trying to cripple you;
+  - the Demonic Cult hunting a Nine Yin body;
+  - orthodox sects hunting a Blood Demon;
+  - the Tang clan wanting your blood;
+  - an ancient master wanting to eat an Immortal Body;
+  - a sect accusing a dark-path Martial Eye of theft;
+  - the throne summoning or assassinating a Dragon Aura;
+  - loyalists of a fallen dynasty.

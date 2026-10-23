@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { COMBOS } from "../../content/murim/life/gifts";
 import { COUNTRIES } from "../../content/countries";
 import { ACHIEVEMENTS, ACH_CATEGORY, catOf, type AchCategory } from "../../content/achievements";
 import { TALENTS, RARITY_LABEL, talentById } from "../../content/talents";
@@ -239,6 +240,11 @@ function TalentBookCard({ life, soul }: { life: Life; soul: Soul }) {
         📖 สมุดพรสวรรค์ · {TALENTS.filter((t) => have.has(t.id)).length}/{TALENTS.length}
       </div>
       <p className="muted small">พรสวรรค์ที่วิญญาณเคยได้ในทุกชาติ (พรสวรรค์ในช่องลับจะถูกบันทึกเมื่อจบชีวิต)</p>
+      {COMBOS.some((c) => soul.comboBook?.includes(c.id) || life.flags[`combo:${c.id}`]) && (
+        <p className="small">
+          ✨ พรสวรรค์ประสานที่ค้นพบ: {COMBOS.filter((c) => soul.comboBook?.includes(c.id) || life.flags[`combo:${c.id}`]).map((c) => c.name).join(" · ")} ({COMBOS.filter((c) => soul.comboBook?.includes(c.id) || life.flags[`combo:${c.id}`]).length}/{COMBOS.length})
+        </p>
+      )}
       {order.map((r) => {
         const all = TALENTS.filter((t) => t.rarity === r);
         const got = all.filter((t) => have.has(t.id));

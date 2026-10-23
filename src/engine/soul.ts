@@ -52,6 +52,8 @@ export function claimAward(soul: Soul, life: Life, regress: boolean): number {
   rememberSeen(soul, life);
   soul.collection = [...new Set([...(soul.collection ?? []), ...foundThisLife(life)])];
   soul.talentBook = [...new Set([...(soul.talentBook ?? []), ...life.talents.map((t) => t.id)])];
+  const combos = Object.keys(life.flags).filter((k) => k.startsWith("combo:")).map((k) => k.slice(6));
+  if (combos.length) soul.comboBook = [...new Set([...(soul.comboBook ?? []), ...combos])];
   if (life.worldId === "murim") soul.ribbons = [...new Set([...(soul.ribbons ?? []), ribbonOf(life).id])];
   return gained;
 }
