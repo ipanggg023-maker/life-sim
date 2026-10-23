@@ -7,14 +7,14 @@
 import type { Ctx, GameEvent } from "../../../engine/events";
 import { ACTIVITIES, activityFilters, type Activity } from "../../../engine/activities";
 import { eligibilityFilters } from "../../../engine/events";
-import { runEvent } from "../../../engine/game";
+import { runEvent, yearHooks } from "../../../engine/game";
 import { pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
-import { addStat, clamp, people, shortName } from "../../../engine/util";
+import { addStat, clamp, log, people, shortName } from "../../../engine/util";
 import { B, BIG, C, E, FIGHT, G, K, N, P, PAY, ab, near, type Res } from "../story/kit";
 import { crownHeir, isEmperor, royalKids } from "./emperor";
 import { factions } from "./factions";
-import { castOf, palaceOf, type PNpc } from "./palace";
+import { appointMinister, castOf, palaceOf, type PNpc } from "./palace";
 import { YEAR_PLANS } from "../life/plan";
 import { haremOf, consortP } from "./harem";
 
@@ -212,3 +212,89 @@ YEAR_PLANS.push(
     apply: (l) => { addStat(l, "happiness", randInt(l, 6, 10)); treasury(l, -4); legit(l, -3); return pick(l, ["งิ้วทุกคืน สุราทุกมื้อ — ขุนนางผู้เฒ่าคนหนึ่งคุกเข่าทูลเตือนหน้าตำหนักสามวัน", "ปีนี้คุณสร้างศาลากลางทะเลสาบหลวงเพิ่มอีกสามหลัง"]); },
   },
 );
+
+// ───────── กวาดล้างคนที่ไม่น่าไว้ใจ (คำขอของผู้เล่น) ─────────
+// คิดคดจริงไหม: ทะเยอทะยานสูง · แค้นคุณ · หนุนตัวเอง · มีความลับ — คนที่ภักดีจริงก็มี และการลงโทษคนบริสุทธิ์มีราคา
+export const traitor = (n: PNpc) => n.amb >= 70 || n.you.grudge >= 30 || n.backs === "self" || (!!n.secret && n.amb >= 50);
+/** สิ่งที่ฮ่องเต้เห็นจากภายนอก (ยังไม่ได้สืบ) */
+const look = (n: PNpc) => n.vetted === "traitor" ? "สืบแล้ว: คิดคด" : n.vetted === "loyal" ? "สืบแล้ว: ภักดี" : n.you.grudge >= 20 ? "สายตาไม่เป็นมิตร" : n.amb >= 70 ? "ทะเยอทะยานเกินตำแหน่ง" : n.you.trust >= 20 ? "ดูภักดี" : "อ่านใจไม่ออก";
+const suspects = (l: Life) => ministers(l).slice().sort((a, b) => Number(b.vetted === "traitor") - Number(a.vetted === "traitor") || b.amb + b.you.grudge - (a.amb + a.you.grudge)).slice(0, 6);
+const who = (l: Life, c: Ctx) => npc(l, c.nid);
+const wn = (l: Life, c: Ctx) => who(l, c)?.name ?? "ขุนนางคนนั้น";
+/** ผลของการลงโทษ: คนผิดจริง = ราชสำนักเกรงใจ · คนบริสุทธิ์ = ความชอบธรรมพัง ขุนนางตงฉินหวาดกลัว */
+function punish(l: Life, c: Ctx, harsh: 0 | 1 | 2): string {
+  const n = who(l, c);
+  if (!n) return "";
+  const guilty = traitor(n);
+  if (harsh === 2) n.alive = false; else n.out = true;
+  if (guilty) {
+    legit(l, harsh === 2 ? 2 : 1);
+    for (const o of ministers(l)) o.amb = clamp(o.amb - (harsh === 2 ? 8 : 4), 0, 100);
+    return harsh === 2 ? " — ราชสำนักเงียบกริบ ขุนนางที่คิดการใหญ่เก็บความคิดไว้ลึกขึ้น" : " — ขุนนางที่เหลือรู้แล้วว่าฮ่องเต้มองเห็น";
+  }
+  legit(l, harsh === 2 ? -7 : harsh === 1 ? -4 : -2);
+  for (const o of ministers(l)) { o.you.trust = clamp(o.you.trust - (harsh === 2 ? 12 : 6), -100, 100); if (harsh === 2) o.you.grudge = clamp(o.you.grudge + 6, 0, 100); }
+  return " — แต่เขาไม่ได้คิดคด ขุนนางตงฉินทั้งราชสำนักเห็น และเริ่มกลัวว่าจะเป็นคนต่อไป";
+}
+/** แม่ทัพที่มีทหารในมือ ถูกลงโทษแล้วอาจลุกขึ้นสู้ */
+const armyRevolt = (l: Life, c: Ctx) => { const n = who(l, c); if (n?.role === "general" && n.inf >= 55 && traitor(n)) { unrest(l, 12); legit(l, -4); return " ทหารของเขาครึ่งหนึ่งหนีไปตั้งค่ายบนภูเขาและประกาศไม่รับราชโองการ"; } return ""; };
+const pickSuspect = (i: number) => C(
+  (l: Life) => { const n = suspects(l)[i]; return n ? `${n.name} (${n.title}) — ${look(n)}` : "—"; },
+  ((l: Life, c: Ctx) => { c.nid = suspects(l)[i].id; return { text: `คุณให้เรียก${suspects(l)[i].name}มาเข้าเฝ้าตามลำพัง`, next: "act" }; }) as Res,
+  { show: (l) => !!suspects(l)[i] },
+);
+
+export const PURGE_EVENTS: GameEvent[] = [
+  E("ct.e_purge", [16, 100], "หัวหน้าองครักษ์เสื้อแพรวางรายชื่อขุนนางบนโต๊ะ — ใครในราชสำนักที่คุณไม่ไว้ใจ คนคนนั้นจะไม่เห็นพระอาทิตย์ขึ้นในตำแหน่งเดิม", [
+    pickSuspect(0), pickSuspect(1), pickSuspect(2), pickSuspect(3), pickSuspect(4), pickSuspect(5),
+    C("ไม่ใช่ตอนนี้", N("รายชื่อถูกม้วนเก็บเข้าลิ้นชัก — หัวหน้าองครักษ์เสื้อแพรจำได้ว่ามีชื่อใครบ้าง", {})),
+  ], {
+    when: isEmperor,
+    weight: 0,
+    maxTimes: 0,
+    title: "รายชื่อบนโต๊ะ",
+    scenes: {
+      act: {
+        text: (l, c) => { const n = who(l, c); return n ? `${n.name} (${n.title}) คุกเข่าห่างบัลลังก์สามสิบก้าว — ${look(n)} · อิทธิพล ${n.inf}/100${n.role === "general" ? " · มีทหารในมือ" : ""}` : "คนผู้นั้นไม่อยู่แล้ว"; },
+        choices: [
+          K("ให้หน่วยลับสืบให้แน่ก่อน", "smarts", 50, ((l: Life, c: Ctx) => { const n = who(l, c); if (!n) return N("", {})(l, c); n.vetted = traitor(n) ? "traitor" : "loyal"; return (n.vetted === "traitor" ? B(`หน่วยลับพบจดหมายลับใต้พื้นบ้าน${n.name}${n.secret ? ` — "${n.secret}"` : ""} เขาคิดคดจริง`, {}) : G(`หน่วยลับเฝ้า${n.name}สามเดือน ไม่พบอะไรนอกจากความภักดี — เขาเขียนฎีกาเตือนคุณทุกเดือนเพราะห่วงแผ่นดินจริงๆ`, {}))(l, c); }) as Res, ((l: Life, c: Ctx) => { const n = who(l, c); if (n) n.you.grudge = clamp(n.you.grudge + 10, 0, 100); return B(`${wn(l, c)}รู้ตัวว่าถูกสะกดรอย — ไม่ได้อะไร และตอนนี้เขามีเหตุผลที่จะไม่ไว้ใจคุณ`, {})(l, c); }) as Res),
+          C("ลดตำแหน่ง ย้ายไปหัวเมือง", ((l: Life, c: Ctx) => { const t = punish(l, c, 0); return N(`${wn(l, c)}รับราชโองการด้วยมือที่สั่น แล้วออกจากเมืองหลวงพร้อมเกวียนสองเล่ม${t}`, {})(l, c); }) as Res),
+          C("ปลดและเนรเทศไปชายแดน", ((l: Life, c: Ctx) => { const r = armyRevolt(l, c); const t = punish(l, c, 1); return B(`${wn(l, c)}ถูกถอดหมวกขุนนางกลางท้องพระโรง แล้วถูกคุมตัวไปชายแดนในวันเดียว${t}${r}`, {})(l, c); }) as Res),
+          P("จับขังแล้วสอบสวนให้สารภาพ", (l) => clamp(0.35 + (l.stats.smarts - 50) / 150, 0.1, 0.85), ((l: Life, c: Ctx) => { const n = who(l, c); if (!n) return N("", {})(l, c); if (traitor(n)) { n.alive = false; const r = armyRevolt(l, c); legit(l, 3); for (const o of ministers(l)) o.amb = clamp(o.amb - 6, 0, 100); return BIG(`${n.name}สารภาพทุกอย่างในคืนที่สาม — รายชื่อพรรคพวกอีกสามคนถูกจับตามมา แผ่นดินรู้ว่าแผนกบฏถูกขยี้ก่อนจะเริ่ม${r}`, {})(l, c); } n.vetted = "loyal"; n.you.trust = clamp(n.you.trust - 20, -100, 100); n.you.grudge = clamp(n.you.grudge + 15, 0, 100); return N(`${n.name}ไม่มีอะไรจะสารภาพ — เขาบริสุทธิ์ คุณปล่อยตัวพร้อมของพระราชทาน แต่แผลบนหลังเขาจะไม่หายไปง่ายๆ`, {})(l, c); }) as Res, ((l: Life, c: Ctx) => { const n = who(l, c); if (n) { n.you.grudge = clamp(n.you.grudge + 25, 0, 100); n.out = true; } legit(l, -3); return B(`${wn(l, c)}ไม่ยอมพูดสักคำจนสิ้นสติ — คุณต้องปล่อยตัวโดยไม่มีหลักฐาน ข่าวการทรมานขุนนางไปถึงทุกจวน`, {})(l, c); }) as Res, { tone: "danger" }),
+          C("พระราชทานความตาย", ((l: Life, c: Ctx) => { const r = armyRevolt(l, c); const t = punish(l, c, 2); return B(`สุราพิษหนึ่งจอกถูกส่งไปถึงจวนของ${wn(l, c)}ก่อนเที่ยงคืน${t}${r}`, { align: -6 })(l, c); }) as Res, { tone: "danger" }),
+          C("เปลี่ยนใจ — ให้กลับไปทำงาน", N("เขาถอยออกไปโดยไม่รู้ว่าเกือบไม่ได้กลับบ้าน", {})),
+        ],
+      },
+    },
+  }),
+];
+
+ACTIVITIES.push(M({ group: "ราชสำนัก", id: "mw_purge", emoji: "🗡️", name: "กวาดล้างขุนนางที่ไม่น่าไว้ใจ", desc: "สืบ ลดตำแหน่ง เนรเทศ สอบสวน หรือประหาร", minAge: 16, available: (l) => isEmperor(l) && ministers(l).length > 0, run: (l) => { runEvent(l, "ct.e_purge"); return { text: "" }; } }));
+
+// ───────── ท้องพระคลัง: หาเงินเข้าคลัง และคลังมีผลจริง ─────────
+// คลังว่าง = ทหารไม่ได้เบี้ยหวัด แม่ทัพเริ่มแค้น ความชอบธรรมและความสงบหาย · คลังเต็ม = ราชสำนักมั่นคงขึ้น
+yearHooks.push((l) => {
+  if (!isEmperor(l) || !l.alive || !l.mw) return;
+  const t = palaceOf(l).treasury;
+  if (t < 15) {
+    legit(l, -2);
+    unrest(l, 3);
+    for (const n of castOf(l)) if (n.role === "general") n.you.grudge = clamp(n.you.grudge + 5, 0, 100);
+    if (l.age % 2 === 0) log(l, "💰 ท้องพระคลังเกือบว่าง — ทหารชายแดนไม่ได้เบี้ยหวัด ขุนนางเริ่มกระซิบว่าราชวงศ์นี้จะอยู่ได้อีกกี่ปี", "bad");
+  } else if (t > 70) legit(l, 1);
+});
+const suspectRich = (l: Life) => ministers(l).slice().sort((a, b) => Number(b.vetted === "traitor") - Number(a.vetted === "traitor") || b.inf - a.inf)[0];
+export const REVENUE_EVENTS: GameEvent[] = [
+  E("ct.e_revenue", [16, 100], (l) => `ขุนนางกรมคลังกางบัญชีท้องพระคลัง — ตอนนี้ ${palaceOf(l).treasury >= 60 ? "มั่งคั่ง" : palaceOf(l).treasury >= 30 ? "พอใช้" : palaceOf(l).treasury >= 15 ? "ร่อยหรอ" : "เกือบว่างเปล่า"} (${palaceOf(l).treasury}/100) · เงินส่วนพระองค์ ${Math.floor(l.money / 1000)} ตำลึง — จะหาเงินเข้าคลังทางไหน`, [
+    C("เปิดขายตำแหน่งขุนนาง", fx(N("คหบดีสามสิบคนซื้อหมวกขุนนางไปในเดือนเดียว — ท้องพระคลังเต็มขึ้น หัวเมืองเต็มไปด้วยนายอำเภอที่อ่านหนังสือไม่ออก", { align: -2 }), (l) => { treasury(l, 12); legit(l, -3); unrest(l, 2); appointMinister(l, `ขุนนาง${pick(l, ["เฉียน", "จิน", "หยิน", "ฟู่"])}ผู้ซื้อตำแหน่ง`, "ขุนนางที่ซื้อตำแหน่งมา", 80, 5); })),
+    C((l) => `ยึดทรัพย์${suspectRich(l)?.name ?? "ขุนนางที่ร่ำรวยที่สุด"}`, ((l: Life, c: Ctx) => { const n = suspectRich(l); if (!n) return N("ไม่มีใครให้ยึด", {})(l, c); const guilty = traitor(n); n.out = true; treasury(l, guilty ? 15 : 10); legit(l, guilty ? 1 : -4); if (!guilty) for (const o of ministers(l)) o.you.trust = clamp(o.you.trust - 8, -100, 100); return (guilty ? G(`ทหารขนทองออกจากจวนของ${n.name}สามวันสามคืน — บัญชีลับในห้องใต้ดินยืนยันว่าเขาคิดคดจริง`, {}) : B(`จวนของ${n.name}มีทองน้อยกว่าที่คิด — และไม่มีหลักฐานอะไรนอกจากความร่ำรวย ขุนนางทุกคนเริ่มซ่อนทรัพย์`, {}))(l, c); }) as Res, { show: (l) => !!suspectRich(l) }),
+    P("เรียกเก็บเงินบำรุงแผ่นดินจากพ่อค้าใหญ่", ab(0.55, "smarts"), fx(G("สมาคมพ่อค้าเกลือ ผ้าไหม และชายอมจ่ายโดยดี แลกกับสิทธิ์ผูกขาดอีกห้าปี", {}), (l) => { treasury(l, 10); unrest(l, 1); }), fx(B("พ่อค้าใหญ่ย้ายกองเรือไปท่าเรือของอ๋องหัวเมือง — คลังได้เศษเงิน และอ๋องได้พ่อค้า", {}), (l) => { treasury(l, 3); if (l.mw?.kings) for (const k of l.mw.kings) k.power = clamp(k.power + 3, 5, 100); })),
+    P("ส่งกองเรือหลวงไปค้าขายต่างแดน", (l) => clamp(0.35 + (l.stats.luck - 50) / 200 + (l.stats.smarts - 50) / 300, 0.1, 0.8), fx(BIG("สองปีต่อมากองเรือกลับมาพร้อมเครื่องเทศ อัญมณี และสัตว์ประหลาด — ท้องพระคลังเต็มที่สุดในรอบร้อยปี", { fame: 3 }), (l) => treasury(l, 22)), fx(B("พายุกลางทะเลใต้กลืนเรือไปครึ่งกองเรือ — ที่เหลือกลับมามือเปล่า", {}), (l) => treasury(l, -8)), { show: (l) => l.age - Number(l.flags.royalFleet ?? -99) >= 4, tone: "danger" }),
+    C("เรียกบรรณาการเพิ่มจากอ๋องหัวเมือง", fx(N("อ๋องทุกองค์ส่งบรรณาการมาตามสั่ง — พร้อมจดหมายที่สุภาพเกินไปจนน่ากลัว", {}), (l) => { treasury(l, 10); if (l.mw?.kings) for (const k of l.mw.kings) k.loyalty = clamp(k.loyalty - 6, 0, 100); }), { show: (l) => !!l.mw?.kings?.length }),
+    C("ตัดงบวังหลังและงานพิธีลงครึ่งหนึ่ง", fx(N("ตำหนักชั้นในกินข้าวต้มแทนข้าวสวย — สนมทุกคนบ่น ไทเฮาไม่พูดกับคุณหนึ่งเดือน", {}), (l) => { treasury(l, 6); for (const c of haremOf(l)) c.resent = clamp(c.resent + 10, 0, 100); })),
+    PAY("โอนเงินส่วนพระองค์เข้าคลัง", 100, fx(G("ขุนนางกรมคลังน้ำตาซึม — ฮ่องเต้ที่ควักเงินตัวเองช่วยแผ่นดินหาไม่ได้ง่ายๆ", { align: 2 }), (l) => { treasury(l, 10); legit(l, 1); })),
+    C("เบิกท้องพระคลังเป็นเงินส่วนพระองค์", fx(B("ทองหนึ่งหีบเข้าห้องบรรทม — ขุนนางกรมคลังจดตัวเลขลงบัญชีด้วยมือที่สั่น", { tael: 150, align: -3 }), (l) => { treasury(l, -15); legit(l, -2); }), { show: (l) => palaceOf(l).treasury >= 20 }),
+  ], { when: isEmperor, weight: 0, maxTimes: 0, title: "บัญชีท้องพระคลัง" }),
+];
+for (const ch of REVENUE_EVENTS[0].choices ?? []) if (typeof ch.label === "string" && ch.label.startsWith("ส่งกองเรือหลวง")) { const run = ch.run; ch.run = (l, c, ok) => { l.flags.royalFleet = l.age; return run(l, c, ok); }; }
+ACTIVITIES.push(M({ group: "ราชสำนัก", id: "mw_revenue", emoji: "💰", name: "หาเงินเข้าท้องพระคลัง", desc: "ขายตำแหน่ง ยึดทรัพย์ เก็บจากพ่อค้า กองเรือหลวง บรรณาการ", minAge: 16, available: isEmperor, run: (l) => { runEvent(l, "ct.e_revenue"); return { text: "" }; } }));

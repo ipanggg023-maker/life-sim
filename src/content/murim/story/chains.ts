@@ -2,6 +2,7 @@
 import type { GameEvent } from "../../../engine/events";
 import { pick } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
+import { martialClan } from "../names";
 import { ab, B, BIG, C, E, FIGHT, G, K, N, NEXT, P, PAY, S, flagged, near, nm, withPerson } from "./kit";
 
 const trained = (l: Life) => !!l.power;
@@ -92,7 +93,7 @@ export const CHAIN_EVENTS: GameEvent[] = [
   }),
 
   // ── สองพี่น้องกับบัลลังก์ตระกูล ──
-  E("ch.feud.1", [20, 60], "ตระกูลยุทธ์ใหญ่สองตระกูลในเมืองจะประลองตัดสินสิทธิ์ในท่าเรือ ทั้งสองฝ่ายมาเชิญคุณเป็นกรรมการ — และทั้งสองฝ่ายแอบส่งเงินมาด้วย", [
+  E("ch.feud.1", [20, 60], (l) => `${(() => { const a = martialClan(l); return `${a}กับ${martialClan(l, a)}`; })()} สองตระกูลยุทธ์ใหญ่ในเมืองจะประลองตัดสินสิทธิ์ในท่าเรือ ทั้งสองฝ่ายมาเชิญคุณเป็นกรรมการ — และทั้งสองฝ่ายแอบส่งเงินมาด้วย`, [
     C("รับเงินทั้งสองฝ่าย แล้วตัดสินตามจริง", NEXT("bout", "คุณยืนกลางลาน มีเงินสองถุงอยู่ในห้อง — ทั้งสองตระกูลมองคุณเหมือนเป็นคนของตัวเอง", { tael: 30 })),
     C("คืนเงินทั้งหมด", NEXT("bout", "ทั้งสองตระกูลประหลาดใจ — แต่ก็นับถือ", { align: 2, fame: 1 })),
   ], {

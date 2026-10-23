@@ -11,6 +11,7 @@ import { clamp, createPerson, log, shortName } from "../../../engine/util";
 import { rankLabel } from "../../hunter/power";
 import { B, BIG, C, E, FIGHT, G, N, type Res } from "../story/kit";
 import { DUEL_END } from "./duel";
+import { martialClan } from "../names";
 import { QI_NEED } from "../martial/arts";
 import { awaken } from "../../hunter/power";
 
@@ -25,7 +26,7 @@ export const martialLabel = (l: Life, p: Person) => (p.martial ? `${rankLabel(l,
 /** เริ่มฝึกวิชา */
 export function startMartial(l: Life, p: Person, rank = 0) {
   if (p.martial) return;
-  p.martial = { rank, style: pick(l, STYLES), sect: pick(l, SECTS), xp: randInt(l, 0, 40) };
+  p.martial = { rank, style: pick(l, STYLES), sect: chance(l, 0.3) ? martialClan(l) : pick(l, SECTS), xp: randInt(l, 0, 40) };
 }
 export const rivalOf = (l: Life) => l.people.find((p) => p.alive && p.tags?.includes("life_rival"));
 const ceilingOf = (p: Person) => { let h = 0; for (const ch of p.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return CEILING[h % CEILING.length] + (p.tags?.includes("obsessed") ? 1 : 0); };

@@ -10,6 +10,7 @@ import type { Gender, Life, Person } from "../../../engine/types";
 import { addStat, clamp, createPerson, log, people, shortName } from "../../../engine/util";
 import { calYear } from "../life/world";
 import { B, BIG, C, E, G, K, N, NEXT, P, PAY, ab, kinDies, nm, type Res } from "../story/kit";
+import { NOBLE_CLANS } from "../names";
 import { palaceOf } from "./palace";
 
 export type ConsortTrait = "gentle" | "ambitious" | "clever" | "proud";
@@ -27,12 +28,14 @@ export interface Consort {
   lastNight?: number;
   /** ความริษยา/ความแค้นสะสม 0–100 */
   resent: number;
+  /** สืบแล้วว่าภักดีหรือคิดร้าย */
+  vetted?: "loyal" | "traitor";
 }
 
 const RANK_F = ["ไฉเหริน", "กุ้ยเหริน", "เจาอี๋", "เฟย", "กุ้ยเฟย", "ฮองเฮา"];
 const RANK_M = ["นายในชั้นตรี", "นายในชั้นโท", "นายในชั้นเอก", "พระสนมชาย", "พระสนมเอกชาย", "พระราชสวามี"];
 export const EMPRESS = 5;
-const CLANS = ["ตระกูลหวัง", "ตระกูลเซี่ย", "ตระกูลหยาง", "ตระกูลตู้กู", "ตระกูลเหลียง", "ตระกูลจ่าง", "ตระกูลซู", "ตระกูลหลู"];
+const CLANS = NOBLE_CLANS;
 export const TRAIT_NAME: Record<ConsortTrait, string> = { gentle: "อ่อนโยน", ambitious: "ทะเยอทะยาน", clever: "เฉลียวฉลาด", proud: "หยิ่งทะนง" };
 const TRAITS = Object.keys(TRAIT_NAME) as ConsortTrait[];
 
@@ -159,6 +162,8 @@ const bump = (p: Person, d: number) => { p.bond = clamp(p.bond + d, 0, 100); };
 const with_ = (r: Res, f: (l: Life, c: Ctx) => void): Res => Object.assign((l: Life, c: Ctx) => { f(l, c); return r(l, c); }, { fx: r.fx });
 const slot = (i: number) => (l: Life) => haremOf(l).filter((c) => !c.cold).sort((a, b) => b.rank - a.rank || consortP(l, b).bond - consortP(l, a).bond)[i];
 const anySlot = (i: number) => (l: Life) => haremOf(l).slice().sort((a, b) => Number(a.cold) - Number(b.cold) || b.rank - a.rank)[i];
+/** สนมคนนี้คิดร้ายจริงไหม: แค้นสะสมมาก หรือทะเยอทะยานและเริ่มแค้น */
+export const schemer = (c: Consort) => c.resent >= 50 || (c.trait === "ambitious" && c.resent >= 30);
 const ctxC = (l: Life, c: Ctx) => byPid(l, c.pid);
 const cn = (l: Life, c: Ctx) => { const k = ctxC(l, c); return k ? consortLabel(l, k) : "สนมคนนั้น"; };
 /** ลูกของสนมคนนี้ */
@@ -181,7 +186,7 @@ const visit = (i: number) => C(
 );
 
 const pickFor = (i: number, label: string) => C(
-  (l: Life) => { const c = anySlot(i)(l); return c ? `${consortLabel(l, c)} — ${TRAIT_NAME[c.trait]} · ${c.clan} · ลูก ${kidsOf(l, c.pid).length}` : "—"; },
+  (l: Life) => { const c = anySlot(i)(l); return c ? `${consortLabel(l, c)} — ${TRAIT_NAME[c.trait]} · ${c.clan} · ลูก ${kidsOf(l, c.pid).length}${c.vetted === "traitor" ? " · สืบแล้ว: คิดร้าย" : c.vetted === "loyal" ? " · สืบแล้ว: ภักดี" : ""}` : "—"; },
   (l, c) => { c.pid = anySlot(i)(l)!.pid; return NEXT("act", label)(l, c); },
   { show: (l) => !!anySlot(i)(l) },
 );
@@ -235,6 +240,24 @@ export const HAREM_EVENTS: GameEvent[] = [
           C("ส่งไปตำหนักเย็น", with_(B((l, c) => `ประตูตำหนักเย็นปิดลงข้างหลัง${cn(l, c)} — ที่นั่นมีแต่ใบไม้แห้งกับเสียงลม`, { align: -2 }), (l, c) => { const k = ctxC(l, c); if (k) { k.cold = true; retitle(l, k); k.resent = clamp(k.resent + 40, 0, 100); feel(consortP(l, k), { grudge: 40, love: -30 }); } }), { show: (l, c) => !!ctxC(l, c) && !ctxC(l, c)!.cold }),
           C("เรียกกลับจากตำหนักเย็น", with_(G((l, c) => `${cn(l, c)}เดินออกจากตำหนักเย็นด้วยผมที่หงอกขึ้นครึ่งศีรษะ — คุกเข่าขอบพระทัยโดยไม่พูดอะไรอีก`, { align: 2 }), (l, c) => { const k = ctxC(l, c); if (k) { const taken = k.rank === EMPRESS && !!empressOf(l); k.cold = false; setConsortRank(l, k, taken ? EMPRESS - 1 : k.rank); k.resent = clamp(k.resent - 30, 0, 100); feel(consortP(l, k), { debt: 30 }); } }), { show: (l, c) => !!ctxC(l, c)?.cold }),
           C("ปล่อยออกจากวัง ให้กลับบ้านไปแต่งงานใหม่", with_(N((l, c) => `${cn(l, c)}ออกจากประตูวังพร้อมหีบสินเดิมหนึ่งใบ — บางคนว่าเป็นพระเมตตา บางคนว่าเป็นความอัปยศ`, { align: 2 }), (l, c) => { const k = ctxC(l, c); if (!k) return; const p = consortP(l, k); setTitle(p); p.relation = "friend"; p.tags = (p.tags ?? []).filter((t) => t !== "consort" && t !== "secondary"); l.mw!.harem = (l.mw!.harem ?? []).filter((x) => x !== k); }), { show: (l, c) => { const k = ctxC(l, c); return !!k && consortP(l, k).tags?.includes("consort") === true && kidsOf(l, k.pid).length === 0; } }),
+          K("ให้ขันทีคนสนิทสืบว่าคิดร้ายหรือไม่", "smarts", 50, ((l: Life, c: Ctx) => {
+            const k = ctxC(l, c);
+            if (!k) return N("", {})(l, c);
+            k.vetted = schemer(k) ? "traitor" : "loyal";
+            return (k.vetted === "traitor" ? B(`ขันทีพบห่อยาพิษกับจดหมายถึงตระกูลใต้หมอนของ${consortLabel(l, k)} — ความริษยาที่สะสมกลายเป็นแผนแล้ว`, {}) : G(`ขันทีเฝ้า${consortLabel(l, k)}ทั้งเดือน — ไม่มีอะไรนอกจากความเหงาและจดหมายที่ไม่เคยส่งถึงคุณ`, {}))(l, c);
+          }) as Res, N("ขันทีไม่ได้อะไร — และคนในตำหนักนั้นเริ่มระวังตัว", {})),
+          C("พระราชทานผ้าขาวสามศอก", ((l: Life, c: Ctx) => {
+            const k = ctxC(l, c);
+            if (!k) return N("", {})(l, c);
+            const name = consortLabel(l, k);
+            const guilty = schemer(k);
+            const kids = kidsOf(l, k.pid);
+            consortP(l, k).alive = false;
+            for (const kid of kids) kid.bond = clamp(kid.bond - 30, 0, 100);
+            if (l.mw) l.mw.legitimacy = clamp(l.mw.legitimacy + (guilty ? 1 : -4), 0, 100);
+            for (const o of haremOf(l)) o.resent = clamp(o.resent + (guilty ? -10 : 15), 0, 100);
+            return B(`ผ้าขาวสามศอกถูกวางบนถาดเงินหน้าตำหนักของ${name}ตอนรุ่งสาง${guilty ? " — วังหลังเงียบลงทั้งวัง คนที่คิดร้ายอยู่เก็บความคิดไว้ลึกขึ้น" : " — นางไม่ได้คิดร้ายต่อคุณ วังหลังทั้งวังรู้ และกลัวว่าจะเป็นคนต่อไป"}${kids.length ? " ลูกของนางจะไม่มีวันลืม" : ""}`, { align: -6 })(l, c);
+          }) as Res, { tone: "danger", show: (l, c) => !!ctxC(l, c) && ctxC(l, c)!.rank < EMPRESS }),
           C("ไม่เปลี่ยนอะไร", N("คุณพยักหน้าแล้วโบกมือให้ถอยออกไป")),
         ],
       },

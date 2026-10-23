@@ -7,6 +7,7 @@ import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { clamp, log } from "../../../engine/util";
 import { calYear, worldOfLife } from "../life/world";
+import { MURIM_FEMALE, MURIM_MALE, NOBLE_CLANS, titledName } from "../names";
 import { ab, B, BIG, C, E, G, K, N, P } from "../story/kit";
 
 export type Temper = "wise" | "tyrant" | "puppet" | "paranoid";
@@ -35,8 +36,7 @@ export interface Court {
 
 const DYN = ["ราชวงศ์จิ้น", "ราชวงศ์หยวนเหลียง", "ราชวงศ์ฉู่ใต้", "ราชวงศ์หมิงเฉวียน", "ราชวงศ์ซ่งเหนือ"];
 const EMP = ["เจาเหวิน", "เสียนอู่", "หลิงจิ้ง", "จิ่งไท่", "ซวนเต๋อ", "หย่งอัน", "เทียนฉี", "กวงหลง"];
-const CLANS = ["ตระกูลหวัง", "ตระกูลเซี่ย", "ตระกูลหยาง", "ตระกูลตู้กู", "ตระกูลเหลียง"];
-const EUN = ["ขันทีหลี่", "ขันทีเว่ย", "ขันทีเกา", "ขันทีจ้าว"];
+const CLANS = NOBLE_CLANS;
 const GOALS = ["ปกป้องโอรสของพระนาง", "รักษาเสถียรภาพในวัง", "ลดอิทธิพลของสนมคนโปรด", "ยกตระกูลเดิมให้ยิ่งใหญ่"];
 
 export function courtOf(l: Life): Court {
@@ -46,9 +46,9 @@ export function courtOf(l: Life): Court {
     w.court = {
       dynasty: pick(l, DYN),
       emperor: { name: `ฮ่องเต้${pick(l, EMP)}`, age: randInt(l, 25, 60), temper: pick(l, ["wise", "wise", "tyrant", "puppet", "paranoid"] as Temper[]), health: randInt(l, 50, 90), since: yr - randInt(l, 0, 20) },
-      empress: { name: `ฮองเฮา${pick(l, ["ชิงหลัน", "เหม่ยอิง", "อวี้ซู", "หลิงหลาน"])}`, clan: pick(l, CLANS), goal: pick(l, GOALS) },
-      heir: chance(l, 0.7) ? { name: `องค์ชาย${pick(l, ["เฉิงอวี้", "หมิงเจ๋อ", "จิ้งหาน", "หยวนเจิ้ง"])}`, age: randInt(l, 5, 25), legit: randInt(l, 40, 85), backer: pick(l, ["empress", "consort", "ministers"] as const) } : undefined,
-      eunuch: { name: pick(l, EUN), loyal: pick(l, ["emperor", "empress", "self"] as const), power: randInt(l, 30, 70) },
+      empress: { name: `ฮองเฮา${pick(l, MURIM_FEMALE)}`, clan: pick(l, CLANS), goal: pick(l, GOALS) },
+      heir: chance(l, 0.7) ? { name: `องค์ชาย${pick(l, MURIM_MALE)}`, age: randInt(l, 5, 25), legit: randInt(l, 40, 85), backer: pick(l, ["empress", "consort", "ministers"] as const) } : undefined,
+      eunuch: { name: titledName(l, "ขันที"), loyal: pick(l, ["emperor", "empress", "self"] as const), power: randInt(l, 30, 70) },
       ministers: randInt(l, 40, 70),
       military: randInt(l, 40, 70),
       inner: randInt(l, 30, 60),

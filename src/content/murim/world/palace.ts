@@ -8,6 +8,7 @@ import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { clamp, log } from "../../../engine/util";
 import { ab, B, BIG, C, E, FIGHT, G, K, N, P, PAY, near, type Res } from "../story/kit";
+import { MURIM_FEMALE, MURIM_MALE, NOBLE_CLANS, titledName } from "../names";
 import { courtHooks, courtOf, palaceAccess, type Court, type Temper } from "./court";
 
 export type PRole = "empress" | "dowager" | "consort" | "eunuch" | "minister" | "general";
@@ -34,6 +35,8 @@ export interface PNpc {
   /** ผู้เล่นเคยพบ/สืบรู้ว่าเขาหนุนใคร */
   known?: boolean;
   secret?: string;
+  /** ฮ่องเต้(ผู้เล่น)สืบแล้วว่าภักดีหรือคิดคด (world/emperorLife.ts) */
+  vetted?: "loyal" | "traitor";
 }
 export interface Prince {
   id: string;
@@ -68,12 +71,11 @@ export const SUCCESSION_NAME: Record<Succession, string> = {
   coup: "รัฐประหาร",
 };
 
-const PNAMES = ["เฉิงอวี้", "หมิงเจ๋อ", "จิ้งหาน", "หยวนเจิ้ง", "ไท่เหอ", "ชิงอัน", "เหวินซวน", "ฉางเล่อ", "อวี้หลิน", "เจ้าเยว่"];
-const LADY = ["หลานอี้", "ซูเหยา", "เหม่ยจู", "ชิวเยว่", "หลิวหรู", "อิงเซียง", "เยี่ยนชิง"];
-const CLANS = ["ตระกูลหวัง", "ตระกูลเซี่ย", "ตระกูลหยาง", "ตระกูลตู้กู", "ตระกูลเหลียง", "ตระกูลเว่ย", "ตระกูลซุน"];
-const EUN = ["ขันทีหลี่", "ขันทีเว่ย", "ขันทีเกา", "ขันทีจ้าว", "ขันทีหวง", "ขันทีหม่า"];
-const MIN = ["เสนาบดีโจว", "เสนาบดีหาน", "ราชเลขาธิการเซี่ย", "ขุนนางตรวจการหลิว", "เสนาบดีกรมคลังเผิง"];
-const GEN = ["แม่ทัพเยว่", "แม่ทัพเฉิน", "แม่ทัพหลู่", "แม่ทัพกงซุน"];
+const PNAMES = MURIM_MALE;
+const LADY = MURIM_FEMALE;
+const CLANS = NOBLE_CLANS;
+const MIN_PREFIX = ["เสนาบดี", "ราชเลขาธิการ", "ขุนนางตรวจการ", "เสนาบดีกรมคลัง", "เสนาบดีกรมพิธี", "เสนาบดีกรมกลาโหม"];
+const castNames = (p: Palace) => p.cast.map((n) => n.name);
 const LADY_GOAL = ["ปกป้องลูกของนาง", "รักษาความสงบในวัง", "ยกตระกูลเดิมให้ยิ่งใหญ่", "เป็นที่โปรดปรานของฮ่องเต้", "แค่มีชีวิตรอดในวังนี้"];
 const LADY_FEAR = ["กลัวลูกถูกวางยา", "กลัวตระกูลถูกกวาดล้าง", "กลัวถูกลืมในตำหนักเย็น", "กลัวความลับในอดีตถูกเปิดโปง"];
 const EUN_GOAL = ["มีบ้านและที่ดินไว้ตอนแก่", "เป็นหัวหน้าขันทีทั้งวัง", "ปกป้องเจ้านายของตน", "ทำงานให้ครบแล้วกลับบ้านเกิด"];
@@ -169,9 +171,9 @@ export function palaceOf(l: Life): Palace {
   }
   const loyal = c.eunuch.loyal;
   p.cast.push({ id: newId(p, "n"), role: "eunuch", name: c.eunuch.name, title: "หัวหน้าขันทีฝ่ายเอกสารและการเข้าเฝ้า", goal: pick(l, EUN_GOAL), fear: pick(l, EUN_FEAR), backs: "emperor", amb: loyal === "self" ? randInt(l, 70, 95) : randInt(l, 20, 60), inf: c.eunuch.power, alive: true, you: fresh(), secret: chance(l, 0.5) ? pick(l, SECRETS) : undefined });
-  p.cast.push({ id: newId(p, "n"), role: "eunuch", name: pick(l, EUN.filter((x) => x !== c.eunuch.name)), title: "ขันทีคุมประตูวังชั้นใน", goal: pick(l, EUN_GOAL), fear: pick(l, EUN_FEAR), backs: "emperor", amb: randInt(l, 10, 70), inf: randInt(l, 15, 40), alive: true, you: fresh() });
-  for (const n of [MIN[0], pick(l, MIN.slice(1))]) p.cast.push({ id: newId(p, "n"), role: "minister", name: n, title: n.startsWith("ขุนนางตรวจการ") ? "ขุนนางตรวจการ" : "ขุนนางชั้นผู้ใหญ่", clan: pick(l, CLANS), goal: pick(l, MIN_GOAL), fear: pick(l, MIN_FEAR), backs: "emperor", amb: randInt(l, 20, 85), inf: Math.round(c.ministers * randInt(l, 6, 10) / 10), alive: true, you: fresh(), secret: chance(l, 0.35) ? pick(l, SECRETS) : undefined });
-  p.cast.push({ id: newId(p, "n"), role: "general", name: pick(l, GEN), title: "แม่ทัพรักษาชายแดน", goal: pick(l, ["ปกป้องชายแดน", "ได้ทัพหลวงมาอยู่ในมือ", "ล้างแค้นให้ทหารที่ตายเพราะคำสั่งผิด"]), fear: pick(l, ["กลัวถูกเรียกตัวกลับไปรับโทษ", "กลัวทหารอดตายเพราะเสบียงไม่มา"]), backs: "emperor", amb: randInt(l, 20, 90), inf: Math.round(c.military * randInt(l, 7, 10) / 10), alive: true, you: fresh() });
+  p.cast.push({ id: newId(p, "n"), role: "eunuch", name: titledName(l, "ขันที", [c.eunuch.name]), title: "ขันทีคุมประตูวังชั้นใน", goal: pick(l, EUN_GOAL), fear: pick(l, EUN_FEAR), backs: "emperor", amb: randInt(l, 10, 70), inf: randInt(l, 15, 40), alive: true, you: fresh() });
+  for (const n of [titledName(l, "เสนาบดี"), titledName(l, pick(l, MIN_PREFIX.slice(1)))]) p.cast.push({ id: newId(p, "n"), role: "minister", name: n, title: n.startsWith("ขุนนางตรวจการ") ? "ขุนนางตรวจการ" : "ขุนนางชั้นผู้ใหญ่", clan: pick(l, CLANS), goal: pick(l, MIN_GOAL), fear: pick(l, MIN_FEAR), backs: "emperor", amb: randInt(l, 20, 85), inf: Math.round(c.ministers * randInt(l, 6, 10) / 10), alive: true, you: fresh(), secret: chance(l, 0.35) ? pick(l, SECRETS) : undefined });
+  p.cast.push({ id: newId(p, "n"), role: "general", name: titledName(l, "แม่ทัพ", castNames(p)), title: "แม่ทัพรักษาชายแดน", goal: pick(l, ["ปกป้องชายแดน", "ได้ทัพหลวงมาอยู่ในมือ", "ล้างแค้นให้ทหารที่ตายเพราะคำสั่งผิด"]), fear: pick(l, ["กลัวถูกเรียกตัวกลับไปรับโทษ", "กลัวทหารอดตายเพราะเสบียงไม่มา"]), backs: "emperor", amb: randInt(l, 20, 90), inf: Math.round(c.military * randInt(l, 7, 10) / 10), alive: true, you: fresh() });
   chooseBacking(l, p);
   syncHeir(c, p);
   return p;
@@ -254,7 +256,7 @@ function tickPalace(l: Life) {
     if (have < need && chance(l, 0.5)) {
       const n: PNpc =
         role === "consort" ? makeLady(l, p, "consort")
-        : { id: newId(p, "n"), role, name: pick(l, role === "eunuch" ? EUN : role === "minister" ? MIN : GEN), title: role === "eunuch" ? "ขันทีคุมประตูวังชั้นใน" : role === "minister" ? "ขุนนางชั้นผู้ใหญ่" : "แม่ทัพรักษาชายแดน", goal: pick(l, role === "minister" ? MIN_GOAL : EUN_GOAL), fear: pick(l, role === "minister" ? MIN_FEAR : EUN_FEAR), backs: "emperor", amb: randInt(l, 15, 80), inf: randInt(l, 20, 45), alive: true, you: fresh() };
+        : { id: newId(p, "n"), role, name: titledName(l, role === "eunuch" ? "ขันที" : role === "minister" ? pick(l, MIN_PREFIX) : "แม่ทัพ", castNames(p)), title: role === "eunuch" ? "ขันทีคุมประตูวังชั้นใน" : role === "minister" ? "ขุนนางชั้นผู้ใหญ่" : "แม่ทัพรักษาชายแดน", goal: pick(l, role === "minister" ? MIN_GOAL : EUN_GOAL), fear: pick(l, role === "minister" ? MIN_FEAR : EUN_FEAR), backs: "emperor", amb: randInt(l, 15, 80), inf: randInt(l, 20, 45), alive: true, you: fresh() };
       p.cast.push(n);
       chooseBacking(l, p);
     }

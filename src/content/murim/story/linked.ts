@@ -9,6 +9,7 @@ import { addQi, artInfo, artsOf, conflicted, qiYears } from "../martial/arts";
 import { crisisNow } from "../life/world";
 import { courtOf } from "../world/court";
 import { factionById, mySectFaction, shiftRep } from "../world/factions";
+import { martialClan } from "../names";
 import { ab, A, B, BIG, C, E, FIGHT, G, K, N, P, PAY, near } from "./kit";
 
 const trained = (l: Life) => !!l.power;
@@ -39,7 +40,7 @@ const ARTS_LINKED: GameEvent[] = [
     C("สอนท่าพื้นฐานให้ทุกคน", G("ทุกเช้ามีเด็กสิบคนยืนตั้งท่าม้าอยู่หน้าบ้านคุณ — หมู่บ้านนี้จะไม่มีโจรกล้าเข้ามาอีกสิบปี", { fame: 2, joy: 3, align: 1 })),
     C("ไล่ไป วิชาไม่ใช่ของเล่น", N("เด็กๆ วิ่งหนี — แต่ยังแอบดูอยู่หลังกำแพงทุกเช้าเหมือนเดิม", {})),
   ], { when: (l) => rank(l) >= 2, weight: 3 }),
-  E("sl.a.duel_request", [18, 70], (l) => `หนุ่มจากตระกูลยุทธ์มาท้าประลองเพราะได้ยินชื่อ「${artName(l)}」ของคุณ "ข้าอยากรู้ว่าข่าวลือจริงแค่ไหน"`, [
+  E("sl.a.duel_request", [18, 70], (l) => `หนุ่มจาก${martialClan(l)}มาท้าประลองเพราะได้ยินชื่อ「${artName(l)}」ของคุณ "ข้าอยากรู้ว่าข่าวลือจริงแค่ไหน"`, [
     FIGHT("รับคำท้า (ไม่ถึงตาย)", "ทายาทตระกูลยุทธ์", near(0)),
     C("ปฏิเสธอย่างสุภาพ", N("เขาประกาศว่าคุณกลัว — คนครึ่งเมืองเชื่อ", { fame: -2 })),
   ], { when: (l) => trained(l) && l.fame >= 15, maxTimes: 3, weight: 3, title: "คำท้า" }),
