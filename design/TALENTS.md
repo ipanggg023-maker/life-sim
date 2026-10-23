@@ -63,3 +63,24 @@ Each talent has:
   - a sect accusing a dark-path Martial Eye of theft;
   - the throne summoning or assassinating a Dragon Aura;
   - loyalists of a fallen dynasty.
+
+## Second batch (October 2026)
+
+12 more talents (43 in total), each with a light and dark evolved form, a storyline, and a reveal scene if rare or above:
+
+| Talent | Rarity | Kind |
+|---|---|---|
+| ลิ้นทอง (Golden Tongue) | common | persuasion |
+| มือพ่อครัว (Chef's Hands) | common | cooking |
+| ดวงนักพนัน (Gambler's Luck) | common | money swings every year |
+| ร่างนกนางแอ่น (Swallow Body) | rare | lightness skill; a thieves' society recruits |
+| ร่างทองแดง (Bronze Body) | rare | iron body |
+| ใจพิณ (Qin Heart) | rare | music that calms or kills |
+| สหายสัตว์ป่า (Friend of Beasts) | rare | beasts |
+| ตาเห็นผี (Ghost Eyes) | rare | double-edged: sees spirits, loses sleep |
+| วาสนาพบพาน (Fortunate Encounters) | rare | hidden caves, hermits, lucky finds |
+| เสน่ห์มาร (Demonic Charm) | legendary | double-edged: obsessed admirers, the Demonic Cult wants you |
+| ความจำชาติก่อน (Past-Life Memory) | legendary | dark path: the past self takes over |
+| สายเลือดราชวงศ์ที่หายไป (Lost Royal Blood) | legendary | loyalists, court assassins, and a rebellion that can win you the throne |
+
+9 more combos (21 in total).

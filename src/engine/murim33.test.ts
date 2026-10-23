@@ -3,6 +3,7 @@ import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
 import { COMBOS, EVOLVED_TALENTS, MURIM_TALENTS, gift } from "../content/murim/life/gifts";
 import { worldOfLife } from "../content/murim/life/world";
+import { courtOf as courtOfLife } from "../content/murim/world/court";
 import { talentById } from "../content/talents";
 import { allEvents, getEvent, labelOf, visibleChoices } from "./events";
 import { ageUp, createLife, resolveChoice, revealTalent, runEvent } from "./game";
@@ -104,6 +105,23 @@ describe("พรสวรรค์ที่มีชีวิต: ปลุก �
     for (let y = 0; y < 3 && !l.flags["combo:cb_copy"]; y++) { ageUp(l); drain(l, { rng: y }); }
     expect(l.flags["combo:cb_copy"]).toBe(true);
     expect(gift(l, "fight")).toBeGreaterThan(before);
+  });
+
+  it("สายเลือดราชวงศ์ที่หายไป: ยอมรับสายเลือด ชูธง แล้วบุกเมืองหลวงจนได้ขึ้นครองราชย์", () => {
+    let crowned = 0;
+    for (let s = 1; s <= 40 && !crowned; s++) {
+      const l = withTalent("mt_lost_royal", true, 300 + s);
+      l.age = 30; l.fame = 80; l.stats.smarts = 80;
+      courtOfLife(l);
+      l.mw!.legitimacy = 20;
+      runEvent(l, "ta.a_lost_royal"); drain(l, { rng: s }, "ยอมรับว่าเป็นทายาท");
+      expect(l.flags.royalBloodKnown).toBe(true);
+      runEvent(l, "ta.a_lost_royal2"); drain(l, { rng: s }, "ชูธงทวงบัลลังก์");
+      if (!l.flags.royalRising) continue;
+      runEvent(l, "ta.a_lost_royal3"); drain(l, { rng: s }, "บุกเข้าวัง");
+      if (l.flags.emperorSelf) crowned++;
+    }
+    expect(crowned).toBeGreaterThan(0);
   });
 
   it("ชีวิตสุ่ม: พรสวรรค์ตื่น เปลี่ยนร่าง และมีเรื่องราว ไม่มีฉากตัน", () => {

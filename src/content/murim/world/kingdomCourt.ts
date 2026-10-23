@@ -99,7 +99,7 @@ yearHooks.push((l) => {
   if (alive.length >= 2 && y - (l.mw.eraSince ?? y) >= 4) {
     const weak = alive.slice().sort((a, b) => a.power - b.power)[0];
     const strong = alive.slice().sort((a, b) => b.power - a.power)[0];
-    if (weak.power <= 8 && strong.power >= 50 && chance(l, 0.35)) {
+    if (weak.power <= 12 && strong.power >= 45 && chance(l, 0.35)) {
       weak.fallen = y;
       weak.fellTo = strong.id;
       strong.power = clamp(strong.power + 12, 5, 95);

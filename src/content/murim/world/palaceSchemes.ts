@@ -14,6 +14,7 @@ import { TAEL } from "../story/kit";
 import { courtOf, palaceAccess } from "./court";
 import { castOf, npcById, palaceOf, patronOf, princesOf, type PNpc } from "./palace";
 import { emperorTitle, syncThrone } from "./emperor";
+import { hasT } from "../life/talentArcs";
 
 export const COURT_RANKS = ["ขุนนางชั้นผู้น้อย", "คนสนิทในวัง", "ขุนนางชั้นผู้ใหญ่", "เสนาบดี", "มหาเสนาบดี", "ผู้สำเร็จราชการ", "ฮ่องเต้"];
 export const courtRank = (l: Life) => Number(l.flags.courtRank ?? 0);
@@ -73,13 +74,19 @@ function usurp(l: Life, o: { legit?: number; unrest?: number; how?: string } = {
   l.mw!.unrest = clamp(l.mw!.unrest + (o.unrest ?? 20), 0, 100);
   syncThrone(l);
 }
+/** ขึ้นครองบัลลังก์จากนอกวัง (เช่น ทายาทราชวงศ์เก่ายกทัพเข้าเมืองหลวง) */
+export function claimThrone(l: Life, how: string) {
+  usurp(l, { legit: 15, unrest: 10, how: `${how} — ${displayName(l)}ขึ้นครองราชย์` });
+  l.flags.courtRank = 6;
+  l.flags.palaceAccess = true;
+}
 const eunuch = (l: Life) => castOf(l).filter((n) => n.role === "eunuch").sort((a, b) => b.inf - a.inf)[0];
 /** พรรคพวกที่ใช้ยึดอำนาจได้: แม่ทัพ หรือขันทีคุมประตูวัง */
 const ally = (l: Life) => { const g = npcById(l, l.flags.generalAlly); if (g?.alive && !g.out) return g; const e = npcById(l, l.flags.eunuchAlly); return e?.alive && !e.out ? e : undefined; };
 /** ลูกที่ส่งเข้าวังได้ (อายุ 14–30) */
 const marriageable = (l: Life) => people(l, "child").find((p) => p.alive && p.age >= 14 && p.age <= 30 && !p.tags?.includes("in_palace"));
 /** โอกาสขึ้นบัลลังก์: ชื่อเสียง สติปัญญา ลางร้ายที่ปล่อยไว้ พรรคพวก หักด้วยความชอบธรรมของราชวงศ์เดิมและร่องรอย */
-const throneOdds = (base: number) => (l: Life) => clamp(base + l.fame / 300 + (l.stats.smarts - 50) / 250 - (l.mw?.legitimacy ?? 50) / 400 + (l.flags.omenSpread ? 0.08 : 0) + (ally(l) ? 0.06 : 0) - schemeHeat(l) / 250, 0.05, 0.85);
+const throneOdds = (base: number) => (l: Life) => clamp(base + l.fame / 300 + (l.stats.smarts - 50) / 250 - (l.mw?.legitimacy ?? 50) / 400 + (l.flags.omenSpread ? 0.08 : 0) + (ally(l) ? 0.06 : 0) + (hasT(l, "mt_lost_royal") ? 0.1 : 0) - schemeHeat(l) / 250, 0.05, 0.85);
 const ego = (l: Life) => emperorTitle(l);
 
 const fail = (text: string, d: { heat?: number; rank?: number; grudgeOn?: (l: Life, c: Ctx) => PNpc | undefined } = {}): Res =>
