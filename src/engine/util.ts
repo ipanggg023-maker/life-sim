@@ -120,6 +120,9 @@ export function shortName(p: Person) {
 
 /** คำเรียกแบบยุทธภพ */
 function murimLabel(p: Person): string | undefined {
+  // พระอิสริยยศในราชวงศ์ของผู้เล่น (world/harem.ts) มาก่อนคำเรียกในครอบครัว
+  const title = p.tags?.find((t) => t.startsWith("title:"));
+  if (title) return title.slice(6);
   switch (p.relation) {
     case "father": return "ท่านพ่อ";
     case "mother": return "ท่านแม่";

@@ -87,7 +87,7 @@ describe("หักหลังฮ่องเต้หลายทาง · เ
         let g = 0;
         while (l.queue.length && g++ < 50) {
           const id = l.queue[0].eventId;
-          if (/^ct\.(?!e_|s_assassin)/.test(id)) subject.push(id);
+          if (/^ct\.(?!e_|h_|f_|s_assassin)/.test(id)) subject.push(id);
           if (id.startsWith("ct.e_")) emperorEvents++;
           const o2 = visibleChoices(l, l.queue[0]);
           resolveChoice(l, o2[Math.floor(nextFloat(r) * o2.length)].index);

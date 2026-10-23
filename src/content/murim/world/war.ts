@@ -8,6 +8,8 @@ import { addFame, addMoney, addStat, clamp, displayName, log } from "../../../en
 import { gainExp } from "../../hunter/power";
 import { shiftAlign } from "../m17core";
 import { calYear, worldOfLife } from "../life/world";
+import { regionOf } from "../life/region";
+import { KINGDOM_REGIONS } from "./regionKings";
 import { TAEL } from "../story/kit";
 
 export interface Kingdom {
@@ -98,7 +100,7 @@ export const WAR_EVENTS: GameEvent[] = [
     text: (l) => `ทูตจากสามแคว้นมาถึงอำเภอพร้อมกัน — ${kingdoms(l).map((k) => `${k.name}ของ${k.lord} (${k.trait})`).join(" · ")}`,
     choices: [
       ...LORDS.map((k0) => ({
-        label: `ไปกับ${k0.name}`,
+        label: (l: Life) => `ไปกับ${k0.name}${KINGDOM_REGIONS[k0.id]?.includes(regionOf(l).id) ? " (ครองถิ่นที่คุณอยู่)" : ""}`,
         show: (l: Life) => kingdoms(l).some((x) => x.id === k0.id),
         run: (l: Life): Outcome => { const k = kingdoms(l).find((x) => x.id === k0.id) ?? k0; l.flags.lord = k.id; l.flags.warRole = pow(l) >= 2 ? "officer" : "soldier"; l.flags.warRank = 0; l.flags.lordFavor = 45; return big(`คุณคุกเข่ารับธงของ${k.lord} — ${l.flags.warRole === "officer" ? "ฝีมือของคุณทำให้ได้คุมทหารร้อยคนตั้งแต่วันแรก" : "หอกหนึ่งเล่มกับเสื้อเกราะหนังเก่าๆ คือทั้งหมดที่ได้"}`); },
       })),

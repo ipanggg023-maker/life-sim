@@ -15,6 +15,8 @@ import { COURT_RANKS, HEAT_LABEL, courtRank, schemeHeat } from "../../content/mu
 import { activeWar, mySide, sideNames, warsOf } from "../../content/murim/world/sectWar";
 import { FAVOR_LABEL, viewCourt } from "../../content/murim/world/kingdomCourt";
 import { crownHeir, royalKids } from "../../content/murim/world/emperor";
+import { TRAIT_NAME, consortLabel, consortP, favourite, haremOf } from "../../content/murim/world/harem";
+import { rulerHere } from "../../content/murim/world/regionKings";
 import { lordFavor } from "../../content/murim/world/war";
 import { PRESSURE_LABEL, ROLE_NAME, castOf, palaceOf, palaceRoleOf, patronOf, princeById, princesOf, support } from "../../content/murim/world/palace";
 
@@ -34,6 +36,7 @@ export function JianghuTab({ life, act }: { life: Life; act: Act }) {
             🏮 {ERA[w.era].name} — {ERA[w.era].desc}
           </p>
         )}
+        {w && <p className="small">👑 ผู้ปกครองถิ่นนี้: {rulerHere(life)}</p>}
         {life.flags.exiled && <p className="small danger-text">ถูกเนรเทศ ห้ามกลับบ้านเกิด</p>}
         <p className="muted small">ย้ายถิ่นได้ที่แท็บ 🎯 ทำ → ยุทธภพ</p>
       </div>
@@ -208,7 +211,10 @@ function ThroneCard({ life }: { life: Life }) {
       <div className={`fill ${good ? (v >= 50 ? "high" : "mid") : v >= 60 ? "low" : "mid"}`} style={{ width: `${v}%` }} />
     </div>
   );
-  const cast = castOf(life).filter((n) => n.role === "minister" || n.role === "eunuch" || n.role === "general" || n.role === "empress").slice(0, 6);
+  const cast = castOf(life).filter((n) => n.role === "minister" || n.role === "eunuch" || n.role === "general").slice(0, 6);
+  const family = life.people.filter((x) => x.alive && ["mother", "father", "sibling"].includes(x.relation));
+  const harem = haremOf(life).slice().sort((a, b) => Number(a.cold) - Number(b.cold) || b.rank - a.rank);
+  const fav = favourite(life);
   return (
     <div className="card">
       <div className="card-title">👑 ราชสำนักของคุณ · {c.dynasty}</div>
@@ -235,6 +241,23 @@ function ThroneCard({ life }: { life: Life }) {
           ลูกของคุณ: {kids.map((k) => `${k.gender === "f" ? "องค์หญิง" : "องค์ชาย"}${k.name} (${k.age})`).join(" · ")}
         </p>
       )}
+      {family.length > 0 && (
+        <p className="small muted">
+          ราชวงศ์: {family.map((f) => `${f.tags?.find((t) => t.startsWith("title:"))?.slice(6).split(" · ")[0] ?? ""}${f.name}`).join(" · ")}
+        </p>
+      )}
+      {harem.length > 0 && <div className="section-title">วังหลัง ({harem.length})</div>}
+      {harem.map((h) => {
+        const p = consortP(life, h);
+        const kidsN = life.people.filter((k) => k.alive && k.relation === "child" && k.tags?.includes(`parent:${h.pid}`)).length;
+        return (
+          <p className={`small${h.cold ? " muted" : ""}`} key={h.pid}>
+            {fav?.pid === h.pid ? "★ " : ""}
+            <b>{consortLabel(life, h)}</b> {p.gender === "m" ? "♂" : "♀"} <span className="muted">· {p.age} ปี · {TRAIT_NAME[h.trait]} · {h.clan}{kidsN ? ` · ลูก ${kidsN}` : ""}</span>
+            {h.resent >= 50 && <span className="danger-text"> · ริษยาหนัก</span>}
+          </p>
+        );
+      })}
       {cast.length > 0 && <div className="section-title">คนในราชสำนัก</div>}
       {cast.map((n) => (
         <p className="small" key={n.id}>
@@ -277,7 +300,7 @@ function KingdomsCard({ life }: { life: Life }) {
             ) : (
               <>
                 <p className="small">
-                  👑 {life.flags.isLord === k.id ? "คุณ" : k.lord}{k.lordAge ? ` (${k.lordAge} ปี)` : ""} · <span className="muted">{k.trait}</span>
+                  👑 ฮ่องเต้แห่ง{k.name.replace("แคว้น", "")}: {life.flags.isLord === k.id ? "คุณ" : k.lord}{k.lordAge ? ` (${k.lordAge} ปี)` : ""} · <span className="muted">{k.trait}</span>
                 </p>
                 <p className="small muted">
                   {k.heir ? `รัชทายาท ${k.heir}${k.heirAge ? ` (${k.heirAge})` : ""} · ` : ""}เสนาธิการ {k.strategist} · แม่ทัพใหญ่ {k.general}

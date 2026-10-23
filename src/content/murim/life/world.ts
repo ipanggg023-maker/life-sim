@@ -36,6 +36,11 @@ export interface MurimWorld {
   legends?: import("../world/jianghu").Legend[];
   /** สงครามระหว่างสำนัก (world/sectWar.ts) — กำลังรบอยู่ไม่เกินหนึ่ง + ประวัติ */
   wars?: import("../world/sectWar").SectWar[];
+  /** วังหลังเมื่อผู้เล่นเป็นฮ่องเต้ (world/harem.ts) */
+  harem?: import("../world/harem").Consort[];
+  /** อ๋องครองแต่ละภูมิภาค (world/regionKings.ts) · "war" = ยุบไปตอนแผ่นดินแตก รอราชวงศ์ใหม่แต่งตั้ง */
+  kings?: import("../world/regionKings").RegionKing[];
+  kingsFrom?: "war";
 }
 
 export const ERA: Record<EraId, { name: string; desc: string }> = {

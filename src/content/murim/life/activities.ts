@@ -13,7 +13,9 @@ import { REL_LABEL, coverTracks, hearRumor } from "./rumors";
 import { palaceAccess } from "../world/court";
 import { patronOf, spyPalace } from "../world/palace";
 import { canScheme } from "../world/palaceSchemes";
-import { abdicate, crownHeir, isEmperor, royalKids } from "../world/emperor";
+import { AUDIENCE, abdicate, crownHeir, isEmperor, royalKids } from "../world/emperor";
+import { haremOf } from "../world/harem";
+import { getEvent } from "../../../engine/events";
 import { TAEL } from "../story/kit";
 import { gift } from "./gifts";
 
@@ -68,6 +70,14 @@ const MURIM_ACTS: Activity[] = [
   M({ group: "ราชสำนัก", id: "mw_palace_spy", emoji: "👂", name: "สืบข่าวในวัง", desc: "รู้ว่าใครหนุนใคร", minAge: 18, available: palaceAccess, odds: (l) => clamp(0.4 + (l.stats.smarts - 50) / 150 + (l.job?.careerId === "jinyiwei" ? 0.2 : 0), 0.1, 0.9), run: (l) => { if (chance(l, clamp(0.4 + (l.stats.smarts - 50) / 150 + (l.job?.careerId === "jinyiwei" ? 0.2 : 0), 0.1, 0.9))) return ok(`ข่าวในวัง: ${spyPalace(l)}`); return bad("นางกำนัลที่คุณถามเอาเรื่องไปเล่าต่อ — มีคนรู้ว่าคุณกำลังสืบ"); } }),
   M({ group: "ราชสำนัก", id: "mw_memorial", emoji: "📜", name: "ถวายฎีกา", desc: "ทูลเรื่องทุกข์ราษฎร", minAge: 20, available: (l) => palaceAccess(l) && !l.flags.emperorSelf && (l.job?.careerId === "official" || l.fame >= 30), run: (l) => { runEvent(l, "ct.p_memorial"); return { text: "" }; } }),
   M({ group: "ราชสำนัก", id: "mw_scheme", emoji: "🗡️", name: "วางแผนชิงอำนาจ", desc: "หักหลัง ใส่ร้าย ยึดอำนาจ — ขึ้นเป็นใหญ่", minAge: 18, available: canScheme, run: (l) => { runEvent(l, "ct.s_menu"); return { text: "" }; } }),
+  M({ group: "ราชสำนัก", id: "mw_audience", emoji: "🏛️", name: "ออกว่าราชการเช้า", desc: "ขุนนางยื่นเรื่องที่ค้างอยู่", minAge: 18, available: isEmperor, run: (l) => { const ok2 = AUDIENCE.filter((id) => { const e = getEvent(id); return !!e && (!e.when || e.when(l)) && (e.maxTimes === 0 || (l.seen[id] ?? 0) < (e.maxTimes ?? 1)); }); runEvent(l, ok2.length ? pick(l, ok2) : "ct.e_edict"); return { text: "" }; } }),
+  M({ group: "ราชสำนัก", id: "mw_tour", emoji: "🐎", name: "เสด็จตรวจราชการหัวเมือง", desc: "ดูแผ่นดินด้วยตาตัวเอง", minAge: 18, available: isEmperor, run: (l) => { runEvent(l, "ct.e_tour"); return { text: "" }; } }),
+  M({ group: "ราชสำนัก", id: "mw_heaven", emoji: "🌄", name: "บวงสรวงฟ้า ณ หอเทียนถาน", desc: "ความชอบธรรมของรัชกาล", minAge: 18, available: isEmperor, run: (l) => { runEvent(l, "ct.e_heaven"); return { text: "" }; } }),
+  M({ group: "ราชสำนัก", id: "mw_exam_palace", emoji: "🖌️", name: "สอบหน้าพระที่นั่ง", desc: "เลือกจอหงวน ได้ขุนนางของตัวเอง", minAge: 18, available: isEmperor, run: (l) => { runEvent(l, "ct.e_exam"); return { text: "" }; } }),
+  M({ group: "ราชสำนัก", id: "mw_royal_hunt", emoji: "🏹", name: "ล่าสัตว์ฤดูใบไม้ร่วง", desc: "พาองค์ชายออกป่าหลวง", minAge: 18, available: (l) => isEmperor(l) && royalKids(l).filter((p) => p.gender === "m" && p.age >= 8).length >= 2, run: (l) => { runEvent(l, "ct.h_princes_hunt"); return { text: "" }; } }),
+  M({ group: "วังหลัง", id: "mw_h_select", emoji: "🌺", name: "คัดเลือกเข้าวังหลัง", desc: "ตระกูลขุนนางส่งลูกหลานมาเข้าคัด", minAge: 16, available: isEmperor, run: (l) => { runEvent(l, "ct.h_select"); return { text: "" }; } }),
+  M({ group: "วังหลัง", id: "mw_h_night", emoji: "🏮", name: "เสด็จตำหนักในวังหลัง", desc: "ความผูกพัน · ลูก · ความริษยาของคนอื่น", minAge: 16, time: 0, available: (l) => isEmperor(l) && haremOf(l).some((c) => !c.cold), run: (l) => { runEvent(l, "ct.h_night"); return { text: "" }; } }),
+  M({ group: "วังหลัง", id: "mw_h_ranks", emoji: "📒", name: "ทะเบียนวังหลัง", desc: "เลื่อนขั้น ลดขั้น ตั้งฮองเฮา ตำหนักเย็น", minAge: 16, time: 0, available: (l) => isEmperor(l) && haremOf(l).length > 0, run: (l) => { runEvent(l, "ct.h_ranks"); return { text: "" }; } }),
   M({ group: "ราชสำนัก", id: "mw_rule", emoji: "📯", name: "ว่าราชการ ออกราชโองการ", desc: "ภาษี นิรโทษ ห้ามสำนัก ขุดคลอง", minAge: 18, available: isEmperor, run: (l) => { runEvent(l, "ct.e_edict"); return { text: "" }; } }),
   M({ group: "ราชสำนัก", id: "mw_name_heir", emoji: "🐉", name: "แต่งตั้งรัชทายาท", desc: "เลือกลูกที่จะสืบบัลลังก์", minAge: 18, available: (l) => isEmperor(l) && royalKids(l).some((p) => p.age >= 6), run: (l) => { runEvent(l, "ct.e_heir"); return { text: "" }; } }),
   M({ group: "ราชสำนัก", id: "mw_incognito", emoji: "🎭", name: "ปลอมตัวออกนอกวัง", desc: "ดูชีวิตราษฎรด้วยตาตัวเอง", minAge: 18, available: isEmperor, run: (l) => { runEvent(l, "ct.e_incognito"); return { text: "" }; } }),

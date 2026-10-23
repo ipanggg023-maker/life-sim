@@ -11,6 +11,8 @@ import { MURIM_MALE } from "../names";
 import { calYear } from "../life/world";
 import { TAEL } from "../story/kit";
 import { type Kingdom, addFavor, kingdoms, lordFavor, myLord } from "./war";
+import { KINGDOM_REGIONS } from "./regionKings";
+import { regionOf } from "../life/region";
 
 interface Seat { capital: string; surname: string; heir: string; uncle: string; strategists: string[]; generals: string[] }
 const SEATS: Record<string, Seat> = {
@@ -105,6 +107,7 @@ yearHooks.push((l) => {
       news(strong, y, `ตี${weak.capital}แตก ผนวก${weak.name}`);
       log(l, `🔥 ${weak.capital}เมืองหลวงของ${weak.name}แตก — ${strong.lord}ผนวกแผ่นดินของ${weak.lord}`, "milestone");
       if (isMine(l, weak)) l.flags.lordFell = weak.id;
+      if (KINGDOM_REGIONS[weak.id]?.includes(regionOf(l).id)) log(l, `🏚️ ${regionOf(l).name}ที่คุณอยู่ตกเป็นของ${strong.name}แล้ว — ธงของ${weak.name}ถูกเผาทุกหัวเมือง และจะไม่มีวันชักขึ้นอีก`, "bad");
     }
   }
 });

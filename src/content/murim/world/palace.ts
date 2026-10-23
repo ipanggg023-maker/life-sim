@@ -84,6 +84,13 @@ const SECRETS = ["เคยรับเงินจากพ่อค้าเ�
 
 const newId = (p: Palace, pre: string) => `${pre}${++p.seq}`;
 const fresh = (): Standing => ({ trust: 0, debt: 0, grudge: 0 });
+/** ขุนนางคนใหม่ที่ฮ่องเต้(ผู้เล่น)แต่งตั้งเอง — ภักดีต่อคุณตั้งแต่วันแรก */
+export function appointMinister(l: Life, name: string, title: string, amb: number, trust: number): PNpc {
+  const p = palaceOf(l);
+  const n: PNpc = { id: newId(p, "n"), role: "minister", name, title, clan: pick(l, CLANS), goal: pick(l, MIN_GOAL), fear: pick(l, MIN_FEAR), backs: "emperor", amb, inf: 30, alive: true, known: true, you: { trust, debt: 20, grudge: 0 } };
+  p.cast.push(n);
+  return n;
+}
 
 function makeLady(l: Life, p: Palace, role: "empress" | "consort", name?: string, clan?: string, goal?: string): PNpc {
   return {
