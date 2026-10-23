@@ -23,7 +23,6 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
       {left !== undefined && <TimeBar left={left} max={timeBudget.fn?.(life) ?? left} />}
       {groups.map((g) => {
         const items = list.filter((a) => (a.group ?? "") === g).sort((a, b) => Number(!!activityLocked(life, a)) - Number(!!activityLocked(life, b)));
-        const open = items.filter((a) => !activityLocked(life, a)).length;
         const grid = (
           <div className="grid">
             {items.map((a) => {
@@ -44,7 +43,7 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
           </div>
         );
         return g ? (
-          <Fold kind="section" key={g} id={`act-${g}`} title={<>{g} <span className="fold-count">{open}/{items.length}</span></>}>
+          <Fold always kind="section" key={g} id={`act-${g}`} title={g}>
             {grid}
           </Fold>
         ) : (

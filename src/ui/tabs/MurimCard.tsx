@@ -49,7 +49,7 @@ function AlignmentMeter({ life }: { life: Life }) {
   // −100 (มาร) ซ้าย … +100 (ธรรมะ) ขวา
   const pos = (v + 100) / 2;
   return (
-    <Fold id="murim-1" className="m17-card" title={<>มาตรธรรมะ / มาร</>}>
+    <Fold always id="murim-1" className="m17-card" title={<>มาตรธรรมะ / มาร</>}>
       <div className="m17-align">
         <span className="small">มาร</span>
         <div className="m17-align-bar">
@@ -102,7 +102,7 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
   const [name, setName] = useState("");
   if (s) {
     return (
-      <Fold id="murim-3" className="m17-card" title={<>{s.n}</>}>
+      <Fold always id="murim-3" className="m17-card" title={<>{s.n}</>}>
         <div className="status-grid">
           <span>ก่อตั้งเมื่อ</span>
           <b>อายุ {s.y} ({life.age - s.y} ปีก่อน)</b>
@@ -171,7 +171,7 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
   if (blocked && (life.power?.rank ?? 0) < 4) return null;
   const placeholder = sectNameOptions({ ...life, rng: life.rng })[0];
   return (
-    <Fold id="murim-4" className="m17-card" title={<>ก่อตั้งสำนักของตัวเอง</>}>
+    <Fold always id="murim-4" className="m17-card" title={<>ก่อตั้งสำนักของตัวเอง</>}>
       <p className="small muted">{blocked ?? `ค่าก่อสร้าง ${money(life, SECT_COST)} — ตั้งชื่อสำนักที่จะอยู่ไปอีกร้อยปี`}</p>
       {!blocked && (
         <div className="row">

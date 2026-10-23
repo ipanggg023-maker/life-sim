@@ -10,7 +10,7 @@ export function CourtPoliticsCard({ life, act }: { life: Life; act: Act }) {
   const list = rumors(life);
   const ready = schemeReady(life);
   return (
-    <Fold id="courtpolitics-0" className="court-pol" title={<>⚖️ การเมืองในราชสำนัก</>}>
+    <Fold always id="courtpolitics-0" className="court-pol" title={<>⚖️ การเมืองในราชสำนัก</>}>
 
       <div className="pol-balance" title="ดุลอำนาจ">
         {FACTIONS.map((f) => (

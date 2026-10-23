@@ -47,7 +47,7 @@ export function SoulTab({
   return (
     <div className="tab-content">
       {real ? (
-        <Fold id="soul-0" title={<>บันทึกชีวิต</>}>
+        <Fold always id="soul-0" title={<>บันทึกชีวิต</>}>
           <p>
             ชีวิตที่ {graveyard.length + 1} · {displayName(life)} · ปี {life.birthYear}
           </p>

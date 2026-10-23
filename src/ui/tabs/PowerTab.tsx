@@ -163,7 +163,7 @@ function MartialRecord({ life }: { life: Life }) {
     const w = worldOf(life.worldId);
     const [from, to] = w.awakenAge;
     return (
-      <Fold id="power-0" title={<>วิชายุทธ์</>}>
+      <Fold always id="power-0" title={<>วิชายุทธ์</>}>
         <p className="muted">
           {life.age < from ? `ยังไม่ถึงวัยที่สำนักต่างๆ ลงเขามาคัดศิษย์ (${from}–${to} ปี)` : "เส้นชีพจรยังไม่ทะลวง — คุณยังไม่ได้ฝึกวิชาลมปราณ ใช้ชีวิตแบบคนธรรมดา"}
         </p>
@@ -177,7 +177,7 @@ function MartialRecord({ life }: { life: Life }) {
   const progress = p.rank >= 8 ? 1 : Math.min(1, qiYears(life) / Math.max(1, qiNeed));
   const factor = combatFactor(life);
   return (
-    <Fold id="power-1" title={<>วิชายุทธ์</>}>
+    <Fold always id="power-1" title={<>วิชายุทธ์</>}>
       <div className="status-grid">
         <span>ขั้นฝีมือ</span>
         <b className={`rank r${p.rank}`}>{rankLabel(life, p.rank)}</b>
@@ -199,7 +199,7 @@ function MartialRecord({ life }: { life: Life }) {
         <span className="small muted">{p.rank < 8 && qiYears(life) < qiNeed ? `ต้องสะสมกำลังภายในให้ถึง ${qiNeed} ปี ก่อนทะลวงขั้นถัดไป · ` : ""}{p.rank >= 8 ? "ถึงจุดสูงสุดของวิชาแล้ว" : progress >= 1 ? "พร้อมทะลวงขั้นถัดไป" : progress >= 0.6 ? "ใกล้แตะขั้นถัดไป" : progress >= 0.3 ? "ฝึกมาได้ครึ่งทางของขั้นนี้" : "เพิ่งก้าวเข้าขั้นนี้"}</span>
       </div>
       {factor < 1 && <p className="small danger-text">บาดแผลและความพิการทำให้ฝีมือเหลือราว {Math.round(factor * 100)}% ของที่ควรเป็น</p>}
-      <Fold kind="section" id="power-s0" title={<>วิชาที่รู้</>}>
+      <Fold always kind="section" id="power-s0" title={<>วิชาที่รู้</>}>
       {artsOf(life).length === 0 && <p className="muted small">ยังไม่มีคัมภีร์หรือวิชาที่ร่ำเรียนอย่างเป็นแบบแผน</p>}
       {artsOf(life).map((k) => {
         const a = artInfo(k);
@@ -241,7 +241,7 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
       <PassivesCard life={life} />
       <StoriesCard life={life} />
 
-      <Fold kind="section" id="power-s1" title={<>พรสวรรค์</>}>
+      <Fold always kind="section" id="power-s1" title={<>พรสวรรค์</>}>
       <div className="talent-row">
         {life.talents.map((t, i) => {
           const info = talentById(t.id)!;
@@ -291,7 +291,7 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
       <TitlesCard life={life} act={act} />
       {known.length > 0 && (
         <>
-          <Fold kind="section" id="power-s3" title={<>พรสวรรค์แต่กำเนิด</>}>
+          <Fold always kind="section" id="power-s3" title={<>พรสวรรค์แต่กำเนิด</>}>
           <div className="talent-row">
             {known.map((t, i) => {
               const info = talentById(t.id)!;
@@ -359,7 +359,7 @@ function TrainPanel({ life, act }: { life: Life; act: Act }) {
   const cur = arts.find((a) => a.id === art) ?? arts[0];
   return (
     <>
-      <Fold kind="section" id="power-s6" title={<>ฝึกวิชา {done ? "· ปีนี้ฝึกแล้ว" : "· ปีละครั้ง"}</>}>
+      <Fold always kind="section" id="power-s6" title={<>ฝึกวิชา {done ? "· ปีนี้ฝึกแล้ว" : "· ปีละครั้ง"}</>}>
       <label className="plan-pick">
         <span className="plan-label">วิชา</span>
         <select value={cur.id} onChange={(e) => setArt(e.target.value)}>
@@ -403,7 +403,7 @@ function MurimActions({ life, act }: { life: Life; act: Act }) {
         </button>
       </div>
       <TrainPanel life={life} act={act} />
-      <Fold kind="section" id="power-s7" title={<>สำนัก</>}>
+      <Fold always kind="section" id="power-s7" title={<>สำนัก</>}>
       {guild ? (
         <div className="job">
           <div className="job-main">
@@ -588,7 +588,7 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
         <SkillList life={life} />
       </div>
 
-      <Fold kind="section" id="power-s9" title={<>{w.labels.raid} · เหลือ {Math.max(0, left)} ครั้งในปีนี้</>}>
+      <Fold always kind="section" id="power-s9" title={<>{w.labels.raid} · เหลือ {Math.max(0, left)} ครั้งในปีนี้</>}>
       {!canQuest && <p className="muted small">{ui.needJob}</p>}
       {gateRanks.map((r) => {
         const blocked = canEnterGate(life, r);
@@ -631,7 +631,7 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
         )}
       </div></Fold>
 
-      <Fold kind="section" id="power-s10" title={<>{w.labels.guild}</>}>
+      <Fold always kind="section" id="power-s10" title={<>{w.labels.guild}</>}>
       {guild ? (
         <div className="job">
           <div className="job-main">
@@ -726,7 +726,7 @@ function AcademyCard({ life }: { life: Life }) {
   const h = houseOf(life);
   const status = f.acaGrad ? (f.acaTop ? "จบการศึกษาอันดับหนึ่ง " : "จบการศึกษาแล้ว ") : f.acaExpelled ? "ถูกให้ออก" : inAcademy(life) ? `กำลังเรียนปี ${acaYear(life)}` : "รอเข้าเรียน";
   return (
-    <Fold id="power-3" title={<>สถาบันจักรวรรดิ</>}>
+    <Fold always id="power-3" title={<>สถาบันจักรวรรดิ</>}>
       <p>
         {status}
         {h ? ` · ${h.emoji} ${h.name}` : ""}

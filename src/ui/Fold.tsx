@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Icon } from "./Icon";
 
-// การ์ด/หัวข้อที่ย่อ/ขยายได้ในแผ่นเลื่อน — ย่อไว้ก่อน เปิดเฉพาะอันที่อยากดู และจำไว้ว่าเปิดอันไหน (เก็บในเครื่องนี้)
+// การ์ด/หัวข้อในแผ่นเลื่อน: ส่วนสำคัญแสดงตลอด (always) · รายละเอียดปลีกย่อยย่อไว้ เปิดเมื่ออยากดู และจำไว้ว่าเปิดอันไหน (เก็บในเครื่องนี้)
 const KEY = "ls.folds";
 function readOpen(): Set<string> {
   try {
@@ -21,19 +21,27 @@ function saveOpen(id: string, open: boolean) {
   }
 }
 
-/** คำสั่ง "เปิดทั้งหมด / ย่อทั้งหมด" จากหัวแผ่นเลื่อน (n เพิ่มทุกครั้งที่กด) */
-export const FoldCmd = createContext<{ open: boolean; n: number }>({ open: false, n: 0 });
+/** kind="card": การ์ดทั้งใบ · kind="section": หัวข้อย่อยในการ์ดหรือในแผ่น
+ *  always: ส่วนสำคัญ แสดงตลอดเหมือนการ์ดปกติ (ไม่มีปุ่มย่อ) — ย่อเฉพาะรายละเอียดปลีกย่อย · force: บังคับเปิด (เช่น แตะชื่อคนจากบันทึก) */
+export function Fold(props: { id: string; title: ReactNode; className?: string; kind?: "card" | "section"; force?: boolean; always?: boolean; children: ReactNode }) {
+  const { title, className = "", kind = "card", always, children } = props;
+  if (always)
+    return kind === "card" ? (
+      <div className={`card ${className}`}>
+        <div className="card-title">{title}</div>
+        {children}
+      </div>
+    ) : (
+      <>
+        <div className="section-title">{title}</div>
+        {children}
+      </>
+    );
+  return <Folding {...props} />;
+}
 
-/** kind="card": การ์ดทั้งใบ · kind="section": หัวข้อย่อยในการ์ดหรือในแผ่น · force: บังคับเปิด (เช่น แตะชื่อคนจากบันทึก) */
-export function Fold({ id, title, className = "", kind = "card", force = false, children }: { id: string; title: ReactNode; className?: string; kind?: "card" | "section"; force?: boolean; children: ReactNode }) {
+function Folding({ id, title, className = "", kind = "card", force = false, children }: { id: string; title: ReactNode; className?: string; kind?: "card" | "section"; force?: boolean; children: ReactNode }) {
   const [open, setOpen] = useState(() => force || readOpen().has(id));
-  const cmd = useContext(FoldCmd);
-  useEffect(() => {
-    if (cmd.n > 0) {
-      setOpen(cmd.open);
-      saveOpen(id, cmd.open);
-    }
-  }, [cmd, id]);
   useEffect(() => {
     if (force) setOpen(true);
   }, [force]);

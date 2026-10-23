@@ -17,7 +17,7 @@ export function TowerTeamCard({ life }: { life: Life }) {
   const bets = longBets(life);
   const rival = SPONSORS.find((s) => s.id === life.flags.t19rival);
   return (
-    <Fold id="towerteam-0" className="t19-card" title={<>🗼 หอคอย: กฎ · ทีม · เดิมพัน</>}>
+    <Fold always id="towerteam-0" className="t19-card" title={<>🗼 หอคอย: กฎ · ทีม · เดิมพัน</>}>
 
       <div className="t19-rule">
         <div className="t19-rule-head">

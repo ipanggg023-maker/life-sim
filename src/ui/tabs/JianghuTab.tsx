@@ -28,7 +28,7 @@ export function JianghuTab({ life, act }: { life: Life; act: Act }) {
   const heat = heatOf(life);
   return (
     <div className="tab-content">
-      <Fold id="jianghu-0" title={<>ที่อยู่และยุคสมัย</>}>
+      <Fold always id="jianghu-0" title={<>ที่อยู่และยุคสมัย</>}>
         <p className="small">
           {r.name} — {r.desc}
         </p>
@@ -69,7 +69,7 @@ export function JianghuTab({ life, act }: { life: Life; act: Act }) {
         </Fold>
       )}
       {(heat > 0 || jailed(life) || mourning(life)) && (
-        <Fold id="jianghu-3" title={<>สถานะ</>}>
+        <Fold always id="jianghu-3" title={<>สถานะ</>}>
           {heat > 0 && (
             <p className={`small ${life.flags.wanted ? "danger-text" : ""}`}>
               {life.flags.wanted ? "ถูกประกาศจับ — นักล่าค่าหัวกำลังตามหา" : "ทางการเริ่มจับตามอง"} (ความร้อนแรง {Math.round(heat)}/100)
@@ -90,7 +90,7 @@ function RumorCard({ life, act }: { life: Life; act: Act }) {
   if (!rs.length && !fs.length) return null;
   const busy = life.queue.length > 0;
   return (
-    <Fold id="jianghu-4" title={<>ข่าวลือ</>}>
+    <Fold always id="jianghu-4" title={<>ข่าวลือ</>}>
       {rs.length === 0 && <p className="muted small">ยังไม่ได้ยินข่าวอะไร — ลองไปฟังข่าวในโรงน้ำชา</p>}
       {rs.map((r) => (
         <div className="job" key={r.id}>
@@ -139,7 +139,7 @@ function CourtCard({ life }: { life: Life }) {
   const backed = life.flags.palaceBack ? princeById(life, life.flags.palaceBack) : undefined;
   const health = c.emperor.health >= 70 ? "แข็งแรง" : c.emperor.health >= 40 ? "ประชวรบ่อย" : "ประชวรหนัก";
   return (
-    <Fold id="jianghu-5" title={<>ราชสำนัก · {c.dynasty}</>}>
+    <Fold always id="jianghu-5" title={<>ราชสำนัก · {c.dynasty}</>}>
       <p className="small">
         {c.emperor.name} · {TEMPER[c.emperor.temper]} · {c.emperor.age} พรรษา · {inside && role === "physician" ? `ชีพจร ${c.emperor.health}/100` : inside ? health : `ข่าวว่า${health}`}
         {c.regent ? ` · ผู้สำเร็จราชการ: ${c.regent}` : ""}
@@ -226,7 +226,7 @@ function ThroneCard({ life }: { life: Life }) {
   const harem = haremOf(life).slice().sort((a, b) => Number(a.cold) - Number(b.cold) || b.rank - a.rank);
   const fav = favourite(life);
   return (
-    <Fold id="jianghu-6" title={<>ราชสำนักของคุณ · {c.dynasty}</>}>
+    <Fold always id="jianghu-6" title={<>ราชสำนักของคุณ · {c.dynasty}</>}>
       <p className="small">
         คุณคือ <b>{c.emperor.name}</b> · ครองราชย์ปีที่ {Math.max(1, yr - c.emperor.since + 1)} · ท้องพระคลัง{p.treasury >= 60 ? "มั่งคั่ง" : p.treasury >= 30 ? "พอใช้" : "ร่อยหรอ"}
       </p>
@@ -293,7 +293,7 @@ function KingdomsCard({ life }: { life: Life }) {
   if (!ks.length) return null;
   const role = life.flags.isLord ? "เจ้าแคว้น" : life.flags.warRole === "strategist" ? (life.flags.warChief ? "เสนาธิการใหญ่" : "เสนาธิการ") : life.flags.warRole === "general" ? (life.flags.warChief ? "แม่ทัพใหญ่" : "แม่ทัพ") : life.flags.warRole === "officer" ? "นายทหาร" : "พลทหาร";
   return (
-    <Fold id="jianghu-7" title={<>สงครามสามแคว้น</>}>
+    <Fold always id="jianghu-7" title={<>สงครามสามแคว้น</>}>
       {ks.map((k) => {
         const mine = life.flags.lord === k.id;
         const last = k.news?.[k.news.length - 1];
@@ -346,7 +346,7 @@ function WarCard({ life }: { life: Life }) {
   const side = mySide(life);
   const yr = life.birthYear + life.age;
   return (
-    <Fold id="jianghu-8" title={<>สงครามสำนัก</>}>
+    <Fold always id="jianghu-8" title={<>สงครามสำนัก</>}>
       {war ? (
         <>
           <p className="small">

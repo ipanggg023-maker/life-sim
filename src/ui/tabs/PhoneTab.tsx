@@ -65,7 +65,7 @@ export function PhoneTab({ life, act }: { life: Life; act: Act }) {
     return (
       <div className="tab-content">
         {back}
-        <Fold id="phone-0" title={<>📸 @{life.firstName}_{String(life.birthYear % 100).padStart(2, "0")}</>}>
+        <Fold always id="phone-0" title={<>📸 @{life.firstName}_{String(life.birthYear % 100).padStart(2, "0")}</>}>
           <p>
             <b>{fmt(ph.ig)}</b> ผู้ติดตาม · {ph.igPosts} โพสต์
             {ph.ig >= 10_000 && <span className="small muted"> · ได้งานรีวิวสินค้าทุกปี</span>}
@@ -94,7 +94,7 @@ export function PhoneTab({ life, act }: { life: Life; act: Act }) {
     return (
       <div className="tab-content">
         {back}
-        <Fold id="phone-1" title={<>▶️ ช่องของ {life.firstName}</>}>
+        <Fold always id="phone-1" title={<>▶️ ช่องของ {life.firstName}</>}>
           <p>
             <b>{fmt(ph.yt)}</b> ซับ · {ph.ytVideos} คลิป · {fmt(ph.ytViews)} วิวรวม
           </p>
@@ -122,7 +122,7 @@ export function PhoneTab({ life, act }: { life: Life; act: Act }) {
     return (
       <div className="tab-content">
         {back}
-        <Fold id="phone-2" title={<>💘 แอปหาคู่</>}>
+        <Fold always id="phone-2" title={<>💘 แอปหาคู่</>}>
           <p className="small muted">ปัดหาคนปีละครั้ง เลือกทักหนึ่งในสามโปรไฟล์ — โอกาสขึ้นกับรูปลักษณ์และเสน่ห์</p>
           <button className="btn primary" disabled={!canSwipe(life)} onClick={() => act((l) => void startSwipe(l))}>
             {life.age < 18 ? "ต้องอายุ 18+" : !canSwipe(life) && life.doneThisYear.includes("swipe") ? "ปีนี้ปัดแล้ว" : !canSwipe(life) ? "คุณมีคนรักแล้ว" : "เริ่มปัด"}
@@ -135,7 +135,7 @@ export function PhoneTab({ life, act }: { life: Life; act: Act }) {
     return (
       <div className="tab-content">
         {back}
-        <Fold id="phone-3" title={<>📈 พอร์ตหุ้น</>}>
+        <Fold always id="phone-3" title={<>📈 พอร์ตหุ้น</>}>
           <p>
             มูลค่าพอร์ต <b>{money(life, ph.portfolio)}</b>
             {life.flags.lastReturn !== undefined && (

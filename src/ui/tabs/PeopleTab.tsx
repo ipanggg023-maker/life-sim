@@ -38,7 +38,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
         const members = list.filter((p) => grp.of(p));
         if (!members.length) return null;
         return (
-          <Fold kind="section" key={grp.id} id={`people-${grp.id}`} force={!!focus && members.some((m) => m.id === focus)} title={<>{grp.name} <span className="fold-count">{members.length}</span></>}>
+          <Fold always={grp.id !== "gone"} kind="section" key={grp.id} id={`people-${grp.id}`} force={!!focus && members.some((m) => m.id === focus)} title={<>{grp.name} <span className="fold-count">{members.length}</span></>}>
       {members.map((p) => (
         <div className={`person ${p.alive ? "" : "dead"} ${focus === p.id ? "focused" : ""}`} key={p.id} id={`person-${p.id}`}>
           <button className="person-row" onClick={() => setOpen(open === p.id ? null : p.id)}>

@@ -26,7 +26,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
 
   return (
     <div className="tab-content">
-      {!worldOf(life.worldId).modern ? null : <Fold id="career-0" title={<>การศึกษา</>}>
+      {!worldOf(life.worldId).modern ? null : <Fold always id="career-0" title={<>การศึกษา</>}>
         <p>
           สถานะ: {STAGE_LABEL[ed.stage]}
           {ed.stage === "university" && ed.faculty && ` · คณะ${facultyById(ed.faculty).name} (เหลือ ${ed.uniYearsLeft} ปี)`}
@@ -42,7 +42,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
       </Fold>}
 
       {job && career && (
-        <Fold id="career-1" title={<>งานปัจจุบัน</>}>
+        <Fold always id="career-1" title={<>งานปัจจุบัน</>}>
           <p>
             <b>{career.titles[job.level - 1]}</b> · {career.name}
           </p>
@@ -66,7 +66,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
 
       {job && jobActionsFor(life).length > 0 && (
         <>
-          <Fold kind="section" id="career-s0" title={<>งานของ{career?.name ?? "อาชีพนี้"} · ปีละครั้งต่ออย่าง · ใช้เวลาเดียวกับแท็บทำ</>}>
+          <Fold always kind="section" id="career-s0" title={<>งานของ{career?.name ?? "อาชีพนี้"} · ปีละครั้งต่ออย่าง · ใช้เวลาเดียวกับแท็บทำ</>}>
           {timeLeft(life) !== undefined && <TimeBar left={timeLeft(life)!} max={timeBudget.fn?.(life) ?? 0} />}
           <div className="grid">
             {jobActionsFor(life).map((a) => {

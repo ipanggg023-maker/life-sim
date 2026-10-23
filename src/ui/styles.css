@@ -1452,10 +1452,6 @@ details[open] > .fold-head .fold-chevron { transform: rotate(180deg); }
 .fold-section > .fold-body { padding: 2px 0 8px; }
 .fold-section[open] > .fold-body, .fold-card[open] > .fold-body { animation: foldOpen 0.2s ease-out; }
 @keyframes foldOpen { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
-.sheet-tools { display: flex; align-items: center; gap: 2px; }
-.fold-all { min-height: 44px; padding: 0 8px; border: 0; background: none; font-family: var(--font-ui, inherit); font-size: 12px; color: var(--muted); text-decoration: underline dotted; text-underline-offset: 4px; }
-.fold-all:active { color: var(--accent); }
-@media (max-width: 360px) { .fold-all { padding: 0 5px; font-size: 11.5px; } }
 :root[data-world="murim"] .fold-card > .fold-head { font-family: var(--font-display); }
 :root[data-world="murim"] .fold-card[open] > .fold-head { padding-bottom: 8px; }
 :root[data-world="murim"] .fold-section > .fold-head { margin: 8px 0 0; }
