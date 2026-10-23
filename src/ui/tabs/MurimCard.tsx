@@ -7,6 +7,7 @@ import type { Life } from "../../engine/types";
 import { SECT_BUILDINGS, SECT_BUSINESS, buildSect, hasBuilding, openSectBusiness, sectMorale } from "../../content/murim/world/jianghu";
 import { money } from "../../engine/util";
 import type { Act } from "../App";
+import { Fold } from "../Fold";
 
 export function MurimCard({ life, act }: { life: Life; act: Act }) {
   return (
@@ -25,8 +26,7 @@ function RankingBoard({ life }: { life: Life }) {
   const news = String(life.flags.m17NewsShown ?? "").split("|").filter(Boolean);
   if (!list.length) return null;
   return (
-    <div className="card m17-card">
-      <div className="card-title">ทำเนียบยอดฝีมือใต้หล้า</div>
+    <Fold id="murim-0" className="m17-card" title={<>ทำเนียบยอดฝีมือใต้หล้า</>}>
       <p className="small muted">
         {me ? `คุณอยู่อันดับ ${me} จาก ${RANK_SIZE}` : life.flags.m17Best ? `เคยติดอันดับ ${life.flags.m17Best} — ตอนนี้หลุดทำเนียบ` : "ยังไม่ติดทำเนียบ — อันดับ 11–20 คือประตูแรก ท้าชิงได้ที่แท็บทำ → ยุทธภพ"}
       </p>
@@ -40,7 +40,7 @@ function RankingBoard({ life }: { life: Life }) {
         ))}
       </ol>
       {news.length > 0 && <p className="small muted">ข่าวล่าสุด: {news.join(" · ")}</p>}
-    </div>
+    </Fold>
   );
 }
 
@@ -49,8 +49,7 @@ function AlignmentMeter({ life }: { life: Life }) {
   // −100 (มาร) ซ้าย … +100 (ธรรมะ) ขวา
   const pos = (v + 100) / 2;
   return (
-    <div className="card m17-card">
-      <div className="card-title">มาตรธรรมะ / มาร</div>
+    <Fold id="murim-1" className="m17-card" title={<>มาตรธรรมะ / มาร</>}>
       <div className="m17-align">
         <span className="small">มาร</span>
         <div className="m17-align-bar">
@@ -65,7 +64,7 @@ function AlignmentMeter({ life }: { life: Life }) {
           {v <= -40 ? "· พันธมิตรยุทธจักรออกล่าคุณ ลัทธิมารเปิดประตูรอ" : v >= 40 ? "· ฝ่ายธรรมะไว้วางใจ ประตูพันธมิตรยุทธจักรเปิดให้" : "· ทั้งสองฝ่ายยังจับตาดูว่าคุณจะเลือกทางไหน"}
         </span>
       </p>
-    </div>
+    </Fold>
   );
 }
 
@@ -74,8 +73,7 @@ function Ledger({ life }: { life: Life }) {
   const open = list.filter((e) => !e.d);
   const done = list.filter((e) => e.d);
   return (
-    <div className="card m17-card">
-      <div className="card-title">สมุดบุญคุณ / ความแค้น</div>
+    <Fold id="murim-2" className="m17-card" title={<>สมุดบุญคุณ / ความแค้น</>}>
       {!list.length && <p className="small muted">ยังว่างเปล่า — ทุกคนที่คุณช่วยหรือทำร้าย จะถูกจดไว้ที่นี่ และสักวันจะกลับมา</p>}
       <ul className="m17-ledger">
         {open.map((e) => (
@@ -95,7 +93,7 @@ function Ledger({ life }: { life: Life }) {
           </li>
         ))}
       </ul>
-    </div>
+    </Fold>
   );
 }
 
@@ -104,8 +102,7 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
   const [name, setName] = useState("");
   if (s) {
     return (
-      <div className="card m17-card">
-        <div className="card-title">{s.n}</div>
+      <Fold id="murim-3" className="m17-card" title={<>{s.n}</>}>
         <div className="status-grid">
           <span>ก่อตั้งเมื่อ</span>
           <b>อายุ {s.y} ({life.age - s.y} ปีก่อน)</b>
@@ -132,7 +129,7 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
           </div>
           <span className="small">{sectMorale(s)}</span>
         </div>
-        <div className="section-title">อาคาร</div>
+        <Fold kind="section" id="murim-s0" title={<>อาคาร</>}>
         {SECT_BUILDINGS.map((b) => {
           const owned = hasBuilding(s, b.id);
           return (
@@ -148,8 +145,8 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
               )}
             </div>
           );
-        })}
-        <div className="section-title">กิจการของสำนัก</div>
+        })}</Fold>
+        <Fold kind="section" id="murim-s1" title={<>กิจการของสำนัก</>}>
         {SECT_BUSINESS.map((b) => {
           const owned = !!s.biz?.includes(b.id);
           return (
@@ -166,16 +163,15 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
             </div>
           );
         })}
-        <p className="small muted">ค่าดูแลอาคารและเลี้ยงศิษย์หักจากเงินทุกปี · ขวัญต่ำ ศิษย์จะหนี</p>
-      </div>
+        <p className="small muted">ค่าดูแลอาคารและเลี้ยงศิษย์หักจากเงินทุกปี · ขวัญต่ำ ศิษย์จะหนี</p></Fold>
+      </Fold>
     );
   }
   const blocked = canFound(life);
   if (blocked && (life.power?.rank ?? 0) < 4) return null;
   const placeholder = sectNameOptions({ ...life, rng: life.rng })[0];
   return (
-    <div className="card m17-card">
-      <div className="card-title">ก่อตั้งสำนักของตัวเอง</div>
+    <Fold id="murim-4" className="m17-card" title={<>ก่อตั้งสำนักของตัวเอง</>}>
       <p className="small muted">{blocked ?? `ค่าก่อสร้าง ${money(life, SECT_COST)} — ตั้งชื่อสำนักที่จะอยู่ไปอีกร้อยปี`}</p>
       {!blocked && (
         <div className="row">
@@ -193,6 +189,6 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
           </button>
         </div>
       )}
-    </div>
+    </Fold>
   );
 }

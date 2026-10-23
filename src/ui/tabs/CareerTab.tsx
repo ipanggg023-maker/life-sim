@@ -7,6 +7,7 @@ import type { Act } from "../App";
 import { doJobAction, jobActionLocked, jobActionsFor } from "../../content/murim/life/jobActions";
 import { timeBudget, timeLeft } from "../../engine/activities";
 import { TimeBar } from "./ActivitiesTab";
+import { Fold } from "../Fold";
 
 const STAGE_LABEL: Record<SchoolStage, string> = {
   none: "ยังไม่เข้าเรียน",
@@ -25,8 +26,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
 
   return (
     <div className="tab-content">
-      {!worldOf(life.worldId).modern ? null : <div className="card">
-        <div className="card-title">การศึกษา</div>
+      {!worldOf(life.worldId).modern ? null : <Fold id="career-0" title={<>การศึกษา</>}>
         <p>
           สถานะ: {STAGE_LABEL[ed.stage]}
           {ed.stage === "university" && ed.faculty && ` · คณะ${facultyById(ed.faculty).name} (เหลือ ${ed.uniYearsLeft} ปี)`}
@@ -39,13 +39,10 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
             ตั้งใจเรียนให้หนัก
           </button>
         )}
-      </div>}
+      </Fold>}
 
       {job && career && (
-        <div className="card">
-          <div className="card-title">
-            งานปัจจุบัน
-          </div>
+        <Fold id="career-1" title={<>งานปัจจุบัน</>}>
           <p>
             <b>{career.titles[job.level - 1]}</b> · {career.name}
           </p>
@@ -64,12 +61,12 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
               ลาออก
             </button>
           </div>
-        </div>
+        </Fold>
       )}
 
       {job && jobActionsFor(life).length > 0 && (
         <>
-          <div className="section-title">งานของ{career?.name ?? "อาชีพนี้"} · ปีละครั้งต่ออย่าง · ใช้เวลาเดียวกับแท็บทำ</div>
+          <Fold kind="section" id="career-s0" title={<>งานของ{career?.name ?? "อาชีพนี้"} · ปีละครั้งต่ออย่าง · ใช้เวลาเดียวกับแท็บทำ</>}>
           {timeLeft(life) !== undefined && <TimeBar left={timeLeft(life)!} max={timeBudget.fn?.(life) ?? 0} />}
           <div className="grid">
             {jobActionsFor(life).map((a) => {
@@ -88,13 +85,13 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
               );
             })}
           </div>
-          {life.flags.mwWeapon && <p className="muted small">อาวุธคู่กาย: {String(life.flags.mwWeapon)}</p>}
+          {life.flags.mwWeapon && <p className="muted small">อาวุธคู่กาย: {String(life.flags.mwWeapon)}</p>}</Fold>
         </>
       )}
 
       {!job && (
         <>
-          <div className="section-title">หางาน</div>
+          <Fold kind="section" id="career-s1" title={<>หางาน</>}>
           {CAREERS.filter((c) => worldMatches(c.world, life.worldId)).map((c) => {
             const missing = jobRequirementMissing(life, c);
             const applied = life.doneThisYear.includes(`apply:${c.id}`);
@@ -114,7 +111,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
                 </button>
               </div>
             );
-          })}
+          })}</Fold>
         </>
       )}
     </div>

@@ -20,6 +20,7 @@ import { CloudCard } from "../CloudCard";
 import { goalById } from "../../content/murim/life/goals";
 import { injuryLabel } from "../../engine/body";
 import { SeriesCover } from "../SeriesCover";
+import { Fold } from "../Fold";
 
 export function SoulTab({
   life,
@@ -46,12 +47,11 @@ export function SoulTab({
   return (
     <div className="tab-content">
       {real ? (
-        <div className="card">
-          <div className="card-title">บันทึกชีวิต</div>
+        <Fold id="soul-0" title={<>บันทึกชีวิต</>}>
           <p>
             ชีวิตที่ {graveyard.length + 1} · {displayName(life)} · ปี {life.birthYear}
           </p>
-          <Fold
+          <FoldList
             title="ร่างกาย"
             items={(life.body?.injuries ?? []).map((i) => (
               <p className="small" key={i.id}>
@@ -60,7 +60,7 @@ export function SoulTab({
               </p>
             ))}
           />
-          <Fold
+          <FoldList
             title="เป้าหมายชีวิต"
             items={(life.goals ?? []).slice().reverse().flatMap((g, i) => {
               const d = goalById(g.id);
@@ -74,7 +74,7 @@ export function SoulTab({
               ];
             })}
           />
-          <Fold
+          <FoldList
             title="เหตุการณ์สำคัญของชีวิตนี้"
             items={(life.chron ?? []).slice().reverse().slice(0, 60).map((c, i) => (
               <p className="small" key={i}>
@@ -82,7 +82,7 @@ export function SoulTab({
               </p>
             ))}
           />
-          <Fold
+          <FoldList
             title="บันทึกยุทธภพ"
             closed
             items={(soul.chronicle ?? []).slice().reverse().slice(0, 120).map((c, i) => (
@@ -92,7 +92,7 @@ export function SoulTab({
               </p>
             ))}
           />
-        </div>
+        </Fold>
       ) : (
         <>
       <div className="sys-window">
@@ -121,7 +121,7 @@ export function SoulTab({
         </p>
       </div>
 
-      <div className="section-title">ความทรงจำจากชาติก่อน</div>
+      <Fold kind="section" id="soul-s0" title={<>ความทรงจำจากชาติก่อน</>}>
       {memories.length ? (
         <ul className="memories">
           {memories.map((m) => (
@@ -132,13 +132,11 @@ export function SoulTab({
         </ul>
       ) : (
         <p className="muted small">ยังไม่มี — ย้อนเวลาหลังตาย แล้วสิ่งที่คุณเห็นในชาตินี้จะกลายเป็นความทรงจำ</p>
-      )}
+      )}</Fold>
         </>
       )}
 
-      <div className="section-title">
-        {thisLife.length > 0 && <span className="muted small">ทำได้ในชาตินี้ {thisLife.length} · </span>}ความสำเร็จ {real ?ACHIEVEMENTS.filter((a) => catInWorld(a.cat, life.worldId) && soul.achievements.includes(a.id)).length : soul.achievements.length}/{real ? ACHIEVEMENTS.filter((a) => catInWorld(a.cat, life.worldId)).length : ACHIEVEMENTS.length}
-      </div>
+      <Fold kind="section" id="soul-s1" title={<>{thisLife.length > 0 && <span className="muted small">ทำได้ในชาตินี้ {thisLife.length} · </span>}ความสำเร็จ {real ?ACHIEVEMENTS.filter((a) => catInWorld(a.cat, life.worldId) && soul.achievements.includes(a.id)).length : soul.achievements.length}/{real ? ACHIEVEMENTS.filter((a) => catInWorld(a.cat, life.worldId)).length : ACHIEVEMENTS.length}</>}>
       {(Object.keys(ACH_CATEGORY) as AchCategory[]).filter((c) => !real || catInWorld(c, life.worldId)).map((cat) => {
         const list = ACHIEVEMENTS.filter((a) => catOf(a) === cat);
         if (!list.length) return null;
@@ -171,19 +169,19 @@ export function SoulTab({
 
       {!real && graveyard.some((g) => g.series) && (
         <>
-          <div className="section-title">ชั้นหนังสือของวิญญาณ</div>
+          <Fold kind="section" id="soul-s2" title={<>ชั้นหนังสือของวิญญาณ</>}>
           <div className="shelf">
             {graveyard
               .filter((g) => g.series)
               .map((g) => (
                 <SeriesCover key={g.id} series={g.series!} world={g.world} author={g.name} compact />
               ))}
-          </div>
+          </div></Fold>
         </>
       )}
 
       {graveyard.length > 0 && (
-        <Fold
+        <FoldList
           title="สุสาน"
           show={3}
           items={graveyard.map((g, i) => (
@@ -205,15 +203,15 @@ export function SoulTab({
       )}
 
       {!real && <CollectionCard life={life} soul={soul} />}
-      <TalentBookCard life={life} soul={soul} />
+      <TalentBookCard life={life} soul={soul} /></Fold>
 
-      <div className="section-title">บัญชี & ซิงก์เซฟ</div>
-      <CloudCard bundle={{ v: 1, soul, life, graveyard }} onImport={onImport} />
+      <Fold kind="section" id="soul-s3" title={<>บัญชี & ซิงก์เซฟ</>}>
+      <CloudCard bundle={{ v: 1, soul, life, graveyard }} onImport={onImport} /></Fold>
 
-      <div className="section-title">ย้ายเซฟไปอีกเครื่อง (QR / รหัส)</div>
-      <SaveTransfer life={life} soul={soul} graveyard={graveyard} onImport={onImport} />
+      <Fold kind="section" id="soul-s4" title={<>ย้ายเซฟไปอีกเครื่อง (QR / รหัส)</>}>
+      <SaveTransfer life={life} soul={soul} graveyard={graveyard} onImport={onImport} /></Fold>
 
-      <div className="section-title">ตัวเลือก</div>
+      <Fold kind="section" id="soul-s5" title={<>ตัวเลือก</>}>
       {!confirm ? (
         <button className="btn ghost" onClick={() => setConfirm(true)}>
           ทิ้งชีวิตนี้แล้วเกิดใหม่
@@ -229,7 +227,7 @@ export function SoulTab({
         </div>
       )}
 
-      {dev && <DevPanel act={act} onNewLife={onNewLife} />}
+      {dev && <DevPanel act={act} onNewLife={onNewLife} />}</Fold>
     </div>
   );
 }
@@ -239,10 +237,7 @@ function TalentBookCard({ life, soul }: { life: Life; soul: Soul }) {
   const have = new Set([...(soul.talentBook ?? []), ...life.talents.filter((t) => t.revealed).map((t) => t.id)]);
   const order = ["mythic", "divine", "legendary", "rare", "common"] as const;
   return (
-    <div className="card">
-      <div className="card-title">
-        สมุดพรสวรรค์ · {TALENTS.filter((t) => have.has(t.id)).length}/{TALENTS.length}
-      </div>
+    <Fold id="soul-1" title={<>สมุดพรสวรรค์ · {TALENTS.filter((t) => have.has(t.id)).length}/{TALENTS.length}</>}>
       <p className="muted small">พรสวรรค์ที่วิญญาณเคยได้ในทุกชาติ (พรสวรรค์ในช่องลับจะถูกบันทึกเมื่อจบชีวิต)</p>
       {COMBOS.some((c) => soul.comboBook?.includes(c.id) || life.flags[`combo:${c.id}`]) && (
         <p className="small">
@@ -268,7 +263,7 @@ function TalentBookCard({ life, soul }: { life: Life; soul: Soul }) {
           </details>
         );
       })}
-    </div>
+    </Fold>
   );
 }
 
@@ -277,10 +272,7 @@ function CollectionCard({ life, soul }: { life: Life; soul: Soul }) {
   const have = new Set([...(soul.collection ?? []), ...foundThisLife(life)]);
   const done = completedSets(have);
   return (
-    <div className="card">
-      <div className="card-title">
-        ตู้สะสม · {have.size}/{COLLECTIBLES.length}
-      </div>
+    <Fold id="soul-2" title={<>ตู้สะสม · {have.size}/{COLLECTIBLES.length}</>}>
       <p className="muted small">ของหายากที่เจอระหว่างใช้ชีวิต ติดตัววิญญาณทุกชาติ — ครบชุดของโลกไหน เกิดใหม่ได้โบนัสถาวร</p>
       {(Object.keys(SET_BONUS) as WorldId[]).map((w) => (
         <div key={w} className="collect-row">
@@ -301,7 +293,7 @@ function CollectionCard({ life, soul }: { life: Life; soul: Soul }) {
           </div>
         </div>
       ))}
-    </div>
+    </Fold>
   );
 }
 
@@ -330,15 +322,14 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
     });
 
   return (
-    <div className="card dev">
-      <div className="card-title">Admin</div>
+    <Fold id="soul-3" className="dev" title={<>Admin</>}>
       <div className="row">
         <button className="btn small" onClick={() => skip(1)}>+1 ปี (auto)</button>
         <button className="btn small" onClick={() => skip(5)}>+5 ปี</button>
         <button className="btn small" onClick={() => skip(10)}>+10 ปี</button>
       </div>
 
-      <div className="section-title">สร้างตัวละคร</div>
+      <Fold kind="section" id="soul-s6" title={<>สร้างตัวละคร</>}>
       <div className="row">
         <select value={world} onChange={(e) => setWorld(e.target.value as WorldId)}>
           <option value="hunter">โลก Hunter</option>
@@ -395,13 +386,13 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
         onClick={() => onNewLife({ worldId: world, country: country || undefined, gender, wealth, stats, talents, firstName: firstName.trim() || undefined })}
       >
         เกิดด้วยค่านี้
-      </button>
-    </div>
+      </button></Fold>
+    </Fold>
   );
 }
 
 /** หมวดในบันทึกชีวิตที่ย่อได้: แตะหัวข้อเพื่อพับ · แสดงล่าสุดไม่กี่เรื่อง แล้วกดดูทั้งหมด */
-function Fold({ title, items, show = 5, closed = false }: { title: string; items: ReactNode[]; show?: number; closed?: boolean }) {
+function FoldList({ title, items, show = 5, closed = false }: { title: string; items: ReactNode[]; show?: number; closed?: boolean }) {
   const [all, setAll] = useState(false);
   // คุมสถานะเปิด/ปิดเอง (ไม่ให้วาดใหม่แล้วพับกลับ)
   const [open, setOpen] = useState(!closed);

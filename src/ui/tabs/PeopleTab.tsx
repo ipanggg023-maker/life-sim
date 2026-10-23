@@ -7,7 +7,16 @@ import { AXIS, goalOf, notableAxes, traitName, traitsOf, profileOf, relOf } from
 import { isRealistic } from "../../content/worlds";
 import { lineageOf } from "../../content/murim/life/generations";
 import { martialLabel } from "../../content/murim/life/npcMartial";
+import { Fold } from "../Fold";
 
+/** กลุ่มคนในแท็บผู้คน — แต่ละกลุ่มย่อ/ขยายได้ */
+const FAMILY: Relation[] = ["spouse", "partner", "child", "father", "mother", "sibling"];
+const PEOPLE_GROUPS: { id: string; name: string; of: (p: Person) => boolean }[] = [
+  { id: "family", name: "ครอบครัว", of: (p) => p.alive && FAMILY.includes(p.relation) },
+  { id: "friends", name: "มิตรสหายและศิษย์", of: (p) => p.alive && (p.relation === "friend" || p.relation === "ally") },
+  { id: "rivals", name: "คู่ปรับและศัตรู", of: (p) => p.alive && p.relation === "rival" },
+  { id: "gone", name: "ผู้ล่วงลับ", of: (p) => !p.alive },
+];
 const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "father", "mother", "sibling", "friend", "rival"];
 
 export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; act: Act; focus?: string | null; onShowLog?: (id: string) => void }) {
@@ -25,7 +34,12 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
   return (
     <div className="tab-content">
       {life.worldId === "murim" && <LineageCard life={life} pick={(id) => { setOpen(id); document.getElementById(`person-${id}`)?.scrollIntoView({ block: "center" }); }} />}
-      {list.map((p) => (
+      {PEOPLE_GROUPS.map((grp) => {
+        const members = list.filter((p) => grp.of(p));
+        if (!members.length) return null;
+        return (
+          <Fold kind="section" key={grp.id} id={`people-${grp.id}`} force={!!focus && members.some((m) => m.id === focus)} title={<>{grp.name} <span className="fold-count">{members.length}</span></>}>
+      {members.map((p) => (
         <div className={`person ${p.alive ? "" : "dead"} ${focus === p.id ? "focused" : ""}`} key={p.id} id={`person-${p.id}`}>
           <button className="person-row" onClick={() => setOpen(open === p.id ? null : p.id)}>
             <div>
@@ -61,6 +75,9 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
           )}
         </div>
       ))}
+          </Fold>
+        );
+      })}
     </div>
   );
 }

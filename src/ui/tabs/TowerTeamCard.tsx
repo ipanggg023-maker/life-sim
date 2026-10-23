@@ -3,6 +3,7 @@ import { ROLES, bandRange, longBets, rivalGrudge, ruleFor, synergy, team, teamNa
 import { SPONSORS } from "../../content/sponsors";
 import type { Life } from "../../engine/types";
 import { money, shortName } from "../../engine/util";
+import { Fold } from "../Fold";
 
 /** M19: กฎของช่วงชั้นถัดไป · ทีม · โต๊ะพนันของดวงดาว */
 export function TowerTeamCard({ life }: { life: Life }) {
@@ -16,8 +17,7 @@ export function TowerTeamCard({ life }: { life: Life }) {
   const bets = longBets(life);
   const rival = SPONSORS.find((s) => s.id === life.flags.t19rival);
   return (
-    <div className="card t19-card">
-      <div className="card-title">🗼 หอคอย: กฎ · ทีม · เดิมพัน</div>
+    <Fold id="towerteam-0" className="t19-card" title={<>🗼 หอคอย: กฎ · ทีม · เดิมพัน</>}>
 
       <div className="t19-rule">
         <div className="t19-rule-head">
@@ -65,6 +65,6 @@ export function TowerTeamCard({ life }: { life: Life }) {
           ☄️ ดาวคู่แข่ง: {rival.name} · ความแค้น {rivalGrudge(life)}
         </p>
       )}
-    </div>
+    </Fold>
   );
 }

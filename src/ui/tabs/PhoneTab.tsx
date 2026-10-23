@@ -20,6 +20,7 @@ import {
 import type { Life } from "../../engine/types";
 import { loc, money, relationLabel, shortName } from "../../engine/util";
 import type { Act } from "../App";
+import { Fold } from "../Fold";
 
 type App = "home" | "ig" | "yt" | "dating" | "stocks" | "chat";
 
@@ -64,14 +65,13 @@ export function PhoneTab({ life, act }: { life: Life; act: Act }) {
     return (
       <div className="tab-content">
         {back}
-        <div className="card">
-          <div className="card-title">📸 @{life.firstName}_{String(life.birthYear % 100).padStart(2, "0")}</div>
+        <Fold id="phone-0" title={<>📸 @{life.firstName}_{String(life.birthYear % 100).padStart(2, "0")}</>}>
           <p>
             <b>{fmt(ph.ig)}</b> ผู้ติดตาม · {ph.igPosts} โพสต์
             {ph.ig >= 10_000 && <span className="small muted"> · ได้งานรีวิวสินค้าทุกปี</span>}
           </p>
           <p className="small muted">โพสต์ได้อีก {left} ครั้งในปีนี้ · ผู้ติดตามหายปีละ 5% ถ้าไม่โพสต์ · ครบ 10K สมัครอาชีพอินฟลูเอนเซอร์ได้</p>
-        </div>
+        </Fold>
         <div className="grid">
           {IG_POSTS.map((p) => {
             const blocked = left <= 0 ? "ปีนี้โพสต์ครบแล้ว" : p.need && !p.need(life) ? p.why : undefined;
@@ -94,13 +94,12 @@ export function PhoneTab({ life, act }: { life: Life; act: Act }) {
     return (
       <div className="tab-content">
         {back}
-        <div className="card">
-          <div className="card-title">▶️ ช่องของ {life.firstName}</div>
+        <Fold id="phone-1" title={<>▶️ ช่องของ {life.firstName}</>}>
           <p>
             <b>{fmt(ph.yt)}</b> ซับ · {ph.ytVideos} คลิป · {fmt(ph.ytViews)} วิวรวม
           </p>
           <p className="small muted">อัปได้อีก {left} คลิปในปีนี้ · ครบ 1K ซับเริ่มมีรายได้ · คลิปเก่ายังทำเงินทุกปี</p>
-        </div>
+        </Fold>
         <div className="grid">
           {YT_GENRES.filter((g) => g.id !== "special" || special).map((g) => (
             <button key={g.id} className="activity" disabled={left <= 0} onClick={() => act((l) => ytUpload(l, g.id))}>
@@ -123,13 +122,12 @@ export function PhoneTab({ life, act }: { life: Life; act: Act }) {
     return (
       <div className="tab-content">
         {back}
-        <div className="card">
-          <div className="card-title">💘 แอปหาคู่</div>
+        <Fold id="phone-2" title={<>💘 แอปหาคู่</>}>
           <p className="small muted">ปัดหาคนปีละครั้ง เลือกทักหนึ่งในสามโปรไฟล์ — โอกาสขึ้นกับรูปลักษณ์และเสน่ห์</p>
           <button className="btn primary" disabled={!canSwipe(life)} onClick={() => act((l) => void startSwipe(l))}>
             {life.age < 18 ? "ต้องอายุ 18+" : !canSwipe(life) && life.doneThisYear.includes("swipe") ? "ปีนี้ปัดแล้ว" : !canSwipe(life) ? "คุณมีคนรักแล้ว" : "เริ่มปัด"}
           </button>
-        </div>
+        </Fold>
       </div>
     );
 
@@ -137,8 +135,7 @@ export function PhoneTab({ life, act }: { life: Life; act: Act }) {
     return (
       <div className="tab-content">
         {back}
-        <div className="card">
-          <div className="card-title">📈 พอร์ตหุ้น</div>
+        <Fold id="phone-3" title={<>📈 พอร์ตหุ้น</>}>
           <p>
             มูลค่าพอร์ต <b>{money(life, ph.portfolio)}</b>
             {life.flags.lastReturn !== undefined && (
@@ -151,7 +148,7 @@ export function PhoneTab({ life, act }: { life: Life; act: Act }) {
             <button className="btn small" disabled={life.money <= 0} onClick={() => act((l) => invest(l, 0.5))}>ซื้อ 50%</button>
             <button className="btn small ghost" disabled={ph.portfolio <= 0} onClick={() => act(sellAll)}>ขายทั้งหมด</button>
           </div>
-        </div>
+        </Fold>
       </div>
     );
 

@@ -3,6 +3,7 @@ import type { Life } from "../../engine/types";
 import { loc, money } from "../../engine/util";
 import type { Act } from "../App";
 import { noEmoji } from "../Icon";
+import { Fold } from "../Fold";
 
 export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
   if (life.age < BABY_AGE)
@@ -20,28 +21,36 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
   return (
     <div className="tab-content">
       {left !== undefined && <TimeBar left={left} max={timeBudget.fn?.(life) ?? left} />}
-      {groups.map((g) => (
-        <div key={g || "all"}>
-          {g && <div className="section-title">{g}</div>}
+      {groups.map((g) => {
+        const items = list.filter((a) => (a.group ?? "") === g).sort((a, b) => Number(!!activityLocked(life, a)) - Number(!!activityLocked(life, b)));
+        const open = items.filter((a) => !activityLocked(life, a)).length;
+        const grid = (
           <div className="grid">
-      {list.filter((a) => (a.group ?? "") === g).sort((a, b) => Number(!!activityLocked(life, a)) - Number(!!activityLocked(life, b))).map((a) => {
-        const locked = activityLocked(life, a);
-        const odds = a.odds?.(life);
-        return (
-          <button key={a.id} className="activity" disabled={!!locked} onClick={() => act((l) => doActivity(l, a.id))}>
-            <span className="act-name">{noEmoji(loc(life, a.name))}</span>
-            <span className="act-desc">
-              {noEmoji(locked ?? loc(life, a.desc))}
-              {!locked && a.cost && life.age >= 18 ? ` · ${money(life, a.cost)}` : ""}
-              {!locked && odds !== undefined ? ` · ${Math.round(odds * 100)}%` : ""}
-              {!locked && left !== undefined && (a.time ?? 1) > 1 ? ` · ใช้เวลา ${a.time}` : ""}
-            </span>
-          </button>
+            {items.map((a) => {
+              const locked = activityLocked(life, a);
+              const odds = a.odds?.(life);
+              return (
+                <button key={a.id} className="activity" disabled={!!locked} onClick={() => act((l) => doActivity(l, a.id))}>
+                  <span className="act-name">{noEmoji(loc(life, a.name))}</span>
+                  <span className="act-desc">
+                    {noEmoji(locked ?? loc(life, a.desc))}
+                    {!locked && a.cost && life.age >= 18 ? ` · ${money(life, a.cost)}` : ""}
+                    {!locked && odds !== undefined ? ` · ${Math.round(odds * 100)}%` : ""}
+                    {!locked && left !== undefined && (a.time ?? 1) > 1 ? ` · ใช้เวลา ${a.time}` : ""}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        );
+        return g ? (
+          <Fold kind="section" key={g} id={`act-${g}`} title={<>{g} <span className="fold-count">{open}/{items.length}</span></>}>
+            {grid}
+          </Fold>
+        ) : (
+          <div key="all">{grid}</div>
         );
       })}
-          </div>
-        </div>
-      ))}
     </div>
   );
 }

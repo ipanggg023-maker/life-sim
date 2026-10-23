@@ -2,6 +2,7 @@
 import { FACTIONS, FACTION_INFO, SCHEMES, SCHEME_MIN_AGE, dominant, fac, facLabel, pow, rumors, schemeReady, schemesDone, soc, socLabel, startScheme } from "../../content/court/politics";
 import type { Life } from "../../engine/types";
 import type { Act } from "../App";
+import { Fold } from "../Fold";
 
 export function CourtPoliticsCard({ life, act }: { life: Life; act: Act }) {
   if (!life.flags.pol) return null;
@@ -9,8 +10,7 @@ export function CourtPoliticsCard({ life, act }: { life: Life; act: Act }) {
   const list = rumors(life);
   const ready = schemeReady(life);
   return (
-    <div className="card court-pol">
-      <div className="card-title">⚖️ การเมืองในราชสำนัก</div>
+    <Fold id="courtpolitics-0" className="court-pol" title={<>⚖️ การเมืองในราชสำนัก</>}>
 
       <div className="pol-balance" title="ดุลอำนาจ">
         {FACTIONS.map((f) => (
@@ -79,6 +79,6 @@ export function CourtPoliticsCard({ life, act }: { life: Life; act: Act }) {
           {!ready && <p className="small muted">ปีนี้คุณวางแผนไปแล้ว (หรือยังมีเรื่องค้างอยู่)</p>}
         </div>
       )}
-    </div>
+    </Fold>
   );
 }
