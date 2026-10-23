@@ -3,6 +3,7 @@ import { kinDeathHooks, yearHooks } from "../../../engine/game";
 import { tickNpcs } from "../../../engine/npc";
 import { tickBody } from "../../../engine/body";
 import { noteKinDeath, tickGoals } from "./goals";
+import "./murimAchievements";
 import { applyPlan } from "./plan";
 import { tickWorld } from "./world";
 

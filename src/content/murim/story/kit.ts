@@ -210,7 +210,7 @@ export const PAY = (label: Txt, tael: number | ((l: Life) => number), run: Res, 
 };
 
 /** ตัวเลือกที่เปิดฉากต่อสู้ */
-export const FIGHT = (label: Txt, foe: Txt, rank: (l: Life) => number, opts: { lethal?: boolean; cruel?: boolean; on?: string; intro?: Txt } & ChOpts = {}): Choice => ({
+export const FIGHT = (label: Txt, foe: Txt, rank: (l: Life) => number, opts: { lethal?: boolean; cruel?: boolean; spar?: boolean; on?: string; intro?: Txt } & ChOpts = {}): Choice => ({
   label: typeof label === "string" ? label : (l, c) => label(l, c),
   tone: opts.lethal ? "danger" : opts.tone,
   pros: opts.pros ?? "ชนะแล้วได้ทั้งชื่อเสียงและสิ่งที่ต้องการ",
@@ -218,7 +218,7 @@ export const FIGHT = (label: Txt, foe: Txt, rank: (l: Life) => number, opts: { l
   show: opts.show,
   req: opts.req,
   run: (l, c) => {
-    startDuel(l, { foe: txt(foe, l, c), rank: clamp(rank(l), 0, 8), lethal: opts.lethal, cruel: opts.cruel, on: opts.on, pid: c.pid ? String(c.pid) : undefined });
+    startDuel(l, { foe: txt(foe, l, c), rank: clamp(rank(l), 0, 8), lethal: opts.lethal, cruel: opts.cruel, spar: opts.spar, on: opts.on, pid: c.pid ? String(c.pid) : undefined });
     return { text: opts.intro ? txt(opts.intro, l, c) : "คุณตั้งท่า สายตาจับจ้องคู่ต่อสู้" };
   },
 });

@@ -15,6 +15,7 @@ import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds
 import { displayName, loc, money, people } from "../engine/util";
 import { disciplesOf, lifeSummary } from "../content/murim/life/generations";
 import { RIBBON_COUNT, ribbonOf } from "../content/murim/life/ribbons";
+import { catInWorld } from "../content/achievements";
 
 export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}` | `heir:${string}` | `disciple:${string}`;
 
@@ -116,7 +117,7 @@ export function DeathScreen({
       </div>
 
       {real ? (
-        <RealisticEnd life={life} achievements={claimed ? [] : award.achievements.filter((a) => a.cat === life.worldId)} />
+        <RealisticEnd life={life} achievements={claimed ? [] : award.achievements.filter((a) => catInWorld(a.cat, life.worldId))} />
       ) : (
         <>
       <div className="sys-window">

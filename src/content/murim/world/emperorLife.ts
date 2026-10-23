@@ -19,11 +19,11 @@ import { YEAR_PLANS } from "../life/plan";
 import { haremOf, consortP } from "./harem";
 
 // ───────── ฮ่องเต้เจอเฉพาะเรื่องของคนบนบัลลังก์ ─────────
-const ROYAL = /^(ct\.(e_|h_|f_|s_assassin)|kg\.e_|ed\.r_|ta\.(e_|combo|tribulation)|duel$|mk\.breakthrough)/;
+const ROYAL = /^(ct\.(e_|h_|f_|s_assassin)|kg\.e_|ed\.r_|ta\.(e_|combo|tribulation)|duel$|mk\.breakthrough|goal\.(choose|review)$)/;
 export const royalEvent = (id: string) => ROYAL.test(id);
 eligibilityFilters.push((l, e) => !isEmperor(l) || royalEvent(e.id));
 /** กิจกรรมของฮ่องเต้: ราชสำนัก วังหลัง ชีวิตในวัง ฝึกยุทธ์ส่วนตัว และวางยา (ฮ่องเต้ก็ฆ่าคนเงียบๆ ได้) */
-const ROYAL_ACTS = new Set(["mw_body", "mw_meditate", "mw_manual", "mw_poison"]);
+const ROYAL_ACTS = new Set(["mw_body", "mw_meditate", "mw_manual", "mw_poison", "mw_goal"]);
 activityFilters.push((l, a) => !isEmperor(l) || a.group === "ราชสำนัก" || a.group === "วังหลัง" || a.group === "ชีวิตในวัง" || ROYAL_ACTS.has(a.id));
 
 const legit = (l: Life, d: number) => { if (l.mw) l.mw.legitimacy = clamp(l.mw.legitimacy + d, 0, 100); };
@@ -228,6 +228,7 @@ function punish(l: Life, c: Ctx, harsh: 0 | 1 | 2): string {
   const guilty = traitor(n);
   if (harsh === 2) n.alive = false; else n.out = true;
   if (guilty) {
+    l.flags.purgedTraitors = Number(l.flags.purgedTraitors ?? 0) + 1;
     legit(l, harsh === 2 ? 2 : 1);
     for (const o of ministers(l)) o.amb = clamp(o.amb - (harsh === 2 ? 8 : 4), 0, 100);
     return harsh === 2 ? " — ราชสำนักเงียบกริบ ขุนนางที่คิดการใหญ่เก็บความคิดไว้ลึกขึ้น" : " — ขุนนางที่เหลือรู้แล้วว่าฮ่องเต้มองเห็น";
@@ -260,7 +261,7 @@ export const PURGE_EVENTS: GameEvent[] = [
           K("ให้หน่วยลับสืบให้แน่ก่อน", "smarts", 50, ((l: Life, c: Ctx) => { const n = who(l, c); if (!n) return N("", {})(l, c); n.vetted = traitor(n) ? "traitor" : "loyal"; return (n.vetted === "traitor" ? B(`หน่วยลับพบจดหมายลับใต้พื้นบ้าน${n.name}${n.secret ? ` — "${n.secret}"` : ""} เขาคิดคดจริง`, {}) : G(`หน่วยลับเฝ้า${n.name}สามเดือน ไม่พบอะไรนอกจากความภักดี — เขาเขียนฎีกาเตือนคุณทุกเดือนเพราะห่วงแผ่นดินจริงๆ`, {}))(l, c); }) as Res, ((l: Life, c: Ctx) => { const n = who(l, c); if (n) n.you.grudge = clamp(n.you.grudge + 10, 0, 100); return B(`${wn(l, c)}รู้ตัวว่าถูกสะกดรอย — ไม่ได้อะไร และตอนนี้เขามีเหตุผลที่จะไม่ไว้ใจคุณ`, {})(l, c); }) as Res),
           C("ลดตำแหน่ง ย้ายไปหัวเมือง", ((l: Life, c: Ctx) => { const t = punish(l, c, 0); return N(`${wn(l, c)}รับราชโองการด้วยมือที่สั่น แล้วออกจากเมืองหลวงพร้อมเกวียนสองเล่ม${t}`, {})(l, c); }) as Res),
           C("ปลดและเนรเทศไปชายแดน", ((l: Life, c: Ctx) => { const r = armyRevolt(l, c); const t = punish(l, c, 1); return B(`${wn(l, c)}ถูกถอดหมวกขุนนางกลางท้องพระโรง แล้วถูกคุมตัวไปชายแดนในวันเดียว${t}${r}`, {})(l, c); }) as Res),
-          P("จับขังแล้วสอบสวนให้สารภาพ", (l) => clamp(0.35 + (l.stats.smarts - 50) / 150, 0.1, 0.85), ((l: Life, c: Ctx) => { const n = who(l, c); if (!n) return N("", {})(l, c); if (traitor(n)) { n.alive = false; const r = armyRevolt(l, c); legit(l, 3); for (const o of ministers(l)) o.amb = clamp(o.amb - 6, 0, 100); return BIG(`${n.name}สารภาพทุกอย่างในคืนที่สาม — รายชื่อพรรคพวกอีกสามคนถูกจับตามมา แผ่นดินรู้ว่าแผนกบฏถูกขยี้ก่อนจะเริ่ม${r}`, {})(l, c); } n.vetted = "loyal"; n.you.trust = clamp(n.you.trust - 20, -100, 100); n.you.grudge = clamp(n.you.grudge + 15, 0, 100); return N(`${n.name}ไม่มีอะไรจะสารภาพ — เขาบริสุทธิ์ คุณปล่อยตัวพร้อมของพระราชทาน แต่แผลบนหลังเขาจะไม่หายไปง่ายๆ`, {})(l, c); }) as Res, ((l: Life, c: Ctx) => { const n = who(l, c); if (n) { n.you.grudge = clamp(n.you.grudge + 25, 0, 100); n.out = true; } legit(l, -3); return B(`${wn(l, c)}ไม่ยอมพูดสักคำจนสิ้นสติ — คุณต้องปล่อยตัวโดยไม่มีหลักฐาน ข่าวการทรมานขุนนางไปถึงทุกจวน`, {})(l, c); }) as Res, { tone: "danger" }),
+          P("จับขังแล้วสอบสวนให้สารภาพ", (l) => clamp(0.35 + (l.stats.smarts - 50) / 150, 0.1, 0.85), ((l: Life, c: Ctx) => { const n = who(l, c); if (!n) return N("", {})(l, c); if (traitor(n)) { n.alive = false; l.flags.purgedTraitors = Number(l.flags.purgedTraitors ?? 0) + 1; const r = armyRevolt(l, c); legit(l, 3); for (const o of ministers(l)) o.amb = clamp(o.amb - 6, 0, 100); return BIG(`${n.name}สารภาพทุกอย่างในคืนที่สาม — รายชื่อพรรคพวกอีกสามคนถูกจับตามมา แผ่นดินรู้ว่าแผนกบฏถูกขยี้ก่อนจะเริ่ม${r}`, {})(l, c); } n.vetted = "loyal"; n.you.trust = clamp(n.you.trust - 20, -100, 100); n.you.grudge = clamp(n.you.grudge + 15, 0, 100); return N(`${n.name}ไม่มีอะไรจะสารภาพ — เขาบริสุทธิ์ คุณปล่อยตัวพร้อมของพระราชทาน แต่แผลบนหลังเขาจะไม่หายไปง่ายๆ`, {})(l, c); }) as Res, ((l: Life, c: Ctx) => { const n = who(l, c); if (n) { n.you.grudge = clamp(n.you.grudge + 25, 0, 100); n.out = true; } legit(l, -3); return B(`${wn(l, c)}ไม่ยอมพูดสักคำจนสิ้นสติ — คุณต้องปล่อยตัวโดยไม่มีหลักฐาน ข่าวการทรมานขุนนางไปถึงทุกจวน`, {})(l, c); }) as Res, { tone: "danger" }),
           C("พระราชทานความตาย", ((l: Life, c: Ctx) => { const r = armyRevolt(l, c); const t = punish(l, c, 2); return B(`สุราพิษหนึ่งจอกถูกส่งไปถึงจวนของ${wn(l, c)}ก่อนเที่ยงคืน${t}${r}`, { align: -6 })(l, c); }) as Res, { tone: "danger" }),
           C("เปลี่ยนใจ — ให้กลับไปทำงาน", N("เขาถอยออกไปโดยไม่รู้ว่าเกือบไม่ได้กลับบ้าน", {})),
         ],

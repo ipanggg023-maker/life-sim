@@ -39,7 +39,7 @@ function part(l: Life, p: Person, why: string) {
   remember(l, p, "left_me", why, 3, {}, true);
 }
 /** แต่งงาน (เพศเดียวกัน = พิธีลับ ไม่มีใครรับรอง) */
-function wed(l: Life, p: Person) {
+export function wed(l: Life, p: Person) {
   p.relation = "spouse";
   p.bond = Math.min(100, p.bond + 15);
   if (sameSex(l, p)) { tag(p, "secret_union"); l.flags.lovesSameSex = true; }

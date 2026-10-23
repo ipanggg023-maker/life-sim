@@ -43,7 +43,7 @@ describe("ฮ่องเต้เจอแต่เรื่องของค�
     const l = emperor(3);
     expect(l.job).toBeUndefined();
     const acts = activitiesFor(l);
-    for (const a of acts) expect(["ราชสำนัก", "วังหลัง", "ชีวิตในวัง"].includes(a.group ?? "") || ["mw_body", "mw_meditate", "mw_manual", "mw_poison"].includes(a.id), a.id).toBe(true);
+    for (const a of acts) expect(["ราชสำนัก", "วังหลัง", "ชีวิตในวัง"].includes(a.group ?? "") || ["mw_body", "mw_meditate", "mw_manual", "mw_poison", "mw_goal"].includes(a.id), a.id).toBe(true);
     expect(acts.some((a) => a.id === "mw_r_garden")).toBe(true);
     expect(acts.some((a) => a.id === "mw_tavern" || a.id === "mw_gamble")).toBe(false);
     // แผนประจำปีเป็นของคนบนบัลลังก์ (ฝึกวิชา/พักฟื้นยังเลือกได้)

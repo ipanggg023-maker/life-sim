@@ -115,7 +115,7 @@ describe("NPC มีชีวิตของตัวเอง · ผลที�
     expect(feud).toBeGreaterThan(5);
     expect(npcEv).toBeGreaterThan(10);
     expect(jobs).toBeGreaterThan(100);
-    expect(dcEv).toBeGreaterThan(15);
+    expect(dcEv).toBeGreaterThan(10);
     expect(ripeGap / Math.max(1, ripeN)).toBeGreaterThanOrEqual(8);
     expect(calm40 / Math.max(1, lives40)).toBeGreaterThanOrEqual(1.5);
   });

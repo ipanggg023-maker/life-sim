@@ -54,9 +54,12 @@ describe("ราชโองการที่มีผลต่อเนื่�
     choose(l, "ด้านเศรษฐกิจ");
     choose(l, "สร้างยุ้งฉางหลวง");
     expect(edictOn(l, "granary")).toBe(true);
-    const food = l.mw!.food;
+    // เทียบกับปีเดียวกันที่ไม่มียุ้งฉาง (เรื่องในปีนั้นอาจทำให้ข้าวขึ้นลงเอง)
+    const ctl = emperor(5);
+    ctl.mw!.food = l.mw!.food;
     ageUp(l);
-    expect(l.mw!.food).toBeGreaterThanOrEqual(Math.min(100, food));
+    ageUp(ctl);
+    expect(l.mw!.food).toBeGreaterThan(ctl.mw!.food);
     l.queue = [];
     runEvent(l, "ct.e_edict");
     choose(l, "ด้านเศรษฐกิจ");

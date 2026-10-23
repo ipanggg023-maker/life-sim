@@ -76,7 +76,7 @@ function finish(l: Life, c: Ctx, r: DuelResult, text: string): Outcome {
     else if (r === "lose" || r === "yield") remember(l, p, "duel_won", "เคยเอาชนะคุณ", 2, { respect: -5, jealousy: -10 });
     else remember(l, p, "duel_draw", "เคยสู้กับคุณสูสี", 1, { respect: 6 });
   }
-  if (r === "win") addFame(l, c.lethal ? 3 : 1);
+  if (r === "win") { addFame(l, c.lethal ? 3 : 1); l.flags.duelWins = Number(l.flags.duelWins ?? 0) + 1; }
   const extra = c.on && DUEL_END[String(c.on)] ? DUEL_END[String(c.on)](l, r, c) : "";
   return { text: text + (extra ? ` ${extra}` : ""), kind: r === "win" ? "good" : r === "dead" ? "bad" : r === "lose" || r === "yield" ? "bad" : "normal" };
 }

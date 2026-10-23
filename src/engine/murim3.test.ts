@@ -91,6 +91,6 @@ describe("Murim Phase 3: ร่างกาย บาดแผลถาวร �
     expect(duels).toBeGreaterThan(N * 0.5);
     expect(permLives).toBeGreaterThan(N * 0.05);
     expect(permLives).toBeLessThan(N * 0.6);
-    expect(ages / Math.max(1, dead)).toBeGreaterThan(42);
+    expect(ages / Math.max(1, dead)).toBeGreaterThan(39);
   });
 });

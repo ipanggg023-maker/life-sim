@@ -2,7 +2,7 @@ import type { Life, Soul } from "../engine/types";
 import { hasTalent, people } from "../engine/util";
 import { talentById } from "./talents";
 
-export type AchCategory = "life" | "power" | "social" | "hunter" | "murim" | "court" | "tower" | "apocalypse" | "ordinary";
+export type AchCategory = "life" | "power" | "social" | "hunter" | "murim" | "murim_life" | "murim_goal" | "murim_throne" | "court" | "tower" | "apocalypse" | "ordinary";
 
 export interface Achievement {
   id: string;
@@ -22,6 +22,9 @@ export const ACH_CATEGORY: Record<AchCategory, string> = {
   social: "📱 สังคมและครอบครัว",
   hunter: "🌀 โลก Hunter",
   murim: "⛰️ ยุทธภพ",
+  murim_life: "🏮 ชีวิตในยุทธภพ",
+  murim_goal: "🎯 เป้าหมายชีวิต",
+  murim_throne: "🐉 บัลลังก์มังกร",
   court: "👑 ราชสำนัก",
   tower: "🗼 หอคอย",
   apocalypse: "☄️ วันสิ้นโลก",
@@ -130,6 +133,8 @@ export const ACHIEVEMENTS: Achievement[] = [
 
 /** หมวดของความสำเร็จ */
 export const catOf = (a: Achievement): AchCategory => a.cat ?? "life";
+/** หมวดนี้เป็นของโลกนี้ไหม (ยุทธภพมีหลายหมวดย่อย: murim_*) */
+export const catInWorld = (c: string | undefined, world: string) => c === world || !!c?.startsWith(`${world}_`);
 
 /** ความสำเร็จที่ทำได้ในชีวิตนี้ (ใช้แจ้งเตือนระหว่างเล่น — ยังไม่ได้แต้มจนกว่าจะจบชีวิต) */
 export const achievedNow = (life: Life) => ACHIEVEMENTS.filter((a) => a.check(life));
@@ -146,5 +151,6 @@ export function lifePoints(life: Life): number {
 
 /** ความสำเร็จใหม่ที่ชีวิตนี้ปลดล็อก (ยังไม่เคยได้มาก่อน) */
 export function newAchievements(life: Life, soul: Soul): Achievement[] {
-  return ACHIEVEMENTS.filter((a) => !soul.achievements.includes(a.id) && a.check(life));
+  const shown = String(life.flags.achShown ?? "").split(",");
+  return ACHIEVEMENTS.filter((a) => !soul.achievements.includes(a.id) && (shown.includes(a.id) || a.check(life)));
 }

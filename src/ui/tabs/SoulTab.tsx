@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { COMBOS } from "../../content/murim/life/gifts";
 import { COUNTRIES } from "../../content/countries";
-import { ACHIEVEMENTS, ACH_CATEGORY, catOf, type AchCategory } from "../../content/achievements";
+import { ACHIEVEMENTS, ACH_CATEGORY, catInWorld, catOf, type AchCategory } from "../../content/achievements";
 import { TALENTS, RARITY_LABEL, talentById } from "../../content/talents";
 import { facultyById } from "../../content/hunter/careers";
 import { rankLabel } from "../../content/hunter/power";
@@ -40,6 +40,8 @@ export function SoulTab({
   const [confirm, setConfirm] = useState(false);
   const memories = life.memories ?? [];
   const real = isRealistic(life.worldId);
+  /** ความสำเร็จที่ทำได้แล้วในชาตินี้ (แต้มวิญญาณได้ตอนจบชีวิต) */
+  const thisLife = String(life.flags.achShown ?? "").split(",").filter((id) => id && !soul.achievements.includes(id));
   return (
     <div className="tab-content">
       {real ? (
@@ -134,12 +136,12 @@ export function SoulTab({
       )}
 
       <div className="section-title">
-        ความสำเร็จ {real ? ACHIEVEMENTS.filter((a) => a.cat === life.worldId && soul.achievements.includes(a.id)).length : soul.achievements.length}/{real ? ACHIEVEMENTS.filter((a) => a.cat === life.worldId).length : ACHIEVEMENTS.length}
+        {thisLife.length > 0 && <span className="muted small">⏳ ทำได้ในชาตินี้ {thisLife.length} · </span>}ความสำเร็จ {real ?ACHIEVEMENTS.filter((a) => catInWorld(a.cat, life.worldId) && soul.achievements.includes(a.id)).length : soul.achievements.length}/{real ? ACHIEVEMENTS.filter((a) => catInWorld(a.cat, life.worldId)).length : ACHIEVEMENTS.length}
       </div>
-      {(Object.keys(ACH_CATEGORY) as AchCategory[]).filter((c) => !real || c === life.worldId).map((cat) => {
+      {(Object.keys(ACH_CATEGORY) as AchCategory[]).filter((c) => !real || catInWorld(c, life.worldId)).map((cat) => {
         const list = ACHIEVEMENTS.filter((a) => catOf(a) === cat);
         if (!list.length) return null;
-        const got = list.filter((a) => soul.achievements.includes(a.id)).length;
+        const got = list.filter((a) => soul.achievements.includes(a.id) || thisLife.includes(a.id)).length;
         return (
           <details className="ach-cat" key={cat} open={cat === "life" || real}>
             <summary>
@@ -148,11 +150,12 @@ export function SoulTab({
             <div className="ach-grid">
               {list.map((a) => {
                 const have = soul.achievements.includes(a.id);
-                const secret = a.hidden && !have;
+                const pending = thisLife.includes(a.id);
+                const secret = a.hidden && !have && !pending;
                 return (
-                  <div className={`ach ${have ? "got" : ""}`} key={a.id} title={secret ? "ความสำเร็จลับ" : a.desc}>
+                  <div className={`ach ${have || pending ? "got" : ""}`} key={a.id} title={secret ? "ความสำเร็จลับ" : pending ? `${a.desc} — ทำได้ในชาตินี้ ได้แต้มเมื่อจบชีวิต` : a.desc}>
                     <div className="ach-name">
-                      {have ? "🏆" : "🔒"} {secret ? "???" : a.name}
+                      {have ? "🏆" : pending ? "⏳" : "🔒"} {secret ? "???" : a.name}
                     </div>
                     <div className="ach-desc">
                       {secret ? "ความสำเร็จลับ" : a.desc} · +{a.points}
