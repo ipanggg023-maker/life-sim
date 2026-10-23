@@ -1,4 +1,4 @@
-// ยุทธภพเต็มรูปแบบ (MURIM_PLAN §7 · §8.3–8.5 · §6): ทำเนียบมังกรหนุ่ม · ตำนานรุ่นก่อน · ชุมนุมผู้กล้า · เยือนสำนัก · หน้าที่พันธมิตร
+// ยุทธภพเต็มรูปแบบ (MURIM_PLAN §7 · §8.3–8.5 · §6): ทำเนียบมังกร · ตำนานรุ่นก่อน · ชุมนุมผู้กล้า · เยือนสำนัก · หน้าที่พันธมิตร
 // ล่าลัทธิมาร · ประกวดโฉม · ขโมยคัมภีร์ (สำนักตามล่า) · สอบขุนนางสามระดับ · อาคาร/กิจการ/ขวัญของสำนักตัวเอง
 import type { Ctx, GameEvent, Outcome } from "../../../engine/events";
 import { kill, yearHooks } from "../../../engine/game";
@@ -21,24 +21,75 @@ const big = (text: string): Outcome => ({ text, kind: "milestone" });
 const read = <T,>(l: Life, k: string, d: T): T => { try { return l.flags[k] ? (JSON.parse(String(l.flags[k])) as T) : d; } catch { return d; } };
 const write = (l: Life, k: string, v: unknown) => { l.flags[k] = JSON.stringify(v); };
 
-// ───────────────────────── ทำเนียบมังกรหนุ่ม (อายุไม่เกิน 30) ─────────────────────────
-export interface Young { n: string; e: string; a: number; cp: number }
+// ───────────────────────── ทำเนียบมังกร (ยอดฝีมือรุ่นใหม่ อายุไม่เกิน 30 · ทั้งชายและหญิง) ─────────────────────────
+// ยี่สิบอันดับ · ผู้เล่นได้ชื่อขึ้นทำเนียบเมื่อฝีมือแซงท้ายตาราง แล้วขยับได้ด้วยการท้าประลอง/ถูกท้า/งานประลองเท่านั้น
+export interface Young { n: string; e: string; a: number; cp: number; g?: "m" | "f"; me?: boolean }
 const YOUNG_KEY = "mwYoung";
+export const YOUNG_SIZE = 20;
+const newYoung = (l: Life, cp: number, a?: number): Young => { const g = chance(l, 0.4) ? "f" : "m"; return { n: npcName(l, g), e: pick(l, EPITHETS), a: a ?? randInt(l, 17, 22), cp, g }; };
 export function youngList(l: Life): Young[] {
   let list = read<Young[]>(l, YOUNG_KEY, []);
-  if (!list.length) {
-    list = Array.from({ length: 10 }, (_, i) => ({ n: npcName(l), e: pick(l, EPITHETS), a: randInt(l, 18, 29), cp: 72 - i * 3 + randInt(l, -2, 2) }));
+  if (list.length < YOUNG_SIZE) {
+    // เซฟเก่ามีสิบอันดับ — เติมท้ายตารางที่ฝีมืออ่อนกว่า
+    if (!list.length) list = Array.from({ length: 10 }, (_, i) => newYoung(l, 74 - i * 2.5 + randInt(l, -2, 2), randInt(l, 18, 29)));
+    let cp = list.filter((y) => !y.me).slice(-1)[0]?.cp ?? 50;
+    while (list.length < YOUNG_SIZE) { cp -= randInt(l, 1, 2); list.push(newYoung(l, Math.round(cp), randInt(l, 16, 27))); }
     write(l, YOUNG_KEY, list);
   }
   return list;
 }
-/** อันดับของผู้เล่นในทำเนียบมังกรหนุ่ม (0 = ไม่ติด) */
+const saveYoung = (l: Life, list: Young[]) => write(l, YOUNG_KEY, list.slice(0, YOUNG_SIZE));
+/** อันดับของผู้เล่นในทำเนียบมังกร (0 = ไม่ติด) */
 export function myYoungPlace(l: Life): number {
   if (!l.power || l.age > 30) return 0;
-  const cp = combatPower(l);
+  return youngList(l).findIndex((y) => y.me) + 1;
+}
+const myYoung = (l: Life): Young => ({ n: "คุณ", e: String(l.flags.m17Epithet ?? "มังกรหน้าใหม่"), a: l.age, cp: combatPower(l), g: l.gender, me: true });
+/** ชนะคนอันดับ place แล้วขึ้นไปแทน — คนแพ้ถูกดันลงหนึ่งอันดับ */
+export function youngTake(l: Life, place: number): number {
+  const list = youngList(l).filter((y) => !y.me);
+  list.splice(Math.max(0, place - 1), 0, myYoung(l));
+  saveYoung(l, list);
+  if (place === 1) l.flags.youngTop = true;
+  l.flags.youngListed = true;
+  return myYoungPlace(l);
+}
+/** ตกอันดับ n ขั้น (หลุดถ้าเกินท้ายตาราง) */
+export function youngDrop(l: Life, n = 1): number {
   const list = youngList(l);
-  const place = list.filter((y) => y.cp > cp).length + 1;
-  return place <= 10 ? place : 0;
+  const i = list.findIndex((y) => y.me);
+  if (i < 0) return 0;
+  const [me] = list.splice(i, 1);
+  if (i + n >= YOUNG_SIZE) { list.push(newYoung(l, (list[list.length - 1]?.cp ?? 45) - 1)); saveYoung(l, list); return 0; }
+  list.splice(i + n, 0, me);
+  saveYoung(l, list);
+  return i + n + 1;
+}
+/** ปีละครั้ง: แก่ขึ้น คนเกินสามสิบออก คนใหม่ขึ้นมา · ผู้เล่นได้ชื่อขึ้นเมื่อฝีมือแซงท้ายตาราง */
+function youngYear(l: Life) {
+  const list = youngList(l);
+  const meAt = list.findIndex((y) => y.me);
+  let npcs = list.filter((y) => !y.me).map((y) => ({ ...y, a: y.a + 1, cp: y.cp + randInt(l, 0, 3) })).filter((y) => y.a <= 30);
+  while (npcs.length < YOUNG_SIZE - (meAt >= 0 ? 1 : 0)) npcs.push(newYoung(l, 44 + randInt(l, -4, 8)));
+  npcs = npcs.sort((a, b) => b.cp - a.cp);
+  if (meAt >= 0 && l.age <= 30 && l.power) {
+    npcs.splice(Math.min(meAt, npcs.length), 0, myYoung(l));
+  } else if (meAt >= 0) {
+    log(l, `🐉 คุณอายุพ้นสามสิบ — ชื่อของคุณออกจากทำเนียบมังกร${l.flags.youngTop ? " ในฐานะคนที่เคยอยู่บนสุด" : ""}`, "milestone");
+    addFame(l, 2);
+  } else if (l.power && l.age <= 30 && combatPower(l) > (npcs[npcs.length - 1]?.cp ?? 99)) {
+    const at = npcs.filter((y) => y.cp > combatPower(l)).length;
+    npcs.splice(at, 0, myYoung(l));
+    if (!l.flags.youngListed) addFame(l, 6);
+    l.flags.youngListed = true;
+    log(l, `🐉 ชื่อของคุณขึ้นทำเนียบมังกรอันดับ ${at + 1} — คนรุ่นเดียวกันทั่วแผ่นดินเริ่มจับตามอง ใครอยากขึ้นสูงกว่านี้ต้องท้าประลอง`, "milestone");
+  }
+  saveYoung(l, npcs);
+  // ฝีมือตกจนคนข้างล่างแซง
+  const after = youngList(l);
+  const i = after.findIndex((y) => y.me);
+  if (i >= 0 && after[i + 1] && after[i + 1].cp > after[i].cp + 15 && chance(l, 0.5)) youngDrop(l, 1);
+  if (myYoungPlace(l) === 1) l.flags.youngTop = true;
 }
 
 // ───────────────────────── ตำนานรุ่นก่อน (ส่งต่อข้ามรุ่นใน mw.legends) ─────────────────────────
@@ -90,14 +141,7 @@ export function openSectBusiness(l: Life, id: string): Outcome | undefined {
 // ───────────────────────── ทุกปี ─────────────────────────
 yearHooks.push((l) => {
   if (!murim(l) || !l.alive) return;
-  // ทำเนียบมังกรหนุ่ม: แก่ขึ้น คนเกิน 30 ออก คนใหม่ขึ้นมา
-  const yl = youngList(l).map((y) => ({ ...y, a: y.a + 1, cp: y.cp + randInt(l, 0, 3) })).filter((y) => y.a <= 30);
-  while (yl.length < 10) yl.push({ n: npcName(l), e: pick(l, EPITHETS), a: randInt(l, 17, 22), cp: 58 + randInt(l, -4, 6) });
-  yl.sort((a, b) => b.cp - a.cp);
-  write(l, YOUNG_KEY, yl.slice(0, 10));
-  const yp = myYoungPlace(l);
-  if (yp && !l.flags.youngListed) { l.flags.youngListed = true; addFame(l, 6); log(l, `🐉 ชื่อของคุณขึ้นทำเนียบมังกรหนุ่มอันดับ ${yp} — คนรุ่นเดียวกันทั่วแผ่นดินเริ่มจับตามอง`, "milestone"); }
-  if (yp === 1) l.flags.youngTop = true;
+  youngYear(l);
   // ชุมนุมผู้กล้า ทุกสิบปีปฏิทิน
   if (calYear(l) % 10 === 0 && l.age >= 14) l.flags.gatheringYear = calYear(l);
   // สำนักของตัวเอง: อาคาร กิจการ ค่าใช้จ่าย ขวัญ

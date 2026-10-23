@@ -148,7 +148,8 @@ describe("ศีล เส้นทางนักพรต การทรม�
       let g = 0;
       while (l.alive && l.age < 22 && g++ < 30) year(l, r);
       if (!l.alive) continue;
-      if (l.gender === "m") { m++; if (courtesyOf(l)) mNamed++; } else { f++; if (courtesyOf(l)) fNamed++; }
+      // ผู้ชายเลือก "ไม่จัดพิธี" ได้ — นับว่าได้รับพิธี (ถูกเสนอ) ถ้าเลือกไม่จัดเอง
+      if (l.gender === "m") { m++; if (courtesyOf(l) || l.seen["ca.capping"]) mNamed++; } else { f++; if (courtesyOf(l)) fNamed++; }
     }
     console.log("SIM courtesy names", { m, mNamed, f, fNamed });
     expect(mNamed / Math.max(1, m)).toBeGreaterThan(0.6);

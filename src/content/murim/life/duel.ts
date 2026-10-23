@@ -24,6 +24,8 @@ export interface DuelOpts {
   pid?: string;
   /** เรียกเมื่อจบ — key ใน DUEL_END */
   on?: string;
+  /** ประลองแตะแล้วหยุด (ทำเนียบ): เจ็บเบา ไม่มีบาดแผลถาวร สุขภาพไม่ต่ำกว่า 25 */
+  spar?: boolean;
   /** คู่ต่อสู้โหดเหี้ยม (ยอมแพ้ก็อาจไม่รอด) */
   cruel?: boolean;
   /** ข้อมูลเพิ่มให้ตัวจบเรื่อง */
@@ -53,7 +55,7 @@ export function startDuel(l: Life, o: DuelOpts) {
   const p = o.pid ? l.people.find((x) => x.id === o.pid) : undefined;
   // เคยสู้กันแล้ว = รู้ฝีมือกันและกัน
   const known = !!p?.mem?.some((m) => m.k.startsWith("duel_"));
-  const ctx: Ctx = { foe: o.foe, fr: o.rank, fhp: 100, round: 1, lethal: !!o.lethal, known, cruel: !!o.cruel, on: o.on ?? "", pid: o.pid ?? "", adapt: p?.tags?.includes("studied") ? 8 : 0 };
+  const ctx: Ctx = { foe: o.foe, fr: o.rank, fhp: 100, round: 1, lethal: !!o.lethal, known, cruel: !!o.cruel, spar: !!o.spar && !o.lethal, on: o.on ?? "", pid: o.pid ?? "", adapt: p?.tags?.includes("studied") ? 8 : 0 };
   for (const [k, v] of Object.entries(o.extra ?? {})) ctx[`x_${k}`] = v;
   runEvent(l, "duel", ctx);
 }
@@ -81,8 +83,12 @@ function finish(l: Life, c: Ctx, r: DuelResult, text: string): Outcome {
 
 /** คุณเสียเลือด — ตายได้ถ้าเป็นการสู้ถึงตาย */
 function takeHit(l: Life, c: Ctx, min: number, max: number): { text: string; dead: boolean } {
-  const d = Math.round(randInt(l, min, max) * hitScale(l, c));
+  const d = Math.round(randInt(l, min, max) * hitScale(l, c) * (c.spar ? 0.4 : 1));
   addStat(l, "health", -d);
+  if (c.spar) {
+    if (l.stats.health < 25) l.stats.health = Math.min(25, l.stats.health + d);
+    return { text: ` (คุณเสียเลือด ${d})`, dead: false };
+  }
   if (l.stats.health <= 0) {
     if (c.lethal) { kill(l, `ถูก${c.foe}สังหารในการต่อสู้`); return { text: ` คุณเสียเลือด ${d} — ล้มลงไม่ลุกขึ้นอีก`, dead: true }; }
     l.stats.health = 3;

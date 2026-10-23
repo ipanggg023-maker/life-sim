@@ -45,9 +45,13 @@ export interface Master {
   /** พลังฝีมือ (เทียบกับพลังต่อสู้ของผู้เล่น) */
   cp: number;
   me?: boolean;
+  /** เพศ (ทำเนียบมีทั้งชายและหญิง) */
+  g?: "m" | "f";
 }
 
-export const RANK_SIZE = 10;
+/** ทำเนียบยอดฝีมือใต้หล้า 20 อันดับ — สิบอันดับแรกคือ "สิบยอดฝีมือใต้หล้า" ส่วนอันดับ 11–20 คือคนที่ฝีมือดีพอจะไต่ขึ้นไป */
+export const RANK_SIZE = 20;
+export const TOP_TEN = 10;
 
 export const EPITHETS = [
   "กระบี่ไร้เงา", "ฝ่ามือพันพุทธ", "ทวนเพลิงทะลวงฟ้า", "มารโลหิตเก้าเศียร", "ขลุ่ยหยกสังหาร",
@@ -78,7 +82,8 @@ export const wasRanked = (l: Life) => Number(l.flags.m17Best ?? 0) > 0;
 function newMaster(l: Life, cp: number, age?: number): Master {
   const used = masters(l).map((m) => m.e);
   const free = EPITHETS.filter((e) => !used.includes(e));
-  return { id: uid(l), n: npcName(l), e: pick(l, free.length ? free : EPITHETS), a: age ?? randInt(l, 28, 60), cp };
+  const g = chance(l, 0.4) ? "f" : "m";
+  return { id: uid(l), n: npcName(l, g), e: pick(l, free.length ? free : EPITHETS), a: age ?? randInt(l, 28, 60), cp, g };
 }
 
 export function initRanking(l: Life) {
@@ -90,7 +95,7 @@ export function initRanking(l: Life) {
     writeJson(l, "m17Rank", list); // ให้ฉายาไม่ซ้ำ
   }
   // ทำเนียบสิบยอดฝีมือใต้หล้า = ระดับจุดสูงสุดถึงหลอมรวม (หายากจริง — MURIM_PLAN §4)
-  list.forEach((m, i) => (m.cp = 108 - i * 4 + randInt(l, -3, 3)));
+  list.forEach((m, i) => (m.cp = (i < TOP_TEN ? 108 - i * 4 : 66 - (i - TOP_TEN) * 2) + randInt(l, -3, 3)));
   saveMasters(l, list);
 }
 
@@ -154,10 +159,12 @@ export function dropPlace(l: Life, n = 1): number {
 
 /** ลบยอดฝีมือออกจากทำเนียบ (ตาย/เกษียณ) แล้วมีคนใหม่ขึ้นมา */
 export function removeMaster(l: Life, id: string, news?: string) {
+  const gone = masters(l).find((m) => m.id === id);
   const list = masters(l).filter((m) => m.id !== id);
   const npcs = list.filter((m) => !m.me);
-  const floor = npcs[npcs.length - 1]?.cp ?? 72;
-  list.push(newMaster(l, floor + randInt(l, -4, 10), randInt(l, 24, 42)));
+  const floor = npcs[npcs.length - 1]?.cp ?? 56;
+  // ผู้สืบทอดฝีมือใกล้เคียงคนที่จากไป — สิบยอดฝีมือไม่อ่อนลงเรื่อยๆ ตามท้ายตาราง
+  list.push(newMaster(l, Math.max(floor, (gone?.cp ?? floor) + randInt(l, -12, 4)), randInt(l, 24, 42)));
   saveMasters(l, list);
   sortNpcs(l);
   if (news) addNews(l, news);
@@ -179,6 +186,13 @@ const addNews = (l: Life, s: string) => {
 
 function rankingYear(l: Life) {
   initRanking(l);
+  // เซฟเก่าที่มีแค่สิบอันดับ: เติมอันดับ 11–20 ที่ฝีมืออ่อนกว่า
+  const old = masters(l);
+  if (old.length < RANK_SIZE) {
+    let cp = old.filter((m) => !m.me).slice(-1)[0]?.cp ?? 74;
+    while (old.length < RANK_SIZE) { cp -= randInt(l, 1, 3); old.push(newMaster(l, Math.min(cp, 66 - (old.length - TOP_TEN) * 2))); }
+    saveMasters(l, old);
+  }
   const list = masters(l);
   const gone: Master[] = [];
   for (const m of list) {
@@ -417,7 +431,7 @@ yearHooks.push((l) => {
 // ───────────────────────── ฉายา ─────────────────────────
 
 TITLES.push(
-  { id: "m17_ranked", name: "หนึ่งในสิบยอดฝีมือ", desc: "พลังต่อสู้ +2", bonus: "cp", value: 2, has: (l) => wasRanked(l) },
+  { id: "m17_ranked", name: "หนึ่งในสิบยอดฝีมือ", desc: "พลังต่อสู้ +2", bonus: "cp", value: 2, has: (l) => wasRanked(l) && Number(l.flags.m17Best) <= TOP_TEN },
   { id: "m17_first", name: "อันดับหนึ่งใต้หล้า", desc: "พลังต่อสู้ +4", bonus: "cp", value: 4, has: (l) => !!l.flags.m17Top },
   { id: "m17_saint", name: "ผู้ทรงธรรมแห่งยุทธภพ", desc: "อัตรารอด +4%", bonus: "survival", value: 0.04, has: (l) => isMurim(l) && alignment(l) >= 70 },
   { id: "m17_demon", name: "จอมมารเขย่าใต้หล้า", desc: "พลังต่อสู้ +3", bonus: "cp", value: 3, has: (l) => isMurim(l) && alignment(l) <= -70 },

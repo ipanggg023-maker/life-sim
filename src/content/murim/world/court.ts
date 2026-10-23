@@ -24,6 +24,8 @@ export interface Court {
   military: number;
   inner: number;
   edict?: "ban_sects" | "heavy_tax" | "draft" | "amnesty";
+  /** ราชโองการที่มีผลต่อเนื่อง (world/edicts.ts) — ผลทุกปีจนกว่าจะยกเลิกหรือหมดอายุ */
+  edicts?: { id: string; since: number; until?: number }[];
   regent?: string;
   /** คนในวัง รัชทายาทหลายองค์ แรงกดดันการสืบทอด (world/palace.ts · กลุ่ม 5) */
   palace?: import("./palace").Palace;
@@ -63,12 +65,6 @@ export function courtSummary(l: Life): string {
   return `${c.dynasty} · ${c.emperor.name} (${TEMPER[c.emperor.temper]}, ${c.emperor.age} พรรษา)${c.regent ? ` · ผู้สำเร็จราชการ: ${c.regent}` : ""}${c.heir ? ` · รัชทายาท ${c.heir.name}` : " · ยังไม่มีรัชทายาท"}`;
 }
 
-const EDICT_TEXT: Record<NonNullable<Court["edict"]>, string> = {
-  ban_sects: "ราชโองการ: ห้ามสำนักยุทธ์รับศิษย์ใหม่ ผู้พกอาวุธในเมืองต้องขึ้นทะเบียน — ผู้ฝ่าฝืนมีโทษถึงตาย",
-  heavy_tax: "ราชโองการ: เพิ่มภาษีที่นาอีกสามส่วนเพื่อสร้างพระราชวังฤดูร้อน",
-  draft: "ราชโองการ: เกณฑ์ผู้มีวิชายุทธ์เข้ากองทัพชายแดน — ผู้หลบหนีถือเป็นกบฏ",
-  amnesty: "ราชโองการ: นิรโทษกรรมทั่วแผ่นดินฉลองรัชกาลใหม่ นักโทษคดีเล็กได้รับอิสรภาพ",
-};
 
 /** ระบบวังหลัง (palace.ts) รับช่วงการสืบราชบัลลังก์ — คืนคำอธิบายว่าเปลี่ยนรัชกาลอย่างไร */
 export const courtHooks: { succeed?: (l: Life, c: Court, year: number) => string } = {};
@@ -85,15 +81,7 @@ function tickCourt(l: Life) {
   c.emperor.health = clamp(c.emperor.health - (c.emperor.age > 55 ? randInt(l, 2, 6) : randInt(l, -2, 3)), 0, 100);
   // ความชอบธรรมของราชวงศ์ตามนิสัยฮ่องเต้
   w.legitimacy = clamp(w.legitimacy + (c.emperor.temper === "wise" ? 1 : c.emperor.temper === "tyrant" ? -2 : -1), 0, 100);
-  // ราชโองการ (ปีละไม่เกินหนึ่ง)
-  if (!c.edict && chance(l, 0.08)) {
-    c.edict = c.emperor.temper === "paranoid" || (c.emperor.temper === "tyrant" && w.cult > 60) ? "ban_sects" : c.emperor.temper === "tyrant" ? "heavy_tax" : w.era === "chaos" ? "draft" : chance(l, 0.3) ? "amnesty" : undefined;
-    if (c.edict) {
-      log(l, `📯 ${EDICT_TEXT[c.edict]}`, c.edict === "amnesty" ? "good" : "bad");
-      if (c.edict === "heavy_tax") { w.unrest = clamp(w.unrest + 8, 0, 100); w.food = clamp(w.food - 5, 0, 100); }
-      if (c.edict === "ban_sects") w.unrest = clamp(w.unrest + 4, 0, 100);
-    }
-  } else if (c.edict && chance(l, 0.25)) c.edict = undefined;
+  // ราชโองการ: ฮ่องเต้ออกตามนิสัยในระบบราชโองการต่อเนื่อง (world/edicts.ts)
   // สวรรคต
   const dies = c.emperor.health <= 0 || chance(l, Math.max(0, c.emperor.age - 60) / 80);
   if (!dies) return;

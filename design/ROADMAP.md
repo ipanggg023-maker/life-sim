@@ -50,4 +50,16 @@ Emperor depth (player request, October 2026):
 - One empire with a prince-king (อ๋อง) for each region. Kings age, die, rebel, recruit you, tax you and summon you; as emperor you must control them.
 - In the Three Kingdoms era each kingdom holds its regions and its lord is emperor. A fallen kingdom's regions are annexed for good, and a new dynasty appoints new kings.
 
+Edicts and rankings (player request, October 2026):
+- Edicts stay in force, take effect every year until repealed or expired, can't contradict each other, and are capped at six at once.
+  - 22 edicts in four groups: economy, society, Jianghu, state. Ministers explain the trade-offs before you choose.
+  - NPC emperors issue edicts that suit their temperament.
+  - Edicts reach ordinary lives: martial registration, conscription, the martial exam, raids on gambling dens, land reform, cult purges, sects ordered shut, summons to court, corvée labour, salt prices, heavy tax and tax cuts, census, granaries, caravans, inspectors, resettlement.
+  - The world reacts to your edicts: sects rising, great clans petitioning, eunuch plots, peasants' gratitude, prince-kings refusing.
+- Rankings:
+  - The main list has 20 places; the top ten are the ten great masters, and places 11–20 are reachable mid-career. When a top master dies, the successor is about as strong.
+  - The youth list is now ทำเนียบมังกร (20 places, men and women). You keep a place until you're beaten.
+  - Challenge activities let you pick someone one to three places above you and fight a real duel. The main list offers a sparring match or a fight to the death.
+  - People below you challenge you back, and the ทำเนียบมังกร tournament is held every three years.
+
 Still open: fixes from the player's own playtest.

@@ -15,6 +15,7 @@ import { patronOf, spyPalace } from "../world/palace";
 import { canScheme } from "../world/palaceSchemes";
 import { AUDIENCE, abdicate, crownHeir, isEmperor, royalKids } from "../world/emperor";
 import { haremOf } from "../world/harem";
+import { viceBanned } from "../world/edicts";
 import { getEvent } from "../../../engine/events";
 import { TAEL } from "../story/kit";
 import { gift } from "./gifts";
@@ -88,6 +89,8 @@ const MURIM_ACTS: Activity[] = [
   M({ group: "ยุทธภพ", id: "mw_cult_hunt", emoji: "🔥", name: "ล่าลัทธิมาร", desc: "ช่วยคน เสี่ยงชีวิต", minAge: 16, available: (l) => !!l.power && Number(l.flags.m17Align ?? 0) >= 0 && l.power.guild !== "cult", run: (l) => { runEvent(l, "jh.cult_hunt"); return { text: "" }; } }),
   M({ group: "ชีวิต", id: "mw_beauty", emoji: "🌸", name: "ประกวดโฉมงาม", desc: "รูปลักษณ์ตัดสิน", minAge: 15, available: (l) => l.age <= 35, run: (l) => { runEvent(l, "jh.beauty"); return { text: "" }; } }),
   M({ group: "อาชญากรรม", id: "mw_steal_manual", emoji: "📕", name: "ขโมยคัมภีร์ลับของสำนัก", desc: "ได้วิชาลับ สำนักจะตามล่า", minAge: 16, available: (l) => !!l.power, run: (l) => { runEvent(l, "jh.steal_manual"); return { text: "" }; } }),
+  M({ group: "ยุทธภพ", id: "mw_rank_young", emoji: "🐉", name: "ท้าประลองชิงทำเนียบมังกร", desc: "เลือกคนในทำเนียบที่จะท้า สู้จริง ชนะได้อันดับเขา", minAge: 14, available: (l) => !!l.power && l.age <= 30 && l.flags.rkYAt !== l.age, run: (l) => { runEvent(l, "rk.y_menu"); return { text: "" }; } }),
+  M({ group: "ยุทธภพ", id: "mw_rank_master", emoji: "📜", name: "ท้าชิงอันดับทำเนียบยอดฝีมือ", desc: "อันดับ 11–20 คือประตูแรก สิบอันดับแรกคือสิบยอดฝีมือ", minAge: 14, available: (l) => !!l.power && l.flags.rkMAt !== l.age, run: (l) => { runEvent(l, "rk.m_menu"); return { text: "" }; } }),
   M({ group: "ยุทธภพ", id: "mw_travel", emoji: "🧭", name: "ย้ายถิ่นไปภูมิภาคอื่น", desc: "เปลี่ยนที่อยู่ เรื่องราวเปลี่ยนตาม", minAge: adult, run: (l) => { runEvent(l, "tv.move"); return { text: "" }; } }),
 
   // ───── ชีวิต ─────
@@ -99,7 +102,7 @@ const MURIM_ACTS: Activity[] = [
     if (chance(l, 0.15)) { addStat(l, "health", -3); return bad("สุราหมักร้อยปีแรงเกินคาด — ตื่นมาในคอกม้า"); }
     return ok("เสียงพิณจากชั้นบนกับสุราอุ่นๆ — คืนธรรมดาที่ดี");
   } }),
-  M({ group: "ชีวิต", id: "mw_gamble", emoji: "🎲", name: "เล่นถั่วในบ่อน", desc: "เสี่ยงโชค", minAge: adult, cost: 2000, available: (l) => !mourning(l), odds: (l) => clamp(0.3 + (l.stats.luck - 50) / 250, 0.1, 0.6), run: (l) => {
+  M({ group: "ชีวิต", id: "mw_gamble", emoji: "🎲", name: "เล่นถั่วในบ่อน", desc: "เสี่ยงโชค", minAge: adult, cost: 2000, available: (l) => !mourning(l) && !viceBanned(l), odds: (l) => clamp(0.3 + (l.stats.luck - 50) / 250, 0.1, 0.6), run: (l) => {
     addMoney(l, -2000);
     if (chance(l, clamp(0.3 + (l.stats.luck - 50) / 250, 0.1, 0.6))) { const w = randInt(l, 3, 8); addMoney(l, w * TAEL); return ok(`ถ้วยเปิด — ถูก! ได้ ${w} ตำลึง`); }
     if (chance(l, 0.1)) { l.flags.gambleDebt = true; addMoney(l, -5 * TAEL); return bad("เสียแล้วยังยืมเงินบ่อนเล่นต่อ — คนทวงหนี้จำหน้าคุณได้แล้ว"); }

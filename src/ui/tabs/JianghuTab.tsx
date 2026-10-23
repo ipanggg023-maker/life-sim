@@ -17,6 +17,7 @@ import { FAVOR_LABEL, viewCourt } from "../../content/murim/world/kingdomCourt";
 import { crownHeir, royalKids } from "../../content/murim/world/emperor";
 import { TRAIT_NAME, consortLabel, consortP, favourite, haremOf } from "../../content/murim/world/harem";
 import { rulerHere } from "../../content/murim/world/regionKings";
+import { edictLabel } from "../../content/murim/world/edicts";
 import { lordFavor } from "../../content/murim/world/war";
 import { PRESSURE_LABEL, ROLE_NAME, castOf, palaceOf, palaceRoleOf, patronOf, princeById, princesOf, support } from "../../content/murim/world/palace";
 
@@ -47,13 +48,13 @@ export function JianghuTab({ life, act }: { life: Life; act: Act }) {
       {w && w.era !== "war" && <CourtCard life={life} />}
       <MurimCard life={life} act={act} />
       <div className="card m17-card">
-        <div className="card-title">🐉 ทำเนียบมังกรหนุ่ม (อายุไม่เกิน 30)</div>
-        <p className="small muted">{myYoungPlace(life) ? `คุณอยู่อันดับ ${myYoungPlace(life)}` : life.age > 30 ? "คุณพ้นวัยมังกรหนุ่มแล้ว" : "ยังไม่ติดทำเนียบ — ฝีมือต้องสูงกว่าคนรุ่นเดียวกันทั้งแผ่นดิน"}</p>
+        <div className="card-title">🐉 ทำเนียบมังกร (ยอดฝีมือหนุ่มสาว อายุไม่เกิน 30)</div>
+        <p className="small muted">{myYoungPlace(life) ? `คุณอยู่อันดับ ${myYoungPlace(life)} — ขึ้นสูงกว่านี้ได้ด้วยการท้าประลอง (แท็บทำ → ยุทธภพ) หรืองานประลองทุกสามปี` : life.age > 30 ? "คุณพ้นวัยทำเนียบมังกรแล้ว" : "ยังไม่ติดทำเนียบ — ฝีมือแซงท้ายตารางแล้วชื่อจะขึ้นเอง หรือท้าประลองคนท้ายตาราง"}</p>
         <ol className="m17-rank">
           {youngList(life).map((y, i) => (
             <li key={i}>
               <span className="m17-place">{i + 1}</span>
-              <span className="m17-name">【{y.e}】{y.n}</span>
+              <span className="m17-name">{y.me ? <b>คุณ 【{y.e}】</b> : <>【{y.e}】{y.n}</>} {y.g && <span className="muted small">{y.g === "f" ? "♀" : "♂"}</span>}</span>
               <span className="m17-age small muted">{y.a} ปี</span>
             </li>
           ))}
@@ -149,6 +150,7 @@ function CourtCard({ life }: { life: Life }) {
         การสืบทอด: <b>{PRESSURE_LABEL(p.pressure)}</b>
         {inside && ` · ท้องพระคลัง ${p.treasury >= 60 ? "มั่งคั่ง" : p.treasury >= 30 ? "พอใช้" : "ร่อยหรอ"}`}
       </p>
+      <EdictLine life={life} />
       {princes.length === 0 && <p className="muted small">ยังไม่มีองค์ชาย</p>}
       {princes.map((x) => (
         <div className="faction-row" key={x.id}>
@@ -198,6 +200,13 @@ function CourtCard({ life }: { life: Life }) {
   );
 }
 
+/** ราชโองการที่มีผลอยู่ตอนนี้ (ประกาศต่อสาธารณะ ทุกคนรู้) */
+function EdictLine({ life }: { life: Life }) {
+  const list = edictLabel(life);
+  if (!list.length) return null;
+  return <p className="small">📯 ราชโองการที่มีผล: {list.map((e) => `${e.name}${e.until ? ` (ถึงปี ${e.until})` : ""}`).join(" · ")}</p>;
+}
+
 /** ราชสำนักเมื่อคุณคือฮ่องเต้: พระนาม ปีที่ครองราชย์ รัชทายาท ลูกๆ ความชอบธรรม คนในวังที่ภักดีหรือคิดคด */
 function ThroneCard({ life }: { life: Life }) {
   const c = courtOf(life);
@@ -233,6 +242,7 @@ function ThroneCard({ life }: { life: Life }) {
           </div>
         </>
       )}
+      <EdictLine life={life} />
       <p className="small">
         รัชทายาท: {heir ? <b>{heir.gender === "f" ? "องค์หญิง" : "องค์ชาย"}{heir.name} ({heir.age} ปี)</b> : <span className="danger-text">ยังไม่แต่งตั้ง</span>}
       </p>

@@ -1,13 +1,15 @@
 // ทำเนียบยอดฝีมือ (เขียนใหม่) — ใช้ระบบอันดับใน m17core: ท้าขึ้น ถูกท้า ฉายา ตัวปลอม บนสุด และวันวางมือ
 // % ทุกตัวมาจาก masterOdds = ฝีมือจริงของคุณเทียบกับยอดฝีมือคนนั้น
-import type { Ctx, GameEvent, Outcome } from "../../../engine/events";
+import type { Choice, Ctx, GameEvent, Outcome } from "../../../engine/events";
 import { kill } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
-import { addFame, addMoney, addStat, money } from "../../../engine/util";
+import { addFame, addMoney, addStat, clamp, money } from "../../../engine/util";
+import { DUEL_END, myPower, startDuel } from "../life/duel";
+import { YOUNG_SIZE, myYoungPlace, youngDrop, youngList, youngTake } from "./jianghu";
 import { gainExp } from "../../hunter/power";
 import {
-  EPITHETS, type Master, challengeTarget, dropPlace, givePill, hurt, masterAt, masterLabel, masterOdds, masterSurvival, masters, myPlace, npcName, rankOf, shiftAlign, takePlace,
+  EPITHETS, RANK_SIZE, TOP_TEN, type Master, challengeTarget, dropPlace, givePill, hurt, masterAt, masterLabel, masterOdds, masterSurvival, masters, myPlace, npcName, rankOf, shiftAlign, takePlace,
 } from "../m17core";
 
 const ranked = (l: Life) => myPlace(l) > 0;
@@ -29,7 +31,7 @@ export const RANKING_EVENTS: GameEvent[] = [
     text: (l) => {
       const top = masters(l).slice(0, 3).map((m, i) => `${i + 1}. ${m.me ? "คุณ" : masterLabel(m)}`).join(" · ");
       const news = String(l.flags.m17News ?? "").split("|").filter(Boolean);
-      return `📜 หอบันทึกยุทธภพติดประกาศทำเนียบสิบยอดฝีมือ — ${top}${news.length ? ` | ${news.join(" · ")}` : ""}${myPlace(l) ? ` | ชื่อคุณอยู่${place(myPlace(l))}` : ""}`;
+      return `📜 หอบันทึกยุทธภพติดประกาศทำเนียบยอดฝีมือใต้หล้า — ${top}${news.length ? ` | ${news.join(" · ")}` : ""}${myPlace(l) ? ` | ชื่อคุณอยู่${place(myPlace(l))}` : ""}`;
     },
     auto: (l) => { delete l.flags.m17News; return "normal"; },
   },
@@ -51,7 +53,7 @@ export const RANKING_EVENTS: GameEvent[] = [
     minAge: 16,
     maxAge: 90,
     maxTimes: 0,
-    weight: (l) => (!!l.power && rankOf(l) >= 4 && challengeTarget(l) && Number(l.flags.m17LastChallenge ?? -9) < l.age - 1 ? 8 : 0),
+    weight: (l) => (!!l.power && challengeTarget(l) && myPower(l) >= challengeTarget(l)!.cp - 20 && Number(l.flags.m17LastChallenge ?? -9) < l.age - 1 ? 8 : 0),
     prepare: (l) => ctxOf(challengeTarget(l)!, { pl: masters(l).findIndex((m) => m.id === challengeTarget(l)!.id) + 1 }),
     title: "ขั้นถัดไปของทำเนียบ",
     text: (l, c) => `${myPlace(l) ? `ตอนนี้คุณอยู่${place(myPlace(l))}` : "ชื่อคุณยังไม่อยู่ในทำเนียบ"} — คนถัดไปคือ ${c.label} อายุ ${c.a} ปี อันดับ ${c.pl} ใครชนะคนนั้น ได้ที่นั่งนั้นไป`,
@@ -175,5 +177,155 @@ export const RANKING_EVENTS: GameEvent[] = [
       { label: "ประกาศวางมือ มอบที่ให้คนรุ่นใหม่", run: (l) => { const to = dropPlace(l, 10); addFame(l, 6); addStat(l, "happiness", 8); l.flags.m17Retired = true; return { text: `คุณถอดชื่อออกจากทำเนียบด้วยตัวเอง${to ? "" : ""} — ยุทธภพจดจำคุณในฐานะคนที่รู้ว่าเมื่อไรควรหยุด`, kind: "milestone" }; } },
       { label: "ยังไม่ถึงเวลา", run: () => meh("คุณตื่นมาฝึกเหมือนทุกเช้า เข่าลั่นดังกว่าเดิม") },
     ],
+  },
+];
+
+// ───────────────────────── ท้าประลองชิงอันดับ (คำขอของผู้เล่น: ติดทำเนียบยากเกินไป อยากท้าสู้แย่งตำแหน่งได้) ─────────────────────────
+// ทั้งทำเนียบมังกรและทำเนียบยอดฝีมือ: เลือกคนที่จะท้าเอง (หนึ่ง สอง หรือสามอันดับเหนือคุณ) แล้วสู้กันจริงในฉากต่อสู้
+// ชนะ = ขึ้นไปแทนที่ · แพ้ในการประลองแตะแล้วหยุดไม่เสียอันดับ · ท้าถึงตายแล้วแพ้ = ตกอันดับ (ถ้ารอด)
+// คนข้างล่างท้าคุณกลับได้ · ทุกสามปีมีงานประลองชิงทำเนียบมังกร
+const sym = (g?: "m" | "f") => (g === "f" ? "♀" : g === "m" ? "♂" : "");
+const foeRank = (cp: number) => Math.max(0, (cp - 10) / 12);
+const vsOdds = (l: Life, cp: number) => clamp(0.5 + (myPower(l) - cp) / 40, 0.05, 0.95);
+
+/** เป้าหมายในทำเนียบมังกร: k อันดับเหนือคุณ (ยังไม่ติด = ท้ายตาราง) */
+function youngTarget(l: Life, k: number) {
+  const list = youngList(l);
+  const me = myYoungPlace(l);
+  const place = me ? me - k : YOUNG_SIZE + 2 - k * 2;
+  if (place < 1 || place > list.length) return undefined;
+  const y = list[place - 1];
+  return y && !y.me ? { y, place } : undefined;
+}
+function masterTarget(l: Life, k: number) {
+  const list = masters(l);
+  const me = myPlace(l);
+  const place = me ? me - k : RANK_SIZE + 2 - k * 2;
+  if (place < 1 || place > list.length) return undefined;
+  const m = list[place - 1];
+  return m && !m.me ? { m, place } : undefined;
+}
+const yLabel = (l: Life, k: number) => { const t = youngTarget(l, k); return t ? `ท้า【${t.y.e}】${t.y.n} ${sym(t.y.g)} อันดับ ${t.place} · ${t.y.a} ปี (โอกาส ~${Math.round(vsOdds(l, t.y.cp) * 100)}%)` : "—"; };
+const mLabel = (l: Life, k: number) => { const t = masterTarget(l, k); return t ? `ท้า${masterLabel(t.m)} ${sym(t.m.g)} อันดับ ${t.place}${t.place <= TOP_TEN ? " (สิบยอดฝีมือ)" : ""} (โอกาส ~${Math.round(vsOdds(l, t.m.cp) * 100)}%)` : "—"; };
+
+const youngPick = (k: number): Choice => ({
+  label: (l) => yLabel(l, k),
+  show: (l) => !!youngTarget(l, k),
+  skill: [],
+  run: (l) => {
+    const t = youngTarget(l, k)!;
+    l.flags.rkYAt = l.age;
+    startDuel(l, { foe: `【${t.y.e}】${t.y.n}`, rank: foeRank(t.y.cp), spar: true, on: "rankY", extra: { pl: t.place } });
+    return { text: `คุณส่งสาส์นท้าประลองถึง【${t.y.e}】${t.y.n} — ลานประลองหน้าศาลเจ้าเต็มไปด้วยคนรุ่นเดียวกันที่มาดู` };
+  },
+});
+const masterPick = (k: number): Choice => ({
+  label: (l) => mLabel(l, k),
+  show: (l) => !!masterTarget(l, k),
+  skill: [],
+  run: (l, c) => { const t = masterTarget(l, k)!; c.tid = t.m.id; c.pl = t.place; c.cp = t.m.cp; c.foe = masterLabel(t.m); return { text: `คุณเลือก${masterLabel(t.m)} — เหลือแค่ตัดสินใจว่าจะสู้แบบไหน`, next: "how" }; },
+});
+const masterFight = (lethal: boolean): Choice => ({
+  label: lethal ? "ท้าถึงตายบนยอดเขา — ชนะได้ชื่อเสียงมากกว่า" : "ประลองแตะแล้วหยุด — แพ้ก็ไม่เสียอันดับ",
+  tone: lethal ? "danger" : undefined,
+  skill: [],
+  run: (l, c) => {
+    l.flags.rkMAt = l.age;
+    startDuel(l, { foe: String(c.foe), rank: foeRank(Number(c.cp)), lethal, spar: !lethal, on: "rankM", extra: { tid: String(c.tid), pl: Number(c.pl), lethal } });
+    return { text: lethal ? `สาส์นท้าถึงตายถูกส่งถึง${c.foe} — ยุทธภพทั้งแผ่นดินรอฟังผล` : `${c.foe}รับคำท้าด้วยรอยยิ้ม "แตะแล้วหยุด ใครแตะก่อนสามครั้งชนะ"` };
+  },
+});
+
+DUEL_END.rankY = (l, r, c) => {
+  if (r === "win") {
+    const to = youngTake(l, Number(c.x_pl));
+    addFame(l, to <= 3 ? 6 : 3);
+    gainExp(l, 150);
+    return `🐉 ชื่อของคุณขึ้นเป็นอันดับ ${to} ของทำเนียบมังกร${to === 1 ? " — บนสุดของคนรุ่นเดียวกันทั้งแผ่นดิน" : ""}`;
+  }
+  if (r === "lose" || r === "yield") { gainExp(l, 60); return "แพ้อย่างสะอาด — อันดับของคุณไม่เปลี่ยน แต่ทุกคนจำได้ว่าคุณกล้าท้า"; }
+  return "";
+};
+DUEL_END.rankYDef = (l, r) => {
+  if (r === "win") { addFame(l, 2); gainExp(l, 120); return `คุณรักษาอันดับ ${myYoungPlace(l)} ของทำเนียบมังกรไว้ได้`; }
+  const to = youngDrop(l, 1);
+  return to ? `คุณตกไปอยู่อันดับ ${to} ของทำเนียบมังกร` : "ชื่อของคุณหลุดจากทำเนียบมังกร";
+};
+DUEL_END.rankM = (l, r, c) => {
+  if (r === "win") {
+    const p = takePlace(l, String(c.x_tid));
+    addFame(l, c.x_lethal ? (p <= 3 ? 14 : 8) : p <= 3 ? 8 : 4);
+    gainExp(l, 220);
+    return `📜 ชื่อคุณขึ้นเป็นอันดับ ${p} ของทำเนียบยอดฝีมือใต้หล้า${p <= TOP_TEN ? " — หนึ่งในสิบยอดฝีมือ" : ""}${p <= 3 ? givePill(l, 6) : ""}`;
+  }
+  if ((r === "lose" || r === "yield") && c.x_lethal && myPlace(l)) { const to = dropPlace(l, 1); return to ? `ท้าถึงตายแล้วแพ้ — คุณตกไปอยู่อันดับ ${to}` : "ท้าถึงตายแล้วแพ้ — ชื่อคุณหลุดจากทำเนียบ"; }
+  if (r === "lose" || r === "yield") { gainExp(l, 80); return "แพ้ — แต่อันดับไม่เปลี่ยน คนที่กล้าท้ายังได้รับความนับถือ"; }
+  return "";
+};
+
+/** งานประลองชิงทำเนียบมังกร: คู่ต่อสู้ในแต่ละรอบมีฝีมือเท่าคนในทำเนียบอันดับนั้น */
+const tCp = (l: Life, place: number) => youngList(l)[Math.min(youngList(l).length, place) - 1]?.cp ?? 60;
+const placeIfBetter = (l: Life, place: number) => { const me = myYoungPlace(l); return !me || place < me ? youngTake(l, place) : me; };
+
+export const RANK_CHALLENGE_EVENTS: GameEvent[] = [
+  {
+    id: "rk.y_menu",
+    minAge: 14,
+    maxAge: 30,
+    manual: true,
+    maxTimes: 0,
+    title: "ท้าประลองชิงทำเนียบมังกร",
+    text: (l) => `${myYoungPlace(l) ? `คุณอยู่อันดับ ${myYoungPlace(l)} ของทำเนียบมังกร` : "ชื่อคุณยังไม่อยู่ในทำเนียบมังกร — ท้าคนท้ายตารางให้ชนะ แล้วชื่อคุณจะขึ้นแทนเขา"} · ท้าสูงกว่าหนึ่งอันดับได้ ถ้าชนะจะข้ามขึ้นไปทันที`,
+    choices: [youngPick(1), youngPick(2), youngPick(3), { label: "ยังไม่ท้า", run: () => meh("คุณกลับไปฝึกต่อ — ทำเนียบไม่หนีไปไหน") }],
+  },
+  {
+    id: "rk.m_menu",
+    minAge: 14,
+    maxAge: 100,
+    manual: true,
+    maxTimes: 0,
+    title: "ท้าชิงอันดับทำเนียบยอดฝีมือ",
+    text: (l) => `${myPlace(l) ? `คุณอยู่อันดับ ${myPlace(l)} ของทำเนียบยอดฝีมือใต้หล้า` : "ชื่อคุณยังไม่อยู่ในทำเนียบยอดฝีมือ — อันดับ 11–20 คือประตูแรก สิบอันดับแรกคือสิบยอดฝีมือใต้หล้า"}`,
+    choices: [masterPick(1), masterPick(2), masterPick(3), { label: "ยังไม่ท้า", run: () => meh("คุณเก็บสาส์นท้าไว้ในอกเสื้อ — วันหนึ่งจะส่งมันออกไป") }],
+    scenes: {
+      how: { text: (_l, c) => `คู่ต่อสู้: ${c.foe} — อันดับ ${c.pl} · จะสู้แบบไหน`, choices: [masterFight(false), masterFight(true)] },
+    },
+  },
+  {
+    id: "rk.y_defend",
+    minAge: 12,
+    maxAge: 30,
+    maxTimes: 0,
+    weight: (l) => (myYoungPlace(l) > 0 && myYoungPlace(l) < YOUNG_SIZE ? 8 : 0),
+    prepare: (l) => { const list = youngList(l); const me = myYoungPlace(l); const y = list[Math.min(list.length - 1, me + randInt(l, 0, 2))]; return { n: y.n, e: y.e, g: y.g ?? "", cp: y.cp, a: y.a }; },
+    title: "คำท้าจากคนรุ่นเดียวกัน",
+    text: (l, c) => `【${c.e}】${c.n} ${sym(c.g as "m" | "f")} อายุ ${c.a} ปี ส่งสาส์นท้าชิงอันดับ ${myYoungPlace(l)} ของทำเนียบมังกรจากคุณ — "ข้าไม่ได้มาเพื่อแพ้"`,
+    choices: [
+      { label: "รับคำท้า", skill: [], run: (l, c) => { startDuel(l, { foe: `【${c.e}】${c.n}`, rank: foeRank(Number(c.cp)), spar: true, on: "rankYDef" }); return { text: "ลานหน้าศาลเจ้าแน่นไปด้วยคนรุ่นเดียวกัน — ทุกคนอยากเห็นว่าใครคือมังกรตัวจริง" }; } },
+      { label: "ไม่รับ", run: (l) => { const to = youngDrop(l, 1); addFame(l, -2); return meh(`ข่าวว่าคุณหลบคำท้าแพร่ไปทั่ว — ${to ? `อันดับตกเป็น ${to}` : "ชื่อหลุดจากทำเนียบมังกร"}`); } },
+    ],
+  },
+  {
+    id: "rk.y_tourney",
+    minAge: 14,
+    maxAge: 30,
+    maxTimes: 0,
+    forced: true,
+    weight: (l) => (!!l.power && (l.birthYear + l.age) % 3 === 0 && l.flags.rkTourney !== l.birthYear + l.age ? 9 : 0),
+    prepare: (l) => { l.flags.rkTourney = l.birthYear + l.age; return {}; },
+    title: "งานประลองชิงทำเนียบมังกร",
+    text: (l) => `ทุกสามปี สำนักใหญ่ทั้งแผ่นดินร่วมกันจัดงานประลองชิงทำเนียบมังกรที่ภูเขาซงซาน — คนหนุ่มสาวอายุไม่เกินสามสิบกว่าสองร้อยคนมาลงชื่อ${myYoungPlace(l) ? ` (ตอนนี้คุณอยู่อันดับ ${myYoungPlace(l)})` : ""}`,
+    choices: [
+      { label: "ลงชื่อประลอง", skill: ["combat"], odds: (l) => vsOdds(l, tCp(l, 15)), run: (l, _c, s) => { gainExp(l, 100); return s ? ok("รอบแรกผ่าน — คู่ต่อสู้ของคุณยอมแพ้ในเพลงที่เจ็ด", "r2") : meh("รอบแรกคุณพบคนที่เร็วกว่าที่คิด — ตกรอบอย่างสมศักดิ์ศรี และได้เห็นว่าคนรุ่นเดียวกันไปถึงไหนแล้ว"); } },
+      { label: "ไปนั่งดู", run: (l) => { gainExp(l, 60); return meh("สามวันบนอัฒจันทร์ไม้ — คุณจดท่าของคนที่ชนะไว้เต็มสมุด"); } },
+    ],
+    scenes: {
+      r2: { text: () => "รอบแปดคนสุดท้าย — คู่ต่อสู้ของคุณเป็นศิษย์เอกของสำนักใหญ่ที่ทุกคนเชียร์", choices: [
+        { label: "สู้ต่อ", skill: ["combat"], odds: (l) => vsOdds(l, tCp(l, 7)), run: (l, _c, s) => { gainExp(l, 150); if (s) return ok("คุณชนะ — เหลืออีกสองคนบนเวทีสุดท้าย", "final"); const p = placeIfBetter(l, 12); addFame(l, 3); return meh(`แพ้ในรอบแปดคน — แต่ผลงานพาชื่อคุณขึ้นทำเนียบมังกรอันดับ ${p}`); } },
+      ] },
+      final: { text: () => "รอบชิงบนลานหินกลางยอดเขา — คนนับพันเงียบกริบ", choices: [
+        { label: "สู้รอบชิง", skill: ["combat"], odds: (l) => vsOdds(l, tCp(l, 2)), run: (l, _c, s) => { gainExp(l, 250); if (s) { youngTake(l, 1); addFame(l, 12); return { text: "🐉 คุณคือแชมป์งานประลองชิงทำเนียบมังกร — ชื่อของคุณขึ้นเป็นอันดับหนึ่ง คนรุ่นเดียวกันทั้งแผ่นดินรู้จักชื่อนี้", kind: "milestone" }; } const p = placeIfBetter(l, 3); addFame(l, 6); return ok(`รองแชมป์ — ทำเนียบมังกรประกาศชื่อคุณเป็นอันดับ ${p}`); } },
+      ] },
+    },
   },
 ];

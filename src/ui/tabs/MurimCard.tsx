@@ -26,15 +26,15 @@ function RankingBoard({ life }: { life: Life }) {
   if (!list.length) return null;
   return (
     <div className="card m17-card">
-      <div className="card-title">📜 ทำเนียบยอดฝีมือ</div>
+      <div className="card-title">📜 ทำเนียบยอดฝีมือใต้หล้า</div>
       <p className="small muted">
-        {me ? `คุณอยู่อันดับ ${me} จาก ${RANK_SIZE}` : life.flags.m17Best ? `เคยติดอันดับ ${life.flags.m17Best} — ตอนนี้หลุดทำเนียบ` : "ยังไม่ติดทำเนียบ — ทำเนียบสิบยอดฝีมือใต้หล้าเป็นของผู้ที่ถึงขั้นจุดสูงสุดขึ้นไป"}
+        {me ? `คุณอยู่อันดับ ${me} จาก ${RANK_SIZE}` : life.flags.m17Best ? `เคยติดอันดับ ${life.flags.m17Best} — ตอนนี้หลุดทำเนียบ` : "ยังไม่ติดทำเนียบ — อันดับ 11–20 คือประตูแรก ท้าชิงได้ที่แท็บทำ → ยุทธภพ"}
       </p>
       <ol className="m17-rank">
         {list.map((m, i) => (
-          <li key={m.id} className={m.me ? "me" : ""}>
+          <li key={m.id} className={`${m.me ? "me" : ""}${i === 10 ? " m17-split" : ""}`}>
             <span className="m17-place">{i + 1}</span>
-            <span className="m17-name">{m.me ? `【${m.e}】คุณ` : masterLabel(m)}</span>
+            <span className="m17-name">{m.me ? `【${m.e}】คุณ` : masterLabel(m)} {m.g && <span className="muted small">{m.g === "f" ? "♀" : "♂"}</span>}</span>
             <span className="m17-age small muted">{m.a} ปี</span>
           </li>
         ))}

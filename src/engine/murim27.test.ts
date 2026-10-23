@@ -127,8 +127,8 @@ describe("สาเหตุการตายตามจริง · สาม
     const ks = courtsOf(m);
     ks.find((x) => x.id === "west")!.power = 5;
     ks.find((x) => x.id === "north")!.power = 90;
-    m.mw!.eraSince = calYear(m) - 6;
-    for (let i = 0; i < 12 && !m.seen["mw.kc.fall"] && m.alive; i++) { ks.find((x) => x.id === "west")!.power = 5; m.stats.health = 90; ageUp(m); if (m.flags.lordFell) drain(m, { rng: 2 }, "ยอมจำนน"); else drain(m, { rng: 2 }); }
+    m.mw!.eraSince = calYear(m) - 4;
+    for (let i = 0; i < 40 && !m.seen["mw.kc.fall"] && m.alive && m.mw!.era === "war"; i++) { ks.find((x) => x.id === "west")!.power = 5; m.stats.health = 90; ageUp(m); drain(m, { rng: 2 }, m.flags.lordFell ? "ยอมจำนน" : "อยู่กับนาย"); }
     expect(m.seen["mw.kc.fall"]).toBeTruthy();
     expect(courtsOf(m).find((x) => x.id === "west")!.fallen).toBeTruthy();
     if (m.alive && m.mw!.era === "war") expect(m.flags.lord).toBe("north");

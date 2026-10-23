@@ -203,7 +203,7 @@ yearHooks.push((l) => {
   if (l.flags.courtHonored && !l.flags.honorRanked) { l.flags.honorRanked = true; setRank(l, courtRank(l) + 1, "ฮ่องเต้องค์ใหม่ไม่ลืมคนที่ยืนข้างพระองค์"); }
   const r = courtRank(l);
   if (r >= 1 && inCourt(l)) addMoney(l, r * 15 * TAEL);
-  if (l.flags.emperorSelf) { const c = courtOf(l); c.emperor.age = l.age; c.emperor.health = 100; c.edict = undefined; }
+  if (l.flags.emperorSelf) { const c = courtOf(l); c.emperor.age = l.age; c.emperor.health = 100; }
 });
 
 /** ทางเข้าแผนชิงอำนาจ (กิจกรรมในแท็บทำ) */
