@@ -138,8 +138,11 @@ export const YEAR_PLANS: YearPlan[] = [...kidPlans, ...adultPlans];
 
 export const planById = (id: string | undefined) => YEAR_PLANS.find((p) => p.id === id);
 
+/** ฮ่องเต้มีแผนของคนบนบัลลังก์ (r_*) แทนแผนของชาวบ้าน — ฝึกวิชาและพักฟื้นยังเลือกได้ */
+const ROYAL_OK = new Set(["train", "rest"]);
 export function plansFor(l: Life): YearPlan[] {
-  return YEAR_PLANS.filter((p) => l.age >= p.minAge && (p.maxAge === undefined || l.age <= p.maxAge) && (!p.available || p.available(l)));
+  const emperor = l.worldId === "murim" && !!l.flags.emperorSelf;
+  return YEAR_PLANS.filter((p) => l.age >= p.minAge && (p.maxAge === undefined || l.age <= p.maxAge) && (!p.available || p.available(l)) && (p.id.startsWith("r_") ? emperor : !emperor || ROYAL_OK.has(p.id)));
 }
 
 export function currentPlan(l: Life): YearPlan | undefined {

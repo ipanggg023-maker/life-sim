@@ -1,7 +1,6 @@
 // เมื่อผู้เล่นขึ้นเป็นฮ่องเต้เอง — เดิมระบบยังมองคุณเป็นขุนนาง: ชื่อในราชสำนักใช้แค่ชื่อตัว เรื่องของขุนนาง (หาผู้อุปถัมภ์ ถูกเรียกตัว ถูกฎีกาฟ้องต่อหน้าพระพักตร์) ยังเกิด
 // และลูกของคุณไม่เคยเป็นองค์ชาย · ไฟล์นี้: พระนามเต็มของคุณ · ลูกคือองค์ชาย/องค์หญิง และรัชทายาทคือคนที่คุณแต่งตั้ง · เรื่องของคนที่นั่งบัลลังก์จริงๆ
 import type { Ctx, GameEvent } from "../../../engine/events";
-import { eligibilityFilters } from "../../../engine/events";
 import { yearHooks } from "../../../engine/game";
 import type { Life, Person } from "../../../engine/types";
 import { clamp, displayName, people, shortName } from "../../../engine/util";
@@ -29,6 +28,8 @@ export function syncThrone(l: Life) {
   c.emperor.health = 100;
   c.regent = undefined;
   l.flags.courtRank = 6;
+  // ฮ่องเต้ไม่มีอาชีพ — ตำแหน่งขุนนางเดิมจบลงในวันขึ้นครองราชย์
+  if (l.job) l.job = undefined;
   const h = crownHeir(l);
   c.heir = h ? { name: princeName(h), age: h.age, legit: clamp(60 + h.bond / 4, 0, 100), backer: "ministers" } : undefined;
   // องค์ชายของราชวงศ์เก่าไม่ใช่ทายาทของคุณ · ฮองเฮาและสนมของฮ่องเต้องค์ก่อนไม่ใช่คู่ของคุณ (คู่ชีวิตของคุณคือคนในแท็บคน)
@@ -54,9 +55,7 @@ export function abdicate(l: Life, h: Person) {
   h.tags = [...(h.tags ?? []).filter((t) => t !== "emperor"), "emperor"];
 }
 
-// ขุนนางมีเรื่องของขุนนาง — ฮ่องเต้ไม่ต้องหาผู้อุปถัมภ์ ไม่ถูกเรียกตัว ไม่ถูกฎีกาฟ้องต่อ "พระพักตร์" ตัวเอง
-const SUBJECT_ONLY = /^ct\.(?!e_|h_|f_|s_assassin)/;
-eligibilityFilters.push((l, e) => !isEmperor(l) || !SUBJECT_ONLY.test(e.id));
+// ฮ่องเต้เจอเฉพาะเรื่องของคนบนบัลลังก์ — ตัวกรองอยู่ใน emperorLife.ts
 
 // ราชวงศ์ใหม่ค่อยๆ ตั้งมั่น: สิบปีแรกขุนนางและราษฎรค่อยยอมรับ (ถ้าไม่ทำอะไรพัง) — ไม่ได้กันล่ม แค่ไม่ล่มเองโดยไม่มีเหตุ
 yearHooks.push((l) => {
