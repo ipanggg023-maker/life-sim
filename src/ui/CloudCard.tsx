@@ -74,7 +74,7 @@ export function LoginScreen({ onGuest }: { onGuest: () => void }) {
   );
 }
 
-/** บัญชี + ซิงก์เซฟ PC ↔ มือถือ (Supabase) */
+/** บัญชี + ซิงก์เซฟ PC มือถือ (Supabase) */
 export function CloudCard({ bundle, onImport }: { bundle: Bundle; onImport: (b: Bundle) => void }) {
   const [user, setUser] = useState<User | null>(null);
   const [info, setInfo] = useState<CloudInfo | null>(null);
@@ -122,7 +122,7 @@ export function CloudCard({ bundle, onImport }: { bundle: Bundle; onImport: (b: 
   return (
     <div className="card cloud">
       <p className="small">
-        ☁️ {user.email}
+        {user.email}
         <span className="muted"> · {info ? `ซิงก์ล่าสุด ${when(info.updatedAt)}` : "ยังไม่มีเซฟบนคลาวด์"}</span>
       </p>
       {info?.summary && (
@@ -143,7 +143,7 @@ export function CloudCard({ bundle, onImport }: { bundle: Bundle; onImport: (b: 
             })
           }
         >
-          ⬆️ อัปโหลดเซฟนี้
+          อัปโหลดเซฟนี้
         </button>
         <button
           className="btn small"
@@ -157,7 +157,7 @@ export function CloudCard({ bundle, onImport }: { bundle: Bundle; onImport: (b: 
             })
           }
         >
-          ⬇️ โหลดเซฟจากคลาวด์
+          โหลดเซฟจากคลาวด์
         </button>
         <button className="btn small ghost" disabled={busy} onClick={() => run(signOut)}>
           ออกจากระบบ

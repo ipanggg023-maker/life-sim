@@ -310,6 +310,14 @@ export function tickGoals(l: Life) {
 }
 
 /** ข้อความสั้นสำหรับหน้าจอหลัก */
+/** เป้าหมายหลักแบบแยกส่วน (หน้าจอหลักวาดเป็นแถบความคืบหน้าเอง) */
+export function goalInfo(l: Life): { name: string; step: number; total: number; next?: string; side: string[] } | undefined {
+  const g = mainGoal(l);
+  const d = g && goalById(g.id);
+  if (!g || !d) return;
+  return { name: d.name, step: g.step, total: d.steps.length, next: g.step < d.steps.length ? d.steps[g.step] : undefined, side: sideGoals(l).map((x) => goalById(x.id)?.name ?? "").filter(Boolean) };
+}
+
 export function goalLine(l: Life): string | undefined {
   const g = mainGoal(l);
   const d = g && goalById(g.id);

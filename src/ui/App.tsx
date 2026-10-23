@@ -351,7 +351,7 @@ export function App() {
               <button className={`path ${open ? "" : "locked"}`} key={w.id} disabled={!open} onClick={() => birth({ worldId: w.id })}>
                 <span className="path-title">
                   {w.emoji} {w.name}
-                  {!open && " · 🔒 เร็วๆ นี้"}
+                  {!open && " · เร็วๆ นี้"}
                 </span>
                 <span className="path-desc">{open ? w.tagline : "กำลังสร้างใหม่ให้สมจริง จะเปิดทีละโลก"}</span>
               </button>

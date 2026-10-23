@@ -4,6 +4,7 @@ import { currentScene, labelOf, lockedChoices, visibleChoices, type Outcome } fr
 import { choiceChance } from "../engine/game";
 import type { Life } from "../engine/types";
 import { isRealistic } from "../content/worlds";
+import { Icon, noEmoji } from "./Icon";
 
 /** พิมพ์ข้อความทีละตัว แตะเพื่อข้าม */
 function useTypewriter(text: string, speed = 18) {
@@ -30,7 +31,7 @@ const vagueLabel = (p: number) => (p >= 0.7 ? "สูง" : p >= 0.4 ? "กล�
 export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: number) => void }) {
   const q = life.queue[0];
   const scene = currentScene(q, life)!;
-  const text = loc(life, scene.text(life, q.ctx));
+  const text = noEmoji(loc(life, scene.text(life, q.ctx)));
   const { shown, done, skip } = useTypewriter(text);
   // ตัวเลือกที่กดได้ก่อน แล้วตามด้วยตัวที่ยังขาดเงื่อนไข (ล็อกไว้พร้อมเหตุผล) ตามลำดับเดิม
   const choices = [...visibleChoices(life, q), ...lockedChoices(life, q)].sort((a, b) => a.index - b.index);
@@ -40,7 +41,7 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
       <div className={`modal ${scene.system && !isRealistic(life.worldId) ? "sys-modal" : ""}`} onClick={skip}>
         <div className="modal-head">
           <span className="modal-age">อายุ {life.age} ปี</span>
-          {scene.title && <h3>{scene.title}</h3>}
+          {scene.title && <h3>{noEmoji(scene.title)}</h3>}
         </div>
         <p className="modal-text">{shown}</p>
         <div className={`choices ${done ? "in" : ""}`}>
@@ -59,8 +60,8 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
                   onChoose(index);
                 }}
               >
-                <span>{loc(life, labelOf(c, life, q.ctx))}</span>
-                {missing && <span className="cons">🔒 {missing}</span>}
+                <span className="choice-label">{noEmoji(loc(life, labelOf(c, life, q.ctx)))}</span>
+                {missing && <span className="cons"><Icon name="lock" size={13} /> {missing}</span>}
                 {survive !== undefined && survive < 0.95 && (
                   <span className="warn">[คำเตือน: อัตรารอดชีวิต {vague ? vagueLabel(survive) : `${Math.round(survive * 100)}%`}]</span>
                 )}
@@ -81,21 +82,21 @@ export interface Resolved {
   out: Outcome;
 }
 
-const TIER = { great: "🌟 สำเร็จงดงาม", ok: "✅ สำเร็จ", fail: "❌ พลาด", disaster: "💀 พลาดหนัก" } as const;
+const TIER = { great: "สำเร็จงดงาม", ok: "สำเร็จ", fail: "พลาด", disaster: "พลาดหนัก" } as const;
 
 export function OutcomeModal({ resolved, onNext }: { resolved: Resolved; onNext: () => void }) {
   return (
     <div className="overlay modal-overlay">
       <div className="modal">
-        {resolved.title && <h3>{resolved.title}</h3>}
-        <p className="modal-prompt">{resolved.prompt}</p>
-        <p className="modal-choice">➜ {resolved.choice}</p>
+        {resolved.title && <h3>{noEmoji(resolved.title)}</h3>}
+        <p className="modal-prompt">{noEmoji(resolved.prompt)}</p>
+        <p className="modal-choice">{noEmoji(resolved.choice)}</p>
         {resolved.out.roll && (
           <p className={`roll ${resolved.out.roll.ok ? "ok" : "fail"} ${resolved.out.roll.tier}`}>
             {TIER[resolved.out.roll.tier]} · โอกาส {Math.round(resolved.out.roll.p * 100)}%
           </p>
         )}
-        <p className={`modal-outcome ${resolved.out.kind ?? ""}`}>{resolved.out.text}</p>
+        <p className={`modal-outcome ${resolved.out.kind ?? ""}`}>{noEmoji(resolved.out.text)}</p>
         {resolved.out.effects && (resolved.out.effects.good.length > 0 || resolved.out.effects.bad.length > 0) && (
           <p className="effects">
             {resolved.out.effects.good.map((t) => (

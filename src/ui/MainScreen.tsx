@@ -12,7 +12,8 @@ import type { YearReport } from "../engine/report";
 import { worldSummary } from "../content/murim/life/world";
 import { regionOf } from "../content/murim/life/region";
 import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
-import { goalLine } from "../content/murim/life/goals";
+import { goalInfo } from "../content/murim/life/goals";
+import { Icon, noEmoji, type IconName } from "./Icon";
 import { disabilities, openInjuries } from "../engine/body";
 import { displayName, loc, money, shortName } from "../engine/util";
 import { courtOf } from "../content/murim/world/court";
@@ -20,26 +21,24 @@ import { COURT_RANKS } from "../content/murim/world/palaceSchemes";
 
 export type TabId = "career" | "people" | "power" | "jianghu" | "activities" | "phone" | "soul";
 
-const TABS: { id: TabId; emoji: string; label: string }[] = [
-  { id: "career", emoji: "💼", label: "อาชีพ" },
-  { id: "people", emoji: "❤️", label: "คน" },
-  { id: "power", emoji: "⚔️", label: "พลัง" },
-  { id: "jianghu", emoji: "🏯", label: "ยุทธภพ" },
-  { id: "activities", emoji: "🎯", label: "ทำ" },
-  { id: "phone", emoji: "📱", label: "มือถือ" },
-  { id: "soul", emoji: "👻", label: "วิญญาณ" },
+const TABS: { id: TabId; label: string }[] = [
+  { id: "career", label: "อาชีพ" },
+  { id: "people", label: "ผู้คน" },
+  { id: "power", label: "พลัง" },
+  { id: "jianghu", label: "ยุทธภพ" },
+  { id: "activities", label: "ทำ" },
+  { id: "phone", label: "มือถือ" },
+  { id: "soul", label: "วิญญาณ" },
 ];
 
 const VISIBLE_STATS: StatKey[] = ["health", "happiness", "smarts", "looks"];
-const STAT_EMOJI: Record<StatKey, string> = { health: "❤️", happiness: "😊", smarts: "🧠", looks: "✨", luck: "🍀" };
 
 export function StatBar({ k, value }: { k: StatKey; value: number }) {
   const tone = value < 25 ? "low" : value < 50 ? "mid" : "high";
   return (
-    <div className="stat">
-      <span className="stat-label">
-        {STAT_EMOJI[k]} {STAT_LABEL[k]}
-      </span>
+    <div className={`stat stat-${k}`}>
+      <Icon name={k as IconName} size={17} className="stat-icon" />
+      <span className="stat-label">{STAT_LABEL[k]}</span>
       <div className="bar">
         <div className={`fill ${tone}`} style={{ width: `${value}%` }} />
       </div>
@@ -86,10 +85,10 @@ function Linked({ text }: { text: string }) {
 type LogFilter = "all" | "key" | "fight" | "people" | "news";
 const FILTERS: { id: LogFilter; label: string }[] = [
   { id: "all", label: "ทั้งหมด" },
-  { id: "key", label: "⭐ สำคัญ" },
-  { id: "fight", label: "⚔️ ต่อสู้" },
-  { id: "people", label: "❤️ ผู้คน" },
-  { id: "news", label: "🗞️ ข่าว" },
+  { id: "key", label: "สำคัญ" },
+  { id: "fight", label: "ต่อสู้" },
+  { id: "people", label: "ผู้คน" },
+  { id: "news", label: "ข่าว" },
 ];
 const FIGHT = /ดวล|ต่อสู้|ปะทะ|บาดเจ็บ|ฆ่า|สังหาร|กระบี่|ดาบ|ฝ่ามือ|โจร|ศัตรู|ลอบ/;
 const NEWS = /ข่าว|ลือ|ประกาศ|ทำเนียบ|ยุค|ราชสำนัก|สงคราม/;
@@ -136,17 +135,17 @@ export function LogLine({ e }: { e: LogEntry }) {
         <p>{e.text}</p>
       </div>
     );
-  if (e.kind === "chapter") return <div className="chapter-head">{e.text}</div>;
+  if (e.kind === "chapter") return <div className="chapter-head"><span>{noEmoji(e.text)}</span></div>;
   if (e.kind === "arc")
     return (
       <div className="arc-head">
-        <span>{e.text}</span>
+        <span>{noEmoji(e.text)}</span>
       </div>
     );
   if (e.kind === "comments") return <Comments items={parseComments(e)} />;
   return (
     <p className={`log-line ${e.kind}`}>
-      <Linked text={e.text} />
+      <Linked text={noEmoji(e.text)} />
     </p>
   );
 }
@@ -162,8 +161,8 @@ export function Comments({ items }: { items: { user: string; text: string; likes
   return (
     <div className="comments">
       <button className="comments-head" onClick={toggleComments}>
-        <span className="ch-on">💬 ความคิดเห็นจากผู้อ่าน · แตะเพื่อซ่อน</span>
-        <span className="ch-off">💬 ซ่อนความคิดเห็นอยู่ · แตะเพื่อแสดง</span>
+        <span className="ch-on">ความคิดเห็นจากผู้อ่าน · แตะเพื่อซ่อน</span>
+        <span className="ch-off">ซ่อนความคิดเห็นอยู่ · แตะเพื่อแสดง</span>
       </button>
       {items.map((c, i) => (
         <div className="comment" key={i}>
@@ -176,13 +175,34 @@ export function Comments({ items }: { items: { user: string; text: string; likes
   );
 }
 
-/** สภาพบ้านเมืองตอนนี้ (ยุค · ราคาข้าว · วิกฤต) */
+/** สภาพบ้านเมือง (ถิ่น · ยุค · ราคาข้าว · วิกฤต) และเป้าหมายชีวิต — แถบเดียวคั่นด้วยเส้น */
 function WorldStrip({ life }: { life: Life }) {
   const w = worldSummary(life);
+  const g = goalInfo(life);
   return (
-    <div className={`world-strip ${w.crisis ? "crisis" : ""}`} title={w.desc}>
-      📍 {regionOf(life).name} · 🏮 {w.era} · ข้าว ×{w.price.toFixed(2)}
-      {w.crisis && <b> · ⚠️ {w.crisis}</b>}
+    <div className="meta-strip">
+      <div className={`meta-line ${w.crisis ? "crisis" : ""}`} title={w.desc}>
+        <Icon name="pin" size={14} />
+        <span>
+          {regionOf(life).name} · {w.era} · ข้าว ×{w.price.toFixed(2)}
+          {w.crisis && <b> · {noEmoji(w.crisis)}</b>}
+        </span>
+      </div>
+      {g && (
+        <div className="meta-line goal">
+          <Icon name="flag" size={14} className="seal-ink" />
+          <span>
+            <b>{g.name}</b>
+            <span className="goal-steps" aria-label={`ผ่านแล้ว ${g.step} จาก ${g.total} ขั้น`}>
+              {Array.from({ length: g.total }, (_, i) => (
+                <i key={i} className={i < g.step ? "on" : ""} />
+              ))}
+            </span>
+            {g.next && <span className="muted">ถัดไป {g.next}</span>}
+            {g.side.length > 0 && <span className="muted"> · รอง {g.side.join(", ")}</span>}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -220,17 +240,17 @@ function PlanBar({ life }: { life: Life }) {
             force((n) => n + 1);
           }}
         >
-          <option value="">🌾 ใช้ชีวิตตามปกติ</option>
+          <option value="">ใช้ชีวิตตามปกติ</option>
           {list.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.emoji} {p.name}
+              {noEmoji(p.name)}
             </option>
           ))}
         </select>
       </label>
       {cur && (
         <div className="plan-hint">
-          ✅ {cur.pros} · ❌ {cur.cons}
+          ได้ {cur.pros} · เสีย {cur.cons}
         </div>
       )}
     </div>
@@ -276,7 +296,7 @@ export function MainScreen({
   const murim = life.worldId === "murim";
   const rank = murim ? Number(life.flags.courtRank ?? 0) : 0;
   const subtitle = murim && life.flags.emperorSelf && life.mw
-    ? `👑 ฮ่องเต้แห่ง${courtOf(life).dynasty}`
+    ? `ฮ่องเต้แห่ง${courtOf(life).dynasty}`
     : murim && rank >= 4
     ? COURT_RANKS[rank]
     : job
@@ -306,9 +326,9 @@ export function MainScreen({
               {life.power && <div className="sub">กำลังภายใน {Math.floor(Number(life.flags.mwQi ?? 0))} ปี</div>}
               {(!!life.flags.wanted || Number(life.flags.jailUntil ?? -1) > life.age || Number(life.flags.mourningUntil ?? -1) > life.age) && (
                 <div>
-                  {!!life.flags.wanted && <span className="status-chip">📜 ถูกประกาศจับ</span>}
-                  {Number(life.flags.jailUntil ?? -1) > life.age && <span className="status-chip">⛓️ ติดคุก อีก {Number(life.flags.jailUntil) - life.age} ปี</span>}
-                  {Number(life.flags.mourningUntil ?? -1) > life.age && <span className="status-chip calm">🕯️ ไว้ทุกข์</span>}
+                  {!!life.flags.wanted && <span className="status-chip">ถูกประกาศจับ</span>}
+                  {Number(life.flags.jailUntil ?? -1) > life.age && <span className="status-chip">ติดคุก อีก {Number(life.flags.jailUntil) - life.age} ปี</span>}
+                  {Number(life.flags.mourningUntil ?? -1) > life.age && <span className="status-chip calm">ไว้ทุกข์</span>}
                 </div>
               )}
             </>
@@ -322,7 +342,7 @@ export function MainScreen({
                   {d}
                 </span>
               ))}
-              {openInjuries(life).length > 0 && <span className="injury-chip">🤕 แผลยังไม่หาย {openInjuries(life).length}</span>}
+              {openInjuries(life).length > 0 && <span className="injury-chip">แผลยังไม่หาย {openInjuries(life).length}</span>}
             </div>
           )}
           <div className="sub">
@@ -348,8 +368,7 @@ export function MainScreen({
       </section>
 
       {murim && <WorldStrip life={life} />}
-      {murim && !!life.flags.legacySave && <div className="legacy-strip">💾 เซฟจากเวอร์ชันเก่า — เล่นต่อได้จนจบชีวิตนี้ ระบบใหม่บางอย่างเริ่มนับจากตอนนี้ รุ่นถัดไปจะได้ครบทุกระบบ</div>}
-      {murim && goalLine(life) && <div className="goal-strip">🎯 {goalLine(life)}</div>}
+      {murim && !!life.flags.legacySave && <div className="legacy-strip">เซฟจากเวอร์ชันเก่า — เล่นต่อได้จนจบชีวิตนี้ ระบบใหม่บางอย่างเริ่มนับจากตอนนี้ รุ่นถัดไปจะได้ครบทุกระบบ</div>}
 
       {quest && (
         <div className="quest-strip">
@@ -361,7 +380,7 @@ export function MainScreen({
         <div className="log-filters">
           {whoP ? (
             <button className="chip on" onClick={() => setWho?.(null)}>
-              📜 เรื่องของ{shortName(whoP)} ✕
+              เรื่องของ{shortName(whoP)} ✕
             </button>
           ) : (
             FILTERS.map((f) => (
@@ -377,7 +396,7 @@ export function MainScreen({
         {groups.length === 0 && <p className="muted small">ยังไม่มีบันทึกในหมวดนี้</p>}
         {hidden > 0 && (
           <button className="btn small ghost log-more" onClick={() => setShowYears(showYears + LOG_PAGE)}>
-            📜 ดูบันทึกก่อนหน้า ({hidden} ปี)
+            ดูบันทึกก่อนหน้า ({hidden} ปี)
           </button>
         )}
         {groups.slice(hidden).map((g) => (
@@ -391,12 +410,12 @@ export function MainScreen({
       <footer className="bottom">
         {murim && life.alive && <PlanBar life={life} />}
         <button className="age-btn" onClick={() => onAgeUp(1)} disabled={life.queue.length > 0}>
-          ＋ อายุ 1 ปี
+          อายุ +1 ปี
         </button>
         <nav className="tabs">
           {TABS.filter((t) => (t.id !== "phone" || hasPhone(life)) && (t.id !== "jianghu" || life.worldId === "murim")).map((t) => (
             <button key={t.id} className="tab" onClick={() => onTab(t.id)}>
-              <span className="tab-emoji">{t.id === "soul" && isRealistic(life.worldId) ? "📜" : t.emoji}</span>
+              <Icon name={t.id} size={22} className="tab-icon" />
               <span>{isRealistic(life.worldId) ? (t.id === "soul" ? "บันทึก" : t.id === "power" ? "วิชา" : t.label) : t.label}</span>
             </button>
           ))}

@@ -55,7 +55,7 @@ const UI: Record<
     noGuild: "อิสระ",
     done: "Gate ที่เคลียร์",
     boss: "บอส",
-    needJob: "ต้องลงทะเบียนเป็น Hunter ที่แท็บ 💼 อาชีพก่อน",
+    needJob: "ต้องลงทะเบียนเป็น Hunter ที่แท็บ อาชีพก่อน",
     unit: "Gate แรงก์ ",
     enter: "เข้า",
     trainEmoji: "🏋️",
@@ -72,7 +72,7 @@ const UI: Record<
     noGuild: "ไร้สังกัด",
     done: "ภารกิจสำเร็จ",
     boss: "ล้มยอดฝีมือ",
-    needJob: "ต้องเป็นศิษย์สำนัก จอมยุทธ์พเนจร หรือนักฆ่ารับจ้างก่อน (แท็บ 💼 อาชีพ)",
+    needJob: "ต้องเป็นศิษย์สำนัก จอมยุทธ์พเนจร หรือนักฆ่ารับจ้างก่อน (แท็บ อาชีพ)",
     unit: "ภารกิจระดับ",
     enter: "รับ",
     trainEmoji: "🧘",
@@ -89,7 +89,7 @@ const UI: Record<
     noGuild: "ไร้สังกัด",
     done: "ภารกิจสำเร็จ",
     boss: "ล้มศัตรูคนสำคัญ",
-    needJob: "ต้องเป็นอัศวิน จอมเวทราชสำนัก หรือนักผจญภัยก่อน (แท็บ 💼 อาชีพ)",
+    needJob: "ต้องเป็นอัศวิน จอมเวทราชสำนัก หรือนักผจญภัยก่อน (แท็บ อาชีพ)",
     unit: "ภารกิจระดับ",
     enter: "รับ",
     trainEmoji: "📖",
@@ -106,7 +106,7 @@ const UI: Record<
     noGuild: "อิสระ",
     done: "ภารกิจที่สำเร็จ",
     boss: "ชนะคู่แข่ง",
-    needJob: "ต้องทำอาชีพตามเส้นทางของระบบที่แท็บ 💼 อาชีพก่อน",
+    needJob: "ต้องทำอาชีพตามเส้นทางของระบบที่แท็บ อาชีพก่อน",
     unit: "ภารกิจระดับ ",
     enter: "รับ",
     trainEmoji: "🏋️",
@@ -123,7 +123,7 @@ const UI: Record<
     noGuild: "ไม่มีกลุ่ม",
     done: "ฉากที่ผ่าน",
     boss: "ตัวคุมฉาก",
-    needJob: "ต้องเป็นผู้รอดชีวิตภาคสนามที่แท็บ 💼 อาชีพก่อน",
+    needJob: "ต้องเป็นผู้รอดชีวิตภาคสนามที่แท็บ อาชีพก่อน",
     unit: "ฉากภารกิจระดับ ",
     enter: "เข้าฉาก",
     trainEmoji: "🏋️",
@@ -140,7 +140,7 @@ const UI: Record<
     noGuild: "ไม่มีทีม",
     done: "บททดสอบที่ผ่าน",
     boss: "ผู้คุมชั้น",
-    needJob: "ต้องลงทะเบียนเป็นผู้ท้าชิงหอคอยที่แท็บ 💼 อาชีพก่อน",
+    needJob: "ต้องลงทะเบียนเป็นผู้ท้าชิงหอคอยที่แท็บ อาชีพก่อน",
     unit: "บททดสอบระดับ ",
     enter: "ท้าทาย",
     trainEmoji: "🏋️",
@@ -213,7 +213,7 @@ function MartialRecord({ life }: { life: Life }) {
               </span>
             </summary>
             <p className="small">{a.desc}</p>
-            <p className="small">✅ {a.strong} · ❌ {a.weak}</p>
+            <p className="small">{a.strong} · {a.weak}</p>
             <p className="small muted">ได้มาจาก: {k.src} ตอนอายุ {k.since}</p>
           </details>
         );
@@ -266,11 +266,11 @@ export function PowerTab({ life, act }: { life: Life; act: Act }) {
 
       <div className="section-title">สิ่งของพิเศษ</div>
       <ul className="items">
-        {life.flags.amulet && <li>🪬 พระเครื่องของยาย (อุ่นอยู่ตลอด)</li>}
-        {life.flags.ghostBox && <li>🪙 เหรียญโบราณสลักอักษรประหลาด</li>}
-        {life.flags.oldBook && <li>📕 หนังสือปกหนังที่อ่านไม่ออก</li>}
-        {life.flags.ringMaster && <li>💍 แหวนหยกดำที่มีวิญญาณปรมาจารย์</li>}
-        {p?.items.map((it, i) => <li key={i}>🎒 {it}</li>)}
+        {life.flags.amulet && <li>พระเครื่องของยาย (อุ่นอยู่ตลอด)</li>}
+        {life.flags.ghostBox && <li>เหรียญโบราณสลักอักษรประหลาด</li>}
+        {life.flags.oldBook && <li>หนังสือปกหนังที่อ่านไม่ออก</li>}
+        {life.flags.ringMaster && <li>แหวนหยกดำที่มีวิญญาณปรมาจารย์</li>}
+        {p?.items.map((it, i) => <li key={i}>{it}</li>)}
         {!life.flags.amulet && !life.flags.ghostBox && !life.flags.oldBook && !life.flags.ringMaster && !p?.items.length && (
           <li className="muted">ยังไม่มี</li>
         )}
@@ -312,7 +312,7 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
         <>
           <div className="section-title">พรสวรรค์ประสาน</div>
           {combos.map((c) => (
-            <p className="small" key={c.id}>✨ <b>{c.name}</b> <span className="muted">— {talentById(c.a)?.name} + {talentById(c.b)?.name}</span></p>
+            <p className="small" key={c.id}><b>{c.name}</b> <span className="muted">— {talentById(c.a)?.name} + {talentById(c.b)?.name}</span></p>
           ))}
         </>
       )}
@@ -321,7 +321,7 @@ function MurimPowerTab({ life, act }: { life: Life; act: Act }) {
           <div className="section-title">ของติดตัว</div>
           <ul className="items">
             {p!.items.map((it, i) => (
-              <li key={i}>🎒 {it}</li>
+              <li key={i}>{it}</li>
             ))}
           </ul>
         </>
@@ -336,7 +336,7 @@ export function WorldCard({ life }: { life: Life }) {
   return (
     <div className="card">
       <div className="card-title">สถานการณ์ใต้หล้า</div>
-      <p className="small">🏯 {courtSummary(life)}</p>
+      <p className="small">{courtSummary(life)}</p>
       {fs.map((f) => (
         <div className="faction-row" key={f.id}>
           <span className="faction-name">
@@ -379,8 +379,8 @@ function TrainPanel({ life, act }: { life: Life; act: Act }) {
             <div className="job-main">
               <div className="job-name">{m.name}</div>
               <div className="job-sub">
-                ✅ {m.pros} · ❌ {m.cons}
-                {why && <span className="danger-text"> · 🔒 {why}</span>}
+                {m.pros} · {m.cons}
+                {why && <span className="danger-text"> · {why}</span>}
               </div>
             </div>
             <button className="btn small" disabled={done || !!why} onClick={() => act((l) => trainArt(l, cur.id, m.id))}>
@@ -401,7 +401,7 @@ function MurimActions({ life, act }: { life: Life; act: Act }) {
     <>
       <div className="row">
         <button className="btn" disabled={!!canSeclude(life)} title={canSeclude(life)} onClick={() => act((l) => startSeclusion(l))}>
-          {isSecluded(life) ? `⛩️ ปิดด่านอยู่ (ถึงอายุ ${life.flags.secludeUntil})` : `⛩️ ปิดด่าน ${SECLUSION_YEARS} ปี`}
+          {isSecluded(life) ? `ปิดด่านอยู่ (ถึงอายุ ${life.flags.secludeUntil})` : `ปิดด่าน ${SECLUSION_YEARS} ปี`}
         </button>
       </div>
       <TrainPanel life={life} act={act} />
@@ -423,7 +423,7 @@ function MurimActions({ life, act }: { life: Life; act: Act }) {
             <div className={`job ${locked ? "locked" : ""}`} key={g.id}>
               <div className="job-main">
                 <div className="job-name">{loc(life, g.name)}</div>
-                <div className="job-sub">{locked ? `🔒 ต้องฝีมือขั้น${rankLabel(life, g.minRank)}ขึ้นไป` : loc(life, g.desc)}</div>
+                <div className="job-sub">{locked ? `ต้องฝีมือขั้น${rankLabel(life, g.minRank)}ขึ้นไป` : loc(life, g.desc)}</div>
               </div>
               <button className="btn small" disabled={locked} onClick={() => act((l) => { l.power!.guild = g.id; l.job = { careerId: "disciple", level: 1, performance: 50, years: 0 }; return { text: `คุณคุกเข่าคารวะ และได้เป็นศิษย์แห่ง${g.name}`, kind: "good" }; })}>
                 ฝากตัว
@@ -561,10 +561,10 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
             <>
               <span>ฉากภารกิจหลัก</span>
               <b>
-                {Number(life.flags.mainScenario ?? 0) >= 8 ? "จบแล้ว ☀️" : `#${Number(life.flags.mainScenario ?? 0)} / 8`}
+                {Number(life.flags.mainScenario ?? 0) >= 8 ? "จบแล้ว " : `#${Number(life.flags.mainScenario ?? 0)} / 8`}
               </b>
               <span>ผู้สนับสนุน</span>
-              <b>{sponsorOf(life) ? `✨ ${sponsorOf(life)!.name} (${sponsorOf(life)!.desc})` : "ยังไม่มี"}</b>
+              <b>{sponsorOf(life) ? `${sponsorOf(life)!.name} (${sponsorOf(life)!.desc})` : "ยังไม่มี"}</b>
             </>
           )}
           {life.worldId === "tower" && (
@@ -572,10 +572,10 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
               <span>ชั้นปัจจุบัน</span>
               <b>
                 ชั้นที่ {floorOf(life)} / {TOP_FLOOR}
-                {life.flags.towerTop ? " 👑" : ""}
+                {life.flags.towerTop ? " · ยอดหอคอย" : ""}
               </b>
               <span>ผู้สนับสนุน</span>
-              <b>{sponsorOf(life) ? `✨ ${sponsorOf(life)!.name} (${sponsorOf(life)!.desc})` : "ยังไม่มี"}</b>
+              <b>{sponsorOf(life) ? `${sponsorOf(life)!.name} (${sponsorOf(life)!.desc})` : "ยังไม่มี"}</b>
             </>
           )}
         </div>
@@ -626,11 +626,11 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
           title={canSeclude(life)}
           onClick={() => act((l) => startSeclusion(l))}
         >
-          {isSecluded(life) ? `⛩️ ปิดด่านอยู่ (ถึงอายุ ${life.flags.secludeUntil})` : `⛩️ ปิดด่าน ${SECLUSION_YEARS} ปี`}
+          {isSecluded(life) ? `ปิดด่านอยู่ (ถึงอายุ ${life.flags.secludeUntil})` : `ปิดด่าน ${SECLUSION_YEARS} ปี`}
         </button>
         {(hasTalent(life, "system_user") || life.worldId === "ordinary") && (
           <button className="btn sys-btn" disabled={life.doneThisYear.includes("daily")} onClick={() => act(dailyQuest)}>
-            📋 ภารกิจรายวัน
+            ภารกิจรายวัน
           </button>
         )}
       </div>
@@ -662,7 +662,7 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
             <div className={`job ${locked ? "locked" : ""}`} key={g.id}>
               <div className="job-main">
                 <div className="job-name">{loc(life, g.name)}</div>
-                <div className="job-sub">{locked ? `🔒 ${w.labels.rank} ${rankLabel(life, g.minRank)}+` : loc(life, g.desc)}</div>
+                <div className="job-sub">{locked ? `${w.labels.rank} ${rankLabel(life, g.minRank)}+` : loc(life, g.desc)}</div>
               </div>
               <button
                 className="btn small"
@@ -709,7 +709,7 @@ function SkillList({ life }: { life: Life }) {
       ))}
       {locked.map(([lv, n]) => (
         <div className="skill-card locked" key={n}>
-          <span className="skill-name">🔒 {n}</span>
+          <span className="skill-name">{n}</span>
           <span className="skill-meta">ปลดล็อกที่ Lv.{lv}</span>
         </div>
       ))}
@@ -728,10 +728,10 @@ function climbHint(life: Life, r: number) {
 function AcademyCard({ life }: { life: Life }) {
   const f = life.flags;
   const h = houseOf(life);
-  const status = f.acaGrad ? (f.acaTop ? "จบการศึกษาอันดับหนึ่ง 🎓" : "จบการศึกษาแล้ว 🎓") : f.acaExpelled ? "ถูกให้ออก" : inAcademy(life) ? `กำลังเรียนปี ${acaYear(life)}` : "รอเข้าเรียน";
+  const status = f.acaGrad ? (f.acaTop ? "จบการศึกษาอันดับหนึ่ง " : "จบการศึกษาแล้ว ") : f.acaExpelled ? "ถูกให้ออก" : inAcademy(life) ? `กำลังเรียนปี ${acaYear(life)}` : "รอเข้าเรียน";
   return (
     <div className="card">
-      <div className="card-title">🏛️ สถาบันจักรวรรดิ</div>
+      <div className="card-title">สถาบันจักรวรรดิ</div>
       <p>
         {status}
         {h ? ` · ${h.emoji} ${h.name}` : ""}
@@ -740,7 +740,7 @@ function AcademyCard({ life }: { life: Life }) {
       {f.acaRank && (
         <p className="small muted">
           อันดับล่าสุด {String(f.acaRank)} / {STUDENTS} · ดีที่สุด {String(f.acaBest ?? f.acaRank)}
-          {f.houseCup ? " · 🏆 ถ้วยประจำหอ" : ""}
+          {f.houseCup ? " · ถ้วยประจำหอ" : ""}
         </p>
       )}
     </div>
@@ -774,7 +774,7 @@ function PassivesCard({ life }: { life: Life }) {
       )}
       {picked && <p className="small passive-detail">{picked.emoji} <b>{picked.name}</b> — {picked.desc}</p>}
       <details className="passive-locked" onToggle={(e) => setShowLocked((e.target as HTMLDetailsElement).open)}>
-        <summary className="muted small">🔒 ยังไม่ได้ {locked.length} อย่าง — ดูวิธีได้</summary>
+        <summary className="muted small">ยังไม่ได้ {locked.length} อย่าง — ดูวิธีได้</summary>
         {showLocked && <ul className="passive-list">
           {locked.map((p) => (
             <li key={p.id}>
@@ -794,7 +794,7 @@ function StoriesCard({ life }: { life: Life }) {
   if (!open.length) return null;
   return (
     <>
-      <div className="section-title">📜 เรื่องที่ยังค้างอยู่ ({open.length})</div>
+      <div className="section-title">เรื่องที่ยังค้างอยู่ ({open.length})</div>
       <div className="skill-list">
         {open.map((s) => (
           <div className="skill-card" key={s.id}>

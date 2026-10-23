@@ -26,7 +26,7 @@ function RankingBoard({ life }: { life: Life }) {
   if (!list.length) return null;
   return (
     <div className="card m17-card">
-      <div className="card-title">📜 ทำเนียบยอดฝีมือใต้หล้า</div>
+      <div className="card-title">ทำเนียบยอดฝีมือใต้หล้า</div>
       <p className="small muted">
         {me ? `คุณอยู่อันดับ ${me} จาก ${RANK_SIZE}` : life.flags.m17Best ? `เคยติดอันดับ ${life.flags.m17Best} — ตอนนี้หลุดทำเนียบ` : "ยังไม่ติดทำเนียบ — อันดับ 11–20 คือประตูแรก ท้าชิงได้ที่แท็บทำ → ยุทธภพ"}
       </p>
@@ -50,7 +50,7 @@ function AlignmentMeter({ life }: { life: Life }) {
   const pos = (v + 100) / 2;
   return (
     <div className="card m17-card">
-      <div className="card-title">☯️ มาตรธรรมะ / มาร</div>
+      <div className="card-title">มาตรธรรมะ / มาร</div>
       <div className="m17-align">
         <span className="small">มาร</span>
         <div className="m17-align-bar">
@@ -75,12 +75,12 @@ function Ledger({ life }: { life: Life }) {
   const done = list.filter((e) => e.d);
   return (
     <div className="card m17-card">
-      <div className="card-title">📖 สมุดบุญคุณ / ความแค้น</div>
+      <div className="card-title">สมุดบุญคุณ / ความแค้น</div>
       {!list.length && <p className="small muted">ยังว่างเปล่า — ทุกคนที่คุณช่วยหรือทำร้าย จะถูกจดไว้ที่นี่ และสักวันจะกลับมา</p>}
       <ul className="m17-ledger">
         {open.map((e) => (
           <li key={e.id} className={e.k === "f" ? "favor" : "grudge"}>
-            <span>{e.k === "f" ? "📗" : "📕"}</span>
+            <span className={`ledger-mark ${e.k}`} aria-label={e.k === "f" ? "บุญคุณ" : "ความแค้น"}></span>
             <span>
               <b>{e.n}</b> — {e.w} <span className="muted small">(อายุ {e.a})</span>
             </span>
@@ -88,7 +88,7 @@ function Ledger({ life }: { life: Life }) {
         ))}
         {done.map((e) => (
           <li key={e.id} className="done">
-            <span>✔️</span>
+            <span className="ledger-mark done" aria-label="ชดใช้แล้ว"></span>
             <span className="small muted">
               {e.n}: {e.d}
             </span>
@@ -105,7 +105,7 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
   if (s) {
     return (
       <div className="card m17-card">
-        <div className="card-title">🏯 {s.n}</div>
+        <div className="card-title">{s.n}</div>
         <div className="status-grid">
           <span>ก่อตั้งเมื่อ</span>
           <b>อายุ {s.y} ({life.age - s.y} ปีก่อน)</b>
@@ -138,7 +138,7 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
           return (
             <div className="job" key={b.id}>
               <div className="job-main">
-                <div className="job-name">{owned ? "✅ " : ""}{b.name}</div>
+                <div className="job-name">{b.name}{owned ? <span className="muted small"> · มีแล้ว</span> : null}</div>
                 <div className="job-sub">{b.desc}</div>
               </div>
               {!owned && (
@@ -155,7 +155,7 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
           return (
             <div className="job" key={b.id}>
               <div className="job-main">
-                <div className="job-name">{owned ? "✅ " : ""}{b.name}</div>
+                <div className="job-name">{b.name}{owned ? <span className="muted small"> · มีแล้ว</span> : null}</div>
                 <div className="job-sub">{b.desc} · รายได้ราว {b.income} ตำลึง/ปี</div>
               </div>
               {!owned && (
@@ -175,7 +175,7 @@ function SectPanel({ life, act }: { life: Life; act: Act }) {
   const placeholder = sectNameOptions({ ...life, rng: life.rng })[0];
   return (
     <div className="card m17-card">
-      <div className="card-title">🏯 ก่อตั้งสำนักของตัวเอง</div>
+      <div className="card-title">ก่อตั้งสำนักของตัวเอง</div>
       <p className="small muted">{blocked ?? `ค่าก่อสร้าง ${money(life, SECT_COST)} — ตั้งชื่อสำนักที่จะอยู่ไปอีกร้อยปี`}</p>
       {!blocked && (
         <div className="row">

@@ -261,7 +261,7 @@ p { margin: 0.25em 0; }
   padding: 4px 16px 10px;
   border-bottom: 1px solid var(--line);
 }
-.stat { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px; font-size: 12px; }
+.stat { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 6px; font-size: 12px; }
 .stat-label { color: var(--muted); white-space: nowrap; }
 .stat-val { width: 22px; text-align: right; font-variant-numeric: tabular-nums; }
 .bar { height: 7px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
@@ -976,3 +976,245 @@ body.no-comments .comments-head { margin-bottom: 0; }
 
 /* เส้นแบ่งสิบยอดฝีมือกับอันดับ 11–20 */
 .m17-rank li.m17-split { border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 4px; }
+
+/* ════════ ยุทธภพ: กระดาษสาและตราประทับ (ปรับปรุงใหม่) ════════
+   โครงเดิมทั้งหมด — ลดกรอบ/ชิปที่ซ้อนกัน ใช้ไอคอนเส้นแทนอีโมจิ
+   พื้นกระดาษมีเนื้อ · หมึกน้ำตาลเข้ม · แดงชาดใช้กับสิ่งที่สำคัญที่สุดเท่านั้น (อายุ ปุ่มหลัก ตัวกรองที่เลือก) */
+:root[data-world="murim"] {
+  --bg: #ebdfc5;
+  --bg-2: #f1e7d1;
+  --surface: #f6eedb;
+  --surface-2: #e4d5b6;
+  --line: #b79f78;
+  --line-soft: #d4c19c;
+  --text: #2b2016;
+  --muted: #6b5843;
+  --accent: #a8281e;
+  --gold: #8f6214;
+  --good: #3d6b45;
+  --bad: #a8281e;
+  --warn: #9a5f12;
+  --milestone: #8f6214;
+  --r-common: #7d6a52;
+  --body-bg: #ebdfc5;
+  --glow: none;
+  --primary-grad: #a8281e;
+  --primary-shadow: none;
+  --footer-bg: #e5d6b7;
+  --scrim: rgba(43, 32, 22, 0.42);
+  --radius: 4px;
+  --font: "Noto Serif Thai", "Noto Sans Thai", serif;
+  --font-display: "Chonburi", "Noto Serif Thai", serif;
+  --font-ui: "IBM Plex Sans Thai", "Noto Sans Thai", sans-serif;
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .16 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:root[data-world="murim"] body { background: var(--bg) var(--paper-grain); }
+:root[data-world="murim"] .icon { flex: none; vertical-align: -0.15em; }
+
+/* ส่วนหัว: แผ่นป้ายกรอบสองชั้น มุมลายเหลี่ยม + ตราประทับอายุ */
+:root[data-world="murim"] .top {
+  position: relative;
+  margin: 12px 12px 0;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4px var(--line-soft);
+}
+:root[data-world="murim"] .top::before,
+:root[data-world="murim"] .top::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid #9c7b4c;
+  pointer-events: none;
+}
+:root[data-world="murim"] .top::before { left: 5px; top: 5px; border-right: 0; border-bottom: 0; }
+:root[data-world="murim"] .top::after { right: 5px; bottom: 5px; border-left: 0; border-top: 0; }
+:root[data-world="murim"] .name { font-family: var(--font-display); font-weight: 400; font-size: 21px; line-height: 1.3; letter-spacing: 0; }
+:root[data-world="murim"] .sub { font-family: var(--font-ui); font-size: 12.5px; }
+:root[data-world="murim"] .title-tag { color: var(--gold); font-weight: 600; }
+:root[data-world="murim"] .age-badge {
+  width: 56px;
+  height: 60px;
+  border: 0;
+  border-radius: 3px;
+  background: var(--accent);
+  color: #f7eedc;
+  box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 4px #e9c6a4;
+  transform: rotate(-4deg);
+}
+:root[data-world="murim"] .age-num { font-family: var(--font-display); font-weight: 400; font-size: 23px; }
+:root[data-world="murim"] .age-unit { color: #f1dcc4; letter-spacing: 0.15em; }
+:root[data-world="murim"] .gender-tag { font-size: 14px; }
+:root[data-world="murim"] .status-chip, :root[data-world="murim"] .injury-chip { border-radius: 2px; font-family: var(--font-ui); }
+
+/* ค่าสถานะ: ไอคอนเส้นสีประจำค่า · แถบบางเหลี่ยม */
+:root[data-world="murim"] .stats { gap: 6px 18px; padding: 10px 18px 8px; border-bottom: 0; font-family: var(--font-ui); }
+:root[data-world="murim"] .stat { grid-template-columns: auto auto 1fr 22px; gap: 6px; font-size: 12px; }
+:root[data-world="murim"] .stat-val { font-weight: 600; font-size: 13px; }
+:root[data-world="murim"] .bar { height: 5px; border-radius: 1px; background: #dccaa6; }
+:root[data-world="murim"] .fill { border-radius: 1px; }
+:root[data-world="murim"] .stat-health { --c: #a8281e; }
+:root[data-world="murim"] .stat-happiness { --c: #a8701a; }
+:root[data-world="murim"] .stat-smarts { --c: #2e5878; }
+:root[data-world="murim"] .stat-looks { --c: #7e4f72; }
+:root[data-world="murim"] .stat-luck { --c: #3d6b45; }
+:root[data-world="murim"] .stat .stat-icon { color: var(--c); }
+:root[data-world="murim"] .stat .fill.high, :root[data-world="murim"] .stat .fill.mid { background: var(--c); }
+:root[data-world="murim"] .stat .fill.low { background: var(--c); opacity: 0.55; }
+:root[data-world="murim"] .stat:has(.fill.low) .stat-val { color: var(--bad); }
+
+/* แถบถิ่น · ยุค · เป้าหมาย — เส้นคั่นบนล่าง ไม่มีกล่อง */
+.meta-strip { margin: 0 14px 2px; padding: 6px 4px; border-top: 1px solid var(--line-soft, var(--line)); border-bottom: 1px solid var(--line-soft, var(--line)); display: flex; flex-direction: column; gap: 3px; font-family: var(--font-ui, inherit); font-size: 12.5px; color: var(--muted); }
+.meta-line { display: flex; gap: 6px; align-items: flex-start; line-height: 1.45; }
+.meta-line .icon { margin-top: 2px; }
+.meta-line.crisis b { color: var(--bad); }
+.meta-line.goal { color: var(--text); }
+.meta-line.goal b { font-weight: 600; margin-right: 6px; }
+.seal-ink { color: var(--accent); }
+.goal-steps { display: inline-flex; gap: 3px; margin-right: 6px; vertical-align: 1px; }
+.goal-steps i { width: 8px; height: 8px; border: 1px solid var(--accent); }
+.goal-steps i.on { background: var(--accent); }
+
+/* ตัวกรองบันทึก: ตัวหนังสือล้วน · ตัวที่เลือกมีเส้นพู่กันแดงข้างใต้ */
+:root[data-world="murim"] .log-filters { margin: 0 10px; padding: 0; gap: 0; }
+:root[data-world="murim"] .log-filters .chip { border: 0; border-radius: 0; background: none; color: var(--muted); padding: 8px 10px 9px; min-height: 40px; font-family: var(--font-ui); font-size: 13px; }
+:root[data-world="murim"] .log-filters .chip.on {
+  color: var(--text);
+  font-weight: 600;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='6' viewBox='0 0 40 6'%3E%3Cpath d='M1 4.2C11 1.6 25 1.4 39 3.2' fill='none' stroke='%23a8281e' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") center bottom 3px / calc(100% - 14px) 6px no-repeat;
+}
+
+/* บันทึก: อ่านแบบหน้าหนังสือ */
+:root[data-world="murim"] .log { padding: 4px 18px 16px; }
+:root[data-world="murim"] .log-group { margin-bottom: 14px; }
+:root[data-world="murim"] .log-age { display: flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: var(--accent); margin: 2px 0 4px; }
+:root[data-world="murim"] .log-age::after { content: ""; flex: 1; height: 1px; background: var(--line-soft); }
+:root[data-world="murim"] .log-line { font-size: 15px; line-height: 1.72; margin: 0 0 4px; }
+:root[data-world="murim"] .log-line.milestone { color: var(--gold); font-weight: 600; }
+:root[data-world="murim"] .name-link { font-weight: 500; text-decoration-color: var(--muted); }
+:root[data-world="murim"] .chapter-head,
+:root[data-world="murim"] .arc-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 14.5px;
+  color: var(--text);
+  text-align: center;
+}
+:root[data-world="murim"] .arc-head { font-size: 16px; color: var(--accent); }
+:root[data-world="murim"] .chapter-head::before,
+:root[data-world="murim"] .chapter-head::after,
+:root[data-world="murim"] .arc-head::before,
+:root[data-world="murim"] .arc-head::after {
+  content: "";
+  flex: 1;
+  min-width: 24px;
+  height: 12px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='12' viewBox='0 0 22 12'%3E%3Cpath d='M21 9c-3 0-4-2-4-4s1.5-3 3-2.4M1 9h14' fill='none' stroke='%239c7b4c' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E") right center / 22px 12px no-repeat,
+    linear-gradient(var(--line), var(--line)) left 9px / calc(100% - 20px) 1px no-repeat;
+}
+:root[data-world="murim"] .chapter-head::after,
+:root[data-world="murim"] .arc-head::after { transform: scaleX(-1); }
+:root[data-world="murim"] .chapter-head span, :root[data-world="murim"] .arc-head span { max-width: 78%; }
+
+/* สรุปปี: บรรทัดเดียว ไม่มีกล่องเส้นประ */
+:root[data-world="murim"] .report-card { border: 0; border-top: 1px solid var(--line-soft); border-radius: 0; background: none; padding: 6px 0 0; font-family: var(--font-ui); }
+:root[data-world="murim"] .report-head { display: inline; margin-right: 6px; }
+:root[data-world="murim"] .report-lines { display: inline-flex; gap: 2px 10px; }
+:root[data-world="murim"] .report-chip { background: none; padding: 0; font-size: 12px; }
+
+/* ส่วนล่าง: แผนของปี + ปุ่มตราประทับ + แถบเมนูไอคอนเส้น */
+:root[data-world="murim"] .bottom { background: var(--footer-bg) var(--paper-grain); border-top: 1px solid var(--line); padding: 10px 12px calc(4px + env(safe-area-inset-bottom)); }
+:root[data-world="murim"] .plan-bar { margin-bottom: 8px; }
+:root[data-world="murim"] .plan-label { font-family: var(--font-ui); }
+:root[data-world="murim"] .plan-pick select { background: var(--surface); border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; font-weight: 600; }
+:root[data-world="murim"] .plan-hint { font-family: var(--font-ui); }
+:root[data-world="murim"] .age-btn,
+:root[data-world="murim"] .btn.primary {
+  border-radius: 3px;
+  background: var(--accent);
+  color: #f7eedc;
+  box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 4px #e3b99a;
+  font-family: var(--font);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+:root[data-world="murim"] .age-btn { padding: 13px; font-size: 17px; }
+:root[data-world="murim"] .tabs { margin-top: 6px; }
+:root[data-world="murim"] .tab { color: #4e3f2e; font-family: var(--font-ui); font-size: 11.5px; gap: 3px; padding: 6px 0 4px; border-radius: 0; }
+:root[data-world="murim"] .tab:active { background: none; color: var(--accent); }
+.tab-icon { display: block; }
+
+/* แผ่นเลื่อน / หน้าต่างเหตุการณ์ */
+:root[data-world="murim"] .sheet { background: var(--bg-2) var(--paper-grain); border-top: 1px solid var(--line); border-radius: 10px 10px 0 0; }
+:root[data-world="murim"] .sheet-head { border-bottom: 1px solid var(--line-soft); margin-bottom: 6px; padding: 12px 16px 10px; }
+:root[data-world="murim"] .sheet-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 19px; }
+:root[data-world="murim"] .icon-btn { background: none; width: 44px; height: 44px; display: grid; place-items: center; color: var(--muted); margin-right: -10px; }
+:root[data-world="murim"] .modal {
+  background: var(--surface) var(--paper-grain);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 4px var(--surface), inset 0 0 0 5px var(--line-soft), 0 12px 40px rgba(43, 32, 22, 0.25);
+  padding: 20px 18px 16px;
+}
+:root[data-world="murim"] .modal h3 { font-family: var(--font-display); font-weight: 400; font-size: 19px; color: var(--text); margin: 0 0 4px; }
+:root[data-world="murim"] .modal-age { font-family: var(--font-ui); font-size: 11.5px; letter-spacing: 0.06em; font-weight: 600; }
+:root[data-world="murim"] .modal-text, :root[data-world="murim"] .modal-outcome { font-size: 15.5px; line-height: 1.75; }
+:root[data-world="murim"] .modal-prompt { font-family: var(--font-ui); font-size: 13px; }
+:root[data-world="murim"] .modal-choice { color: var(--accent); font-weight: 600; }
+:root[data-world="murim"] .choices { gap: 0; border-top: 1px solid var(--line-soft); margin-top: 14px; }
+:root[data-world="murim"] .choice {
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  border-radius: 0;
+  background: none;
+  padding: 12px 2px;
+  min-height: 50px;
+  justify-content: center;
+}
+:root[data-world="murim"] .choice:active:not(:disabled) { transform: none; background: color-mix(in srgb, var(--accent) 7%, transparent); }
+:root[data-world="murim"] .choice-label { font-size: 15px; line-height: 1.5; }
+:root[data-world="murim"] .choice.danger .choice-label { color: var(--accent); }
+:root[data-world="murim"] .choice .pct, :root[data-world="murim"] .choice .warn, :root[data-world="murim"] .choice .cons { font-family: var(--font-ui); font-size: 12px; }
+:root[data-world="murim"] .roll, :root[data-world="murim"] .eff { border-radius: 2px; font-family: var(--font-ui); }
+
+/* การ์ดและส่วนหัวในแท็บ */
+:root[data-world="murim"] .card { background: var(--surface); border-radius: 4px; box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4px var(--line-soft); padding: 14px 16px; }
+:root[data-world="murim"] .card-title { font-family: var(--font-display); font-weight: 400; font-size: 16px; margin-bottom: 8px; }
+:root[data-world="murim"] .section-title { display: flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-weight: 600; font-size: 12px; letter-spacing: 0.08em; color: var(--muted); }
+:root[data-world="murim"] .section-title::after { content: ""; flex: 1; height: 1px; background: var(--line-soft); }
+:root[data-world="murim"] .btn { border-radius: 3px; background: transparent; font-family: var(--font-ui); }
+:root[data-world="murim"] .chip { border-radius: 3px; font-family: var(--font-ui); }
+:root[data-world="murim"] .chip.on { background: var(--accent); border-color: var(--accent); }
+:root[data-world="murim"] .person-name { font-size: 15px; font-weight: 500; }
+:root[data-world="murim"] .person-sub, :root[data-world="murim"] .job-sub, :root[data-world="murim"] .act-desc { font-family: var(--font-ui); }
+:root[data-world="murim"] .fill.bond-fill { background: #a8281e; opacity: 0.8; }
+:root[data-world="murim"] .activity { border-radius: 4px; background: var(--surface); border-color: var(--line-soft); padding: 12px 12px 11px; gap: 3px; }
+:root[data-world="murim"] .activity:active:not(:disabled) { border-color: var(--accent); }
+:root[data-world="murim"] .act-name { font-weight: 600; font-size: 14.5px; line-height: 1.4; }
+:root[data-world="murim"] .time-bar { font-family: var(--font-ui); }
+.time-dots { display: inline-flex; gap: 4px; }
+.time-dots span { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--accent); }
+.time-dots span.on { background: var(--accent); }
+:root[data-world="murim"] .time-dots span { opacity: 1; filter: none; }
+.ledger-mark { display: inline-block; width: 10px; height: 10px; margin-top: 6px; border: 1px solid var(--muted); }
+.ledger-mark.f { background: var(--good); border-color: var(--good); }
+.ledger-mark.g { background: var(--bad); border-color: var(--bad); }
+:root[data-world="murim"] .m17-rank li.me { border-radius: 3px; border-color: var(--accent); }
+:root[data-world="murim"] .m17-place { color: var(--gold); font-family: var(--font-display); font-weight: 400; }
+:root[data-world="murim"] .ach { border-radius: 3px; }
+:root[data-world="murim"] .ach.got { border-color: var(--gold); }
+:root[data-world="murim"] .toast { border-radius: 3px; background: var(--surface); font-family: var(--font-ui); }
+:root[data-world="murim"] .log, :root[data-world="murim"] .sheet-body { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+:root[data-world="murim"] .gender-tag.m { color: #2e5878; }
+:root[data-world="murim"] .gender-tag.f { color: #7e4f72; }
+:root[data-world="murim"] .modal .btn.primary { min-width: 140px; padding: 11px 20px; }

@@ -54,7 +54,7 @@ export function SoulTab({
             title="ร่างกาย"
             items={(life.body?.injuries ?? []).map((i) => (
               <p className="small" key={i.id}>
-                {i.sev === 3 ? "🩸" : "🤕"} {injuryLabel(i)} · ตั้งแต่อายุ {i.since}
+                {i.sev === 3 ? "สาหัส · " : ""}{injuryLabel(i)} · ตั้งแต่อายุ {i.since}
                 {i.cause && <span className="muted"> — {i.cause}</span>}
               </p>
             ))}
@@ -64,7 +64,7 @@ export function SoulTab({
             items={(life.goals ?? []).slice().reverse().flatMap((g, i) => {
               const d = goalById(g.id);
               if (!d) return [];
-              const st = g.end === "won" ? "✅ สำเร็จ" : g.end === "lost" ? "❌ ล้มเหลว" : g.end === "changed" ? "↪️ เปลี่ยนใจ" : `กำลังไล่ตาม (${g.step}/${d.steps.length})`;
+              const st = g.end === "won" ? "สำเร็จ" : g.end === "lost" ? "ล้มเหลว" : g.end === "changed" ? "เปลี่ยนใจ" : `กำลังไล่ตาม (${g.step}/${d.steps.length})`;
               return [
                 <p className="small" key={i}>
                   {d.emoji} {d.name}{g.side ? " (รอง)" : ""} · ตั้งแต่อายุ {g.since} · {st}
@@ -77,7 +77,7 @@ export function SoulTab({
             title="เหตุการณ์สำคัญของชีวิตนี้"
             items={(life.chron ?? []).slice().reverse().slice(0, 60).map((c, i) => (
               <p className="small" key={i}>
-                ⭐ ปี {c.year} · {c.text}
+                ปี {c.year} · {c.text}
               </p>
             ))}
           />
@@ -86,7 +86,7 @@ export function SoulTab({
             closed
             items={(soul.chronicle ?? []).slice().reverse().slice(0, 120).map((c, i) => (
               <p className="small" key={i}>
-                {c.kind === "legend" ? "🌟" : c.kind === "life" ? "🪦" : "📯"} ปี {c.year} · {c.text}
+                ปี {c.year} · {c.text}
                 <span className="muted"> — {c.src}</span>
               </p>
             ))}
@@ -136,7 +136,7 @@ export function SoulTab({
       )}
 
       <div className="section-title">
-        {thisLife.length > 0 && <span className="muted small">⏳ ทำได้ในชาตินี้ {thisLife.length} · </span>}ความสำเร็จ {real ?ACHIEVEMENTS.filter((a) => catInWorld(a.cat, life.worldId) && soul.achievements.includes(a.id)).length : soul.achievements.length}/{real ? ACHIEVEMENTS.filter((a) => catInWorld(a.cat, life.worldId)).length : ACHIEVEMENTS.length}
+        {thisLife.length > 0 && <span className="muted small">ทำได้ในชาตินี้ {thisLife.length} · </span>}ความสำเร็จ {real ?ACHIEVEMENTS.filter((a) => catInWorld(a.cat, life.worldId) && soul.achievements.includes(a.id)).length : soul.achievements.length}/{real ? ACHIEVEMENTS.filter((a) => catInWorld(a.cat, life.worldId)).length : ACHIEVEMENTS.length}
       </div>
       {(Object.keys(ACH_CATEGORY) as AchCategory[]).filter((c) => !real || catInWorld(c, life.worldId)).map((cat) => {
         const list = ACHIEVEMENTS.filter((a) => catOf(a) === cat);
@@ -155,7 +155,7 @@ export function SoulTab({
                 return (
                   <div className={`ach ${have || pending ? "got" : ""}`} key={a.id} title={secret ? "ความสำเร็จลับ" : pending ? `${a.desc} — ทำได้ในชาตินี้ ได้แต้มเมื่อจบชีวิต` : a.desc}>
                     <div className="ach-name">
-                      {have ? "🏆" : pending ? "⏳" : "🔒"} {secret ? "???" : a.name}
+                      {secret ? "???" : a.name}{pending ? <span className="muted"> · ชาตินี้</span> : null}
                     </div>
                     <div className="ach-desc">
                       {secret ? "ความสำเร็จลับ" : a.desc} · +{a.points}
@@ -170,7 +170,7 @@ export function SoulTab({
 
       {!real && graveyard.some((g) => g.series) && (
         <>
-          <div className="section-title">📚 ชั้นหนังสือของวิญญาณ</div>
+          <div className="section-title">ชั้นหนังสือของวิญญาณ</div>
           <div className="shelf">
             {graveyard
               .filter((g) => g.series)
@@ -190,7 +190,7 @@ export function SoulTab({
               <div className="grave-name">
                 ชาติที่ {graveyard.length - i}: {g.name} · {g.age} ปี
                 {g.rank !== undefined && <span className={`rank r${g.rank}`}> [{rankLabel({ worldId: g.world ?? "hunter" }, g.rank)}]</span>}
-                {g.regressed && " ⏪"}
+                {g.regressed && " · ย้อนเวลา"}
               </div>
               <div className="grave-sub">
                 {g.cause} · {money({ worldId: g.world ?? "hunter" }, g.money)}
@@ -240,12 +240,12 @@ function TalentBookCard({ life, soul }: { life: Life; soul: Soul }) {
   return (
     <div className="card">
       <div className="card-title">
-        📖 สมุดพรสวรรค์ · {TALENTS.filter((t) => have.has(t.id)).length}/{TALENTS.length}
+        สมุดพรสวรรค์ · {TALENTS.filter((t) => have.has(t.id)).length}/{TALENTS.length}
       </div>
       <p className="muted small">พรสวรรค์ที่วิญญาณเคยได้ในทุกชาติ (พรสวรรค์ในช่องลับจะถูกบันทึกเมื่อจบชีวิต)</p>
       {COMBOS.some((c) => soul.comboBook?.includes(c.id) || life.flags[`combo:${c.id}`]) && (
         <p className="small">
-          ✨ พรสวรรค์ประสานที่ค้นพบ: {COMBOS.filter((c) => soul.comboBook?.includes(c.id) || life.flags[`combo:${c.id}`]).map((c) => c.name).join(" · ")} ({COMBOS.filter((c) => soul.comboBook?.includes(c.id) || life.flags[`combo:${c.id}`]).length}/{COMBOS.length})
+          พรสวรรค์ประสานที่ค้นพบ: {COMBOS.filter((c) => soul.comboBook?.includes(c.id) || life.flags[`combo:${c.id}`]).map((c) => c.name).join(" · ")} ({COMBOS.filter((c) => soul.comboBook?.includes(c.id) || life.flags[`combo:${c.id}`]).length}/{COMBOS.length})
         </p>
       )}
       {order.map((r) => {
@@ -278,7 +278,7 @@ function CollectionCard({ life, soul }: { life: Life; soul: Soul }) {
   return (
     <div className="card">
       <div className="card-title">
-        🏺 ตู้สะสม · {have.size}/{COLLECTIBLES.length}
+        ตู้สะสม · {have.size}/{COLLECTIBLES.length}
       </div>
       <p className="muted small">ของหายากที่เจอระหว่างใช้ชีวิต ติดตัววิญญาณทุกชาติ — ครบชุดของโลกไหน เกิดใหม่ได้โบนัสถาวร</p>
       {(Object.keys(SET_BONUS) as WorldId[]).map((w) => (
@@ -330,7 +330,7 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
 
   return (
     <div className="card dev">
-      <div className="card-title">🛠️ Admin</div>
+      <div className="card-title">Admin</div>
       <div className="row">
         <button className="btn small" onClick={() => skip(1)}>+1 ปี (auto)</button>
         <button className="btn small" onClick={() => skip(5)}>+5 ปี</button>
@@ -340,12 +340,12 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
       <div className="section-title">สร้างตัวละคร</div>
       <div className="row">
         <select value={world} onChange={(e) => setWorld(e.target.value as WorldId)}>
-          <option value="hunter">🌀 โลก Hunter</option>
-          <option value="murim">⛰️ ยุทธภพ</option>
-          <option value="court">👑 ราชสำนัก</option>
-          <option value="tower">🗼 หอคอย</option>
-          <option value="apocalypse">☄️ วันสิ้นโลก</option>
-          <option value="ordinary">🏙️ โลกธรรมดา</option>
+          <option value="hunter">โลก Hunter</option>
+          <option value="murim">ยุทธภพ</option>
+          <option value="court">ราชสำนัก</option>
+          <option value="tower">หอคอย</option>
+          <option value="apocalypse">วันสิ้นโลก</option>
+          <option value="ordinary">โลกธรรมดา</option>
         </select>
         {worldOf(world).modern && (
           <select value={country} onChange={(e) => setCountry(e.target.value as Country | "")}>

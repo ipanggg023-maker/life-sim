@@ -30,14 +30,14 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
           <button className="person-row" onClick={() => setOpen(open === p.id ? null : p.id)}>
             <div>
               <div className="person-name">
-                {p.name} <Sex p={p} /> {p.alive ? "" : "🕯️"}
+                {p.name} <Sex p={p} />{p.alive ? null : <span className="muted small"> · ล่วงลับ</span>}
               </div>
               <div className="person-sub">
                 {relationLabel(p, life)} · อายุ {p.age}
                 {p.job ? ` · ${p.job}` : ""}
                 {p.tags?.some((t) => t.startsWith("away:")) ? " · ย้ายไปอยู่ไกล" : ""}
-                {p.tags?.includes("life_rival") ? " · 🔥 คู่ปรับตลอดชีวิต" : ""}
-                {p.martial ? ` · ⚔️ ${martialLabel(life, p)}` : ""}
+                {p.tags?.includes("life_rival") ? " · คู่ปรับตลอดชีวิต" : ""}
+                {p.martial ? ` · ${martialLabel(life, p)}` : ""}
               </div>
             </div>
             {p.alive && (
@@ -55,7 +55,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
           {open === p.id && onShowLog && life.worldId === "murim" && (
             <div className="person-actions">
               <button className="btn small ghost" onClick={() => onShowLog(p.id)}>
-                📜 ดูเรื่องของ{shortName(p)}ในบันทึก
+                ดูเรื่องของ{shortName(p)}ในบันทึก
               </button>
             </div>
           )}
@@ -87,7 +87,7 @@ function PersonMind({ p }: { p: Person }) {
           {knowsLine && pr.limit && ` · เส้นที่ไม่ข้าม: ${pr.limit}`}
         </div>
       )}
-      {pr.secret?.known && <div className="small danger-text">🤫 ความลับ: เขา{pr.secret.text}</div>}
+      {pr.secret?.known && <div className="small danger-text">ความลับ: เขา{pr.secret.text}</div>}
       {axes.length > 0 && (
         <div className="axis-row">
           {axes.map(({ axis, value }) => (
@@ -111,14 +111,14 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
   if (life.age < 3)
     return (
       <div className="person-actions">
-        <span className="muted small">👶 คุณยังพูดไม่ได้ — ได้แต่ยิ้มและจับนิ้ว{shortName(p)}ไว้แน่น</span>
+        <span className="muted small">คุณยังพูดไม่ได้ — ได้แต่ยิ้มและจับนิ้ว{shortName(p)}ไว้แน่น</span>
       </div>
     );
   return (
     <div className="person-actions">
       {life.age >= 4 && (
       <button className="btn small" disabled={life.doneThisYear.includes(`talk:${p.id}`)} onClick={() => act((l) => { l.doneThisYear.push(`talk:${p.id}`); runEvent(l, "talk.menu", { pid: p.id }); })}>
-        💬 คุย
+        คุย
       </button>
       )}
       <button className="btn small" disabled={life.doneThisYear.includes(`time:${p.id}`)} onClick={() => act((l) => spendTime(l, p))}>
@@ -131,12 +131,12 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
       )}
       {p.relation === "partner" && life.age >= 18 && (
         <button className="btn small" disabled={life.doneThisYear.includes("propose")} onClick={() => act((l) => propose(l, p))}>
-          💍 ขอแต่งงาน
+          ขอแต่งงาน
         </button>
       )}
       {p.relation === "spouse" && (
         <button className="btn small" disabled={life.doneThisYear.includes("baby")} onClick={() => act((l) => tryForBaby(l, p))}>
-          👶 มีลูก
+          มีลูก
         </button>
       )}
       {(p.relation === "partner" || p.relation === "spouse") && (
@@ -146,12 +146,12 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
       )}
       {life.age >= 6 && (
         <button className="btn small" disabled={life.doneThisYear.includes(`gift:${p.id}`)} onClick={() => act((l) => giveGift(l, p))}>
-          🎁 ให้ของขวัญ
+          ให้ของขวัญ
         </button>
       )}
       {["friend", "rival", "ally"].includes(p.relation) && life.age >= 15 && !life.people.some((x) => x.alive && (x.relation === "partner" || x.relation === "spouse")) && (
         <button className="btn small" disabled={life.doneThisYear.includes("confess")} onClick={() => act((l) => confess(l, p))}>
-          💌 สารภาพรัก
+          สารภาพรัก
         </button>
       )}
       {["friend", "rival", "ally"].includes(p.relation) && (
@@ -180,7 +180,7 @@ function LineageCard({ life, pick }: { life: Life; pick: (id: string) => void })
   const pupils = by((p) => !!p.tags?.includes("disciple"));
   const Chip = ({ p }: { p: Person }) => (
     <button className={`kin-chip ${p.alive ? "" : "dead"}`} onClick={() => pick(p.id)}>
-      {p.alive ? "" : "🕯️ "}
+      
       {shortName(p)} <Sex p={p} />
       <small> {relationLabel(p, life)} · {p.age}</small>
     </button>
@@ -198,14 +198,14 @@ function LineageCard({ life, pick }: { life: Life; pick: (id: string) => void })
     ) : null;
   return (
     <details className="card lineage">
-      <summary className="card-title">🌳 ผังตระกูล · สายอาจารย์–ศิษย์</summary>
+      <summary className="card-title">ผังตระกูล · สายอาจารย์–ศิษย์</summary>
       {anc.length > 0 && (
         <div className="kin-row">
           <span className="kin-label">รุ่นก่อน</span>
           <div className="kin-anc">
             {anc.map((a, i) => (
               <div className="small" key={i}>
-                🕯️ <b>{a.n}</b> ({a.y}){a.r ? ` · ขั้น${a.r}` : ""} — {a.cause}
+                <b>{a.n}</b> ({a.y}){a.r ? ` · ขั้น${a.r}` : ""} — {a.cause}
                 <span className="muted"> ↓ {a.how === "heir" ? "ทายาท" : "ศิษย์"}สืบต่อ</span>
               </div>
             ))}

@@ -26,7 +26,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
   return (
     <div className="tab-content">
       {!worldOf(life.worldId).modern ? null : <div className="card">
-        <div className="card-title">🎓 การศึกษา</div>
+        <div className="card-title">การศึกษา</div>
         <p>
           สถานะ: {STAGE_LABEL[ed.stage]}
           {ed.stage === "university" && ed.faculty && ` · คณะ${facultyById(ed.faculty).name} (เหลือ ${ed.uniYearsLeft} ปี)`}
@@ -36,7 +36,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
         {(isStudent(life) || ed.stage === "done") && ed.stage !== "kinder" && <p>เกรดเฉลี่ย: {gradeToGpa(ed.grade)}</p>}
         {isStudent(life) && ed.stage !== "kinder" && (
           <button className="btn" disabled={life.doneThisYear.includes("study")} onClick={() => act(studyHard)}>
-            📚 ตั้งใจเรียนให้หนัก
+            ตั้งใจเรียนให้หนัก
           </button>
         )}
       </div>}
@@ -58,7 +58,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
           </div>
           <div className="row">
             <button className="btn" disabled={life.doneThisYear.includes("workhard")} onClick={() => act(workHard)}>
-              💪 ทุ่มเททำงาน
+              ทุ่มเททำงาน
             </button>
             <button className="btn ghost" onClick={() => act(quitJob)}>
               ลาออก
@@ -106,7 +106,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
                   </div>
                   <div className="job-sub">
                     {money(life, salaryOf(life, c, 1))}/ปี
-                    {missing ? ` · 🔒 ${missing}` : ` · โอกาสผ่าน ${Math.round(jobChance(life, c) * 100)}%`}
+                    {missing ? ` · ${missing}` : ` · โอกาสผ่าน ${Math.round(jobChance(life, c) * 100)}%`}
                   </div>
                 </div>
                 <button className="btn small" disabled={!!missing || applied} onClick={() => act((l) => applyJob(l, c.id))}>

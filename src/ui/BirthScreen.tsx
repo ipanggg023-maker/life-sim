@@ -49,18 +49,18 @@ export function BirthScreen({
         </p>
         {life.worldId === "murim" && (
           <p className="small">
-            📍 {regionOf(life).name} — {regionOf(life).desc}
+            {regionOf(life).name} — {regionOf(life).desc}
           </p>
         )}
         {life.legacy && (
           <p className="small">
             {real
               ? life.flags.descendant
-                ? `🩸 ทายาทรุ่นที่ ${life.legacy.generation + 1} ของตระกูล${life.legacy.lastName} — ลูกหลานของ${life.legacy.founderName}`
-                : `🏮 ${life.birthYear - life.legacy.founderDeathYear} ปีหลังการจากไปของ${life.legacy.founderName} — ผู้คนยังเล่าเรื่องของท่านในโรงน้ำชา`
+                ? `ทายาทรุ่นที่ ${life.legacy.generation + 1} ของตระกูล${life.legacy.lastName} — ลูกหลานของ${life.legacy.founderName}`
+                : `${life.birthYear - life.legacy.founderDeathYear} ปีหลังการจากไปของ${life.legacy.founderName} — ผู้คนยังเล่าเรื่องของท่านในโรงน้ำชา`
               : life.flags.descendant
-                ? `🩸 ทายาทรุ่นที่ ${life.legacy.generation + 1} ของตระกูล${life.legacy.lastName} — ตระกูลที่คุณสร้างไว้ในชาติก่อน`
-                : `🌏 ${life.birthYear - life.legacy.founderDeathYear} ปีหลังการตายของ${life.legacy.founderName} (คุณในชาติก่อน)`}
+                ? `ทายาทรุ่นที่ ${life.legacy.generation + 1} ของตระกูล${life.legacy.lastName} — ตระกูลที่คุณสร้างไว้ในชาติก่อน`
+                : `${life.birthYear - life.legacy.founderDeathYear} ปีหลังการตายของ${life.legacy.founderName} (คุณในชาติก่อน)`}
           </p>
         )}
       </div>
@@ -117,7 +117,7 @@ export function BirthScreen({
           </button>
           {rerolls > 0 && (
             <button className="btn ghost fade-in" onClick={onReroll}>
-              🎲 สุ่มเกิดใหม่ (เหลือ {rerolls} ครั้ง)
+              สุ่มเกิดใหม่ (เหลือ {rerolls} ครั้ง)
             </button>
           )}
         </>

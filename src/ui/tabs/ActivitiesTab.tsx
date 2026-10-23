@@ -2,13 +2,14 @@ import { BABY_AGE, activitiesFor, activityLocked, doActivity, timeBudget, timeLe
 import type { Life } from "../../engine/types";
 import { loc, money } from "../../engine/util";
 import type { Act } from "../App";
+import { noEmoji } from "../Icon";
 
 export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
   if (life.age < BABY_AGE)
     return (
       <div className="tab-content">
         <div className="card">
-          <p>👶 คุณยังเป็นเด็กเล็ก — กิน นอน ร้องไห้ และมองโลกด้วยตาโตๆ</p>
+          <p>คุณยังเป็นเด็กเล็ก — กิน นอน ร้องไห้ และมองโลกด้วยตาโตๆ</p>
           <p className="muted small">พ่อแม่ดูแลทุกอย่างให้ กด +1 ปี เพื่อเติบโต (ทำกิจกรรมเองได้ตั้งแต่ {BABY_AGE} ขวบ)</p>
         </div>
       </div>
@@ -23,18 +24,17 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
         <div key={g || "all"}>
           {g && <div className="section-title">{g}</div>}
           <div className="grid">
-      {list.filter((a) => (a.group ?? "") === g).map((a) => {
+      {list.filter((a) => (a.group ?? "") === g).sort((a, b) => Number(!!activityLocked(life, a)) - Number(!!activityLocked(life, b))).map((a) => {
         const locked = activityLocked(life, a);
         const odds = a.odds?.(life);
         return (
           <button key={a.id} className="activity" disabled={!!locked} onClick={() => act((l) => doActivity(l, a.id))}>
-            <span className="act-emoji">{a.emoji}</span>
-            <span className="act-name">{loc(life, a.name)}</span>
+            <span className="act-name">{noEmoji(loc(life, a.name))}</span>
             <span className="act-desc">
-              {locked ?? loc(life, a.desc)}
+              {noEmoji(locked ?? loc(life, a.desc))}
               {!locked && a.cost && life.age >= 18 ? ` · ${money(life, a.cost)}` : ""}
               {!locked && odds !== undefined ? ` · ${Math.round(odds * 100)}%` : ""}
-              {!locked && left !== undefined && (a.time ?? 1) > 1 ? ` · ⏳${a.time}` : ""}
+              {!locked && left !== undefined && (a.time ?? 1) > 1 ? ` · ใช้เวลา ${a.time}` : ""}
             </span>
           </button>
         );
@@ -46,14 +46,14 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
   );
 }
 
-/** เวลาที่เหลือในปีนี้ — ⏳ เต็ม = ยังว่าง · จาง = ใช้ไปแล้ว */
+/** เวลาที่เหลือในปีนี้ — เต็ม = ยังว่าง · จาง = ใช้ไปแล้ว */
 export function TimeBar({ left, max }: { left: number; max: number }) {
   return (
     <div className="time-bar">
       <span>เวลาปีนี้</span>
       <span className="time-dots" aria-label={`เหลือ ${left} จาก ${max} ส่วน`}>
         {Array.from({ length: max }, (_, i) => (
-          <span key={i} className={i < left ? "on" : ""}>⏳</span>
+          <span key={i} className={i < left ? "on" : ""}></span>
         ))}
       </span>
       <span className="muted small">{left > 0 ? `เหลือ ${left}/${max}` : "หมดแล้ว — กด +1 ปี"}</span>

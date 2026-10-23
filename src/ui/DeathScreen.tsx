@@ -68,7 +68,6 @@ export function DeathScreen({
   return (
     <div className="death">
       <div className="tomb">
-        <div className="rip">⚰️</div>
         <h2>
           {displayName(life)}
         </h2>
@@ -131,7 +130,7 @@ export function DeathScreen({
             </p>
             {award.achievements.map((a) => (
               <p className="small" key={a.id}>
-                🏆 {a.name} — {a.desc} (+{a.points})
+                {a.name} — {a.desc} (+{a.points})
               </p>
             ))}
           </>
@@ -186,7 +185,7 @@ export function DeathScreen({
                   disabled={!on && (!!soul.perks.lockedTalent || !spendable(SHOP.lock.cost))}
                   onClick={() => !on && buy("lock", (s) => (s.perks.lockedTalent = t.id))}
                 >
-                  {on ? "🔒 " : ""}
+                  
                   {info.name}
                 </button>
               );
@@ -197,7 +196,7 @@ export function DeathScreen({
 
       <div className="section-title">เส้นทางต่อไปของวิญญาณ</div>
       <button className="path" disabled={busy} onClick={() => go("regress")}>
-        <span className="path-title">⏪ ย้อนเวลา</span>
+        <span className="path-title">ย้อนเวลา</span>
         <span className="path-desc">
           ตื่นขึ้นในร่างเดิมตอนอายุ {target} ปี พร้อมความทรงจำทั้งหมด · แต้มชาตินี้ได้ครึ่งเดียว · อนาคตจะเพี้ยนขึ้นเรื่อยๆ (ความเบี่ยงเบน{" "}
           {life.divergence ?? 0} → {(life.divergence ?? 0) + (soul.perks.clarity ? 6 : 12)})
@@ -205,17 +204,17 @@ export function DeathScreen({
       </button>
       {heirsOf(life).map((c) => (
         <button className="path" key={c.id} disabled={busy} onClick={() => go(`heir:${c.id}`)}>
-          <span className="path-title">👶 เล่นต่อเป็น{c.gender === "m" ? "ลูกชาย" : "ลูกสาว"} — {c.name}</span>
+          <span className="path-title">เล่นต่อเป็น{c.gender === "m" ? "ลูกชาย" : "ลูกสาว"} — {c.name}</span>
           <span className="path-desc">
             ภาคต่อของเรื่องเดิม · อายุ {c.age} ปี · รับมรดก{heirsOf(life).length > 1 ? `ส่วนแบ่ง 1/${heirsOf(life).length}` : "ทั้งหมด"} และชื่อเสียงตระกูล
           </span>
         </button>
       ))}
       <button className="path" disabled={busy} onClick={() => go("nextEra")}>
-        <span className="path-title">🌏 เกิดใหม่ในยุคถัดไป</span>
+        <span className="path-title">เกิดใหม่ในยุคถัดไป</span>
         <span className="path-desc">โลกเดิม หลายสิบปีต่อมา — ตระกูล{life.lastName}และสิ่งที่คุณทิ้งไว้ยังอยู่ อาจได้เกิดเป็นทายาทของตัวเอง</span>
       </button>
-      <div className="section-title">✨ เกิดใหม่ในเส้นเวลาใหม่ — เลือกโลก</div>
+      <div className="section-title">เกิดใหม่ในเส้นเวลาใหม่ — เลือกโลก</div>
       {Object.values(WORLDS).filter((w) => isOpenWorld(w.id)).map((w) => (
         <button className="path" key={w.id} disabled={busy} onClick={() => go(`world:${w.id}`)}>
           <span className="path-title">
@@ -245,7 +244,7 @@ function RealisticEnd({ life, achievements }: { life: Life; achievements: { id: 
           <p className="small">{sum.family}{sum.era ? ` · จากไปใน${sum.era}` : ""}</p>
           {sum.goals.map((g, i) => (
             <p className="small" key={i}>
-              {g.end === "won" ? "✅" : g.end ? "❌" : "⏳"} {g.name}
+              {g.name}{g.end === "won" ? " · สำเร็จ" : g.end ? " · ไม่สำเร็จ" : " · ยังค้าง"}
             </p>
           ))}
           {sum.people.length > 0 && <div className="card-title">คนที่ยังจำคุณ</div>}
@@ -273,7 +272,7 @@ function RealisticEnd({ life, achievements }: { life: Life; achievements: { id: 
           <div className="card-title">ความสำเร็จใหม่</div>
           {achievements.map((a) => (
             <p className="small" key={a.id}>
-              🏆 {a.name} — {a.desc}
+              {a.name} — {a.desc}
             </p>
           ))}
         </div>
@@ -305,7 +304,6 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
       <div className="continue-head">เล่นต่ออย่างไร?</div>
       {heirs.map((c) => (
         <button className="cont-btn heir" key={c.id} disabled={busy} onClick={() => go(`heir:${c.id}`)}>
-          <span className="cont-emoji">👶</span>
           <span className="cont-text">
             <span className="cont-title">เล่นต่อเป็น{c.gender === "m" ? "ลูกชาย" : "ลูกสาว"} · {c.name}</span>
             <span className="cont-desc">อายุ {c.age} ปี · ได้มรดก{heirs.length > 1 ? ` 1/${heirs.length}` : "ทั้งหมด"} ชื่อเสียง และความแค้นของตระกูล</span>
@@ -314,7 +312,6 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
       ))}
       {pupils.map((d) => (
         <button className="cont-btn pupil" key={d.id} disabled={busy} onClick={() => go(`disciple:${d.id}`)}>
-          <span className="cont-emoji">🥋</span>
           <span className="cont-text">
             <span className="cont-title">เล่นต่อเป็นศิษย์ · {d.name}</span>
             <span className="cont-desc">อายุ {d.age} ปี · ได้วิชาที่สอนไว้ สำนัก และความแค้นของอาจารย์</span>
@@ -323,7 +320,6 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
       ))}
       {open && (
         <button className="cont-btn era" disabled={busy} onClick={() => go("nextEra")}>
-          <span className="cont-emoji">🏮</span>
           <span className="cont-text">
             <span className="cont-title">ตัวละครใหม่ · ยุคถัดไป</span>
             <span className="cont-desc">โลกเดิม หลายสิบปีต่อมา — เรื่องของ{displayName(life)}กลายเป็นตำนาน</span>

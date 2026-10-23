@@ -67,13 +67,13 @@ export function SaveTransfer({
     <div className="card">
       <div className="row">
         <button className="btn small" onClick={makeQr}>
-          📱 สร้าง QR
+          สร้าง QR
         </button>
         <button className="btn small" onClick={copy}>
-          📋 คัดลอกรหัส
+          คัดลอกรหัส
         </button>
         <button className="btn small" onClick={() => download()}>
-          💾 ดาวน์โหลดไฟล์
+          ดาวน์โหลดไฟล์
         </button>
       </div>
       {qr && <img className="qr" src={qr} alt="QR สำหรับย้ายเซฟ" />}
