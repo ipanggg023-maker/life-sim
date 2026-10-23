@@ -84,8 +84,8 @@ export function trainArt(l: Life, art: string, mode: TrainMode["id"]): Outcome {
 
 // ───────── ได้วิชาจากเรื่องราว ─────────
 
-const BASIC_OF: Record<string, string> = { vajra: "s_vajra_fist", cloud: "s_cloud_sword", alliance: "s_alliance_sword", beggar: "s_beggar_staff", tang: "s_tang_poison", cult: "s_cult_palm" };
-const SECRET_OF: Record<string, string> = { vajra: "x_yijin", cloud: "x_taiji", alliance: "x_alliance_seal", beggar: "x_dragon_palm", tang: "x_tang_rain", cult: "x_heavenly_demon" };
+const BASIC_OF: Record<string, string> = { vajra: "s_vajra_fist", cloud: "s_cloud_sword", alliance: "s_alliance_sword", beggar: "s_beggar_staff", tang: "s_tang_poison", cult: "s_cult_palm", plum: "s_plum_sword", snow: "s_snow_sword", jade: "s_jade_palm", nangong: "s_nangong_sword", peng: "s_peng_saber", zhuge: "s_zhuge_array", blood: "s_blood_claw", shadow: "s_shadow_step", blackway: "s_green_saber" };
+const SECRET_OF: Record<string, string> = { vajra: "x_yijin", cloud: "x_taiji", alliance: "x_alliance_seal", beggar: "x_dragon_palm", tang: "x_tang_rain", cult: "x_heavenly_demon", plum: "x_plum_rain", snow: "x_snow_heart", jade: "x_jade_sword", nangong: "x_nangong_thunder", peng: "x_peng_wild", zhuge: "x_zhuge_crossbow", blood: "x_blood_sea", shadow: "x_shadow_kill", blackway: "x_green_chain" };
 
 /** ทุกปี: วิชาที่ได้จากสถานะ (เข้าสำนัก เป็นศิษย์สายตรง เรื่องในวัยเด็ก) */
 function grantFromStatus(l: Life) {

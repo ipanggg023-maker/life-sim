@@ -42,6 +42,14 @@ const no = (text: string): Outcome => ({ text, kind: "bad" });
 const meh = (text: string): Outcome => ({ text });
 const big = (text: string): Outcome => ({ text, kind: "milestone" });
 
+/** แผ่นดินแตกเป็นสามแคว้น (กลียุคยืดเยื้อ หรือผู้เล่นเลือกแนวสามก๊กตั้งแต่เกิด) */
+export function startWarEra(l: Life, since = calYear(l)) {
+  const w = worldOfLife(l);
+  w.era = "war";
+  w.eraSince = since;
+  w.kingdoms = LORDS.map((k) => ({ ...k, power: clamp(k.power + randInt(l, -8, 8), 10, 80) }));
+}
+
 /** ทุกปี: กลียุคยืดเยื้อ → แตกเป็นสามแคว้น · สงครามดำเนินไป · ผู้รวมแผ่นดิน */
 yearHooks.push((l) => {
   if (!murim(l) || !l.alive) return;
@@ -50,9 +58,7 @@ yearHooks.push((l) => {
   // ราชวงศ์ใหม่ของผู้เล่นมีเวลาหกปีให้กู้แผ่นดินก่อนจะแตก (ไม่ล่มในปีถัดจากขึ้นครองราชย์)
   const freshThrone = !!l.flags.emperorSelf && !!w.court && yr - w.court.emperor.since < 6;
   if (w.era === "chaos" && !freshThrone && yr - w.eraSince >= 7 && w.legitimacy < 25 && chance(l, 0.35)) {
-    w.era = "war";
-    w.eraSince = yr;
-    w.kingdoms = LORDS.map((k) => ({ ...k, power: clamp(k.power + randInt(l, -8, 8), 10, 80) }));
+    startWarEra(l);
     // ราชวงศ์ที่ล่มคือราชวงศ์ของคุณเอง — คุณเสียบัลลังก์ แต่ยังมีชีวิต
     if (l.flags.emperorSelf) { delete l.flags.emperorSelf; l.flags.courtRank = 0; l.flags.lostThrone = true; log(l, "👑 ราชวงศ์ของคุณล่มสลายในมือคุณเอง — คุณหนีออกจากวังที่ลุกเป็นไฟ เหลือเพียงชื่อในประวัติศาสตร์", "bad"); }
     log(l, `⚔️ ราชวงศ์ล่มสลาย แผ่นดินแตกเป็นสามแคว้น — ${LORDS.map((k) => `${k.name} (${k.lord})`).join(" · ")} ต่างประกาศว่าตนคือผู้สืบทอดฟ้า`, "milestone");

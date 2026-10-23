@@ -29,7 +29,7 @@ export interface SectWar {
 }
 
 /** ชื่อสำนักของ NPC (npcMartial) → ฝ่ายในโลก */
-const SECT_FACTION: Record<string, string> = { สำนักกระบี่เมฆา: "cloud", วัดวัชระ: "vajra", พรรคกระยาจก: "beggar", ตระกูลถัง: "tang" };
+const SECT_FACTION: Record<string, string> = { สำนักกระบี่เมฆา: "cloud", วัดวัชระ: "vajra", พรรคกระยาจก: "beggar", ตระกูลถัง: "tang", สำนักเขาบุปผา: "plum", สำนักเขาหิมะตะวันตก: "snow", สำนักภิกษุณีเขาหยก: "jade", ตระกูลหนานกง: "nangong", ตระกูลเผิงดาบเหล็ก: "peng", ตระกูลจูเก๋อ: "zhuge", สำนักโลหิตชาด: "blood", หอเงาพันหน้า: "shadow" };
 
 export const warsOf = (l: Life): SectWar[] => (l.mw ? (l.mw.wars ??= []) : []);
 export const activeWar = (l: Life) => warsOf(l).find((w) => !w.ended);

@@ -1,6 +1,7 @@
 // หมุดหมายของเส้นทางยุทธ์ (เขียนใหม่แทนกลไกเก่า): วันตรวจกระดูก · ชีพจรเปิดช้า · ทะลวงขั้น
 // ผลตรวจกระดูก = รากฐาน (พรสวรรค์) ไม่ใช่ฝีมือ — ทุกคนเริ่มจากผู้ฝึกหัด ขั้นถัดไปต้องใช้กำลังภายในจริง (MURIM_PLAN §4)
 import type { Ctx, GameEvent, Outcome } from "../../../engine/events";
+import { sectOffers } from "../martial/sectOffers";
 import { kill } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { HunterClass, Life } from "../../../engine/types";
@@ -73,7 +74,7 @@ export const ASSESS_EVENT: GameEvent = {
         ...guildsFor({ worldId: "murim" }).filter((g) => g.id !== "alliance").map((g) => ({
           label: `ฝากตัวกับ${g.name} — ${g.desc}`,
           tone: g.demonic ? ("danger" as const) : undefined,
-          show: (_l: Life, c: Ctx) => g.minRank <= Number(c.rank),
+          show: (l: Life, c: Ctx) => g.minRank <= Number(c.rank) && sectOffers(l).has(g.id),
           run: (_l: Life, c: Ctx): Outcome => {
             c.sect = g.id;
             if (g.demonic && !String(c.offer).includes("m_demon")) c.offer = `${c.offer},m_demon`;
@@ -292,7 +293,7 @@ export const EARLY_SECT: GameEvent = {
     ...guildsFor({ worldId: "murim" }).filter((g) => g.id !== "alliance").map((g) => ({
       label: `ฝากตัวกับ${g.name} — ${g.desc}`,
       tone: g.demonic ? ("danger" as const) : undefined,
-      show: (l: Life) => g.minRank <= rootOf(l),
+      show: (l: Life) => g.minRank <= rootOf(l) && sectOffers(l).has(g.id),
       run: (l: Life): Outcome => { l.power!.guild = g.id; l.job = { careerId: "disciple", level: 1, performance: 55, years: 0 }; if (g.demonic) addFame(l, -15); return { text: `คุณเดินขึ้นภูเขาของ${g.name}ในฐานะศิษย์ที่ทุกคนจับตามอง`, kind: "good" }; },
     })),
     { label: "ไม่ฝากตัวกับใคร ฝึกต่อด้วยตัวเอง", run: (): Outcome => ({ text: "ผู้อาวุโสทุกคนกลับไปมือเปล่า — บางคนเสียดาย บางคนจดชื่อคุณไว้" }) },

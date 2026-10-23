@@ -34,6 +34,14 @@ const BASE: Omit<Faction, "rep" | "leader" | "leaderAge" | "status">[] = [
   { id: "cult", name: "ลัทธิมารสวรรค์", side: "demonic", power: 70, unity: 55 },
   { id: "families", name: "ห้าตระกูลใหญ่", side: "orthodox", power: 62, unity: 45 },
   { id: "blackway", name: "พันธมิตรมรรคาดำ", side: "unorthodox", power: 55, unity: 40 },
+  { id: "plum", name: "สำนักเขาบุปผา", side: "orthodox", power: 32, unity: 70 },
+  { id: "snow", name: "สำนักเขาหิมะตะวันตก", side: "orthodox", power: 55, unity: 65 },
+  { id: "jade", name: "สำนักภิกษุณีเขาหยก", side: "orthodox", power: 50, unity: 75 },
+  { id: "nangong", name: "ตระกูลหนานกง", side: "orthodox", power: 62, unity: 55 },
+  { id: "peng", name: "ตระกูลเผิงดาบเหล็ก", side: "orthodox", power: 52, unity: 60 },
+  { id: "zhuge", name: "ตระกูลจูเก๋อ", side: "orthodox", power: 48, unity: 70 },
+  { id: "blood", name: "สำนักโลหิตชาด", side: "demonic", power: 45, unity: 50 },
+  { id: "shadow", name: "หอเงาพันหน้า", side: "unorthodox", power: 44, unity: 62 },
 ];
 
 const LEADER_NAMES = ["ฮุ่ยหมิง", "เซียวเทียนหลง", "หลิวเฟิงอวิ๋น", "ฉินเจิ้นหยาง", "ถังอู๋เซิน", "เยี่ยนชิงหาน", "ไป๋เส้าหลง", "จางอู๋จี้", "มู่หรงเฉิน", "หลี่ซิ่วหลาน"];
@@ -81,7 +89,9 @@ function tickFactions(l: Life) {
     f.power = clamp(f.power + randInt(l, -3, 3) + (f.unity < 30 ? -2 : 0) + (f.side === "demonic" ? (cult - 50) / 25 : 0), 0, 100);
     f.unity = clamp(f.unity + randInt(l, -3, 3), 0, 100);
     // ผู้นำเสียชีวิต — ผู้สืบทอดมั่นคงหรือแย่งชิง
-    if (f.leaderAge > 70 && chance(l, (f.leaderAge - 65) / 60)) {
+    // ผู้เล่นเป็นเจ้าสำนักเอง: อายุผู้นำคืออายุผู้เล่น ไม่มีใครมาแทน
+    if (l.flags.sectHead === f.id) f.leaderAge = l.age;
+    else if (f.leaderAge > 70 && chance(l, (f.leaderAge - 65) / 60)) {
       const old = f.leader;
       f.leader = pick(l, LEADER_NAMES.filter((n) => n !== old));
       f.leaderAge = randInt(l, 38, 58);

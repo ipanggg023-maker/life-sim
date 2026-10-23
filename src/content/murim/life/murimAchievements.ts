@@ -46,6 +46,12 @@ const martial: A[] = [
   { id: "mu_evolve", name: "พรสวรรค์ตื่น", desc: "พรสวรรค์วิวัฒน์ครั้งแรก", points: 10, check: (l) => n(l, "taEvolved") >= 1 },
   { id: "mu_evolve2", name: "สองวิวัฒน์", desc: "พรสวรรค์วิวัฒน์สองครั้งในชีวิตเดียว", points: 20, check: (l) => n(l, "taEvolved") >= 2 },
   { id: "mu_combo", name: "ฟ้าลิขิตซ้อนกัน", desc: "ค้นพบพลังที่ซ่อนจากพรสวรรค์ที่ประสานกัน", points: 15, hidden: true, check: (l) => combos(l) >= 1 },
+  { id: "mu_regressor", name: "กลับชาติมาเกิด", desc: "ความทรงจำจากชาติก่อนผุดขึ้นในคืนฟ้าผ่า", points: 20, hidden: true, check: (l) => mu(l) && !!l.flags.regressor },
+  { id: "mu_cave", name: "ทายาทในถ้ำ", desc: "ได้มรดกวิชาจากถ้ำลับ", points: 15, check: (l) => mu(l) && !!l.flags.caveInheritance },
+  { id: "mu_legend_weapon", name: "อาวุธในตำนาน", desc: "ได้ครองอาวุธในตำนาน", points: 15, check: (l) => mu(l) && Number(l.flags.mwWeaponTier ?? 0) >= 4 },
+  { id: "mu_cliff", name: "ก้นหุบเขา", desc: "กระโดดหน้าผาแล้วเจอปรมาจารย์ที่ก้นหุบเขา", points: 15, hidden: true, check: (l) => mu(l) && !!l.flags.cliffMaster },
+  { id: "mu_sect_head", name: "แหวนเจ้าสำนัก", desc: "ชิงตำแหน่งเจ้าสำนักที่ตัวเองเติบโตมาได้", points: 25, check: (l) => mu(l) && !!l.flags.sectHead },
+  { id: "mu_revive", name: "ดอกเหมยบานอีกครั้ง", desc: "ฟื้นฟูสำนักที่กำลังจะดับให้กลับมายิ่งใหญ่", points: 30, check: (l) => mu(l) && !!l.flags.sectRevived },
   { id: "mu_combo3", name: "สามลิขิตในกายเดียว", desc: "ค้นพบพลังประสาน 3 แบบในชีวิตเดียว", points: 35, hidden: true, check: (l) => combos(l) >= 3 },
 ];
 
@@ -64,6 +70,12 @@ const life: A[] = [
   { id: "mu_wanted", name: "หมายจับติดทุกเมือง", desc: "ถูกทางการประกาศจับ", points: 5, hidden: true, check: (l) => mu(l) && (!!l.flags.wanted || !!l.flags.mwWanted) },
   { id: "mu_jail", name: "ห้องขังคุ้นเคย", desc: "เคยติดคุก", points: 5, hidden: true, check: (l) => mu(l) && l.flags.jailUntil !== undefined },
   { id: "mu_century", name: "ร้อยปีในยุทธภพ", desc: "มีชีวิตถึง 100 ปีในยุทธภพ", points: 30, check: (l) => mu(l) && l.age >= 100 },
+  { id: "mu_basin", name: "อ่างทองคำ", desc: "ล้างมือในอ่างทองคำ วางมือจากยุทธภพ", points: 12, check: (l) => mu(l) && l.flags.goldenBasin !== undefined },
+  { id: "mu_wulin", name: "เจ้ายุทธจักร", desc: "ขึ้นเป็นเจ้ายุทธจักร", points: 40, check: (l) => mu(l) && l.flags.wulinLeader !== undefined },
+  { id: "mu_cases", name: "นักสืบแห่งยุทธภพ", desc: "ไขคดีปริศนาได้สามคดี", points: 15, check: (l) => n(l, "casesSolved") >= 3 },
+  { id: "mu_signboards", name: "ป้ายเต็มบ้าน", desc: "ถอดป้ายสำนักมวยได้สามป้าย", points: 12, check: (l) => n(l, "signboards") >= 3 },
+  { id: "mu_disguise", name: "เด็กชายที่ไม่ใช่เด็กชาย", desc: "ปลอมตัวเป็นชายเข้าสำนัก", points: 10, hidden: true, check: (l) => mu(l) && !!l.flags.disguised },
+  { id: "mu_sixteen", name: "สิบหกปีให้หลัง", desc: "รอคนรักครบสิบหกปีตามคำสัญญา", points: 20, hidden: true, check: (l) => mu(l) && !!l.seen["wf.sixteen_meet"] },
   { id: "mu_ascend", name: "ขึ้นสวรรค์ทั้งร่าง", desc: "บรรลุเซียนในยุทธภพ", points: 60, check: (l) => mu(l) && !!l.flags.ascended },
 ];
 
@@ -81,6 +93,12 @@ const throne: A[] = [
   { id: "mu_treasury", name: "ท้องพระคลังล้นทอง", desc: "ท้องพระคลังเต็มถึง 90", points: 15, check: (l) => emp(l) && palaceOf(l).treasury >= 90 },
   { id: "mu_purge", name: "ดาบของฮ่องเต้", desc: "กวาดล้างขุนนางที่คิดคดได้ 3 คน", points: 15, check: (l) => n(l, "purgedTraitors") >= 3 },
   { id: "mu_abdicate", name: "วางบัลลังก์ด้วยมือตัวเอง", desc: "สละราชสมบัติให้รัชทายาท", points: 10, check: (l) => mu(l) && l.flags.abdicatedAt !== undefined },
+  { id: "mu_peach", name: "ใต้ต้นท้อ", desc: "สาบานเป็นพี่น้องในยุคแผ่นดินแตก", points: 10, check: (l) => mu(l) && !!l.flags.peachOath },
+  { id: "mu_red_cliffs", name: "ไฟเผาผาแดง", desc: "เผาทัพเรือแสนลำด้วยลมตะวันออก", points: 25, check: (l) => mu(l) && !!l.flags.redCliffs },
+  { id: "mu_empty_fort", name: "พิณบนกำแพงเมือง", desc: "ไล่ทัพแสนคนด้วยกลยุทธ์เมืองว่าง", points: 25, check: (l) => mu(l) && !!l.flags.emptyFort },
+  { id: "mu_loyal", name: "ภักดีจนตัวตาย", desc: "เป็นตำนานแห่งความภักดีในยุคสามแคว้น", points: 20, check: (l) => mu(l) && !!l.flags.loyalLegend },
+  { id: "mu_strat10", name: "ตำราพิชัยสงคราม", desc: "ใช้กลยุทธ์ต่างกันสิบกล", points: 15, check: (l) => mu(l) && String(l.flags.stratagems ?? "").split(",").filter(Boolean).length >= 10 },
+  { id: "mu_strat36", name: "สามสิบหกกลยุทธ์", desc: "ใช้ครบทั้งสามสิบหกกลยุทธ์", points: 50, check: (l) => mu(l) && String(l.flags.stratagems ?? "").split(",").filter(Boolean).length >= 36 },
   { id: "mu_legit", name: "ฟ้ารับรอง", desc: "ความชอบธรรมของราชบัลลังก์ถึง 90", points: 20, check: (l) => emp(l) && (l.mw?.legitimacy ?? 0) >= 90 },
 ];
 

@@ -1,6 +1,7 @@
 // เรื่องราวของแต่ละพรสวรรค์ (design/TALENTS.md) — พรสวรรค์ไม่ใช่แค่ตัวเลข: มันเปิดเรื่องของมันเอง
 // และโลกตอบสนอง: สำนักแย่งตัว · ถูกล่าเพราะร่างกาย · ราชสำนักหวาดระแวงไอมังกร
 import type { Ctx, GameEvent } from "../../../engine/events";
+import { sectOffers } from "../martial/sectOffers";
 import type { Life } from "../../../engine/types";
 import { people } from "../../../engine/util";
 import { guildsFor } from "../../hunter/power";
@@ -31,7 +32,7 @@ export const TALENT_STORY_EVENTS: GameEvent[] = [
       ...guildsFor({ worldId: "murim" }).filter((g) => g.id !== "alliance").map((g) => ({
         label: `เลือก${g.name} — ${g.desc}`,
         tone: g.demonic ? ("danger" as const) : undefined,
-        show: (l: Life) => g.minRank <= rootOf(l) + 1,
+        show: (l: Life) => g.minRank <= rootOf(l) + 1 && sectOffers(l).has(g.id),
         run: (l: Life) => { if (!l.power) return { text: "ผู้อาวุโสพยักหน้า \"ชีพจรยังไม่เปิด — อีกสองปีข้าจะกลับมา\"" }; l.power.guild = g.id; l.job = { careerId: "disciple", level: 1, performance: 60, years: 0 }; l.flags.taSectRivals = true; return { text: `คุณเดินขึ้นเขาของ${g.name}ในฐานะศิษย์ที่ทุกคนจับตามอง — สำนักที่ถูกปฏิเสธไม่ได้ลืม`, kind: "milestone" as const }; },
       })),
       { label: "ไม่เลือกใคร", run: () => ({ text: "ผู้อาวุโสทุกคนกลับไปมือเปล่า — คนหนึ่งหันกลับมามองคุณที่ประตูนานกว่าคนอื่น" }) },
