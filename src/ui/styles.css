@@ -977,244 +977,460 @@ body.no-comments .comments-head { margin-bottom: 0; }
 /* เส้นแบ่งสิบยอดฝีมือกับอันดับ 11–20 */
 .m17-rank li.m17-split { border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 4px; }
 
-/* ════════ ยุทธภพ: กระดาษสาและตราประทับ (ปรับปรุงใหม่) ════════
-   โครงเดิมทั้งหมด — ลดกรอบ/ชิปที่ซ้อนกัน ใช้ไอคอนเส้นแทนอีโมจิ
-   พื้นกระดาษมีเนื้อ · หมึกน้ำตาลเข้ม · แดงชาดใช้กับสิ่งที่สำคัญที่สุดเท่านั้น (อายุ ปุ่มหลัก ตัวกรองที่เลือก) */
+/* ════════ ยุทธภพ: กระดาษ หมึก ตราชาด (design/UI_INK.md) ════════
+   โครงหน้าจอเดิมทั้งหมด · วัสดุจริงจัง: กระดาษสองชั้น เส้นพู่กันขอบหยัก ตราชาด
+   ฟิลเตอร์ขอบหยัก (#ink-edge, #ink-edge-soft, #seal) อยู่ใน ui/inkDefs.ts และใช้กับชั้นพื้นหลังเท่านั้น */
 :root[data-world="murim"] {
-  --bg: #ebdfc5;
-  --bg-2: #f1e7d1;
-  --surface: #f6eedb;
-  --surface-2: #e4d5b6;
-  --line: #b79f78;
-  --line-soft: #d4c19c;
-  --text: #2b2016;
-  --muted: #6b5843;
-  --accent: #a8281e;
-  --gold: #8f6214;
-  --good: #3d6b45;
-  --bad: #a8281e;
-  --warn: #9a5f12;
-  --milestone: #8f6214;
-  --r-common: #7d6a52;
-  --body-bg: #ebdfc5;
+  --bg: #eae2cd;
+  --bg-2: #f1eadb;
+  --bg-deep: #dfd4ba;
+  --surface: #f4eedf;
+  --surface-2: #e5dac2;
+  --line: #b5a07c;
+  --line-soft: #d3c3a2;
+  --frame: #9c8763;
+  --text: #2a231b;
+  --muted: #66563f;
+  --faint: #8a7860;
+  --accent: #a81c2b;
+  --accent-ink: #f6e9d6;
+  --gold: #7e5c1e;
+  --good: #446a37;
+  --bad: #a81c2b;
+  --warn: #8a5512;
+  --milestone: #7e5c1e;
+  --indigo: #2a3d66;
+  --plum: #7a3e62;
+  --r-common: #66563f;
+  --body-bg: #eae2cd;
   --glow: none;
-  --primary-grad: #a8281e;
+  --primary-grad: #a81c2b;
   --primary-shadow: none;
-  --footer-bg: #e5d6b7;
-  --scrim: rgba(43, 32, 22, 0.42);
-  --radius: 4px;
+  --footer-bg: #dfd4ba;
+  --scrim: rgba(40, 29, 18, 0.46);
+  --radius: 3px;
   --font: "Noto Serif Thai", "Noto Sans Thai", serif;
   --font-display: "Chonburi", "Noto Serif Thai", serif;
   --font-ui: "IBM Plex Sans Thai", "Noto Sans Thai", sans-serif;
-  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .16 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* กระดาษ: เม็ดละเอียด + เส้นใยแนวนอน */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .25 0 0 0 0 .15 0 0 0 .42 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  --fiber: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .07' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .36 0 0 0 0 .22 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='480' height='480' filter='url(%23f)'/%3E%3C/svg%3E");
+  /* เส้นพู่กันแนวนอน: หัวท้ายเรียว ขอบหยัก */
+  --rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 6' preserveAspectRatio='none'%3E%3Cpath d='M1 3.1C40 2.75 110 2.55 200 2.6S340 2.9 399 3.05C330 3.55 250 3.7 170 3.62S50 3.5 1 3.4Z' fill='%23a08b66'/%3E%3Cpath d='M30 3.05C90 2.9 160 2.85 230 2.9' stroke='%23a08b66' stroke-width='.25' opacity='.6' fill='none'/%3E%3C/svg%3E");
+  --rule-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.2C90 2.7 220 2.6 398 3.1C260 3.7 120 3.8 2 3.6Z' fill='%23c9b791'/%3E%3C/svg%3E");
+  --brush-red: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='7' viewBox='0 0 40 7'%3E%3Cpath d='M1 4.6C9 2.4 22 1.6 39 3.1C30 4 18 4.8 2 5.6Z' fill='%23a81c2b'/%3E%3C/svg%3E");
+  --curl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='12' viewBox='0 0 22 12'%3E%3Cpath d='M21 9c-3 0-4-2-4-4s1.5-3 3-2.4c1 .4 1 1.7 0 1.9M1 9h14' fill='none' stroke='%239c8763' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");
+  --corner: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='M1 10V1h9M4 10V4h6M4 7h3V4' fill='none' stroke='%239c8763' stroke-width='1.2'/%3E%3C/svg%3E");
 }
-:root[data-world="murim"] body { background: var(--bg) var(--paper-grain); }
-:root[data-world="murim"] .icon { flex: none; vertical-align: -0.15em; }
 
-/* ส่วนหัว: แผ่นป้ายกรอบสองชั้น มุมลายเหลี่ยม + ตราประทับอายุ */
+/* ─── พื้นและตัวอักษร ─── */
+:root[data-world="murim"] body {
+  background: radial-gradient(130% 90% at 50% 40%, transparent 62%, rgba(96, 72, 40, 0.13)), var(--fiber), var(--grain), var(--bg);
+  background-attachment: fixed;
+  text-rendering: optimizeLegibility;
+}
+:root[data-world="murim"] ::selection { background: rgba(168, 28, 43, 0.18); }
+:root[data-world="murim"] :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+:root[data-world="murim"] .icon { flex: none; vertical-align: -0.15em; }
+:root[data-world="murim"] .muted { color: var(--muted); }
+
+/* ─── ส่วนหัว: แผ่นป้ายกรอบหมึกสองชั้น มุมลายเหลี่ยม ─── */
 :root[data-world="murim"] .top {
   position: relative;
+  isolation: isolate;
   margin: 12px 12px 0;
-  padding: 12px 14px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4px var(--line-soft);
+  padding: 14px 14px 12px 18px;
+  gap: 12px;
+  background:
+    var(--corner) left 6px top 6px / 14px no-repeat,
+    var(--corner) right 6px bottom 6px / 14px no-repeat,
+    var(--surface);
 }
 :root[data-world="murim"] .top::before,
-:root[data-world="murim"] .top::after {
+:root[data-world="murim"] .top::after,
+:root[data-world="murim"] .modal::before,
+:root[data-world="murim"] .modal::after {
   content: "";
   position: absolute;
-  width: 10px;
-  height: 10px;
-  border: 1.5px solid #9c7b4c;
   pointer-events: none;
+  z-index: -1;
 }
-:root[data-world="murim"] .top::before { left: 5px; top: 5px; border-right: 0; border-bottom: 0; }
-:root[data-world="murim"] .top::after { right: 5px; bottom: 5px; border-left: 0; border-top: 0; }
-:root[data-world="murim"] .name { font-family: var(--font-display); font-weight: 400; font-size: 21px; line-height: 1.3; letter-spacing: 0; }
-:root[data-world="murim"] .sub { font-family: var(--font-ui); font-size: 12.5px; }
-:root[data-world="murim"] .title-tag { color: var(--gold); font-weight: 600; }
-:root[data-world="murim"] .age-badge {
-  width: 56px;
-  height: 60px;
-  border: 0;
-  border-radius: 3px;
-  background: var(--accent);
-  color: #f7eedc;
-  box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 4px #e9c6a4;
-  transform: rotate(-4deg);
+:root[data-world="murim"] .top::before,
+:root[data-world="murim"] .modal::before { inset: 0; border: 1.5px solid var(--frame); filter: url(#ink-edge); }
+:root[data-world="murim"] .top::after,
+:root[data-world="murim"] .modal::after { inset: 4px; border: 1px solid var(--line-soft); }
+:root[data-world="murim"] .top::after { transform: rotate(180deg); }
+:root[data-world="murim"] .name { font-family: var(--font-display); font-weight: 400; font-size: 22px; line-height: 1.32; letter-spacing: 0; color: var(--text); }
+:root[data-world="murim"] .courtesy { font-family: var(--font); font-size: 13px; }
+:root[data-world="murim"] .gender-tag { font-size: 14px; font-weight: 400; }
+:root[data-world="murim"] .gender-tag.m { color: var(--indigo); }
+:root[data-world="murim"] .gender-tag.f { color: var(--plum); }
+.role-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; margin-top: 1px; }
+.role-line .epithet { font-weight: 600; color: var(--accent); font-size: 13.5px; }
+.role-line .role { font-weight: 600; color: var(--gold); font-size: 14px; }
+:root[data-world="murim"] .sub { font-family: var(--font-ui); font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 1px; }
+:root[data-world="murim"] .sub .rank { font-weight: 600; text-shadow: none; }
+:root[data-world="murim"] .rank.r0, :root[data-world="murim"] .rank.r1 { color: var(--muted); }
+:root[data-world="murim"] .rank.r2, :root[data-world="murim"] .rank.r3 { color: var(--good); }
+:root[data-world="murim"] .rank.r4 { color: var(--indigo); }
+:root[data-world="murim"] .rank.r5 { color: var(--plum); }
+:root[data-world="murim"] .rank.r6 { color: var(--gold); text-shadow: none; }
+:root[data-world="murim"] .rank.r7, :root[data-world="murim"] .rank.r8 { color: var(--accent); text-shadow: none; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+:root[data-world="murim"] .status-chip,
+:root[data-world="murim"] .injury-chip {
+  margin: 0;
+  padding: 0 6px;
+  border: 1px solid currentColor;
+  border-radius: 1px;
+  background: none;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--accent);
 }
-:root[data-world="murim"] .age-num { font-family: var(--font-display); font-weight: 400; font-size: 23px; }
-:root[data-world="murim"] .age-unit { color: #f1dcc4; letter-spacing: 0.15em; }
-:root[data-world="murim"] .gender-tag { font-size: 14px; }
-:root[data-world="murim"] .status-chip, :root[data-world="murim"] .injury-chip { border-radius: 2px; font-family: var(--font-ui); }
+:root[data-world="murim"] .status-chip.calm, :root[data-world="murim"] .injury-chip { color: var(--muted); }
 
-/* ค่าสถานะ: ไอคอนเส้นสีประจำค่า · แถบบางเหลี่ยม */
-:root[data-world="murim"] .stats { gap: 6px 18px; padding: 10px 18px 8px; border-bottom: 0; font-family: var(--font-ui); }
-:root[data-world="murim"] .stat { grid-template-columns: auto auto 1fr 22px; gap: 6px; font-size: 12px; }
-:root[data-world="murim"] .stat-val { font-weight: 600; font-size: 13px; }
-:root[data-world="murim"] .bar { height: 5px; border-radius: 1px; background: #dccaa6; }
-:root[data-world="murim"] .fill { border-radius: 1px; }
-:root[data-world="murim"] .stat-health { --c: #a8281e; }
-:root[data-world="murim"] .stat-happiness { --c: #a8701a; }
-:root[data-world="murim"] .stat-smarts { --c: #2e5878; }
-:root[data-world="murim"] .stat-looks { --c: #7e4f72; }
-:root[data-world="murim"] .stat-luck { --c: #3d6b45; }
+/* ตราอายุ */
+.age-seal { flex: none; align-self: flex-start; transform: rotate(-4deg); animation: sealStamp 0.34s cubic-bezier(0.2, 1.3, 0.4, 1) both; overflow: visible; }
+.age-seal-num { font-family: var(--font-display); fill: var(--accent-ink, #f6e9d6); }
+.age-seal-unit { font-family: var(--font-ui); font-size: 9.5px; letter-spacing: 2px; fill: var(--accent-ink, #f6e9d6); opacity: 0.85; }
+@keyframes sealStamp {
+  0% { transform: rotate(-4deg) scale(1.35); opacity: 0; }
+  60% { transform: rotate(-4deg) scale(0.96); opacity: 1; }
+  100% { transform: rotate(-4deg) scale(1); }
+}
+
+/* ─── ค่าสถานะ ─── */
+:root[data-world="murim"] .stats { gap: 7px 20px; padding: 12px 20px 9px; border-bottom: 0; font-family: var(--font-ui); }
+:root[data-world="murim"] .stat { grid-template-columns: auto auto 1fr 24px; gap: 6px; font-size: 12px; }
+:root[data-world="murim"] .stat-label { color: var(--muted); }
+:root[data-world="murim"] .stat-val { font-weight: 600; font-size: 13px; color: var(--text); }
+:root[data-world="murim"] .bar { height: 5px; border-radius: 0; background: rgba(150, 125, 85, 0.22); overflow: visible; }
+:root[data-world="murim"] .fill { border-radius: 0; filter: url(#ink-edge-soft); }
+:root[data-world="murim"] .stat-health { --c: var(--accent); }
+:root[data-world="murim"] .stat-happiness { --c: #b06a12; }
+:root[data-world="murim"] .stat-smarts { --c: var(--indigo); }
+:root[data-world="murim"] .stat-looks { --c: var(--plum); }
+:root[data-world="murim"] .stat-luck { --c: var(--good); }
 :root[data-world="murim"] .stat .stat-icon { color: var(--c); }
-:root[data-world="murim"] .stat .fill.high, :root[data-world="murim"] .stat .fill.mid { background: var(--c); }
-:root[data-world="murim"] .stat .fill.low { background: var(--c); opacity: 0.55; }
-:root[data-world="murim"] .stat:has(.fill.low) .stat-val { color: var(--bad); }
+:root[data-world="murim"] .stat .fill.high, :root[data-world="murim"] .stat .fill.mid, :root[data-world="murim"] .stat .fill.low { background: var(--c); }
+:root[data-world="murim"] .stat .fill.low { opacity: 0.6; }
+:root[data-world="murim"] .stat:has(.fill.low) .stat-val { color: var(--accent); }
 
-/* แถบถิ่น · ยุค · เป้าหมาย — เส้นคั่นบนล่าง ไม่มีกล่อง */
-.meta-strip { margin: 0 14px 2px; padding: 6px 4px; border-top: 1px solid var(--line-soft, var(--line)); border-bottom: 1px solid var(--line-soft, var(--line)); display: flex; flex-direction: column; gap: 3px; font-family: var(--font-ui, inherit); font-size: 12.5px; color: var(--muted); }
-.meta-line { display: flex; gap: 6px; align-items: flex-start; line-height: 1.45; }
-.meta-line .icon { margin-top: 2px; }
-.meta-line.crisis b { color: var(--bad); }
+/* ─── ถิ่น · ยุค · เป้าหมาย ─── */
+.meta-strip { margin: 0 14px 2px; padding: 7px 6px; display: flex; flex-direction: column; gap: 3px; font-family: var(--font-ui, inherit); font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line-soft, var(--line)); border-bottom: 1px solid var(--line-soft, var(--line)); }
+:root[data-world="murim"] .meta-strip { border: 0; background: var(--rule) top / 100% 5px no-repeat, var(--rule) bottom / 100% 5px no-repeat; }
+.meta-line { display: flex; gap: 7px; align-items: flex-start; line-height: 1.5; }
+.meta-line .icon { margin-top: 2px; color: var(--faint, var(--muted)); }
+.meta-line.crisis b { color: var(--bad); font-weight: 600; }
 .meta-line.goal { color: var(--text); }
 .meta-line.goal b { font-weight: 600; margin-right: 6px; }
-.seal-ink { color: var(--accent); }
-.goal-steps { display: inline-flex; gap: 3px; margin-right: 6px; vertical-align: 1px; }
-.goal-steps i { width: 8px; height: 8px; border: 1px solid var(--accent); }
+.meta-line.goal .icon { color: var(--accent); }
+.goal-steps { display: inline-flex; gap: 3px; margin-right: 7px; vertical-align: 1px; }
+.goal-steps i { width: 8px; height: 8px; border: 1px solid var(--accent); transform: rotate(45deg) scale(0.82); }
 .goal-steps i.on { background: var(--accent); }
 
-/* ตัวกรองบันทึก: ตัวหนังสือล้วน · ตัวที่เลือกมีเส้นพู่กันแดงข้างใต้ */
+/* ─── ตัวกรองบันทึก ─── */
 :root[data-world="murim"] .log-filters { margin: 0 10px; padding: 0; gap: 0; }
-:root[data-world="murim"] .log-filters .chip { border: 0; border-radius: 0; background: none; color: var(--muted); padding: 8px 10px 9px; min-height: 40px; font-family: var(--font-ui); font-size: 13px; }
-:root[data-world="murim"] .log-filters .chip.on {
-  color: var(--text);
-  font-weight: 600;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='6' viewBox='0 0 40 6'%3E%3Cpath d='M1 4.2C11 1.6 25 1.4 39 3.2' fill='none' stroke='%23a8281e' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") center bottom 3px / calc(100% - 14px) 6px no-repeat;
+:root[data-world="murim"] .log-filters .chip {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--muted);
+  padding: 9px 10px 10px;
+  min-height: 42px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  transition: color 0.15s;
 }
+:root[data-world="murim"] .log-filters .chip.on { color: var(--text); font-weight: 600; background: var(--brush-red) center bottom 4px / calc(100% - 12px) 7px no-repeat; }
 
-/* บันทึก: อ่านแบบหน้าหนังสือ */
-:root[data-world="murim"] .log { padding: 4px 18px 16px; }
-:root[data-world="murim"] .log-group { margin-bottom: 14px; }
-:root[data-world="murim"] .log-age { display: flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: var(--accent); margin: 2px 0 4px; }
-:root[data-world="murim"] .log-age::after { content: ""; flex: 1; height: 1px; background: var(--line-soft); }
-:root[data-world="murim"] .log-line { font-size: 15px; line-height: 1.72; margin: 0 0 4px; }
+/* ─── บันทึก: อ่านแบบหน้าหนังสือ ─── */
+:root[data-world="murim"] .log { padding: 6px 20px 18px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+:root[data-world="murim"] .log-group { margin-bottom: 16px; }
+:root[data-world="murim"] .log-age { display: flex; align-items: center; gap: 10px; margin: 0 0 5px; font-family: var(--font-ui); font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; color: var(--accent); }
+:root[data-world="murim"] .log-age::after { content: ""; flex: 1; height: 5px; background: var(--rule) left center / 100% 5px no-repeat; opacity: 0.75; -webkit-mask-image: linear-gradient(90deg, #000 30%, transparent); mask-image: linear-gradient(90deg, #000 30%, transparent); }
+:root[data-world="murim"] .log-line { font-size: 15.5px; line-height: 1.74; margin: 0 0 5px; text-wrap: pretty; animation: inkIn 0.5s ease-out both; }
+:root[data-world="murim"] .log-line.good { color: var(--good); }
+:root[data-world="murim"] .log-line.bad { color: var(--accent); }
 :root[data-world="murim"] .log-line.milestone { color: var(--gold); font-weight: 600; }
-:root[data-world="murim"] .name-link { font-weight: 500; text-decoration-color: var(--muted); }
+:root[data-world="murim"] .log-line.milestone::before { content: ""; display: inline-block; width: 6px; height: 6px; margin: 0 8px 2px 1px; background: currentColor; transform: rotate(45deg); vertical-align: middle; }
+:root[data-world="murim"] .name-link { font-weight: 500; text-decoration: underline dotted var(--faint); text-underline-offset: 4px; }
 :root[data-world="murim"] .chapter-head,
 :root[data-world="murim"] .arc-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 12px 0 6px;
+  margin: 14px 0 8px;
   padding: 0;
   border: 0;
   background: none;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 14.5px;
+  font-size: 15px;
+  line-height: 1.45;
   color: var(--text);
   text-align: center;
+  animation: inkIn 0.6s ease-out both;
 }
-:root[data-world="murim"] .arc-head { font-size: 16px; color: var(--accent); }
+:root[data-world="murim"] .arc-head { font-size: 17px; color: var(--accent); margin: 20px 0 10px; }
 :root[data-world="murim"] .chapter-head::before,
 :root[data-world="murim"] .chapter-head::after,
 :root[data-world="murim"] .arc-head::before,
 :root[data-world="murim"] .arc-head::after {
   content: "";
   flex: 1;
-  min-width: 24px;
+  min-width: 26px;
   height: 12px;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='12' viewBox='0 0 22 12'%3E%3Cpath d='M21 9c-3 0-4-2-4-4s1.5-3 3-2.4M1 9h14' fill='none' stroke='%239c7b4c' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E") right center / 22px 12px no-repeat,
-    linear-gradient(var(--line), var(--line)) left 9px / calc(100% - 20px) 1px no-repeat;
+  background: var(--curl) right center / 22px 12px no-repeat, var(--rule) left 7px / calc(100% - 20px) 5px no-repeat;
 }
 :root[data-world="murim"] .chapter-head::after,
 :root[data-world="murim"] .arc-head::after { transform: scaleX(-1); }
-:root[data-world="murim"] .chapter-head span, :root[data-world="murim"] .arc-head span { max-width: 78%; }
+:root[data-world="murim"] .chapter-head span, :root[data-world="murim"] .arc-head span { max-width: 76%; }
+:root[data-world="murim"] .log-more { display: block; margin: 0 auto 14px; border: 0; background: none; font-family: var(--font-ui); font-size: 12.5px; color: var(--muted); text-decoration: underline dotted; text-underline-offset: 4px; }
+@keyframes inkIn {
+  from { opacity: 0; filter: blur(1.4px); }
+  to { opacity: 1; filter: none; }
+}
 
-/* สรุปปี: บรรทัดเดียว ไม่มีกล่องเส้นประ */
-:root[data-world="murim"] .report-card { border: 0; border-top: 1px solid var(--line-soft); border-radius: 0; background: none; padding: 6px 0 0; font-family: var(--font-ui); }
-:root[data-world="murim"] .report-head { display: inline; margin-right: 6px; }
-:root[data-world="murim"] .report-lines { display: inline-flex; gap: 2px 10px; }
-:root[data-world="murim"] .report-chip { background: none; padding: 0; font-size: 12px; }
+/* สรุปปี */
+:root[data-world="murim"] .report-card { margin: 4px 0 0; padding: 8px 0 0; border: 0; border-radius: 0; background: var(--rule-soft) top / 100% 5px no-repeat; font-family: var(--font-ui); }
+:root[data-world="murim"] .report-head { display: inline; margin-right: 8px; font-size: 11.5px; color: var(--faint); }
+:root[data-world="murim"] .report-lines { display: inline-flex; flex-wrap: wrap; gap: 2px 12px; }
+:root[data-world="murim"] .report-chip { background: none; padding: 0; border-radius: 0; font-size: 12px; }
 
-/* ส่วนล่าง: แผนของปี + ปุ่มตราประทับ + แถบเมนูไอคอนเส้น */
-:root[data-world="murim"] .bottom { background: var(--footer-bg) var(--paper-grain); border-top: 1px solid var(--line); padding: 10px 12px calc(4px + env(safe-area-inset-bottom)); }
-:root[data-world="murim"] .plan-bar { margin-bottom: 8px; }
-:root[data-world="murim"] .plan-label { font-family: var(--font-ui); }
-:root[data-world="murim"] .plan-pick select { background: var(--surface); border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; font-weight: 600; }
-:root[data-world="murim"] .plan-hint { font-family: var(--font-ui); }
+/* ─── ส่วนล่าง ─── */
+:root[data-world="murim"] .bottom { position: relative; border-top: 0; padding: 12px 14px calc(4px + env(safe-area-inset-bottom)); background: var(--rule) top / 100% 5px no-repeat, var(--grain), var(--bg-deep); }
+:root[data-world="murim"] .plan-bar { margin-bottom: 9px; gap: 4px; }
+:root[data-world="murim"] .plan-pick {
+  position: relative;
+  min-height: 46px;
+  padding: 0 12px;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+:root[data-world="murim"] .plan-label { font-family: var(--font-ui); font-size: 11.5px; color: var(--faint); padding-right: 10px; border-right: 1px solid var(--line-soft); }
+:root[data-world="murim"] .plan-pick select { order: 2; appearance: none; -webkit-appearance: none; border: 0; background: none; padding: 10px 22px 10px 0; font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer; }
+:root[data-world="murim"] .plan-pick select:focus-visible { outline: none; }
+:root[data-world="murim"] .plan-pick:focus-within { border-color: var(--frame); }
+.plan-chevron { display: none; }
+:root[data-world="murim"] .plan-chevron { display: block; order: 3; position: absolute; right: 12px; color: var(--muted); pointer-events: none; }
+:root[data-world="murim"] .plan-hint { font-family: var(--font-ui); font-size: 11.5px; color: var(--muted); padding: 0 2px; }
+
+/* ปุ่มตราชาด: ปุ่มหลักของเกม */
 :root[data-world="murim"] .age-btn,
 :root[data-world="murim"] .btn.primary {
-  border-radius: 3px;
-  background: var(--accent);
-  color: #f7eedc;
-  box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 4px #e3b99a;
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--accent-ink);
+  box-shadow: none;
   font-family: var(--font);
   font-weight: 700;
   letter-spacing: 0.02em;
+  transition: transform 0.08s;
 }
-:root[data-world="murim"] .age-btn { padding: 13px; font-size: 17px; }
+:root[data-world="murim"] .age-btn::before,
+:root[data-world="murim"] .btn.primary::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--accent); filter: url(#ink-edge); }
+:root[data-world="murim"] .age-btn::after,
+:root[data-world="murim"] .btn.primary::after { content: ""; position: absolute; inset: 4px; z-index: -1; border: 1px solid rgba(246, 233, 214, 0.5); pointer-events: none; }
+:root[data-world="murim"] .age-btn { padding: 14px; font-size: 17px; min-height: 52px; }
+:root[data-world="murim"] .age-btn:active:not(:disabled),
+:root[data-world="murim"] .btn.primary:active:not(:disabled) { transform: translateY(1px) scale(0.995); }
+:root[data-world="murim"] .age-btn:active:not(:disabled)::before,
+:root[data-world="murim"] .btn.primary:active:not(:disabled)::before { filter: url(#ink-edge) brightness(0.88); }
+:root[data-world="murim"] .age-btn:disabled { opacity: 0.5; }
+
 :root[data-world="murim"] .tabs { margin-top: 6px; }
-:root[data-world="murim"] .tab { color: #4e3f2e; font-family: var(--font-ui); font-size: 11.5px; gap: 3px; padding: 6px 0 4px; border-radius: 0; }
+:root[data-world="murim"] .tab { color: #4e4030; font-family: var(--font-ui); font-size: 11.5px; gap: 3px; padding: 7px 0 4px; min-height: 52px; border-radius: 0; transition: color 0.15s; }
 :root[data-world="murim"] .tab:active { background: none; color: var(--accent); }
 .tab-icon { display: block; }
 
-/* แผ่นเลื่อน / หน้าต่างเหตุการณ์ */
-:root[data-world="murim"] .sheet { background: var(--bg-2) var(--paper-grain); border-top: 1px solid var(--line); border-radius: 10px 10px 0 0; }
-:root[data-world="murim"] .sheet-head { border-bottom: 1px solid var(--line-soft); margin-bottom: 6px; padding: 12px 16px 10px; }
-:root[data-world="murim"] .sheet-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 19px; }
-:root[data-world="murim"] .icon-btn { background: none; width: 44px; height: 44px; display: grid; place-items: center; color: var(--muted); margin-right: -10px; }
+/* ─── แผ่นเลื่อน ─── */
+:root[data-world="murim"] .sheet { background: var(--fiber), var(--grain), var(--bg-2); border-top: 0; border-radius: 10px 10px 0 0; box-shadow: 0 -10px 34px rgba(40, 29, 18, 0.2); animation: slideUp 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
+.sheet-grip { display: none; }
+:root[data-world="murim"] .sheet-grip { display: block; width: 44px; height: 5px; margin: 8px auto 0; background: var(--rule) center / 100% 5px no-repeat; opacity: 0.9; }
+:root[data-world="murim"] .sheet-head { padding: 6px 12px 10px 18px; background: var(--rule-soft) left 18px bottom / calc(100% - 36px) 5px no-repeat; margin-bottom: 8px; }
+:root[data-world="murim"] .sheet-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 20px; }
+:root[data-world="murim"] .sheet-body { padding: 0 18px 26px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+:root[data-world="murim"] .icon-btn { background: none; width: 44px; height: 44px; display: grid; place-items: center; color: var(--muted); border-radius: 0; }
+
+/* ─── หน้าต่างเหตุการณ์ ─── */
+:root[data-world="murim"] .modal-overlay { padding: 14px; }
 :root[data-world="murim"] .modal {
-  background: var(--surface) var(--paper-grain);
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  box-shadow: inset 0 0 0 4px var(--surface), inset 0 0 0 5px var(--line-soft), 0 12px 40px rgba(43, 32, 22, 0.25);
-  padding: 20px 18px 16px;
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background: var(--fiber), var(--grain), var(--surface);
+  box-shadow: 0 18px 50px rgba(40, 29, 18, 0.3);
+  padding: 22px 20px 16px;
+  animation: unfold 0.24s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
-:root[data-world="murim"] .modal h3 { font-family: var(--font-display); font-weight: 400; font-size: 19px; color: var(--text); margin: 0 0 4px; }
-:root[data-world="murim"] .modal-age { font-family: var(--font-ui); font-size: 11.5px; letter-spacing: 0.06em; font-weight: 600; }
-:root[data-world="murim"] .modal-text, :root[data-world="murim"] .modal-outcome { font-size: 15.5px; line-height: 1.75; }
-:root[data-world="murim"] .modal-prompt { font-family: var(--font-ui); font-size: 13px; }
-:root[data-world="murim"] .modal-choice { color: var(--accent); font-weight: 600; }
-:root[data-world="murim"] .choices { gap: 0; border-top: 1px solid var(--line-soft); margin-top: 14px; }
+:root[data-world="murim"] .modal-head { flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: 8px; }
+:root[data-world="murim"] .modal-age { font-family: var(--font-ui); font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; color: var(--accent); }
+:root[data-world="murim"] .modal h3 { font-family: var(--font-display); font-weight: 400; font-size: 20px; line-height: 1.35; color: var(--text); margin: 0; }
+:root[data-world="murim"] .modal-text { font-size: 15.5px; line-height: 1.78; min-height: 0; text-wrap: pretty; }
+:root[data-world="murim"] .choices { gap: 0; margin-top: 16px; padding-top: 2px; background: var(--rule) top / 100% 5px no-repeat; }
 :root[data-world="murim"] .choice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
   border: 0;
   border-bottom: 1px solid var(--line-soft);
   border-radius: 0;
   background: none;
-  padding: 12px 2px;
-  min-height: 50px;
-  justify-content: center;
+  padding: 12px 4px;
+  min-height: 52px;
+  transition: background 0.15s;
 }
-:root[data-world="murim"] .choice:active:not(:disabled) { transform: none; background: color-mix(in srgb, var(--accent) 7%, transparent); }
-:root[data-world="murim"] .choice-label { font-size: 15px; line-height: 1.5; }
+:root[data-world="murim"] .choices.in .choice { animation: choiceIn 0.32s ease-out both; animation-delay: calc(var(--i, 0) * 45ms); }
+:root[data-world="murim"] .choice:hover:not(:disabled) { background: rgba(168, 28, 43, 0.045); }
+:root[data-world="murim"] .choice:active:not(:disabled) { transform: none; background: rgba(168, 28, 43, 0.09); }
+.choice-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+:root[data-world="murim"] .choice-label { font-size: 15.5px; line-height: 1.52; }
 :root[data-world="murim"] .choice.danger .choice-label { color: var(--accent); }
-:root[data-world="murim"] .choice .pct, :root[data-world="murim"] .choice .warn, :root[data-world="murim"] .choice .cons { font-family: var(--font-ui); font-size: 12px; }
-:root[data-world="murim"] .roll, :root[data-world="murim"] .eff { border-radius: 2px; font-family: var(--font-ui); }
+:root[data-world="murim"] .choice .pct { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-family: var(--font-ui); color: var(--text); line-height: 1.2; }
+:root[data-world="murim"] .choice .pct b { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+:root[data-world="murim"] .choice .pct small { font-size: 10.5px; color: var(--faint); }
+:root[data-world="murim"] .choice .warn { font-family: var(--font-ui); font-size: 12px; color: var(--accent); font-weight: 600; }
+:root[data-world="murim"] .choice .cons { font-family: var(--font-ui); font-size: 12px; color: var(--muted); display: flex; gap: 4px; align-items: center; }
+:root[data-world="murim"] .choice.locked { opacity: 0.6; }
+@keyframes unfold { from { opacity: 0; transform: translateY(8px) scaleY(0.97); } to { opacity: 1; transform: none; } }
+@keyframes choiceIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
-/* การ์ดและส่วนหัวในแท็บ */
-:root[data-world="murim"] .card { background: var(--surface); border-radius: 4px; box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4px var(--line-soft); padding: 14px 16px; }
-:root[data-world="murim"] .card-title { font-family: var(--font-display); font-weight: 400; font-size: 16px; margin-bottom: 8px; }
-:root[data-world="murim"] .section-title { display: flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-weight: 600; font-size: 12px; letter-spacing: 0.08em; color: var(--muted); }
-:root[data-world="murim"] .section-title::after { content: ""; flex: 1; height: 1px; background: var(--line-soft); }
-:root[data-world="murim"] .btn { border-radius: 3px; background: transparent; font-family: var(--font-ui); }
-:root[data-world="murim"] .chip { border-radius: 3px; font-family: var(--font-ui); }
-:root[data-world="murim"] .chip.on { background: var(--accent); border-color: var(--accent); }
-:root[data-world="murim"] .person-name { font-size: 15px; font-weight: 500; }
-:root[data-world="murim"] .person-sub, :root[data-world="murim"] .job-sub, :root[data-world="murim"] .act-desc { font-family: var(--font-ui); }
-:root[data-world="murim"] .fill.bond-fill { background: #a8281e; opacity: 0.8; }
-:root[data-world="murim"] .activity { border-radius: 4px; background: var(--surface); border-color: var(--line-soft); padding: 12px 12px 11px; gap: 3px; }
-:root[data-world="murim"] .activity:active:not(:disabled) { border-color: var(--accent); }
-:root[data-world="murim"] .act-name { font-weight: 600; font-size: 14.5px; line-height: 1.4; }
-:root[data-world="murim"] .time-bar { font-family: var(--font-ui); }
-.time-dots { display: inline-flex; gap: 4px; }
-.time-dots span { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--accent); }
+/* ผลลัพธ์ */
+:root[data-world="murim"] .modal-prompt { font-family: var(--font-ui); font-size: 12.5px; color: var(--faint); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 4px 0 10px; }
+.modal-choice-label { display: none; }
+:root[data-world="murim"] .modal-choice { color: var(--text); font-weight: 600; margin: 0 0 10px; }
+:root[data-world="murim"] .modal-choice-label { display: block; font-family: var(--font-ui); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; color: var(--faint); }
+.roll-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 2px; }
+.roll-odds { font-size: 12px; color: var(--muted); }
+:root[data-world="murim"] .roll {
+  margin: 0;
+  padding: 3px 11px 2px;
+  border-radius: 0;
+  background: none;
+  border: 2px solid currentColor;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.5;
+  transform: rotate(-5deg);
+  filter: url(#ink-edge-soft);
+  animation: stampIn 0.34s cubic-bezier(0.2, 1.4, 0.4, 1) both 0.05s;
+}
+:root[data-world="murim"] .roll.ok { color: var(--accent); background: none; }
+:root[data-world="murim"] .roll.fail { color: #4a3b2b; background: none; }
+:root[data-world="murim"] .roll.great { box-shadow: none; outline: 1px solid currentColor; outline-offset: 2px; }
+:root[data-world="murim"] .roll.disaster { box-shadow: none; color: var(--accent-ink); background: #4a3b2b; border-color: #4a3b2b; }
+:root[data-world="murim"] .roll-odds { font-family: var(--font-ui); color: var(--faint); }
+@keyframes stampIn {
+  0% { opacity: 0; transform: rotate(-5deg) scale(1.6); }
+  70% { opacity: 1; transform: rotate(-5deg) scale(0.94); }
+  100% { opacity: 1; transform: rotate(-5deg) scale(1); }
+}
+:root[data-world="murim"] .modal-outcome { font-size: 15.5px; line-height: 1.78; margin: 10px 0 12px; text-wrap: pretty; }
+:root[data-world="murim"] .modal-outcome.good { color: var(--good); }
+:root[data-world="murim"] .modal-outcome.bad { color: var(--accent); }
+:root[data-world="murim"] .modal-outcome.milestone { color: var(--gold); font-weight: 600; }
+:root[data-world="murim"] .effects { gap: 2px 14px; margin: -4px 0 16px; font-family: var(--font-ui); }
+:root[data-world="murim"] .eff { padding: 0; border-radius: 0; background: none; font-size: 12.5px; font-weight: 500; }
+:root[data-world="murim"] .modal .btn.primary { width: 100%; min-height: 48px; font-size: 16px; }
+
+/* ─── การ์ด หัวข้อ ปุ่ม ในแท็บ ─── */
+:root[data-world="murim"] .card { position: relative; isolation: isolate; border: 0; border-radius: 0; background: var(--surface); padding: 15px 16px 14px; margin-bottom: 12px; }
+:root[data-world="murim"] .card::before { content: ""; position: absolute; inset: 0; z-index: -1; border: 1px solid var(--line); filter: url(#ink-edge-soft); pointer-events: none; }
+:root[data-world="murim"] .card-title { font-family: var(--font-display); font-weight: 400; font-size: 16.5px; line-height: 1.4; margin-bottom: 8px; color: var(--text); }
+:root[data-world="murim"] .section-title { display: flex; align-items: center; gap: 10px; margin: 18px 0 8px; font-family: var(--font-ui); font-weight: 600; font-size: 11.5px; letter-spacing: 0.1em; color: var(--muted); }
+:root[data-world="murim"] .section-title::after { content: ""; flex: 1; height: 5px; background: var(--rule-soft) left center / 100% 5px no-repeat; }
+:root[data-world="murim"] .btn { min-height: 40px; border: 1px solid var(--line); border-radius: 3px; background: transparent; color: var(--text); font-family: var(--font-ui); font-size: 13.5px; font-weight: 600; }
+:root[data-world="murim"] .btn:active:not(:disabled) { background: rgba(150, 125, 85, 0.14); }
+:root[data-world="murim"] .btn.small { min-height: 34px; font-size: 12.5px; }
+:root[data-world="murim"] .btn.danger { border: 0; background: var(--accent); color: var(--accent-ink); }
+:root[data-world="murim"] .btn.ghost { border-color: transparent; text-decoration: underline dotted; text-underline-offset: 4px; }
+:root[data-world="murim"] .chip { border-radius: 2px; font-family: var(--font-ui); border-color: var(--line); }
+:root[data-world="murim"] .chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+:root[data-world="murim"] .person, :root[data-world="murim"] .job, :root[data-world="murim"] .grave { border-bottom-color: var(--line-soft); }
+:root[data-world="murim"] .person-name, :root[data-world="murim"] .job-name, :root[data-world="murim"] .grave-name { font-size: 15.5px; font-weight: 500; }
+:root[data-world="murim"] .person-sub, :root[data-world="murim"] .job-sub, :root[data-world="murim"] .act-desc, :root[data-world="murim"] .grave-sub { font-family: var(--font-ui); font-size: 12px; color: var(--muted); }
+:root[data-world="murim"] .person-row { min-height: 56px; }
+:root[data-world="murim"] .bond .bar, :root[data-world="murim"] .small-bar { height: 3px; }
+:root[data-world="murim"] .fill.bond-fill { background: var(--accent); opacity: 0.85; }
+:root[data-world="murim"] .mini-bar { font-family: var(--font-ui); }
+:root[data-world="murim"] .activity { position: relative; border: 1px solid var(--line-soft); border-radius: 2px; background: var(--surface); padding: 12px 12px 11px; gap: 3px; transition: border-color 0.15s, background 0.15s; }
+:root[data-world="murim"] .activity:hover:not(:disabled) { border-color: var(--line); }
+:root[data-world="murim"] .activity:active:not(:disabled) { border-color: var(--accent); background: rgba(168, 28, 43, 0.04); }
+:root[data-world="murim"] .activity:disabled { opacity: 0.5; background: transparent; }
+:root[data-world="murim"] .act-name { font-weight: 600; font-size: 14.5px; line-height: 1.42; }
+:root[data-world="murim"] .time-bar { font-family: var(--font-ui); font-size: 13px; color: var(--muted); }
+.time-dots { display: inline-flex; gap: 5px; }
+.time-dots span { display: inline-block; width: 9px; height: 9px; border: 1px solid var(--accent); transform: rotate(45deg); }
 .time-dots span.on { background: var(--accent); }
 :root[data-world="murim"] .time-dots span { opacity: 1; filter: none; }
-.ledger-mark { display: inline-block; width: 10px; height: 10px; margin-top: 6px; border: 1px solid var(--muted); }
+.ledger-mark { display: inline-block; width: 8px; height: 8px; margin-top: 7px; border: 1px solid var(--muted); transform: rotate(45deg); }
 .ledger-mark.f { background: var(--good); border-color: var(--good); }
 .ledger-mark.g { background: var(--bad); border-color: var(--bad); }
-:root[data-world="murim"] .m17-rank li.me { border-radius: 3px; border-color: var(--accent); }
+:root[data-world="murim"] .m17-rank li { border-bottom-color: var(--line-soft); }
+:root[data-world="murim"] .m17-rank li.me { border: 0; border-radius: 0; background: rgba(168, 28, 43, 0.07); }
+:root[data-world="murim"] .m17-rank li.m17-split { border-top: 1px dashed var(--line); }
 :root[data-world="murim"] .m17-place { color: var(--gold); font-family: var(--font-display); font-weight: 400; }
-:root[data-world="murim"] .ach { border-radius: 3px; }
-:root[data-world="murim"] .ach.got { border-color: var(--gold); }
-:root[data-world="murim"] .toast { border-radius: 3px; background: var(--surface); font-family: var(--font-ui); }
-:root[data-world="murim"] .log, :root[data-world="murim"] .sheet-body { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
-:root[data-world="murim"] .gender-tag.m { color: #2e5878; }
-:root[data-world="murim"] .gender-tag.f { color: #7e4f72; }
-:root[data-world="murim"] .modal .btn.primary { min-width: 140px; padding: 11px 20px; }
+:root[data-world="murim"] .m17-align-bar { background: linear-gradient(90deg, #6b1620, rgba(150, 125, 85, 0.25) 50%, #8a6a24); border-radius: 0; height: 6px; }
+:root[data-world="murim"] .m17-align-mark { background: var(--text); box-shadow: none; border-radius: 0; }
+:root[data-world="murim"] .ach { border-radius: 2px; border-color: var(--line-soft); opacity: 0.55; }
+:root[data-world="murim"] .ach.got { opacity: 1; border-color: var(--gold); background: rgba(126, 92, 30, 0.06); }
+:root[data-world="murim"] .ach-name { font-family: var(--font); font-weight: 600; }
+:root[data-world="murim"] .ach-desc { font-family: var(--font-ui); }
+:root[data-world="murim"] .ach-cat summary { font-family: var(--font-display); font-weight: 400; font-size: 15px; }
+:root[data-world="murim"] .kin-chip { border-radius: 2px; border-color: var(--line-soft); }
+:root[data-world="murim"] .kin-chip.me { border-color: var(--accent); }
+:root[data-world="murim"] .axis-chip, :root[data-world="murim"] .passive-chip { border-radius: 2px; font-family: var(--font-ui); }
+:root[data-world="murim"] .field, :root[data-world="murim"] .m17-input, :root[data-world="murim"] .dev select, :root[data-world="murim"] .dev input:not([type="range"]) { border-radius: 3px; background: var(--surface); border-color: var(--line); }
+:root[data-world="murim"] .toast { border-radius: 0; border-color: var(--line); background: var(--surface); box-shadow: 0 6px 18px rgba(40, 29, 18, 0.18); font-family: var(--font); opacity: 0.96; }
+:root[data-world="murim"] .toast.good { color: var(--good); border-color: var(--line); }
+:root[data-world="murim"] .toast.bad { color: var(--accent); border-color: var(--line); }
+:root[data-world="murim"] .toast.milestone { color: var(--gold); border-color: var(--line); }
+
+/* ─── เกิด / ตาย / เล่นต่อ ─── */
+:root[data-world="murim"] .tomb h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; }
+:root[data-world="murim"] .cause { color: var(--accent); }
+:root[data-world="murim"] .birth-name { font-family: var(--font-display); font-weight: 400; color: var(--text); }
+:root[data-world="murim"] .continue { border: 0; border-radius: 0; box-shadow: none; background: var(--surface); position: relative; isolation: isolate; }
+:root[data-world="murim"] .continue::before { content: ""; position: absolute; inset: 0; z-index: -1; border: 1.5px solid var(--frame); filter: url(#ink-edge); pointer-events: none; }
+:root[data-world="murim"] .continue-head { font-family: var(--font-display); font-weight: 400; }
+:root[data-world="murim"] .cont-btn { border-radius: 2px; border-color: var(--line-soft); background: var(--bg-2); }
+:root[data-world="murim"] .cont-btn.heir, :root[data-world="murim"] .cont-btn.pupil, :root[data-world="murim"] .cont-btn.era { background: var(--bg-2); border-color: var(--line); }
+:root[data-world="murim"] .cont-title { font-family: var(--font); }
+:root[data-world="murim"] .cont-emoji { display: none; }
+:root[data-world="murim"] .ribbon-card { border-radius: 0; border: 1px solid var(--gold); background: rgba(126, 92, 30, 0.06); }
+:root[data-world="murim"] .ribbon-name { font-family: var(--font-display); font-weight: 400; }
+:root[data-world="murim"] .path { border-radius: 2px; border: 1px solid var(--line); background: var(--surface); box-shadow: none; color: var(--text); }
+:root[data-world="murim"] .path-title { font-family: var(--font); }
+:root[data-world="murim"] .legacy-strip { margin: 4px 14px; border-radius: 0; background: none; font-family: var(--font-ui); color: var(--muted); }
+:root[data-world="murim"] .talent { border: 1px solid var(--line-soft); border-radius: 2px; background: var(--surface); box-shadow: none; animation: none; }
+:root[data-world="murim"] .talent .t-rarity { font-family: var(--font-ui); font-size: 10.5px; letter-spacing: 0.1em; }
+:root[data-world="murim"] .talent .t-name { font-weight: 600; font-size: 15px; }
+:root[data-world="murim"] .talent .t-desc { font-family: var(--font-ui); }
+:root[data-world="murim"] .talent.rare { border-color: var(--indigo); }
+:root[data-world="murim"] .talent.rare .t-rarity { color: var(--indigo); }
+:root[data-world="murim"] .talent.legendary { border-color: var(--gold); box-shadow: inset 0 0 0 2px var(--surface), inset 0 0 0 3px rgba(126, 92, 30, 0.35); }
+:root[data-world="murim"] .talent.legendary .t-rarity { color: var(--gold); }
+:root[data-world="murim"] .talent.divine, :root[data-world="murim"] .talent.mythic { border: 1px solid var(--accent); background: var(--surface); box-shadow: inset 0 0 0 2px var(--surface), inset 0 0 0 3px rgba(168, 28, 43, 0.35); animation: none; }
+:root[data-world="murim"] .talent.divine .t-rarity, :root[data-world="murim"] .talent.mythic .t-rarity { color: var(--accent); background: none; -webkit-background-clip: border-box; background-clip: border-box; }
+:root[data-world="murim"] .talent.hidden { border: 1px dashed var(--line); background: transparent; }
+:root[data-world="murim"] .talent.hidden .t-rarity, :root[data-world="murim"] .talent.hidden .t-name { color: var(--muted); }
+:root[data-world="murim"] .talent.hidden .t-desc { color: var(--faint); }
+:root[data-world="murim"] .rar-rare { color: var(--indigo); }
+:root[data-world="murim"] .rar-legendary { color: var(--gold); }
+:root[data-world="murim"] .rar-divine, :root[data-world="murim"] .rar-mythic { color: var(--accent); background: none; -webkit-background-clip: border-box; background-clip: border-box; }
+:root[data-world="murim"] .skill-card { border-color: var(--line-soft); border-radius: 2px; }
+:root[data-world="murim"] .chip.rare { border-color: var(--indigo); }
+:root[data-world="murim"] .chip.legendary { border-color: var(--gold); }
+:root[data-world="murim"] .chip.divine, :root[data-world="murim"] .chip.mythic { border-color: var(--accent); box-shadow: none; }
+:root[data-world="murim"] .act-emoji, :root[data-world="murim"] .ribbon-emoji, :root[data-world="murim"] .onboard-emoji { display: none; }

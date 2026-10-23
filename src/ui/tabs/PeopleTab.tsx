@@ -92,7 +92,7 @@ function PersonMind({ p }: { p: Person }) {
         <div className="axis-row">
           {axes.map(({ axis, value }) => (
             <span key={axis} className={`axis-chip ${AXIS[axis].good ? "good" : "bad"}`}>
-              {AXIS[axis].emoji} {AXIS[axis].name} {value}
+              {AXIS[axis].name} {value}
             </span>
           ))}
         </div>

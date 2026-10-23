@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { loc } from "../engine/util";
 import { currentScene, labelOf, lockedChoices, visibleChoices, type Outcome } from "../engine/events";
 import { choiceChance } from "../engine/game";
@@ -45,7 +45,7 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
         </div>
         <p className="modal-text">{shown}</p>
         <div className={`choices ${done ? "in" : ""}`}>
-          {choices.map(({ c, index }) => {
+          {choices.map(({ c, index }, n) => {
             const pct = choiceChance(life, q, index);
             const survive = c.survival?.(life, q.ctx);
             const missing = c.req?.(life, q.ctx);
@@ -54,18 +54,26 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
               <button
                 key={index}
                 className={`choice ${c.tone ?? ""} ${missing ? "locked" : ""}`}
+                style={{ "--i": n } as CSSProperties}
                 disabled={!done || !!missing}
                 onClick={(ev) => {
                   ev.stopPropagation();
                   onChoose(index);
                 }}
               >
-                <span className="choice-label">{noEmoji(loc(life, labelOf(c, life, q.ctx)))}</span>
-                {missing && <span className="cons"><Icon name="lock" size={13} /> {missing}</span>}
-                {survive !== undefined && survive < 0.95 && (
-                  <span className="warn">[คำเตือน: อัตรารอดชีวิต {vague ? vagueLabel(survive) : `${Math.round(survive * 100)}%`}]</span>
+                <span className="choice-main">
+                  <span className="choice-label">{noEmoji(loc(life, labelOf(c, life, q.ctx)))}</span>
+                  {missing && <span className="cons"><Icon name="lock" size={13} /> {missing}</span>}
+                  {survive !== undefined && survive < 0.95 && (
+                    <span className="warn">โอกาสรอดชีวิต {vague ? vagueLabel(survive) : `${Math.round(survive * 100)}%`}</span>
+                  )}
+                </span>
+                {pct !== undefined && (
+                  <span className="pct" title={vague ? "ยังประเมินคู่ต่อสู้ไม่ได้" : undefined}>
+                    <b>{vague ? vagueLabel(pct) : `${Math.round(pct * 100)}%`}</b>
+                    <small>{vague ? "ประเมินไม่ได้" : "สำเร็จ"}</small>
+                  </span>
                 )}
-                {pct !== undefined && <span className="pct">{vague ? `โอกาสสำเร็จ: ${vagueLabel(pct)} (ยังประเมินคู่ต่อสู้ไม่ได้)` : `สำเร็จ ${Math.round(pct * 100)}%`}</span>}
               </button>
             );
           })}
@@ -90,10 +98,11 @@ export function OutcomeModal({ resolved, onNext }: { resolved: Resolved; onNext:
       <div className="modal">
         {resolved.title && <h3>{noEmoji(resolved.title)}</h3>}
         <p className="modal-prompt">{noEmoji(resolved.prompt)}</p>
-        <p className="modal-choice">{noEmoji(resolved.choice)}</p>
+        <p className="modal-choice"><span className="modal-choice-label">ทางที่เลือก</span>{noEmoji(resolved.choice)}</p>
         {resolved.out.roll && (
-          <p className={`roll ${resolved.out.roll.ok ? "ok" : "fail"} ${resolved.out.roll.tier}`}>
-            {TIER[resolved.out.roll.tier]} · โอกาส {Math.round(resolved.out.roll.p * 100)}%
+          <p className="roll-row">
+            <span className={`roll ${resolved.out.roll.ok ? "ok" : "fail"} ${resolved.out.roll.tier}`}>{TIER[resolved.out.roll.tier]}</span>
+            <span className="roll-odds">โอกาส {Math.round(resolved.out.roll.p * 100)}%</span>
           </p>
         )}
         <p className={`modal-outcome ${resolved.out.kind ?? ""}`}>{noEmoji(resolved.out.text)}</p>

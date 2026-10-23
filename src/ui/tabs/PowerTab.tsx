@@ -184,7 +184,7 @@ function MartialRecord({ life }: { life: Life }) {
         <b className={`rank r${p.rank}`}>{rankLabel(life, p.rank)}</b>
         <span>สายวิชา</span>
         <b>
-          {cls.emoji} {cls.name}
+          {cls.name}
         </b>
         <span>สังกัด</span>
         <b>{guild ? loc(life, guild.name) : "ไร้สังกัด"}</b>
@@ -542,8 +542,8 @@ function StatusWindow({ life, act }: { life: Life; act: Act }) {
           <b className={`rank r${p.rank}`}>{rankLabel(life, p.rank)}</b>
           <span>{ui.style}</span>
           <b>
-            {cls.emoji} {cls.name}
-            {subClassOf(life) && <span className="muted small"> + {subClassOf(life)!.emoji} {subClassOf(life)!.name}</span>}
+            {cls.name}
+            {subClassOf(life) && <span className="muted small"> + {subClassOf(life)!.name}</span>}
           </b>
           <span>เลเวล</span>
           <b>
@@ -765,20 +765,20 @@ function PassivesCard({ life }: { life: Life }) {
         <div className="passive-chips">
           {owned.map((p) => (
             <button key={p.id} className={`passive-chip${sel === p.id ? " on" : ""}`} onClick={() => setSel(sel === p.id ? null : p.id)}>
-              {p.emoji} {p.name}
+              {p.name}
             </button>
           ))}
         </div>
       ) : (
         <p className="muted small">ยังไม่มีสกิลติดตัว — ได้มาจากวิธีใช้ชีวิตของคุณ</p>
       )}
-      {picked && <p className="small passive-detail">{picked.emoji} <b>{picked.name}</b> — {picked.desc}</p>}
+      {picked && <p className="small passive-detail"><b>{picked.name}</b> — {picked.desc}</p>}
       <details className="passive-locked" onToggle={(e) => setShowLocked((e.target as HTMLDetailsElement).open)}>
         <summary className="muted small">ยังไม่ได้ {locked.length} อย่าง — ดูวิธีได้</summary>
         {showLocked && <ul className="passive-list">
           {locked.map((p) => (
             <li key={p.id}>
-              <b>{p.emoji} {p.name}</b> <span className="muted">· {p.how}</span>
+              <b>{p.name}</b> <span className="muted">· {p.how}</span>
               <div className="muted small">{p.desc}</div>
             </li>
           ))}

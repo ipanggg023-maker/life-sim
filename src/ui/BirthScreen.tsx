@@ -44,7 +44,7 @@ export function BirthScreen({
           {life.gender === "m" ? "♂" : "♀"} {displayName(life)} ("{life.nickname}")
         </p>
         <p className="muted">
-          {worldOf(life.worldId).emoji} {worldOf(life.worldId).name}{life.country ? ` · ${countryOf(life.country).flag} ${countryOf(life.country).name}` : ""} · {wealthLabel(life.wealth, life.worldId)} · {worldOf(life.worldId).yearLabel} {life.birthYear}
+          {worldOf(life.worldId).name}{life.country ? ` · ${countryOf(life.country).flag} ${countryOf(life.country).name}` : ""} · {wealthLabel(life.wealth, life.worldId)} · {worldOf(life.worldId).yearLabel} {life.birthYear}
           {life.devCreated && <span className="dev-tag"> · สร้างโดย Admin</span>}
         </p>
         {life.worldId === "murim" && (

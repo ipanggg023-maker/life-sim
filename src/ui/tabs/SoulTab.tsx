@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { noEmoji } from "../Icon";
 import { COMBOS } from "../../content/murim/life/gifts";
 import { COUNTRIES } from "../../content/countries";
 import { ACHIEVEMENTS, ACH_CATEGORY, catInWorld, catOf, type AchCategory } from "../../content/achievements";
@@ -67,7 +68,7 @@ export function SoulTab({
               const st = g.end === "won" ? "สำเร็จ" : g.end === "lost" ? "ล้มเหลว" : g.end === "changed" ? "เปลี่ยนใจ" : `กำลังไล่ตาม (${g.step}/${d.steps.length})`;
               return [
                 <p className="small" key={i}>
-                  {d.emoji} {d.name}{g.side ? " (รอง)" : ""} · ตั้งแต่อายุ {g.since} · {st}
+                  {d.name}{g.side ? " (รอง)" : ""} · ตั้งแต่อายุ {g.since} · {st}
                   {g.why && <span className="muted"> — {g.why}</span>}
                 </p>,
               ];
@@ -77,7 +78,7 @@ export function SoulTab({
             title="เหตุการณ์สำคัญของชีวิตนี้"
             items={(life.chron ?? []).slice().reverse().slice(0, 60).map((c, i) => (
               <p className="small" key={i}>
-                ปี {c.year} · {c.text}
+                ปี {c.year} · {noEmoji(c.text)}
               </p>
             ))}
           />
@@ -86,7 +87,7 @@ export function SoulTab({
             closed
             items={(soul.chronicle ?? []).slice().reverse().slice(0, 120).map((c, i) => (
               <p className="small" key={i}>
-                ปี {c.year} · {c.text}
+                ปี {c.year} · {noEmoji(c.text)}
                 <span className="muted"> — {c.src}</span>
               </p>
             ))}
@@ -125,7 +126,7 @@ export function SoulTab({
         <ul className="memories">
           {memories.map((m) => (
             <li key={m.key} className={m.key === "death" ? "danger-text" : ""}>
-              {m.text}
+              {noEmoji(m.text)}
             </li>
           ))}
         </ul>
@@ -145,7 +146,7 @@ export function SoulTab({
         return (
           <details className="ach-cat" key={cat} open={cat === "life" || real}>
             <summary>
-              {ACH_CATEGORY[cat]} · {got}/{list.length}
+              {noEmoji(ACH_CATEGORY[cat])} · {got}/{list.length}
             </summary>
             <div className="ach-grid">
               {list.map((a) => {
@@ -155,7 +156,7 @@ export function SoulTab({
                 return (
                   <div className={`ach ${have || pending ? "got" : ""}`} key={a.id} title={secret ? "ความสำเร็จลับ" : pending ? `${a.desc} — ทำได้ในชาตินี้ ได้แต้มเมื่อจบชีวิต` : a.desc}>
                     <div className="ach-name">
-                      {secret ? "???" : a.name}{pending ? <span className="muted"> · ชาตินี้</span> : null}
+                      {secret ? "???" : noEmoji(a.name)}{pending ? <span className="muted"> · ชาตินี้</span> : null}
                     </div>
                     <div className="ach-desc">
                       {secret ? "ความสำเร็จลับ" : a.desc} · +{a.points}

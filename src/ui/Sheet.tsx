@@ -5,6 +5,7 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
   return (
     <div className="overlay" onClick={onClose}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
+        <span className="sheet-grip" aria-hidden="true" />
         <div className="sheet-head">
           <h2>{noEmoji(title)}</h2>
           <button className="icon-btn" onClick={onClose} aria-label="ปิด">

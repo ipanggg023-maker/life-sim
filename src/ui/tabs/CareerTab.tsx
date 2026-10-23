@@ -44,7 +44,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
       {job && career && (
         <div className="card">
           <div className="card-title">
-            {career.emoji} งานปัจจุบัน
+            งานปัจจุบัน
           </div>
           <p>
             <b>{career.titles[job.level - 1]}</b> · {career.name}
@@ -102,7 +102,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
               <div className={`job ${missing ? "locked" : ""}`} key={c.id}>
                 <div className="job-main">
                   <div className="job-name">
-                    {c.emoji} {c.name}
+                    {c.name}
                   </div>
                   <div className="job-sub">
                     {money(life, salaryOf(life, c, 1))}/ปี

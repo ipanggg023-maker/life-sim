@@ -89,7 +89,7 @@ const goals: A[] = [
   { id: "mu_goal3", name: "ชีวิตที่คุ้มค่า", desc: "ทำเป้าหมายชีวิตสำเร็จ 3 ข้อในชีวิตเดียว", points: 25, check: (l) => goalsWon(l) >= 3 },
   { id: "mu_goal5", name: "ไม่มีอะไรต้องเสียดาย", desc: "ทำเป้าหมายชีวิตสำเร็จ 5 ข้อในชีวิตเดียว", points: 45, check: (l) => goalsWon(l) >= 5 },
   // หนึ่งความสำเร็จต่อหนึ่งเป้าหมาย
-  ...GOALS.map((g): A => ({ id: `mu_g_${g.id}`, name: `${g.emoji} ${g.name}`, desc: `ทำเป้าหมาย「${g.name}」สำเร็จ`, points: 8, check: (l) => mu(l) && !!l.flags[`goalWon_${g.id}`] })),
+  ...GOALS.map((g): A => ({ id: `mu_g_${g.id}`, name: g.name, desc: `ทำเป้าหมาย「${g.name}」สำเร็จ`, points: 8, check: (l) => mu(l) && !!l.flags[`goalWon_${g.id}`] })),
 ];
 
 ACHIEVEMENTS.push(

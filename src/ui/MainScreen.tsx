@@ -49,6 +49,23 @@ export function StatBar({ k, value }: { k: StatKey; value: number }) {
 
 const LOG_PAGE = 20;
 
+/** ตราชาดบอกอายุ — ประทับใหม่ทุกครั้งที่อายุเปลี่ยน (ขอบหยักและจุดหมึกไม่ติดมาจากฟิลเตอร์ #seal) */
+function AgeSeal({ age }: { age: number }) {
+  const big = age >= 100;
+  return (
+    <svg key={age} className="age-seal" viewBox="0 0 58 62" width="58" height="62" role="img" aria-label={`อายุ ${age} ปี`}>
+      <rect x="3" y="3" width="52" height="56" rx="2.5" style={{ fill: "var(--accent)" }} filter="url(#seal)" />
+      <rect x="7.5" y="7.5" width="43" height="47" fill="none" stroke="#F4E6D2" strokeWidth="1" opacity="0.6" filter="url(#ink-edge-soft)" />
+      <text x="29" y={big ? 34 : 36} textAnchor="middle" className="age-seal-num" style={{ fontSize: big ? 19 : 24 }}>
+        {age}
+      </text>
+      <text x="29" y="50" textAnchor="middle" className="age-seal-unit">
+        ปี
+      </text>
+    </svg>
+  );
+}
+
 /** ชื่อคนในบันทึกแตะได้ — เปิดดูคนนั้นในแท็บคน */
 type Names = { re?: RegExp; ids: Map<string, string>; open?: (id: string) => void };
 const NameCtx = createContext<Names>({ ids: new Map() });
@@ -127,6 +144,9 @@ function groupByAge(log: LogEntry[]) {
   return groups;
 }
 
+/** ข้อความบันทึกเก่าที่ยาวเกินจำเป็น (ความสำเร็จจากเวอร์ชันก่อน) ย่อให้สั้นตอนแสดง */
+const tidy = (t: string) => noEmoji(t).replace(/ความสำเร็จ:\s*「/, "ความสำเร็จ「").replace(/ \(\+(\d+) แต้มวิญญาณเมื่อจบชีวิต ถ้ายังไม่เคยได้\)/, " · +$1 แต้มวิญญาณ");
+
 export function LogLine({ e }: { e: LogEntry }) {
   if (e.kind === "system")
     return (
@@ -145,7 +165,7 @@ export function LogLine({ e }: { e: LogEntry }) {
   if (e.kind === "comments") return <Comments items={parseComments(e)} />;
   return (
     <p className={`log-line ${e.kind}`}>
-      <Linked text={noEmoji(e.text)} />
+      <Linked text={tidy(e.text)} />
     </p>
   );
 }
@@ -233,6 +253,7 @@ function PlanBar({ life }: { life: Life }) {
     <div className="plan-bar">
       <label className="plan-pick">
         <span className="plan-label">แผนปีนี้</span>
+        <Icon name="chevron" size={14} className="plan-chevron" />
         <select
           value={cur?.id ?? ""}
           onChange={(e) => {
@@ -322,43 +343,56 @@ export function MainScreen({
           </div>
           {murim ? (
             <>
-              {life.flags.m17Epithet && <div className="title-tag">【{String(life.flags.m17Epithet)}】</div>}
-              {life.power && <div className="sub">กำลังภายใน {Math.floor(Number(life.flags.mwQi ?? 0))} ปี</div>}
-              {(!!life.flags.wanted || Number(life.flags.jailUntil ?? -1) > life.age || Number(life.flags.mourningUntil ?? -1) > life.age) && (
-                <div>
+              <div className="role-line">
+                {life.flags.m17Epithet && <span className="epithet">【{String(life.flags.m17Epithet)}】</span>}
+                <span className="role">{subtitle}</span>
+              </div>
+              <div className="sub">
+                {life.power && (
+                  <>
+                    <span className={`rank r${life.power.rank}`}>{rankLabel(life, life.power.rank)}</span> · กำลังภายใน {Math.floor(Number(life.flags.mwQi ?? 0))} ปี ·{" "}
+                  </>
+                )}
+                {money(life, life.money)}
+                {life.debt > 0 && <span className="debt"> · หนี้ {money(life, life.debt)}</span>}
+              </div>
+              {(!!life.flags.wanted || Number(life.flags.jailUntil ?? -1) > life.age || Number(life.flags.mourningUntil ?? -1) > life.age || disabilities(life).length > 0 || openInjuries(life).length > 0) && (
+                <div className="tag-row">
                   {!!life.flags.wanted && <span className="status-chip">ถูกประกาศจับ</span>}
                   {Number(life.flags.jailUntil ?? -1) > life.age && <span className="status-chip">ติดคุก อีก {Number(life.flags.jailUntil) - life.age} ปี</span>}
                   {Number(life.flags.mourningUntil ?? -1) > life.age && <span className="status-chip calm">ไว้ทุกข์</span>}
+                  {disabilities(life).map((d) => (
+                    <span className="injury-chip" key={d}>
+                      {d}
+                    </span>
+                  ))}
+                  {openInjuries(life).length > 0 && <span className="injury-chip">แผลยังไม่หาย {openInjuries(life).length}</span>}
                 </div>
               )}
             </>
           ) : (
-            title && <div className="title-tag">「{title.name}」</div>
+            <>
+              {title && <div className="title-tag">「{title.name}」</div>}
+              <div className="sub">
+                {subtitle} · {money(life, life.money)}
+                {life.debt > 0 && <span className="debt"> · หนี้ {money(life, life.debt)}</span>}
+              </div>
+            </>
           )}
-          {murim && (disabilities(life).length > 0 || openInjuries(life).length > 0) && (
-            <div className="injury-row">
-              {disabilities(life).map((d) => (
-                <span className="injury-chip" key={d}>
-                  {d}
-                </span>
-              ))}
-              {openInjuries(life).length > 0 && <span className="injury-chip">แผลยังไม่หาย {openInjuries(life).length}</span>}
-            </div>
-          )}
-          <div className="sub">
-            {subtitle} · {money(life, life.money)}
-            {life.debt > 0 && <span className="debt"> · หนี้ {money(life, life.debt)}</span>}
-          </div>
         </div>
-        {life.power && (
+        {life.power && !murim && (
           <div className={`rank-badge rank r${life.power.rank} ${life.worldId}`} title={worldOf(life.worldId).labels.rank}>
             {rankLabel(life, life.power.rank)}
           </div>
         )}
-        <div className="age-badge">
-          <span className="age-num">{life.age}</span>
-          <span className="age-unit">ปี</span>
-        </div>
+        {murim ? (
+          <AgeSeal age={life.age} />
+        ) : (
+          <div className="age-badge">
+            <span className="age-num">{life.age}</span>
+            <span className="age-unit">ปี</span>
+          </div>
+        )}
       </header>
 
       <section className="stats">

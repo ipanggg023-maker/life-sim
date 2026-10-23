@@ -17,6 +17,7 @@ const PATHS = {
   close: "M6 6l12 12M18 6L6 18",
   lock: "M6 11h12v9H6zM9 11V8a3 3 0 0 1 6 0v3",
   scroll: "M6 4h12v16H6zM9 9h6M9 13h6",
+  chevron: "M7 10l5 5 5-5",
 } as const;
 
 export type IconName = keyof typeof PATHS;
