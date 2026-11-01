@@ -15,7 +15,8 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
         </div>
       </div>
     );
-  const list = activitiesFor(life).filter((a) => life.age >= a.minAge - 2);
+  // ทรัพย์สินโผล่เมื่อมีเงินใกล้ถึง ของที่ยังซื้อไม่ได้ไม่ต้องขึ้นเป็นปุ่มล็อก
+  const list = activitiesFor(life).filter((a) => life.age >= a.minAge - 2 && (a.group !== "ทรัพย์สิน" || !a.available || a.available(life)));
   const groups = [...new Set(list.map((a) => a.group ?? ""))];
   const left = timeLeft(life);
   return (
