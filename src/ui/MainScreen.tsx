@@ -309,6 +309,18 @@ export function MainScreen({
   const groups = groupByAge(shown);
   const hidden = Math.max(0, groups.length - showYears);
   useEffect(() => setShowYears(LOG_PAGE), [life.id, filter, who]);
+  // เว้นวรรค = อายุ +1 เมื่อไม่มีหน้าต่างอื่นเปิดอยู่
+  useEffect(() => {
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key !== " " || ev.repeat || !life.alive || life.queue.length) return;
+      const t = ev.target as HTMLElement;
+      if (/INPUT|TEXTAREA|BUTTON|SELECT/.test(t.tagName) || document.querySelector(".overlay, .sheet")) return;
+      ev.preventDefault();
+      onAgeUp(1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
   }, [life.log.length]);
@@ -443,6 +455,8 @@ export function MainScreen({
 
       <footer className="bottom">
         {murim && life.alive && <PlanBar life={life} />}
+        {murim && life.alive && life.stats.health <= 25 && <p className="life-warn">สุขภาพวิกฤต ปีนี้อาจไม่รอด พักรักษาตัวหรือหาหมอก่อนเพิ่มอายุ</p>}
+        {murim && life.alive && life.money < 0 && <p className="life-warn">เงินติดลบ ความสุขจะลดทุกปีจนกว่าจะหาเงินได้</p>}
         <button className="age-btn" onClick={() => onAgeUp(1)} disabled={life.queue.length > 0}>
           อายุ +1 ปี
         </button>

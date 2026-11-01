@@ -46,7 +46,7 @@ const kids = (l: Life) => people(l, "child").filter((c) => c.alive);
 const rank = (l: Life) => l.power?.rank ?? -1;
 /** อันดับดีที่สุดในทำเนียบยุทธภพที่เคยได้ (0 = ไม่เคยติด) */
 const bestPlace = (l: Life) => { const now = myPlace(l); const b = Number(l.flags.bestPlace ?? 0); return now > 0 && (b === 0 || now < b) ? now : b; };
-const closeFriends = (l: Life) => l.people.filter((p) => p.alive && ["friend", "ally"].includes(p.relation) && p.bond >= 70).length;
+const closeFriends = (l: Life) => l.people.filter((p) => p.alive && ["friend", "ally"].includes(p.relation) && (p.bond >= 70 || !!p.tags?.includes("sworn"))).length;
 const spouse = (l: Life) => people(l, "spouse").find((p) => p.alive);
 const anyCombo = (l: Life) => Object.keys(l.flags).some((k) => k.startsWith("combo:") && l.flags[k]);
 
@@ -107,7 +107,9 @@ export const GOALS: GoalDef[] = [
     passed: (l, s, g) => {
       const foe = l.people.find((p) => p.id === g.pid);
       if (!foe || !foe.alive) return s === 2; // ศัตรูตายไปเองแล้ว
-      return [l.age - g.since >= 2 && (l.stats.smarts >= 45 || Number(l.flags.mwWanderYears ?? 0) >= 1), rank(l) >= Math.max(1, Number(foe.tags?.find((t) => t.startsWith("rank:"))?.slice(5) ?? 2)), false][s];
+      const years = l.age - g.since;
+      // ฝีมือไม่ถึงก็ยังไปเผชิญหน้าได้เมื่อรอมานานพอ แล้วเลือกศาลหรือสู้แบบเสียเปรียบเอา
+      return [(years >= 2 && (l.stats.smarts >= 45 || Number(l.flags.mwWanderYears ?? 0) >= 1)) || years >= 5, rank(l) >= Math.max(1, Number(foe.tags?.find((t) => t.startsWith("rank:"))?.slice(5) ?? 2)) || years >= 12, false][s];
     },
     won: "ความแค้นที่แบกมาหลายปีจบลงแล้ว — คุณรู้สึกเบา หรืออาจจะว่างเปล่า",
   },
@@ -250,8 +252,8 @@ export const GOALS: GoalDef[] = [
   },
   {
     id: "brothers", emoji: "🍶", name: "มีพี่น้องร่วมสาบานที่ตายแทนกันได้",
-    steps: ["มีสหายที่ไว้ใจได้หนึ่งคน", "ดื่มเหล้าสาบานเป็นพี่น้อง", "มีสหายใจเดียวกันสามคน"],
-    passed: (l, s) => [closeFriends(l) >= 1, l.people.some((p) => p.alive && p.tags?.includes("sworn")) || closeFriends(l) >= 2, closeFriends(l) >= 3][s],
+    steps: ["มีสหายที่ไว้ใจได้หนึ่งคน", "ดื่มเหล้าสาบานเป็นพี่น้อง", "พี่น้องร่วมสาบานครบสามคน รวมตัวคุณ"],
+    passed: (l, s) => [closeFriends(l) >= 1, l.people.some((p) => p.alive && p.tags?.includes("sworn")) || closeFriends(l) >= 2, closeFriends(l) >= 2][s],
     won: "คืนหนึ่งคุณนั่งรอบกองไฟกับพี่น้องที่ไม่ได้เกิดท้องเดียวกัน — ทุกคนพร้อมจะตายวันเดียวกับคุณ",
     reward: (l) => addStat(l, "happiness", 15),
   },

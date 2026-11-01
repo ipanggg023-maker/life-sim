@@ -369,7 +369,8 @@ function progressMoney(life: Life) {
   const income = Number(life.flags.income ?? 0) + pension;
   // หลังวันสิ้นโลกไม่มีค่าเช่า ไม่มีห้าง — ใช้จ่ายแค่ของจำเป็น
   const ruins = life.flags.doomed && !life.flags.rebuilt;
-  const living = ruins ? 30_000 + kids * 15_000 : 84_000 + kids * 60_000 + Math.round(income * 0.4);
+  // ยุทธภพ: ค่าครองชีพยุคโบราณถูกกว่าค่าเช่าเมืองใหญ่ งานธรรมดาพอเลี้ยงครอบครัวได้
+  const living = ruins ? 30_000 + kids * 15_000 : life.worldId === "murim" ? 35_000 + kids * 18_000 + Math.round(income * 0.25) : 84_000 + kids * 60_000 + Math.round(income * 0.4);
   addMoney(life, -living);
   if (life.debt > 0 && life.money > 0) {
     const pay = Math.min(life.debt, Math.round(life.money * 0.3));
@@ -389,7 +390,7 @@ function progressPeople(life: Life) {
   for (const p of life.people) {
     if (!p.alive) continue;
     p.age++;
-    if (p.relation === "friend" || p.relation === "partner") p.bond = clamp(p.bond - randInt(life, 1, 4), 0, 100);
+    if ((p.relation === "friend" || p.relation === "partner") && !p.tags?.includes("sworn")) p.bond = clamp(p.bond - randInt(life, 1, 4), 0, 100);
     if (p.relation === "spouse") p.bond = clamp(p.bond - randInt(life, 0, 2), 0, 100);
     if (chance(life, mortality(p.age, 70) * (p.age > 60 ? 1.2 : 0.5))) {
       p.alive = false;

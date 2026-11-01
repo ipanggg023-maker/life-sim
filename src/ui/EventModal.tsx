@@ -7,9 +7,10 @@ import { isRealistic } from "../content/worlds";
 import { Icon, noEmoji } from "./Icon";
 
 /** พิมพ์ข้อความทีละตัว แตะเพื่อข้าม */
-function useTypewriter(text: string, speed = 18) {
+function useTypewriter(text: string, instant: boolean, speed = 18) {
   const [n, setN] = useState(0);
   useEffect(() => {
+    if (instant) { setN(text.length); return; }
     setN(0);
     const id = window.setInterval(() => {
       setN((x) => {
@@ -21,9 +22,11 @@ function useTypewriter(text: string, speed = 18) {
       });
     }, speed);
     return () => window.clearInterval(id);
-  }, [text, speed]);
+  }, [text, speed, instant]);
   return { shown: text.slice(0, n), done: n >= text.length, skip: () => setN(text.length) };
 }
+
+const readInstant = () => { try { return !!localStorage.getItem("ls.instantText"); } catch { return false; } };
 
 /** โอกาสแบบคร่าวๆ เมื่อตัวละครยังมีข้อมูลไม่พอ — ไม่โชว์ตัวเลขที่แม่นเกินจริง */
 const vagueLabel = (p: number) => (p >= 0.7 ? "สูง" : p >= 0.4 ? "กลาง" : "ต่ำ");
@@ -32,11 +35,23 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
   const q = life.queue[0];
   const scene = currentScene(q, life)!;
   const text = noEmoji(loc(life, scene.text(life, q.ctx)));
-  const { shown, done, skip } = useTypewriter(text);
+  const [instant, setInstant] = useState(readInstant);
+  const { shown, done, skip } = useTypewriter(text, instant);
   // ตัวเลือกที่กดได้ก่อน แล้วตามด้วยตัวที่ยังขาดเงื่อนไข (ล็อกไว้พร้อมเหตุผล) ตามลำดับเดิม
   const choices = [...visibleChoices(life, q), ...lockedChoices(life, q)].sort((a, b) => a.index - b.index);
   const [factorsOf, setFactorsOf] = useState<number>();
   useEffect(() => setFactorsOf(undefined), [text]);
+  // คีย์บอร์ด: 1-9 เลือกตัวเลือก · Enter หรือเว้นวรรคข้ามข้อความ
+  useEffect(() => {
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.repeat || ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement) return;
+      if ((ev.key === "Enter" || ev.key === " ") && !done) { ev.preventDefault(); skip(); return; }
+      const c = choices[Number(ev.key) - 1];
+      if (done && c && !c.c.req?.(life, q.ctx)) onChoose(c.index);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   return (
     <div className="overlay modal-overlay">
@@ -44,6 +59,18 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
         <div className="modal-head">
           <span className="modal-age">อายุ {life.age} ปี</span>
           {scene.title && <h3>{noEmoji(scene.title)}</h3>}
+          <button
+            className={`text-speed ${instant ? "on" : ""}`}
+            aria-pressed={instant}
+            onClick={(ev) => {
+              ev.stopPropagation();
+              const next = !instant;
+              setInstant(next);
+              try { localStorage.setItem("ls.instantText", next ? "1" : ""); } catch { /* ไม่มี storage */ }
+            }}
+          >
+            ข้อความทันที
+          </button>
         </div>
         <p className="modal-text">{shown}</p>
         <div className={`choices ${done ? "in" : ""}`}>
@@ -118,6 +145,11 @@ export interface Resolved {
 const TIER = { great: "สำเร็จงดงาม", ok: "สำเร็จ", fail: "พลาด", disaster: "พลาดหนัก" } as const;
 
 export function OutcomeModal({ resolved, onNext }: { resolved: Resolved; onNext: () => void }) {
+  useEffect(() => {
+    const onKey = (ev: KeyboardEvent) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onNext(); } };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onNext]);
   return (
     <div className="overlay modal-overlay">
       <div className="modal">

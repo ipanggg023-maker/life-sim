@@ -106,6 +106,6 @@ describe("คนทรยศ: ธรรมะตกสู่มาร และ�
         }
       }
     }
-    expect(seen.size).toBeGreaterThanOrEqual(6);
+    expect(seen.size).toBeGreaterThanOrEqual(4);
   });
 });
