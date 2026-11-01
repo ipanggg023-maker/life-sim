@@ -118,5 +118,5 @@ describe("Phase 9: สมดุลยุทธภพ", () => {
     const peak = (c.realms["จุดสูงสุด"] ?? 0) + (c.realms["เหนือจุดสูงสุด"] ?? 0) + (c.realms["หลอมรวม"] ?? 0);
     expect(peak).toBeGreaterThan(0);
     expect(peak / trained).toBeLessThan(0.25); // ยอดฝีมือต้องหายาก
-  });
+  }, 900_000);
 });

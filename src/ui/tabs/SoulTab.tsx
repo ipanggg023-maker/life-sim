@@ -19,7 +19,7 @@ import { SaveTransfer } from "../SaveTransfer";
 import { CloudCard } from "../CloudCard";
 import { goalById } from "../../content/murim/life/goals";
 import { ROUTES } from "../../content/murim/life/routes";
-import { ARC_ENDINGS } from "../../content/murim/life/sideStories";
+import { ARCS, activeArcs, arcEndings } from "../../content/murim/life/sideStories";
 import { injuryLabel } from "../../engine/body";
 import { SeriesCover } from "../SeriesCover";
 import { Fold } from "../Fold";
@@ -85,7 +85,7 @@ export function SoulTab({
             ))}
           />
           <FoldList
-            title={`เส้นทางชีวิต · ตอนจบเรื่องเล่า ${(soul.arcEnds ?? []).length}/${ARC_ENDINGS}`}
+            title="เส้นทางชีวิต"
             closed
             items={ROUTES.map((r) => {
               const t = soul.routes?.[r.id] ?? 0;
@@ -95,6 +95,20 @@ export function SoulTab({
                   {t < 3 && <span className="muted"> · ต่อไป: {r.stages[t]}</span>}
                 </p>
               );
+            })}
+          />
+          <FoldList
+            title={`เรื่องเล่า · ตอนจบ ${(soul.arcEnds ?? []).length}/${arcEndings()}`}
+            items={ARCS.flatMap((a) => {
+              const seen = (soul.arcEnds ?? []).filter((e) => e.startsWith(`${a.id}:`)).length;
+              const now = activeArcs(life).some((x) => x.id === a.id);
+              if (!now && !seen) return [];
+              return [
+                <p className="small" key={a.id}>
+                  {a.name} · ตอนจบ {seen}/{a.ends}
+                  {now && <span className="muted"> · กำลังดำเนินอยู่: {a.blurb}</span>}
+                </p>,
+              ];
             })}
           />
           <FoldList

@@ -4,6 +4,7 @@ import { loadSharedEvents } from "../content/shared";
 import { worldOfLife } from "../content/murim/life/world";
 import { ROUTES, applyRouteGifts, recordRoutes, routeGains, routeHints } from "../content/murim/life/routes";
 import { ARCS, activeArcs, arcLine, carryArc } from "../content/murim/life/sideStories";
+import "../content/murim/life/sideStories2";
 import { allEvents, getEvent, visibleChoices } from "./events";
 import { ageUp, createLife, resolveChoice, runEvent } from "./game";
 import { nextFloat } from "./rng";
@@ -23,6 +24,7 @@ const finish = (l: Life, pick = 0) => { let g = 0; while (l.queue.length && g++ 
 
 describe("เรื่องต่อเนื่องข้างทาง", () => {
   it("ทุกเรื่องเดินครบสี่ตอนได้ และลงเอยเป็นตอนจบ", () => {
+    expect(ARCS.length).toBe(12);
     for (const a of ARCS) {
       const l = base(ARCS.indexOf(a) + 1);
       l.stats.health = 90; l.stats.smarts = 90; l.stats.luck = 90;
@@ -81,7 +83,7 @@ describe("เรื่องต่อเนื่องข้างทาง", (
       const n = e + activeArcs(l).length;
       started += n; ended += e; most = Math.max(most, n);
     }
-    expect(most).toBeLessThanOrEqual(3);
+    expect(most).toBeLessThanOrEqual(4);
     expect(started).toBeGreaterThan(40);
     expect(ended).toBeGreaterThan(20);
   });

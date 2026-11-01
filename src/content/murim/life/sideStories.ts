@@ -6,16 +6,26 @@ import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { B, BIG, C, E, G, K, N, P, PAY, ab, type Res } from "../story/kit";
 
-export const ARCS = [
-  { id: "jade", name: "หยกครึ่งซีก", ends: 4 },
-  { id: "thief", name: "เด็กขโมยกระบี่", ends: 3 },
-  { id: "well", name: "น้ำในเมืองซาน", ends: 4 },
-  { id: "teller", name: "นักเล่านิทานตาบอด", ends: 3 },
-  { id: "bones", name: "บ่อน้ำบ้านเกิด", ends: 3 },
-  { id: "ferry", name: "เรือข้ามฟากคืนจันทร์", ends: 3 },
+export interface Arc {
+  id: string;
+  name: string;
+  /** จำนวนตอนจบทั้งหมด */
+  ends: number;
+  /** เรื่องย่อ เตือนความจำตอนเรื่องเว้นไปหลายปี */
+  blurb: string;
+  /** เปิดเรื่องได้เฉพาะชีวิตที่เข้ากับเรื่อง */
+  can?: (l: Life) => boolean;
+}
+export const ARCS: Arc[] = [
+  { id: "jade", name: "หยกครึ่งซีก", ends: 4, blurb: "หยกรูปเสือครึ่งซีกจากชายที่ตายหน้าบ้านคุณ" },
+  { id: "thief", name: "เด็กขโมยกระบี่", ends: 3, blurb: "เด็กจรจัดชื่ออาจิ่วที่คุณเคยจับได้ในตลาด" },
+  { id: "well", name: "น้ำในเมืองซาน", ends: 4, blurb: "เมืองที่คนป่วยทีละบ้าน และน้ำที่มีกลิ่นโลหะ" },
+  { id: "teller", name: "นักเล่านิทานตาบอด", ends: 3, blurb: "นักเล่านิทานที่เล่าชีวิตคุณก่อนมันจะเกิด" },
+  { id: "bones", name: "บ่อน้ำบ้านเกิด", ends: 3, blurb: "โครงกระดูกก้นบ่อ และความลับของทั้งหมู่บ้าน" },
+  { id: "ferry", name: "เรือข้ามฟากคืนจันทร์", ends: 3, blurb: "หญิงพายเรือที่ไม่เคยแก่ และคนที่นางรอคอย" },
 ];
-export const ARC_ENDINGS = ARCS.reduce((s, a) => s + a.ends, 0);
-const LIFE_MAX = 3, AT_ONCE = 2;
+export const arcEndings = () => ARCS.reduce((s, a) => s + a.ends, 0);
+const LIFE_MAX = 4, AT_ONCE = 2;
 
 const stepKey = (a: string) => `ssS_${a}`;
 const ageKey = (a: string) => `ssA_${a}`;
@@ -30,11 +40,11 @@ const jailed = (l: Life) => Number(l.flags.jailUntil ?? -1) > l.age;
 const due = (a: string, n: number) => (l: Life) => l.flags[endKey(a)] === undefined && Number(l.flags[stepKey(a)]) === n && l.age >= Number(l.flags[ageKey(a)]) && !jailed(l);
 const wrap = (r: Res, f: (l: Life, c: Ctx) => void): Res => Object.assign(((l: Life, c: Ctx) => { f(l, c); return r(l, c); }) as Res, { fx: r.fx });
 /** จบตอนนี้ ไปตอนถัดไปในอีก 2-4 ปี */
-const next = (a: string, r: Res, flag?: string) => wrap(r, (l) => { l.flags[stepKey(a)] = Number(l.flags[stepKey(a)]) + 1; l.flags[ageKey(a)] = l.age + randInt(l, 2, 4); if (flag) l.flags[flag] = true; });
+export const next = (a: string, r: Res, flag?: string) => wrap(r, (l) => { l.flags[stepKey(a)] = Number(l.flags[stepKey(a)]) + 1; l.flags[ageKey(a)] = l.age + randInt(l, 2, 4); if (flag) l.flags[flag] = true; });
 /** จบเรื่อง */
-const fin = (a: string, ending: string, r: Res) => wrap(r, (l) => { l.flags[endKey(a)] = ending; delete l.flags[stepKey(a)]; });
+export const fin = (a: string, ending: string, r: Res) => wrap(r, (l) => { l.flags[endKey(a)] = ending; delete l.flags[stepKey(a)]; });
 
-const ch = (a: string, n: number, title: string, text: Parameters<typeof E>[2], choices: Parameters<typeof E>[3]) =>
+export const ch = (a: string, n: number, title: string, text: Parameters<typeof E>[2], choices: Parameters<typeof E>[3]) =>
   E(`ss.${a}.${n}`, [12, 120], text, choices, { when: due(a, n), forced: true, title: `${title} (ตอน ${n}/4)` });
 
 export const SIDE_STORY_EVENTS: GameEvent[] = [
@@ -166,11 +176,11 @@ export const SIDE_STORY_EVENTS: GameEvent[] = [
 yearHooks.push((l) => {
   if (l.worldId !== "murim" || !l.alive || l.age < 14 || l.age > 75 || jailed(l)) return;
   if (activeArcs(l).length >= AT_ONCE || started(l) >= LIFE_MAX || l.flags.ssCarry || !chance(l, 0.14)) return;
-  const free = ARCS.filter((a) => l.flags[stepKey(a.id)] === undefined && l.flags[endKey(a.id)] === undefined);
+  const free = ARCS.filter((a) => l.flags[stepKey(a.id)] === undefined && l.flags[endKey(a.id)] === undefined && (a.can?.(l) ?? true));
+  if (!free.length) return;
   const past = new Set(l.pastSeen ?? []);
   const fresh = free.filter((a) => !past.has(`ss.${a.id}.1`));
   const a = pick(l, fresh.length ? fresh : free);
-  if (!a) return;
   l.flags[stepKey(a.id)] = 1;
   l.flags[ageKey(a.id)] = l.age + 1;
 });
