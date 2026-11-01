@@ -6,6 +6,7 @@ import { log } from "../../../engine/util";
 import { alignment, shiftAlign } from "../m17core";
 import { B, BIG, C, E, FIGHT, G, K, N, NEXT, P, PAY, S, ab, near, type Res } from "../story/kit";
 import { factions, mySectFaction, shiftRep } from "../world/factions";
+import { coverUp } from "../world/survival";
 
 const act = (r: Res, f: (l: Life, c: Ctx) => void): Res => Object.assign(((l: Life, c: Ctx) => { f(l, c); return r(l, c); }) as Res, { fx: r.fx });
 
@@ -94,6 +95,7 @@ export const TURNCOAT_EVENTS: GameEvent[] = [
   // ───── ไต่สวน ─────
   E("tn.trial", [14, 100], (l) => `ประตูห้องคุณถูกเปิดกลางดึก ผู้คุมกฎของ${sect(l)}รออยู่ในโถงพร้อมพยาน ข้อหาคือ${reasons(l)}`, [
     K("แก้ต่างจนสุดฝีปาก", "smarts", 62, act(G("พยานพูดขัดกันเอง ผู้คุมกฎยกฟ้อง แต่ยังมองตามคุณจนพ้นประตู", { fame: -1 }), (l) => { l.flags.tnSus = 0; }), NEXT("verdict", "หลักฐานชิ้นสุดท้ายถูกวางลงบนโต๊ะ ไม่มีใครพูดอะไรอีก", { fame: -3 })),
+    ...coverUp({ clear: (l) => { l.flags.tnSus = 0; }, caught: (l) => { l.flags.tnSus = 4; } }),
     C("ยอมรับทุกข้อหา", NEXT("verdict", "โถงทั้งโถงเงียบลง คุณได้ยินเสียงเทียนไหม้", {})),
     P("ฝ่าวงล้อมหนีออกไป", ab(0.3, "health", 0.5), act(BIG("คุณกระโจนออกทางหลังคา มีดบินเฉี่ยวไหล่ คืนนั้นสำนักส่งใบล่าไปทุกเมือง", { hp: -10, fame: -5 }), (l) => leave(l, true)), NEXT("verdict", "คุณไปได้แค่ถึงบันไดขั้นที่สาม แล้วถูกกดลงกับพื้น", { hp: -15, wound: ["ribs", "broken", 1] }), { tone: "danger" }),
   ], {

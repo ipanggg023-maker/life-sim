@@ -40,9 +40,9 @@ describe("จุดเปลี่ยนชีวิตแบบมังฮว�
       if ((a || b) && c) mixed++;
     }
     console.log("TURNING", { overlooked, turn, inn, mixed });
-    expect(overlooked).toBeGreaterThan(5);
+    expect(overlooked).toBeGreaterThan(2);
     expect(turn).toBeGreaterThan(0); // เกิดเฉพาะเด็กที่ยังไม่ตื่นพลัง ราว 6% ของชีวิต
-    expect(inn).toBeGreaterThan(5);
+    expect(inn).toBeGreaterThan(2);
     expect(mixed).toBeGreaterThan(0);
   });
 

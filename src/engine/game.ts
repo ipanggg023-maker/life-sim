@@ -638,6 +638,7 @@ export function choiceFactors(life: Life, q: QueuedEvent, index: number): { labe
 
 export function jobRequirementMissing(life: Life, c: Career): string | undefined {
   if (!worldMatches(c.world, life.worldId)) return "ไม่มีในโลกนี้";
+  if (life.flags.qnRank !== undefined) return "อยู่ในวังหลัง";
   if (life.age < c.minAge) return `อายุ ${c.minAge}+`;
   if (c.needsPower && !life.power) return "ต้องเป็นผู้ตื่นพลัง";
   if (c.mundaneOnly && life.power) return "รับเฉพาะคนธรรมดา";

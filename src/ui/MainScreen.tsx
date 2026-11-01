@@ -14,6 +14,7 @@ import { regionOf } from "../content/murim/life/region";
 import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
 import { goalInfo } from "../content/murim/life/goals";
 import { arcLine } from "../content/murim/life/sideStories";
+import { consortLine } from "../content/murim/world/consortLife";
 import { Icon, noEmoji, type IconName } from "./Icon";
 import { disabilities, openInjuries } from "../engine/body";
 import { displayName, loc, money, shortName } from "../engine/util";
@@ -201,8 +202,15 @@ function WorldStrip({ life }: { life: Life }) {
   const w = worldSummary(life);
   const g = goalInfo(life);
   const arcs = arcLine(life);
+  const consort = consortLine(life);
   return (
     <div className="meta-strip">
+      {consort && (
+        <div className="meta-line">
+          <Icon name="flag" size={14} className="seal-ink" />
+          <span>{consort}</span>
+        </div>
+      )}
       {arcs && (
         <div className="meta-line">
           <Icon name="pin" size={14} className="seal-ink" />

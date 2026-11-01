@@ -15,6 +15,7 @@ import { courtOf, palaceAccess } from "./court";
 import { castOf, npcById, palaceOf, patronOf, princesOf, type PNpc } from "./palace";
 import { emperorTitle, syncThrone } from "./emperor";
 import { hasT } from "../life/talentArcs";
+import { coverUp } from "./survival";
 
 export const COURT_RANKS = ["ขุนนางชั้นผู้น้อย", "คนสนิทในวัง", "ขุนนางชั้นผู้ใหญ่", "เสนาบดี", "มหาเสนาบดี", "ผู้สำเร็จราชการ", "ฮ่องเต้"];
 export const courtRank = (l: Life) => Number(l.flags.courtRank ?? 0);
@@ -182,6 +183,12 @@ ${nextStep(l)}`,
 
       K("ทรยศพรรคพวก — นำแผนกบฏของพวกเขาไปถวายฮ่องเต้", "smarts", 55, act(G((l) => `คุณคุกเข่าถวายรายชื่อผู้ร่วมคิด — ${name(ally(l))}ถูกจับในคืนนั้น ฮ่องเต้จับมือคุณและเรียกคุณว่าขุนนางผู้ภักดีที่สุด`, { align: -5, fame: 4 }), (l) => { const a = ally(l); if (a) { a.out = true; feel(a, { grudge: 90, trust: -100 }); plantSeed(l, "betrayed", a.name); } delete l.flags.generalAlly; delete l.flags.eunuchAlly; l.flags.schemeHeat = 0; setRank(l, courtRank(l) + 1, "คุณขายพรรคพวกเพื่อความดีความชอบ"); }), fail("พรรคพวกของคุณรู้ตัวก่อน — และพาชื่อคุณลงไปด้วย", { heat: 45, grudgeOn: (l) => ally(l) }), { show: (l) => !!ally(l) && courtRank(l) >= 2 && courtRank(l) < 5, pros: "ล้างร่องรอยทั้งหมด · ขึ้นหนึ่งขั้น", cons: "หักหลังคนที่ร่วมคิดกับคุณ" }),
 
+      // ───── หักหลังแบบอื่นๆ ─────
+      K("เป็นสายให้สองฝ่ายพร้อมกัน", "smarts", 60, act(G("ทั้งสองขั้วจ่ายเงินให้คุณ และทั้งสองขั้วคิดว่าคุณเป็นคนของตัวเอง", { tael: 60, align: -4 }), (l) => heat(l, 20)), fail("สายสองคนเจอกันที่โรงน้ำชา และเทียบเรื่องที่คุณเล่า", { heat: 35 }), { show: (l) => courtRank(l) >= 1, pros: "ได้เงินสองทาง", cons: "ถ้าสองฝ่ายรู้ ไม่เหลือใครอยู่ข้างคุณ" }),
+      P("ล่อคู่แข่งให้ก่อกบฏ แล้วจับเอง", odds(0.45), act(G((l) => `คุณกระซิบให้${name(blocker(l))}เชื่อว่าถึงเวลาแล้ว พอเขายกทหาร คุณก็เปิดประตูรับกองทหารหลวง`, { align: -5, fame: 4 }), (l) => { const b = blocker(l)!; b.out = true; plantSeed(l, "betrayed", b.name); heat(l, 15); setRank(l, courtRank(l) + 1, "คุณปราบกบฏที่คุณสร้างเอง"); }), fail("เขาไม่หลงกล และบันทึกทุกคำที่คุณพูด", { heat: 40, grudgeOn: (l) => blocker(l) }), { show: (l) => !!blocker(l) && courtRank(l) >= 1, pros: "ขึ้นหนึ่งขั้น ดูเป็นผู้จงรักภักดี", cons: "ถ้าพลาด คนที่ถูกจับคือคุณ" }),
+      P("ขโมยตราหลวงปลอมราชโองการ", (l) => clamp(0.3 + (l.stats.luck - 50) / 150 - schemeHeat(l) / 300, 0.05, 0.8), act(G("ตำแหน่งที่คุณเขียนเองถูกอ่านออกเสียงต่อหน้าขุนนางทั้งท้องพระโรง ไม่มีใครกล้าถาม", { align: -8 }), (l) => { heat(l, 40); setRank(l, courtRank(l) + 1, "ราชโองการที่คุณเขียนเอง"); }), act(fail("คนเฝ้าห้องตราหลวงนับตราทุกคืน", { heat: 50 }), (l) => { l.flags.schemeExposed = true; }), { tone: "danger", show: (l) => courtRank(l) >= 2 && courtRank(l) < 5, pros: "ขึ้นหนึ่งขั้นทันที", cons: "พลาด = ถูกเปิดโปงทันที" }),
+      K("แฉเรื่องในห้องนอนของคนที่ขวางทาง", "looks", 55, act(G((l) => `เรื่องของ${name(blocker(l))}กับนางรำถูกเล่าทั่วเมืองหลวงภายในสามวัน เขาขอลาออกเอง`, { align: -3 }), (l) => { blocker(l)!.out = true; heat(l, 15); }), fail("เรื่องนั้นไม่จริง และเขาพิสูจน์ได้", { heat: 25, grudgeOn: (l) => blocker(l) }), { show: (l) => !!blocker(l) }),
+
       C("ยังไม่ใช่เวลา", N("คุณเก็บแผนไว้ในใจ — ในวังนี้ คนที่รีบมักตายก่อน")),
     ],
   },
@@ -189,11 +196,19 @@ ${nextStep(l)}`,
   // ───── ผลที่ตามมา ─────
   E("ct.s_exposed", [18, 100], (l) => `ขุนนางตรวจการยื่นฎีกาต่อหน้าพระพักตร์ — มีชื่อคุณ หลักฐานจากแผนเก่า และพยานหนึ่งคนที่คุณคิดว่าเงียบไปแล้ว (ร่องรอย: ${HEAT_LABEL(schemeHeat(l))})`, [
     K("ทำลายหลักฐานให้ทันก่อนรุ่งเช้า", "smarts", 58, act(G("ห้องเก็บเอกสารเกิดไฟไหม้เล็กๆ ตอนตีสาม — คดีไม่มีหลักฐานเหลือ", {}), (l) => heat(l, -40)), act(B("คนเฝ้าหอเอกสารจับได้คาหนังคาเขา — ความผิดเพิ่มอีกหนึ่งข้อ", { fame: -5 }), (l) => { heat(l, 15); setRank(l, courtRank(l) - 2, "คุณถูกปลดจากตำแหน่ง"); })),
+    ...coverUp({ ally: (l) => !!ally(l), clear: (l) => heat(l, -40), caught: (l) => { heat(l, 15); setRank(l, courtRank(l) - 2, "คุณถูกปลดจากตำแหน่ง"); } }),
     PAY("ติดสินบนขุนนางตรวจการ", (l) => 60 + courtRank(l) * 30, act(N("ฎีกาฉบับนั้นหายไปจากโต๊ะ — ขุนนางตรวจการมีบ้านหลังใหม่", { align: -2 }), (l) => heat(l, -30))),
     C("โยนความผิดให้ลูกน้อง", act(N("ลูกน้องคนสนิทถูกตัดหัวแทนคุณ — คนในวังเห็นทุกอย่าง และไม่มีใครอยากเป็นลูกน้องคุณอีก", { align: -8, fame: -4 }), (l) => { heat(l, -35); plantSeed(l, "killed", "ลูกน้องที่รับผิดแทน"); })),
     C("หนีออกจากเมืองหลวง", act(N("คุณออกประตูเมืองในคราบพ่อค้าผ้า — ตำแหน่งทั้งหมดที่ไต่ขึ้นมาหายไปในคืนเดียว", { joy: -6 }), (l) => { l.flags.courtRank = 0; l.flags.palaceWithdrawn = true; delete l.flags.palacePatron; l.flags.schemeHeat = 0; })),
     C("ยอมรับผิด", act(B("คุณถูกปลด ยึดทรัพย์ครึ่งหนึ่ง และจำคุกห้าปี — แต่ยังมีชีวิต", { fame: -10 }), (l) => { addMoney(l, -Math.round(Math.max(0, l.money) / 2)); l.flags.jailUntil = l.age + 5; l.flags.courtRank = 0; l.flags.schemeHeat = 0; l.flags.palaceWithdrawn = true; })),
   ], { when: (l) => !!l.flags.schemeExposed, forced: true, weight: 60, maxTimes: 0, title: "ถูกเปิดโปง" }),
+
+  E("ct.s_suspect", [18, 100], (l) => `คนในวังเริ่มพูดกันเบาลงเวลาคุณเดินผ่าน ขุนนางตรวจการขอดูบัญชีเก่าของคุณ ยังไม่มีข้อกล่าวหา แต่มีคนเริ่มสืบแล้ว (ร่องรอย: ${HEAT_LABEL(schemeHeat(l))})`, [
+    K("ทำลายหลักฐานเก่าก่อนคนจะมาถึง", "smarts", 50, act(G("เอกสารหายไปจากชั้นโดยไม่มีใครเห็น", {}), (l) => heat(l, -25)), act(B("การหายไปของเอกสารทำให้คนสงสัยหนักกว่าเดิม", {}), (l) => heat(l, 10))),
+    P("ปิดปากคนที่รู้เรื่อง", odds(0.5), act(N("คนส่งเอกสารเก่าตกน้ำตายในคืนฝนตก", { align: -8 }), (l) => heat(l, -35)), act(B("เขาหนีไปหาขุนนางตรวจการก่อน", { align: -4 }), (l) => heat(l, 25)), { tone: "danger" }),
+    K("เข้าเฝ้าถวายรายงานก่อนคนอื่น", "looks", 50, act(G("คุณเล่าเรื่องในแบบของคุณก่อนใคร ที่เหลือจึงกลายเป็นคำใส่ร้าย", {}), (l) => heat(l, -20)), act(N("ฮ่องเต้ฟังแล้วไม่ตรัสอะไร", {}), (l) => heat(l, 5))),
+    C("ทำตัวตามปกติ", N("คุณกลับไปอ่านฎีกาต่อ มือไม่สั่น หรือพยายามไม่สั่น", {})),
+  ], { when: (l) => inCourt(l) && l.flags.qnRank === undefined && schemeHeat(l) >= 40 && !l.flags.schemeExposed, weight: 18, maxTimes: 0, title: "มีคนกำลังสืบ" }),
 
   E("ct.s_backstab", [18, 100], (l, c) => `${name(npcById(l, c.nid))}ที่คุณไว้ใจที่สุดในวัง ยื่นสมุดบัญชีลับของคุณให้คู่แข่ง — เขาเห็นว่าคุณสูงเกินไปแล้ว และคนที่สูงเกินไปมักล้มแรง`, [
     P("ชิงลงมือก่อน", odds(0.5), act(G((l, c) => `ก่อนสมุดบัญชีจะถึงมือคนอ่าน ${name(npcById(l, c.nid))}ถูกปลดด้วยข้อหาที่คุณเตรียมไว้นานแล้ว`, { align: -3 }), (l, c) => { const n = npcById(l, c.nid); if (n) n.out = true; heat(l, 15); }), act(B("คุณช้าไปหนึ่งก้าว — สมุดบัญชีถึงมือฮ่องเต้แล้ว", { fame: -6 }), (l) => { setRank(l, courtRank(l) - 2, "ถูกคนสนิทหักหลัง"); heat(l, 20); })),
@@ -217,7 +232,7 @@ yearHooks.push((l) => {
   if (l.worldId !== "murim" || !l.alive || !l.mw) return;
   const h = schemeHeat(l);
   if (h > 0) {
-    if (inCourt(l) && chance(l, h / 220)) l.flags.schemeExposed = true;
+    if (inCourt(l) && l.flags.qnRank === undefined && chance(l, h / 220)) l.flags.schemeExposed = true;
     heat(l, -6);
   }
   // หนุนองค์ชายที่ได้ครองราชย์ = ได้ขยับในราชสำนัก (ครั้งเดียวต่อการผลัดแผ่นดิน)

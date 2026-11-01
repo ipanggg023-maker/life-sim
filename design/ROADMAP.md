@@ -25,6 +25,7 @@ Decisions the player made (these override older docs where they differ):
 | E | Content for every kind of fan (design/MURIM_V2.md): manhwa turning points, sect life, treasures, Three Kingdoms incidents and the 36 stratagems, wuxia film set pieces — open to everyone, freely mixed, never a chosen "flavor" | done |
 | F | Letters from home, far-away family events, odds breakdown · fallen and redeemed disciples: hiding, suspicion, trial, cleansing, traitor hunts, return, and sect heads who change the whole sect. No pixel scenes: tried and dropped | done |
 | G | Replay loop: 15 routes tracked across lives, 12 side stories with 39 endings that heirs can inherit, late-game assets. Doctors only heal the sick (yearly visits used to give 79% peak fighters) | done |
+| H | Empress path for female characters (consort, empress, dowager, empress regnant), many kinds of betrayal, and ability-based survival when suspected or caught | done |
 | ongoing | More detailed events · fixes from the player's own playtest | ongoing |
 
 Also done on request: early childhood awakening (talent or a mysterious teacher), officials open to anyone who passed the exam.
