@@ -86,8 +86,19 @@ const ally = (l: Life) => { const g = npcById(l, l.flags.generalAlly); if (g?.al
 /** ลูกที่ส่งเข้าวังได้ (อายุ 14–30) */
 const marriageable = (l: Life) => people(l, "child").find((p) => p.alive && p.age >= 14 && p.age <= 30 && !p.tags?.includes("in_palace"));
 /** โอกาสขึ้นบัลลังก์: ชื่อเสียง สติปัญญา ลางร้ายที่ปล่อยไว้ พรรคพวก หักด้วยความชอบธรรมของราชวงศ์เดิมและร่องรอย */
-const throneOdds = (base: number) => (l: Life) => clamp(base + l.fame / 300 + (l.stats.smarts - 50) / 250 - (l.mw?.legitimacy ?? 50) / 400 + (l.flags.omenSpread ? 0.08 : 0) + (ally(l) ? 0.06 : 0) + (hasT(l, "mt_lost_royal") ? 0.1 : 0) - schemeHeat(l) / 250, 0.05, 0.85);
+const throneOdds = (base: number) => (l: Life) => clamp(base + l.fame / 300 + (l.stats.smarts - 50) / 250 - (l.mw?.legitimacy ?? 50) / 400 + (l.flags.omenSpread ? 0.12 : 0) + (ally(l) ? 0.1 : 0) + (hasT(l, "mt_lost_royal") ? 0.1 : 0) - schemeHeat(l) / 250, 0.05, 0.85);
 const ego = (l: Life) => emperorTitle(l);
+/** บอกผู้เล่นว่าขั้นต่อไปต้องทำอะไร */
+function nextStep(l: Life) {
+  const r = courtRank(l);
+  if (r === 5) {
+    const need = [!ally(l) && "มีแม่ทัพหรือขันทีเป็นพรรคพวก", !l.flags.omenSpread && "ปล่อยลางร้าย", schemeHeat(l) >= 30 && "รอให้ร่องรอยจาง", l.fame < 50 && "สร้างชื่อเสียง"].filter(Boolean);
+    return need.length ? `ก่อนชิงบัลลังก์ควร${need.join(" ")}` : "พร้อมชิงบัลลังก์แล้ว";
+  }
+  if (r === 4) return ally(l) ? "มีพรรคพวกพร้อมแล้ว ยึดอำนาจได้" : "ต้องมีแม่ทัพหรือขันทีเป็นพรรคพวกก่อนยึดอำนาจ";
+  if (r === 3) return "เหลืออีกขั้นถึงมหาเสนาบดี เริ่มหาพรรคพวกได้แล้ว";
+  return patronOf(l) ? "สร้างผลงานและรักษาน้ำใจผู้อุปถัมภ์ หรือเหยียบคนที่ขวางทางขึ้นไป" : "หาผู้อุปถัมภ์ในวัง หรือเหยียบคนที่ขวางทางขึ้นไป";
+}
 
 const fail = (text: string, d: { heat?: number; rank?: number; grudgeOn?: (l: Life, c: Ctx) => PNpc | undefined } = {}): Res =>
   act(B(text, { align: -2 }), (l, c) => { heat(l, d.heat ?? 30); if (d.rank) setRank(l, courtRank(l) + d.rank, "แผนพัง"); feel(d.grudgeOn?.(l, c), { grudge: 60, trust: -50 }); });
@@ -100,7 +111,8 @@ export const SCHEME_EVENTS: GameEvent[] = [
     manual: true,
     maxTimes: 0,
     title: "แผนชิงอำนาจ",
-    text: (l) => `ตอนนี้คุณคือ${COURT_RANKS[courtRank(l)]} — ร่องรอยของแผนเก่า: ${HEAT_LABEL(schemeHeat(l))}${patronOf(l) ? ` · ผู้อุปถัมภ์: ${patronOf(l)!.name}` : ""}${blocker(l) ? ` · คนที่ขวางทางขึ้น: ${blocker(l)!.name} (${blocker(l)!.title})` : ""}`,
+    text: (l) => `ตอนนี้คุณคือ${COURT_RANKS[courtRank(l)]} — ร่องรอยของแผนเก่า: ${HEAT_LABEL(schemeHeat(l))}${patronOf(l) ? ` · ผู้อุปถัมภ์: ${patronOf(l)!.name}` : ""}${blocker(l) ? ` · คนที่ขวางทางขึ้น: ${blocker(l)!.name} (${blocker(l)!.title})` : ""}
+${nextStep(l)}`,
     choices: [
       P("ขายความลับของผู้อุปถัมภ์ให้ศัตรูของเขา", odds(0.5), act(G((l) => `${name(patronOf(l))}ถูกปลดในเช้าวันรุ่งขึ้น — คนที่รับความลับไปตั้งคุณขึ้นแทนที่ คืนนั้นคุณนอนไม่หลับ`, { align: -6, tael: 40 }), (l) => {
         const old = patronOf(l)!;
@@ -148,7 +160,9 @@ export const SCHEME_EVENTS: GameEvent[] = [
         usurp(l);
         heat(l, 20);
         setRank(l, 6, "คุณขึ้นครองบัลลังก์มังกร");
-      }), act(B("ขุนนางฝ่ายราชวงศ์เดิมลุกฮือ — คุณถูกจับในห้องบรรทมของตัวเอง", { die: "ถูกประหารข้อหาชิงบัลลังก์" }), () => {}), { tone: "danger", survival: throneOdds(0.5), show: (l) => courtRank(l) === 5, pros: "เป็นฮ่องเต้ ตั้งราชวงศ์ของตัวเอง", cons: "พลาด = ประหาร" }),
+      }), (l, c) => (ally(l)
+        ? act(B((x) => `ขุนนางฝ่ายราชวงศ์เดิมลุกฮือ ${name(ally(x))}พาคุณออกทางประตูลับก่อนทหารจะมาถึง ชื่อคุณอยู่บนใบประกาศจับทั่วแผ่นดิน`, { hp: -20, fame: -10, flag: ["wanted", "palaceWithdrawn"] }), (x) => { x.flags.courtRank = 0; x.flags.heat = 90; x.flags.lastCrime = "กบฏ"; })
+        : B("ขุนนางฝ่ายราชวงศ์เดิมลุกฮือ — คุณถูกจับในห้องบรรทมของตัวเอง ไม่มีใครยืนข้างคุณเลย", { die: "ถูกประหารข้อหาชิงบัลลังก์" }))(l, c), { tone: "danger", survival: (l) => (ally(l) ? 0.95 : throneOdds(0.5)(l)), show: (l) => courtRank(l) === 5, pros: "เป็นฮ่องเต้ ตั้งราชวงศ์ของตัวเอง", cons: "พลาดตอนไม่มีพรรคพวก = ประหาร" }),
 
       // ───── ทางขึ้นบัลลังก์แบบอื่น ─────
       P("บีบหุ่นเชิดให้สละราชสมบัติให้ในพิธีหน้าศาลบรรพชน", throneOdds(0.35), act(BIG((l) => `ฮ่องเต้หุ่นเชิดอ่านราชโองการสละราชสมบัติด้วยเสียงสั่น — "ฟ้าเลือก${displayName(l)}" ไม่มีเลือดสักหยด ราษฎรเรียกวันนี้ว่าวันที่ฟ้าเปลี่ยนโดยชอบ และเรียกคุณว่า${ego(l)}`, { fame: 25 }), (l) => { usurp(l, { legit: 5, unrest: 5, how: `สละราชสมบัติให้${displayName(l)}ในพิธีหน้าศาลบรรพชน` }); heat(l, 5); setRank(l, 6, "คุณรับราชสมบัติจากมือหุ่นเชิด"); }), act(B("หุ่นเชิดหนีออกจากวังกลางดึกไปหาขุนนางฝ่ายราชวงศ์เดิม — ประกาศว่าคุณบังคับขู่เข็ญ หัวเมืองครึ่งหนึ่งไม่ยอมรับคุณอีก", { fame: -8 }), (l) => { heat(l, 35); if (l.mw) l.mw.unrest = clamp(l.mw.unrest + 15, 0, 100); }), { show: (l) => courtRank(l) === 5 && courtOf(l).emperor.temper === "puppet", pros: "ขึ้นบัลลังก์อย่างชอบธรรม ราชวงศ์มั่นคง", cons: "พลาด = หุ่นเชิดหนีไปตั้งตัวต่อต้าน" }),

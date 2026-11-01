@@ -7,7 +7,8 @@ import { ARCS, activeArcs, arcLine, carryArc } from "../content/murim/life/sideS
 import "../content/murim/life/sideStories2";
 import { startWarEra } from "../content/murim/world/war";
 import { activitiesFor, activityLocked, doActivity } from "./activities";
-import { allEvents, getEvent, visibleChoices } from "./events";
+import { castOf } from "../content/murim/world/palace";
+import { allEvents, currentScene, getEvent, visibleChoices } from "./events";
 import { ageUp, createLife, resolveChoice, runEvent } from "./game";
 import { nextFloat } from "./rng";
 import { newSoul } from "./soul";
@@ -88,6 +89,28 @@ describe("เรื่องต่อเนื่องข้างทาง", (
     expect(most).toBeLessThanOrEqual(4);
     expect(started).toBeGreaterThan(40);
     expect(ended).toBeGreaterThan(20);
+  });
+});
+
+describe("ทางขึ้นบัลลังก์", () => {
+  it("เมนูแผนบอกขั้นต่อไป · ชิงบัลลังก์พลาดตอนมีพรรคพวกรอดเป็นคนหนี ไม่มีพรรคพวกถูกประหาร", () => {
+    const rig = (seed: number, withAlly: boolean) => {
+      const l = base(seed, 50);
+      l.flags.palaceAccess = true; l.flags.courtRank = 5; l.flags.schemeHeat = 0; l.fame = -100; l.stats.smarts = 1;
+      if (withAlly) { const g = castOf(l).find((n) => n.role === "general" || n.role === "eunuch")!; l.flags.generalAlly = g.id; }
+      runEvent(l, "ct.s_menu");
+      return l;
+    };
+    const a = rig(40, true);
+    expect(currentScene(a.queue[0], a)!.text(a, a.queue[0].ctx)).toContain("ปล่อยลางร้าย");
+    const c = visibleChoices(a, a.queue[0]).find((o) => String(o.c.label).startsWith("ประกาศขึ้นครองบัลลังก์"))!;
+    c.c.run(a, a.queue[0].ctx, false);
+    expect(a.alive).toBe(true);
+    expect(a.flags.wanted).toBe(true);
+    const b = rig(41, false);
+    const d = visibleChoices(b, b.queue[0]).find((o) => String(o.c.label).startsWith("ประกาศขึ้นครองบัลลังก์"))!;
+    d.c.run(b, b.queue[0].ctx, false);
+    expect(b.alive).toBe(false);
   });
 });
 
