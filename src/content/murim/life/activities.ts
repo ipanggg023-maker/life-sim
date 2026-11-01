@@ -94,7 +94,7 @@ const MURIM_ACTS: Activity[] = [
   M({ group: "ยุทธภพ", id: "mw_travel", emoji: "🧭", name: "ย้ายถิ่นไปภูมิภาคอื่น", desc: "เปลี่ยนที่อยู่ เรื่องราวเปลี่ยนตาม", minAge: adult, run: (l) => { runEvent(l, "tv.move"); return { text: "" }; } }),
 
   // ───── ชีวิต ─────
-  M({ group: "ชีวิต", id: "mw_doctor", emoji: "🌿", name: "หาหมอจีน", desc: "สุขภาพ +", minAge: 0, cost: 2000, run: (l) => { if (l.age >= 18) addMoney(l, -2000); addStat(l, "health", randInt(l, 4, 10)); return ok("หมอแมะชีพจรนาน แล้วจ่ายยาต้มขมปี๋มาสามหม้อ"); } }),
+  M({ group: "ชีวิต", id: "mw_doctor", emoji: "🌿", name: "หาหมอจีน", desc: "รักษาตอนป่วย · ฟื้นได้ถึงสุขภาพ 60", minAge: 0, cost: 2000, run: (l) => { if (l.age >= 18) addMoney(l, -2000); const h = l.stats.health; if (h >= 60) return ok("หมอแมะชีพจรแล้วหัวเราะ \"ท่านไม่ได้ป่วย กินข้าวให้ตรงเวลาก็พอ\""); addStat(l, "health", Math.min(randInt(l, 6, 12), 60 - h)); return ok("หมอแมะชีพจรนาน แล้วจ่ายยาต้มขมปี๋มาสามหม้อ"); } }),
   M({ group: "ชีวิต", id: "mw_shrine", emoji: "🏮", name: "ไหว้บรรพชน/ดูดวง", desc: "ความสุข + บางทีโชค", minAge: 5, run: (l) => { addStat(l, "happiness", randInt(l, 2, 5)); if (chance(l, 0.2)) { addStat(l, "luck", 1); return ok("ธูปสามดอกไหม้เท่ากันพอดี — ซินแสบอกว่าลางดี"); } return ok("ควันธูปลอยขึ้นช้าๆ ใจคุณสงบลง"); } }),
   M({ group: "ชีวิต", id: "mw_tavern", emoji: "🍶", name: "ดื่มที่โรงเตี๊ยม", desc: "ความสุข + อาจได้เพื่อน", minAge: adult, cost: 1000, available: (l) => !mourning(l), run: (l) => {
     addMoney(l, -1000); addStat(l, "happiness", randInt(l, 3, 7));

@@ -13,6 +13,7 @@ import { worldSummary } from "../content/murim/life/world";
 import { regionOf } from "../content/murim/life/region";
 import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
 import { goalInfo } from "../content/murim/life/goals";
+import { arcLine } from "../content/murim/life/sideStories";
 import { Icon, noEmoji, type IconName } from "./Icon";
 import { disabilities, openInjuries } from "../engine/body";
 import { displayName, loc, money, shortName } from "../engine/util";
@@ -199,8 +200,15 @@ export function Comments({ items }: { items: { user: string; text: string; likes
 function WorldStrip({ life }: { life: Life }) {
   const w = worldSummary(life);
   const g = goalInfo(life);
+  const arcs = arcLine(life);
   return (
     <div className="meta-strip">
+      {arcs && (
+        <div className="meta-line">
+          <Icon name="pin" size={14} className="seal-ink" />
+          <span>เรื่องที่ค้างอยู่: {arcs}</span>
+        </div>
+      )}
       <div className={`meta-line ${w.crisis ? "crisis" : ""}`} title={w.desc}>
         <Icon name="pin" size={14} />
         <span>

@@ -13,6 +13,7 @@ import { mySect, saveSect } from "../m17core";
 import { courtOf } from "../world/court";
 import { courtLegacy } from "../world/palace";
 import { inheritSeeds } from "./seeds";
+import { activeArcs, carryArc } from "./sideStories";
 import { carryMartial } from "./npcMartial";
 import { legacyToWorld } from "../world/jianghu";
 import { factions } from "../world/factions";
@@ -171,7 +172,7 @@ export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | 
   // ลูก/ศิษย์ที่ฝึกวิชามาแล้ว เริ่มชีวิตด้วยขั้นของตัวเอง (npcMartial.ts)
   if (how !== "era") carryMartial(next, heir);
   // ความแค้นและบุญคุณที่ยังไม่สุก ตกถึงลูก/ศิษย์ (seeds.ts)
-  if (how !== "era") inheritSeeds(dead, next);
+  if (how !== "era") { inheritSeeds(dead, next); carryArc(dead, next); }
   next.flags.plHow = how;
   if (dead.flags.m17Epithet) next.flags.plEpithet = String(dead.flags.m17Epithet);
 }
@@ -261,6 +262,7 @@ export function lifeSummary(l: Life) {
   for (const p of l.people) if (p.alive && p.tags?.includes("sworn")) promises.push(`คำสาบานพี่น้องกับ${shortName(p)}`);
   const openGoal = l.goals?.find((g) => !g.end);
   if (openGoal) promises.push(`เป้าหมายที่ยังไม่สำเร็จ: ${goalById(openGoal.id)?.name}`);
+  for (const a of activeArcs(l)) promises.push(`เรื่องที่ยังไม่จบ: ${a.name}`);
   const assets: string[] = [];
   if (l.money > 0) assets.push(`เงิน ${money(l, l.money)}`);
   const best = artsOf(l).slice().sort((a, b) => b.m - a.m)[0];

@@ -15,6 +15,7 @@ import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds
 import { displayName, loc, money, people } from "../engine/util";
 import { disciplesOf, lifeSummary } from "../content/murim/life/generations";
 import { RIBBON_COUNT, ribbonOf } from "../content/murim/life/ribbons";
+import { routeGains, routeHints } from "../content/murim/life/routes";
 import { catInWorld } from "../content/achievements";
 
 export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}` | `heir:${string}` | `disciple:${string}`;
@@ -79,6 +80,7 @@ export function DeathScreen({
       </div>
 
       {life.worldId === "murim" && <RibbonCard life={life} soul={soul} />}
+      {life.worldId === "murim" && <RouteCard life={life} soul={soul} />}
 
       {real && <ContinuePanel life={life} open={open} busy={busy} go={go} />}
 
@@ -337,6 +339,24 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
       ))}
       {heirs.length === 0 && pupils.length === 0 && <p className="muted small">ไม่มีลูกหรือศิษย์ที่โตพอจะสืบต่อ — ครั้งหน้ามีครอบครัวหรือรับศิษย์ไว้ จะเล่นต่อเป็นพวกเขาได้</p>}
       <div className="continue-hint">↓ เลื่อนลงเพื่อดูสรุปชีวิต</div>
+    </div>
+  );
+}
+
+/** ทางที่ชีวิตนี้ขยับ และทางที่ยังไม่เคยเดิน */
+function RouteCard({ life, soul }: { life: Life; soul: Soul }) {
+  const gains = routeGains(soul, life);
+  const hints = routeHints(soul, life);
+  return (
+    <div className="card">
+      {gains.length > 0 && <div className="card-title">เส้นทางที่ไปไกลกว่าเดิม</div>}
+      {gains.map(({ r, tier }) => (
+        <p className="small" key={r.id}>{r.name} ขั้น {tier}/3 · {r.stages[tier - 1]}</p>
+      ))}
+      {hints.length > 0 && <div className="card-title">ชีวิตหน้าลองทางนี้</div>}
+      {hints.map((h) => (
+        <p className="small" key={h.name}>{h.name} · {h.next}</p>
+      ))}
     </div>
   );
 }

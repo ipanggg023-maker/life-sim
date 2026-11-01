@@ -296,6 +296,10 @@ export interface Soul {
   comboBook?: string[];
   /** ริบบิ้นที่สะสมได้ (ชีวิตละหนึ่ง แบบ BitLife) */
   ribbons?: string[];
+  /** เส้นทางชีวิต: ไกลสุดที่เคยไปถึงของแต่ละทาง (ทุกชีวิต) */
+  routes?: Record<string, number>;
+  /** ตอนจบของเรื่องต่อเนื่องที่เคยเห็น "เรื่อง:ตอนจบ" */
+  arcEnds?: string[];
   /** บันทึกยุทธภพ: ชีวิตทุกชีวิตและเหตุการณ์โลกที่ผ่านมา (MURIM_PLAN §9) */
   chronicle?: import("../content/murim/life/generations").ChronEntry[];
   perks: {

@@ -50,9 +50,9 @@ const ACTS: Activity[] = [
     run: (l) => { addMoney(l, -1000 * TAEL); l.flags.builtShrine = true; addStat(l, "luck", 5); return good("ควันธูปลอยขึ้นอีกครั้งจากหลังคาที่เพิ่งมุงใหม่ เจ้าอาวาสเขียนชื่อคุณลงในทะเบียนผู้มีพระคุณ"); },
   }),
   M({
-    id: "mw_physician", emoji: "🌿", name: "จ้างหมอหลวงมาดูแลทั้งปี", desc: "สุขภาพ ++", minAge: 30, cost: 150 * TAEL,
-    available: (l) => near(l, 150) && l.stats.health < 85,
-    run: (l) => { addMoney(l, -150 * TAEL); addStat(l, "health", randInt(l, 8, 14)); return good("หมอชราจากเมืองหลวงจับชีพจรคุณทุกเช้า และห้ามสิ่งที่คุณชอบทุกอย่าง"); },
+    id: "mw_physician", emoji: "🌿", name: "จ้างหมอหลวงมาดูแลทั้งปี", desc: "ฟื้นได้ถึงสุขภาพ 75 · ทำได้ห้าปีครั้ง", minAge: 30, cost: 150 * TAEL,
+    available: (l) => near(l, 150) && l.stats.health < 75 && l.age >= Number(l.flags.physicianNext ?? 0),
+    run: (l) => { addMoney(l, -150 * TAEL); l.flags.physicianNext = l.age + 5; addStat(l, "health", Math.min(randInt(l, 12, 18), 75 - l.stats.health)); return good("หมอชราจากเมืองหลวงจับชีพจรคุณทุกเช้า และห้ามสิ่งที่คุณชอบทุกอย่าง"); },
   }),
   M({
     id: "mw_elixir", emoji: "⚗️", name: "ซื้อโอสถต่ออายุ", desc: "สุขภาพ +25 · มีครั้งเดียวในชีวิต", minAge: 40, cost: 5000 * TAEL,

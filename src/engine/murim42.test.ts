@@ -92,7 +92,7 @@ describe("คนทรยศ: ธรรมะตกสู่มาร และ�
   it("เล่นสุ่มแล้วไม่ค้าง และเรื่องนี้เกิดจริงกับศิษย์ที่ทำชั่ว", () => {
     const r = { rng: 9 };
     const seen = new Set<string>();
-    for (let s = 1; s <= 30; s++) {
+    for (let s = 1; s <= 90; s++) {
       const l = member(100 + s, s % 3 ? "cloud" : "cult", s % 3 ? -25 : 15, 20);
       for (let y = 0; y < 30 && l.alive; y++) {
         l.stats.health = Math.max(l.stats.health, 60);

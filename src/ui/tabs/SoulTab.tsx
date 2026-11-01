@@ -18,6 +18,8 @@ import type { Act } from "../App";
 import { SaveTransfer } from "../SaveTransfer";
 import { CloudCard } from "../CloudCard";
 import { goalById } from "../../content/murim/life/goals";
+import { ROUTES } from "../../content/murim/life/routes";
+import { ARC_ENDINGS } from "../../content/murim/life/sideStories";
 import { injuryLabel } from "../../engine/body";
 import { SeriesCover } from "../SeriesCover";
 import { Fold } from "../Fold";
@@ -81,6 +83,19 @@ export function SoulTab({
                 ปี {c.year} · {noEmoji(c.text)}
               </p>
             ))}
+          />
+          <FoldList
+            title={`เส้นทางชีวิต · ตอนจบเรื่องเล่า ${(soul.arcEnds ?? []).length}/${ARC_ENDINGS}`}
+            closed
+            items={ROUTES.map((r) => {
+              const t = soul.routes?.[r.id] ?? 0;
+              return (
+                <p className="small" key={r.id}>
+                  {r.name} {t}/3
+                  {t < 3 && <span className="muted"> · ต่อไป: {r.stages[t]}</span>}
+                </p>
+              );
+            })}
           />
           <FoldList
             title="บันทึกยุทธภพ"
