@@ -600,6 +600,39 @@ export function choiceChance(life: Life, q: QueuedEvent, index: number): number 
   return c ? oddsOf(life, c, q.ctx) : undefined;
 }
 
+/**
+ * แตกโอกาสของตัวเลือกเป็นปัจจัย: ลองคำนวณใหม่โดยตัดทีละปัจจัยให้เป็นค่ากลาง แล้วดูว่าโอกาสขยับเท่าไร
+ * ใช้ได้กับทุกตัวเลือกโดยไม่ต้องรู้สูตรข้างใน · คืนค่าเดิมให้ life เสมอ
+ */
+export function choiceFactors(life: Life, q: QueuedEvent, index: number): { label: string; delta: number }[] | undefined {
+  const c = currentScene(q, life)?.choices[index];
+  const total = c && oddsOf(life, c, q.ctx);
+  if (!c || total === undefined) return;
+  const saved = { ...life.stats };
+  const rank = life.power?.rank;
+  const keys = Object.keys(saved) as (keyof Stats)[];
+  try {
+    const rows: { label: string; delta: number }[] = [];
+    for (const k of keys) {
+      life.stats[k] = 50;
+      rows.push({ label: STAT_LABEL[k], delta: total - oddsOf(life, c, q.ctx)! });
+      life.stats[k] = saved[k];
+    }
+    if (life.power) {
+      life.power.rank = 0;
+      rows.push({ label: "ขั้นฝีมือ", delta: total - oddsOf(life, c, q.ctx)! });
+    }
+    for (const k of keys) life.stats[k] = 50;
+    const base = oddsOf(life, c, q.ctx)!;
+    const known = rows.reduce((s, r) => s + r.delta, base);
+    const rest = total - known;
+    return [{ label: "ความยากของเรื่องนี้", delta: base }, ...rows, { label: "ปัจจัยอื่น", delta: rest }].filter((r, i) => i === 0 || Math.abs(r.delta) >= 0.01);
+  } finally {
+    Object.assign(life.stats, saved);
+    if (life.power && rank !== undefined) life.power.rank = rank;
+  }
+}
+
 // ───────────────────────── งาน ─────────────────────────
 
 export function jobRequirementMissing(life: Life, c: Career): string | undefined {

@@ -281,7 +281,7 @@ const aliveOf = (l: Life, rels: Relation[]) => l.people.filter((p) => p.alive &&
 export const withPerson = (rels: Relation[], f: (p: Person, l: Life) => boolean = () => true) => {
   const when = (l: Life) => aliveOf(l, rels).some((p) => f(p, l));
   // prepare จำเงื่อนไขของตัวเองไว้ — E/A จะบังคับเงื่อนไขนี้เสมอ แม้ event จะเขียน when ของตัวเองทับ
-  const prepare = Object.assign((l: Life): Ctx => { const ps = aliveOf(l, rels).filter((p) => f(p, l)); return { pid: pick(l, ps).id }; }, { need: when });
+  const prepare = Object.assign((l: Life): Ctx => { const ps = aliveOf(l, rels).filter((p) => f(p, l)); return { pid: pick(l, ps).id }; }, { need: when, rels });
   return { when, prepare };
 };
 type NeedPrep = ((l: Life) => Ctx) & { need?: (l: Life) => boolean };

@@ -1460,3 +1460,11 @@ details[open] > .fold-head .fold-chevron { transform: rotate(180deg); }
 :root[data-world="murim"] .fold-card > .fold-head { padding: 11px 12px 11px 16px; min-height: 48px; margin: 0; font-size: 16px; }
 :root[data-world="murim"] .fold-card[open] > .fold-head { padding-bottom: 6px; }
 :root[data-world="murim"] .fold-card > .fold-body { padding: 0 16px 14px; }
+
+/* แตกโอกาส: แตะ i ที่ตัวเลือก */
+.choice .pct { position: relative; }
+.odds-info { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-top: 3px; border: 1px solid currentColor; border-radius: 50%; font: italic 600 11px/1 Georgia, serif; opacity: .65; cursor: pointer; }
+.odds-info[aria-expanded="true"] { opacity: 1; }
+.odds-factors { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 6px; font-size: 12px; font-weight: 400; opacity: .9; }
+.odds-factors .up b { color: #2c6e4a; }
+.odds-factors .down b { color: #a33a2a; }

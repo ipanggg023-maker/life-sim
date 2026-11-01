@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { loc } from "../engine/util";
 import { currentScene, labelOf, lockedChoices, visibleChoices, type Outcome } from "../engine/events";
-import { choiceChance } from "../engine/game";
+import { choiceChance, choiceFactors } from "../engine/game";
 import type { Life } from "../engine/types";
 import { isRealistic } from "../content/worlds";
 import { Icon, noEmoji } from "./Icon";
@@ -35,6 +35,8 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
   const { shown, done, skip } = useTypewriter(text);
   // ตัวเลือกที่กดได้ก่อน แล้วตามด้วยตัวที่ยังขาดเงื่อนไข (ล็อกไว้พร้อมเหตุผล) ตามลำดับเดิม
   const choices = [...visibleChoices(life, q), ...lockedChoices(life, q)].sort((a, b) => a.index - b.index);
+  const [factorsOf, setFactorsOf] = useState<number>();
+  useEffect(() => setFactorsOf(undefined), [text]);
 
   return (
     <div className="overlay modal-overlay">
@@ -67,11 +69,34 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
                   {survive !== undefined && survive < 0.95 && (
                     <span className="warn">โอกาสรอดชีวิต {vague ? vagueLabel(survive) : `${Math.round(survive * 100)}%`}</span>
                   )}
+                  {factorsOf === index && (
+                    <span className="odds-factors">
+                      {choiceFactors(life, q, index)?.map((f, i) => (
+                        <span key={f.label} className={i > 0 ? (f.delta > 0 ? "up" : "down") : ""}>
+                          {f.label} <b>{i > 0 && f.delta > 0 ? "+" : ""}{Math.round(f.delta * 100)}%</b>
+                        </span>
+                      ))}
+                    </span>
+                  )}
                 </span>
                 {pct !== undefined && (
                   <span className="pct" title={vague ? "ยังประเมินคู่ต่อสู้ไม่ได้" : undefined}>
                     <b>{vague ? vagueLabel(pct) : `${Math.round(pct * 100)}%`}</b>
                     <small>{vague ? "ประเมินไม่ได้" : "สำเร็จ"}</small>
+                    {!vague && !missing && (
+                      <i
+                        className="odds-info"
+                        role="button"
+                        aria-label="ดูว่าอะไรขยับโอกาสนี้"
+                        aria-expanded={factorsOf === index}
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setFactorsOf(factorsOf === index ? undefined : index);
+                        }}
+                      >
+                        i
+                      </i>
+                    )}
                   </span>
                 )}
               </button>
