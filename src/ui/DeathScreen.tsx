@@ -355,7 +355,7 @@ function RouteCard({ life, soul }: { life: Life; soul: Soul }) {
       ))}
       {hints.length > 0 && <div className="card-title">ชีวิตหน้าลองทางนี้</div>}
       {hints.map((h) => (
-        <p className="small" key={h.name}>{h.name} · {h.next}</p>
+        <p className="small" key={h.name}>{h.name} · {h.next}<span className="muted"> — {h.how}</span></p>
       ))}
     </div>
   );

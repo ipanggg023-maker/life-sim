@@ -86,13 +86,12 @@ export function SoulTab({
           />
           <FoldList
             title="เส้นทางชีวิต"
-            closed
             items={ROUTES.map((r) => {
               const t = soul.routes?.[r.id] ?? 0;
               return (
                 <p className="small" key={r.id}>
                   {r.name} {t}/3
-                  {t < 3 && <span className="muted"> · ต่อไป: {r.stages[t]}</span>}
+                  {t < 3 && <span className="muted"> · ต่อไป: {r.stages[t]} — {r.how}</span>}
                 </p>
               );
             })}

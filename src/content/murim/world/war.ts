@@ -101,7 +101,7 @@ export const WAR_EVENTS: GameEvent[] = [
     minAge: 16,
     maxAge: 60,
     maxTimes: 0,
-    weight: (l) => (isWar(l) && !l.flags.lord && !l.flags.refusedLords ? 10 : 0),
+    weight: (l) => (isWar(l) && !l.flags.lord && !l.flags.refusedLords ? 30 : 0),
     title: "ทัพเกณฑ์คน",
     text: (l) => `ทูตจากสามแคว้นมาถึงอำเภอพร้อมกัน — ${kingdoms(l).map((k) => `${k.name}ของ${k.lord} (${k.trait})`).join(" · ")}`,
     choices: [

@@ -5,6 +5,8 @@ import { worldOfLife } from "../content/murim/life/world";
 import { ROUTES, applyRouteGifts, recordRoutes, routeGains, routeHints } from "../content/murim/life/routes";
 import { ARCS, activeArcs, arcLine, carryArc } from "../content/murim/life/sideStories";
 import "../content/murim/life/sideStories2";
+import { startWarEra } from "../content/murim/world/war";
+import { activitiesFor, activityLocked, doActivity } from "./activities";
 import { allEvents, getEvent, visibleChoices } from "./events";
 import { ageUp, createLife, resolveChoice, runEvent } from "./game";
 import { nextFloat } from "./rng";
@@ -90,6 +92,24 @@ describe("เรื่องต่อเนื่องข้างทาง", (
 });
 
 describe("เส้นทางชีวิต", () => {
+  it("ทุกทางบอกวิธีไปถึง · เคยปฏิเสธทูตแล้วยังกลับไปรับใช้เจ้าแคว้นได้ · เสมียนอำเภอเป็นทางเข้าราชการ", () => {
+    for (const r of ROUTES) expect(r.how?.length, r.id).toBeGreaterThan(5);
+    const l = base(30);
+    startWarEra(l);
+    l.flags.refusedLords = true;
+    expect(activitiesFor(l).find((a) => a.id === "mw_join_lord") && !activityLocked(l, activitiesFor(l).find((a) => a.id === "mw_join_lord")!)).toBe(true);
+    doActivity(l, "mw_join_lord");
+    expect(l.queue[0].eventId).toBe("mw.war.recruit");
+    expect(l.flags.refusedLords).toBeUndefined();
+    finish(l);
+    expect(l.flags.lord).toBeTruthy();
+    const c = base(31);
+    c.stats.smarts = 95; c.stats.luck = 95; Reflect.deleteProperty(c, "job");
+    for (let i = 0; i < 12 && !c.flags.rtClerk; i++) { c.queue = []; delete c.seen["rt.clerk"]; runEvent(c, "rt.clerk"); finish(c); }
+    expect((c as Life).job?.careerId).toBe("official");
+    expect(ROUTES.find((r) => r.id === "court")!.tier(c)).toBeGreaterThanOrEqual(1);
+  });
+
   it("นับจากสิ่งที่ทำจริง เก็บข้ามชีวิต และแนะนำทางที่ยังไม่เคยเดิน", () => {
     const s = newSoul();
     const l = base(20);
