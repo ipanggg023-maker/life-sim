@@ -22,6 +22,7 @@ Decisions the player made (these override older docs where they differ):
 | B | Romance drama: forbidden love, affairs and jealousy, arranged/political marriage, same-sex love | done |
 | C | NPCs who cultivate martial arts and lifelong rivals who grow alongside you | done |
 | D | Large-scale sect wars — sects rally allies, the player picks a side or leads | done |
+| E | Content for every kind of fan (design/MURIM_V2.md): manhwa turning points, sect life, treasures, Three Kingdoms incidents and the 36 stratagems, wuxia film set pieces — open to everyone, freely mixed, never a chosen "flavor" | done |
 | ongoing | More detailed events · fixes from the player's own playtest | ongoing |
 
 Also done on request: early childhood awakening (talent or a mysterious teacher), officials open to anyone who passed the exam.

@@ -83,4 +83,17 @@ describe("ฉากแบบหนังจีน: อ่างทองคำ �
     ageUp(m);
     expect(m.queue.some((q) => q.eventId === "wf.sixteen_meet") || m.log.some((e) => e.text.includes("สิบหกปี"))).toBe(true);
   });
+
+  it("สารภาพกับเจ้าสำนัก: ผลออกได้ทั้งสองทางตามการทอย ไม่ตกทางแพ้ตลอด", () => {
+    const fames = new Set<number>();
+    for (let s = 1; s <= 30; s++) {
+      const l = master(40 + s, 20);
+      l.stats.smarts = 50; l.fame = 20; l.flags.disguised = true;
+      runEvent(l, "wf.disguise_found");
+      choose(l, "ไปสารภาพกับเจ้าสำนักเอง");
+      finish(l);
+      fames.add(l.fame > 20 ? 1 : -1);
+    }
+    expect(fames.size).toBe(2);
+  });
 });
