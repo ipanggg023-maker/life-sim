@@ -21,6 +21,7 @@ import { edictLabel } from "../../content/murim/world/edicts";
 import { lordFavor } from "../../content/murim/world/war";
 import { PRESSURE_LABEL, ROLE_NAME, castOf, palaceOf, palaceRoleOf, patronOf, princeById, princesOf, support } from "../../content/murim/world/palace";
 import { Fold } from "../Fold";
+import { REGION_PERK, TRIP_COST, startTrip, tripLocked, visited, warAction } from "../../content/murim/life/journeys";
 
 export function JianghuTab({ life, act }: { life: Life; act: Act }) {
   const r = regionOf(life);
@@ -39,12 +40,30 @@ export function JianghuTab({ life, act }: { life: Life; act: Act }) {
         )}
         {w && <p className="small">ผู้ปกครองถิ่นนี้: {rulerHere(life)}</p>}
         {life.flags.exiled && <p className="small danger-text">ถูกเนรเทศ ห้ามกลับบ้านเกิด</p>}
+        {REGION_PERK[r.id] && <p className="small"><b>ของดีถิ่นนี้:</b> {REGION_PERK[r.id].text}</p>}
         <p className="muted small">ย้ายถิ่นได้ที่แท็บ ทำ → ยุทธภพ</p>
+        <Fold kind="section" id="jianghu-journey" title={<>เดินทางไปดูโลก <span className="fold-count">{visited(life).length}/{REGIONS.length}</span></>}>
+          <p className="muted small">ไปแล้วกลับ ไม่ได้ย้ายถิ่น · {TRIP_COST} ตำลึง · ใช้เวลา 2 ส่วน · ปีละครั้ง</p>
+          {REGIONS.map((x) => {
+            const why = tripLocked(life, x.id);
+            return (
+              <div className={`job ${why ? "locked" : ""}`} key={x.id}>
+                <div className="job-main">
+                  <div className="job-name">{x.name}{visited(life).some((v) => v.id === x.id) ? " · เคยไปแล้ว" : ""}</div>
+                  <div className="job-sub">{why ?? REGION_PERK[x.id]?.text}</div>
+                </div>
+                <button className="btn small" disabled={!!why} onClick={() => act((l) => startTrip(l, x.id))}>
+                  ไป
+                </button>
+              </div>
+            );
+          })}
+        </Fold>
       </Fold>
       <KingdomsCard life={life} />
       <RumorCard life={life} act={act} />
       <WorldCard life={life} />
-      {w && w.era !== "war" && <WarCard life={life} />}
+      {w && w.era !== "war" && <WarCard life={life} act={act} />}
       {w && w.era !== "war" && <CourtCard life={life} />}
       <MurimCard life={life} act={act} />
       <Fold id="jianghu-1" className="m17-card" title={<>ทำเนียบมังกร (ยอดฝีมือหนุ่มสาว อายุไม่เกิน 30)</>}>
@@ -339,7 +358,7 @@ function KingdomsCard({ life }: { life: Life }) {
 }
 
 /** สงครามสำนัก: แนวรบ ฝั่งของคุณ ศพสะสม และสงครามที่ผ่านมา */
-function WarCard({ life }: { life: Life }) {
+function WarCard({ life, act }: { life: Life; act: Act }) {
   const war = activeWar(life);
   const past = warsOf(life).filter((x) => x.ended).slice(-3).reverse();
   if (!war && !past.length) return null;
@@ -363,6 +382,11 @@ function WarCard({ life }: { life: Life }) {
             {side ? `คุณอยู่ฝ่าย${sideNames(life, war, side)}` : life.flags.warSide === "none" ? "คุณวางตัวเป็นกลาง" : "คุณยังไม่ได้เลือกข้าง"}
             {life.flags.deserter ? " · ถูกตราหน้าว่าหนีทัพ" : ""}
           </p>
+          {warAction(life) && (
+            <button className="btn small" disabled={!!warAction(life)!.locked} onClick={() => act(warAction(life)!.run)}>
+              {warAction(life)!.locked ?? warAction(life)!.label}
+            </button>
+          )}
         </>
       ) : (
         <p className="muted small">ตอนนี้ยุทธภพสงบ</p>

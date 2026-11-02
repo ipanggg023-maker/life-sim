@@ -462,8 +462,8 @@ export function MainScreen({
             ดูบันทึกก่อนหน้า ({hidden} ปี)
           </button>
         )}
-        {groups.slice(hidden).map((g) => (
-          <LogGroup key={g.age} age={g.age} entries={g.entries} />
+        {groups.slice(hidden).map((g, i) => (
+          <LogGroup key={`${g.age}:${hidden + i}`} age={g.age} entries={g.entries} />
         ))}
         {!murim && teaser && <p className="cliffhanger">{loc(life, teaser)}</p>}
         {life.report && life.report.to === life.age && life.report.lines.length > 0 && <ReportCard report={life.report} />}
