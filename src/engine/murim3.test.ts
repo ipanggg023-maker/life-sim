@@ -3,7 +3,7 @@ import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
 import { startDuel } from "../content/murim/life/duel";
 import { plansFor, setPlan } from "../content/murim/life/plan";
-import { combatPower, awaken } from "../content/hunter/power";
+import { combatPower, awaken } from "../content/core/power";
 import { bodyOf, combatFactor, disabilities, injure, permanentInjuries, tickBody, woundFrom } from "./body";
 import { visibleChoices } from "./events";
 import { ageUp, choiceChance, createLife, resolveChoice } from "./game";

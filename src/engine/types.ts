@@ -1,4 +1,4 @@
-export type WorldId = "hunter" | "murim" | "court" | "tower" | "apocalypse" | "ordinary";
+export type WorldId = "murim";
 
 /** ประเทศที่เกิด (เฉพาะโลกยุคปัจจุบัน) */
 export type Country = "th" | "kr" | "jp";

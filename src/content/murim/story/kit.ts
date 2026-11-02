@@ -8,7 +8,7 @@ import { feel, remember, type RelAxes } from "../../../engine/npc";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life, Person, Relation, StatKey } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, people, relationLabel, shortName } from "../../../engine/util";
-import { gainExp } from "../../hunter/power";
+import { gainExp } from "../../core/power";
 import { shiftAlign } from "../m17core";
 import { startDuel } from "../life/duel";
 import { setGoal } from "../life/goals";

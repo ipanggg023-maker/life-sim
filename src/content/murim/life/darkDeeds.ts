@@ -7,7 +7,7 @@ import { remember } from "../../../engine/npc";
 import { chance } from "../../../engine/rng";
 import type { Life, Person } from "../../../engine/types";
 import { addMoney, clamp, log, relationLabel, shortName } from "../../../engine/util";
-import { fightOdds } from "../../hunter/power";
+import { fightOdds } from "../../core/power";
 import { shiftAlign } from "../m17core";
 import { TAEL } from "../story/kit";
 import { courtOf, palaceAccess } from "../world/court";

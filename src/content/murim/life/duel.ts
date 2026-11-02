@@ -8,7 +8,7 @@ import { feel, hasTrait, remember } from "../../../engine/npc";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addStat, clamp, shortName } from "../../../engine/util";
-import { combatPower, gatePower } from "../../hunter/power";
+import { combatPower, gatePower } from "../../core/power";
 import { plantSeed } from "./seedStore";
 
 export type DuelResult = "win" | "lose" | "fled" | "draw" | "yield" | "dead";

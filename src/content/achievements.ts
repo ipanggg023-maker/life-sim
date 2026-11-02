@@ -96,10 +96,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "infamous", name: "ชื่อเสียงติดลบ", cat: "social", desc: "ชื่อเสียงต่ำกว่า -50", points: 10, hidden: true, check: (l) => l.fame <= -50 },
 
   // ── M22: โลก Hunter ──
-  { id: "h_boss50", name: "นักล่าบอสร้อยศพ", cat: "hunter", desc: "ล้มบอส 50 ตัว", points: 20, check: (l) => l.worldId === "hunter" && (l.power?.bossKills ?? 0) >= 50 },
-  { id: "h_gate100", name: "ร้อยประตู", cat: "hunter", desc: "เคลียร์ Gate 100 แห่ง", points: 20, check: (l) => l.worldId === "hunter" && (l.power?.gates ?? 0) >= 100 },
   { id: "h_red", name: "ผู้รอดจากเกตแดง", cat: "hunter", desc: "รอดจาก Red Gate", points: 15, check: (l) => !!l.flags.redGateSurvivor },
-  { id: "h_mundane", name: "คนธรรมดาในโลก Hunter", cat: "hunter", desc: "ไม่ตื่นพลังแต่มีทรัพย์สิน 50 ล้าน", points: 20, check: (l) => l.worldId === "hunter" && !l.power && l.age >= 30 && l.money - l.debt >= 50_000_000 },
 
   // ── M22: ยุทธภพ ──
   { id: "m_demon_lord", name: "จอมมาร", cat: "murim", desc: "ฝึกวิชามารจนถึงขั้นเหนือธรรมชาติ", points: 25, check: (l) => l.power?.hunterClass === "m_demon" && (l.power?.rank ?? 0) >= 7 },
@@ -128,7 +125,6 @@ export const ACHIEVEMENTS: Achievement[] = [
   // ── M22: โลกธรรมดา ──
   { id: "o_lv30", name: "ผู้ใช้ระบบขั้นสูง", cat: "ordinary", desc: "เลเวลระบบชีวิตถึง 30", points: 25, check: (l) => (l.sys?.level ?? 0) >= 30 },
   { id: "o_limit", name: "ขีดจำกัดมนุษย์", cat: "ordinary", desc: "ค่าสถานะใดก็ได้ถึง 100", points: 25, check: (l) => !!l.sys && ["str", "agi", "sta", "int", "cha", "luk"].some((k) => (l.sys as unknown as Record<string, number>)[k] >= 100) },
-  { id: "o_no_system", name: "ไม่มีระบบก็ดังได้", cat: "ordinary", desc: "ไม่เคยได้ระบบ แต่ชื่อเสียงถึง 50", points: 25, check: (l) => l.worldId === "ordinary" && !l.sys && l.fame >= 50 },
 ];
 
 /** หมวดของความสำเร็จ */

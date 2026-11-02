@@ -7,7 +7,7 @@ import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, money } from "../../../engine/util";
 import { DUEL_END, myPower, startDuel } from "../life/duel";
 import { YOUNG_SIZE, myYoungPlace, youngDrop, youngList, youngTake } from "./jianghu";
-import { gainExp } from "../../hunter/power";
+import { gainExp } from "../../core/power";
 import {
   EPITHETS, RANK_SIZE, TOP_TEN, type Master, challengeTarget, dropPlace, givePill, hurt, masterAt, masterLabel, masterOdds, masterSurvival, masters, myPlace, npcName, rankOf, shiftAlign, takePlace,
 } from "../m17core";

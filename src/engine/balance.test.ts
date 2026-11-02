@@ -3,8 +3,8 @@
 import { describe, expect, it } from "vitest";
 import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
-import { CAREERS } from "../content/hunter/careers";
-import { rankLabel } from "../content/hunter/power";
+import { CAREERS } from "../content/core/careers";
+import { rankLabel } from "../content/core/power";
 import { artsOf } from "../content/murim/martial/arts";
 import { trainArt } from "../content/murim/martial/training";
 import { plansFor, setPlan } from "../content/murim/life/plan";

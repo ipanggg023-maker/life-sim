@@ -5,7 +5,7 @@ import { kill, runEvent } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life, StatKey } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, log, money, shortName } from "../../../engine/util";
-import { gainExp } from "../../hunter/power";
+import { gainExp } from "../../core/power";
 import { addQi, artsOf, practise } from "../martial/arts";
 import { shiftAlign } from "../m17core";
 import { startDuel } from "./duel";

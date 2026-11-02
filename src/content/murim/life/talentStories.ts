@@ -4,7 +4,7 @@ import type { Ctx, GameEvent } from "../../../engine/events";
 import { sectOffers } from "../martial/sectOffers";
 import type { Life } from "../../../engine/types";
 import { people } from "../../../engine/util";
-import { guildsFor } from "../../hunter/power";
+import { guildsFor } from "../../core/power";
 import { rootOf } from "../martial/arts";
 import { B, BIG, C, E, FIGHT, G, K, N, P, PAY, ab, kinDies, near, type Res } from "../story/kit";
 import { evolvedOf, hasT } from "./talentArcs";

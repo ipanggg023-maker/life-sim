@@ -1,4 +1,4 @@
-import { CAREERS, careerById, facultyById } from "../../content/hunter/careers";
+import { CAREERS, careerById, facultyById } from "../../content/core/careers";
 import { worldMatches, worldOf } from "../../content/worlds";
 import { applyJob, gradeToGpa, isStudent, jobChance, jobRequirementMissing, quitJob, salaryOf, studyHard, workHard } from "../../engine/game";
 import type { Life, SchoolStage } from "../../engine/types";

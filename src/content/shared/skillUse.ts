@@ -4,7 +4,7 @@ import { sceneExtras, type Choice, type Ctx, type Scene } from "../../engine/eve
 import { yearHooks } from "../../engine/game";
 import type { Life } from "../../engine/types";
 import { addStat, checkChance } from "../../engine/util";
-import { skillsOf } from "../hunter/power";
+import { skillsOf } from "../core/power";
 import { SKILL_TYPE, masteryOf } from "../skills";
 
 /** ให้ fightOdds/survivalOdds เห็นโบนัสของสกิลระหว่างคำนวณ */

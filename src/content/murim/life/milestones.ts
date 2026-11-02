@@ -6,7 +6,7 @@ import { kill } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { HunterClass, Life } from "../../../engine/types";
 import { addFame, addStat, clamp, createPerson } from "../../../engine/util";
-import { CLASSES, awaken, classById, gainExp, guildById, guildsFor, offerClasses, rankLabel, rankUp, rollAwakening, settleNone, trackOf } from "../../hunter/power";
+import { CLASSES, awaken, classById, gainExp, guildById, guildsFor, offerClasses, rankLabel, rankUp, rollAwakening, settleNone, trackOf } from "../../core/power";
 import { QI_NEED, addQi, comprehension, learn, qiYears, rootOf } from "../martial/arts";
 import { woundFrom } from "../../../engine/body";
 import { gift, giftAll } from "./gifts";

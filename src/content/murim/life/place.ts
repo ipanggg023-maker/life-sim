@@ -4,7 +4,7 @@ import { runEvent } from "../../../engine/game";
 import { chance, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addMoney, addStat, checkChance, createPerson, shortName } from "../../../engine/util";
-import { gainExp } from "../../hunter/power";
+import { gainExp } from "../../core/power";
 import { TAEL } from "../story/kit";
 import { jailed } from "./law";
 

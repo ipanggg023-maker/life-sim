@@ -8,7 +8,7 @@ import { randInt } from "./rng";
 import type { Legacy, Life, Memory, Soul, Wealth } from "./types";
 import { clamp, displayName, log, money, people, shortName } from "./util";
 import { seriesOf } from "../content/manhwa";
-import { awaken, offerClasses, rankLabel, rollAwakening } from "../content/hunter/power";
+import { awaken, offerClasses, rankLabel, rollAwakening } from "../content/core/power";
 import { ribbonOf } from "../content/murim/life/ribbons";
 import { applyRouteGifts, recordRoutes } from "../content/murim/life/routes";
 import { recordDynasty } from "../content/murim/life/dynasty";

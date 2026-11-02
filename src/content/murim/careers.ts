@@ -1,5 +1,5 @@
-import { CAREERS } from "../hunter/careers";
-import { RETAINER, guildById } from "../hunter/power";
+import { CAREERS } from "../core/careers";
+import { RETAINER, guildById } from "../core/power";
 
 // ───────────────────────── อาชีพในยุทธภพ ─────────────────────────
 

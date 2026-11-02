@@ -2,8 +2,8 @@
 import { chance, pick, randInt } from "../engine/rng";
 import type { Life, LogEntry, Series } from "../engine/types";
 import { displayName, loc, log, people } from "../engine/util";
-import { classById, rankLabel } from "./hunter/power";
-import { worldFacts } from "./hunter/worldFacts";
+import { classById, rankLabel } from "./core/power";
+import { worldFacts } from "./core/worldFacts";
 import { isRealistic, worldOf } from "./worlds";
 import { birthplaceOf } from "./murim/life/region";
 
@@ -140,9 +140,7 @@ export function cliffhanger(life: Life): string | undefined {
   if (!life.alive) return;
   const next = life.age + 1;
   const f = life.flags;
-  if (life.worldId === "apocalypse" && !f.doomed && Number(f.awakenAge) === next) return "…ไม่มีใครรู้เลยว่า ปีหน้าโลกจะไม่เหมือนเดิมอีกต่อไป";
-  if (life.worldId === "ordinary" && !life.power && Number(f.awakenAge) === next && f.awakenTrack !== "never") return "…คืนนั้น คุณได้ยินเสียง \"ติ๊ง\" เบาๆ ในหัวเป็นครั้งแรก";
-  if (life.worldId !== "apocalypse" && life.worldId !== "ordinary" && !life.power && Number(f.awakenAge) === next && f.awakenTrack !== "never") return "…คืนนั้น ไข้ของคุณเริ่มขึ้นสูงผิดปกติ";
+  if (!life.power && Number(f.awakenAge) === next && f.awakenTrack !== "never") return "…คืนนั้น ไข้ของคุณเริ่มขึ้นสูงผิดปกติ";
   if (!life.power && Number(f.ceremonyAge) === next && !["hunter", "tower", "apocalypse", "ordinary"].includes(life.worldId)) return "…วันที่ทุกคนรอคอยกำลังจะมาถึง";
   if (!f.turnDone && Number(f.tpAge) === next) return "…และแล้ว วันที่ชะตาจะเปลี่ยนก็ใกล้เข้ามา";
   if (f.role === "villain" && [12, 16, 18, 20].includes(next) && !f.fateDefied) return next === 20 ? "…ปีหน้า คือวันที่นิยายบอกว่าคุณจะตาย" : "…บทถัดไปของนิยายกำลังจะเริ่มขึ้น";

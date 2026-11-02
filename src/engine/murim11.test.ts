@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
-import { CAREERS, careerById } from "../content/hunter/careers";
-import { combatPower } from "../content/hunter/power";
+import { CAREERS, careerById } from "../content/core/careers";
+import { combatPower } from "../content/core/power";
 import { JOB_ACTIONS, doJobAction, jobActionLocked, jobActionsFor } from "../content/murim/life/jobActions";
 import { visibleChoices } from "./events";
 import { createLife, resolveChoice, salaryOf } from "./game";

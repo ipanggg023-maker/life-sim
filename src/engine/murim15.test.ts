@@ -77,7 +77,6 @@ describe("กลุ่ม 4: UI ระบบเวลา ความเสถ�
     const kid = murim(12); kid.age = 7;
     expect(timeLeft(kid)).toBe(2);
     // โลกอื่นไม่จำกัด
-    expect(timeLeft(createLife({ seed: 1, worldId: "hunter" }))).toBeUndefined();
   });
 
   it("% ที่แสดงคือ % ที่ใช้จริง และอัตราชนะตรงกับที่แสดงเมื่อเล่นจำนวนมาก (EXPANSION §17)", () => {

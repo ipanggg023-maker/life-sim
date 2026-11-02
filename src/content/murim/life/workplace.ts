@@ -7,7 +7,7 @@ import { feel, relOf } from "../../../engine/npc";
 import { randInt } from "../../../engine/rng";
 import type { Life, Person } from "../../../engine/types";
 import { addMoney, addStat, clamp, createPerson, log, money, shortName } from "../../../engine/util";
-import { careerById } from "../../hunter/careers";
+import { careerById } from "../../core/careers";
 import { DARK_JOBS } from "../careers";
 import { B, BIG, C, E, G, K, N, P, PAY, nm, who, withPerson, type Res } from "../story/kit";
 import { plantSeed } from "./seedStore";

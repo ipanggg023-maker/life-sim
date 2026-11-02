@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
-import { careerById } from "../content/hunter/careers";
+import { careerById } from "../content/core/careers";
 import { knows } from "../content/murim/martial/arts";
 import { worldOfLife } from "../content/murim/life/world";
 import { activeWar, mySide, warsOf } from "../content/murim/world/sectWar";

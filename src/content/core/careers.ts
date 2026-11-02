@@ -1,5 +1,4 @@
 import type { Faculty, Life, StatKey, SysStat, WorldId } from "../../engine/types";
-import { RETAINER, guildById } from "./power";
 
 export interface Career {
   id: string;
@@ -168,61 +167,6 @@ export const CAREERS: Career[] = [
 
 // ── อาชีพเฉพาะโลก Hunter ──
 CAREERS.unshift(
-  {
-    id: "hunter",
-    world: "hunter",
-    name: "Hunter",
-    emoji: "🗡️",
-    minAge: 18,
-    titles: ["Hunter อิสระ", "Hunter ประจำทีม", "หัวหน้าทีมจู่โจม", "รองหัวหน้ากิลด์", "หัวหน้ากิลด์"],
-    baseSalary: 0,
-    key: "health",
-    dc: 0,
-    needsPower: true,
-    // เงินประจำจากสมาคม/กิลด์ตามแรงก์ — รายได้หลักมาจากการบุก Gate
-    salary: (life) => {
-      const p = life.power;
-      if (!p) return 0;
-      const pay = RETAINER[p.rank] * (guildById(p.guild)?.pay ?? 1);
-      return pay * (1 + 0.2 * ((life.job?.level ?? 1) - 1));
-    },
-  },
-  {
-    id: "porter",
-    world: "hunter",
-    name: "คนแบกของในดันเจี้ยน",
-    emoji: "🎒",
-    minAge: 18,
-    titles: ["คนแบกของมือใหม่", "คนแบกของประจำ", "หัวหน้าคนแบกของ", "ผู้ประสานงานดันเจี้ยน", "ผู้จัดการฝ่ายสนับสนุน"],
-    baseSalary: 260_000,
-    key: "health",
-    dc: 40,
-    mundaneOnly: true,
-  },
-  {
-    id: "association",
-    world: "hunter",
-    name: "เจ้าหน้าที่สมาคม Hunter",
-    emoji: "🏛️",
-    minAge: 21,
-    titles: ["เจ้าหน้าที่ประเมินแรงก์", "เจ้าหน้าที่อาวุโส", "หัวหน้าฝ่ายตรวจสอบ Gate", "ผู้อำนวยการสาขา", "รองประธานสมาคม"],
-    baseSalary: 330_000,
-    anyDegree: true,
-    key: "smarts",
-    dc: 55,
-  },
-  {
-    id: "mana_research",
-    world: "hunter",
-    name: "นักวิจัยคริสตัลมานา",
-    emoji: "🧪",
-    minAge: 22,
-    titles: ["ผู้ช่วยวิจัย", "นักวิจัย", "นักวิจัยอาวุโส", "หัวหน้าห้องแล็บ", "ผู้อำนวยการสถาบันวิจัยมานา"],
-    baseSalary: 450_000,
-    degree: ["eng", "med"],
-    key: "smarts",
-    dc: 60,
-  },
 );
 
 export const careerById = (id: string) => CAREERS.find((c) => c.id === id);

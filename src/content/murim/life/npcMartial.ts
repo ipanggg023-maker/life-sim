@@ -8,12 +8,12 @@ import { feel, relOf, remember } from "../../../engine/npc";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life, Person } from "../../../engine/types";
 import { clamp, createPerson, log, shortName } from "../../../engine/util";
-import { rankLabel } from "../../hunter/power";
+import { rankLabel } from "../../core/power";
 import { B, BIG, C, E, FIGHT, G, N, type Res } from "../story/kit";
 import { DUEL_END } from "./duel";
 import { martialClan } from "../names";
 import { QI_NEED } from "../martial/arts";
-import { awaken } from "../../hunter/power";
+import { awaken } from "../../core/power";
 
 const STYLES = ["กระบี่", "ฝ่ามือ", "ทวน", "อาวุธลับ", "ตัวเบา", "หมัด", "ดาบ"];
 const SECTS = ["สำนักกระบี่เมฆา", "วัดวัชระ", "พรรคกระยาจก", "ตระกูลถัง", "สำนักคุ้มภัยมังกรเหิน", "สำนักเขาบุปผา", "สำนักเขาหิมะตะวันตก", "สำนักภิกษุณีเขาหยก", "ตระกูลหนานกง", "ตระกูลเผิงดาบเหล็ก", "ตระกูลจูเก๋อ", "หอเงาพันหน้า", "ไม่มีสำนัก", "ไม่มีสำนัก"];

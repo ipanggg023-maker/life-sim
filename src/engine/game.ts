@@ -1,8 +1,8 @@
-import { CAREERS, careerById, facultyById } from "../content/hunter/careers";
+import { CAREERS, careerById, facultyById } from "../content/core/careers";
 import { HIDDEN_RARITY_ODDS, RARITY_ODDS, TALENTS, talentById, talentFlavor } from "../content/talents";
 import { currentScene, getEvent, pickEvents, stillValid, type Choice, type Ctx, type Outcome } from "./events";
 import { chance, newSeed, nextFloat, pick, randInt, weightedPick } from "./rng";
-import type { Career } from "../content/hunter/careers";
+import type { Career } from "../content/core/careers";
 import type { Country, Faculty, Gender, SysStat, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
 import { isRealistic, worldMatches, worldOf } from "../content/worlds";
 import { feel, relOf, remember } from "./npc";
@@ -13,7 +13,7 @@ import { convertOldTalents, gift } from "../content/murim/life/gifts";
 /** ระบบความรู้สึกหลายแกนของ NPC ใช้เฉพาะโลกสมจริง (โลกอื่นใช้ความสนิทแบบเดิม) */
 const npcOn = (l: Life) => isRealistic(l.worldId);
 import { countryOf } from "../content/countries";
-import { rollAwakenTrack } from "../content/hunter/power";
+import { rollAwakenTrack } from "../content/core/power";
 import { awakenArc, birthArc, maybeComment, seriesOf, startChapter } from "../content/manhwa";
 import { checkTitles, titleBonus } from "../content/titles";
 import { sponsorBonus } from "../content/sponsors";
@@ -115,7 +115,7 @@ export function createLife(opts: BirthOptions = {}): Life {
     version: 1,
     sv: SAVE_VERSION,
     id: "",
-    worldId: opts.worldId ?? "hunter",
+    worldId: opts.worldId ?? "murim",
     seed,
     rng: seed,
     firstName: "",

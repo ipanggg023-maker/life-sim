@@ -1,17 +1,7 @@
 // ตรวจทุก event ทุกตัวเลือกผ่าน engine จริง: ไม่พัง · มีข้อความ · ค่าสถานะ/เงินไม่เพี้ยน · ฉากถัดไปมีอยู่จริง
 import { describe, expect, it } from "vitest";
-import { loadApocalypseWorld } from "../content/apocalypse";
-import { startScenario } from "../content/apocalypse/scenario";
-import { loadCourtWorld } from "../content/court";
-import { startCourtQuest } from "../content/court/quest";
-import { loadHunterWorld } from "../content/hunter";
-import { startGate } from "../content/hunter/events/gates";
 import { loadMurimWorld } from "../content/murim";
-import { loadOrdinaryWorld } from "../content/ordinary";
-import { startChallenge } from "../content/ordinary/system";
 import { loadSharedEvents } from "../content/shared";
-import { loadTowerWorld } from "../content/tower";
-import { startClimb } from "../content/tower/climb";
 import { worldMatches } from "../content/worlds";
 import { ACTIVITIES, activityLocked, doActivity } from "./activities";
 import { allEvents, currentScene, getEvent, labelOf, visibleChoices, type GameEvent } from "./events";
@@ -19,16 +9,11 @@ import { ageUp, applyJob, createLife, resolveChoice } from "./game";
 import { nextFloat } from "./rng";
 import type { Life, WorldId } from "./types";
 
-loadHunterWorld();
 loadMurimWorld();
-loadCourtWorld();
-loadTowerWorld();
-loadApocalypseWorld();
-loadOrdinaryWorld();
 loadSharedEvents();
 
-const WORLDS: WorldId[] = ["hunter", "murim", "court", "tower", "apocalypse", "ordinary"];
-const QJ: Record<WorldId, string> = { hunter: "hunter", murim: "wanderer", court: "adventurer", tower: "climber", apocalypse: "survivor", ordinary: "store" };
+const WORLDS: WorldId[] = ["murim"];
+const QJ: Record<WorldId, string> = { murim: "wanderer" };
 
 /** ปัญหาที่เจอ (รวมไว้แล้วรายงานทีเดียว) */
 const problems: string[] = [];
@@ -161,12 +146,7 @@ describe("ตรวจทุก event", () => {
     }
     // ภารกิจ/Gate/หอคอย/ฉากย่อย/ภารกิจระบบ ที่เปิดจากปุ่ม
     const starters: Array<[WorldId, (l: Life) => void]> = [
-      ["hunter", (l) => startGate(l, Math.max(0, l.power?.rank ?? 0))],
       ["murim", (l) => { l.queue.push({ eventId: ["cr.rob", "cr.steal", "tv.move", "cr.trial"][l.age % 4], ctx: {} }); }],
-      ["court", (l) => startCourtQuest(l, Math.max(0, l.power?.rank ?? 0))],
-      ["apocalypse", (l) => startScenario(l, Math.max(0, l.power?.rank ?? 0))],
-      ["tower", (l) => startClimb(l, Math.max(0, l.power?.rank ?? 0))],
-      ["ordinary", (l) => startChallenge(l)],
     ];
     for (const [w, start] of starters) {
       const bases = snaps[w].filter((l) => l.power || l.sys);
@@ -253,7 +233,7 @@ describe("ตรวจการเกิดใหม่ทุกแบบ", () =
     };
     let kinds = { heir: 0, regress: 0, era: 0, cross: 0 };
     for (let s = 1; s <= 24; s++) {
-      let l = createLife({ seed: s * 7331, worldId: WORLDS[s % 6] });
+      let l = createLife({ seed: s * 7331, worldId: WORLDS[0] });
       applySoul(l, soul, true);
       for (let gen = 0; gen < 4; gen++) {
         live(l);
@@ -266,7 +246,7 @@ describe("ตรวจการเกิดใหม่ทุกแบบ", () =
         if (mode === 0 && heirs.length) { l = buildHeir(l, heirs[0].id); applySoul(l, soul, true); kinds.heir++; }
         else if (mode === 1) { l = buildRegression(l, undefined, false); applySoul(l, soul, false); kinds.regress++; }
         else if (mode === 2) { l = createLife({ ...nextEraOptions(l), worldId: l.worldId }); applySoul(l, soul, true); kinds.era++; }
-        else { l = createLife({ worldId: WORLDS[(s + gen) % 6], pastLife: pastSelfOf(l) }); applySoul(l, soul, true); kinds.cross++; }
+        else { l = createLife({ worldId: WORLDS[0], pastLife: pastSelfOf(l) }); applySoul(l, soul, true); kinds.cross++; }
         expect(l.alive).toBe(true);
         expect(l.pastSeen?.length ?? 0).toBeGreaterThan(0);
         expect(JSON.parse(JSON.stringify(l))).toEqual(l);

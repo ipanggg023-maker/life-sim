@@ -5,7 +5,7 @@ import { kill, yearHooks } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, log } from "../../../engine/util";
-import { combatPower, fightOdds, gainExp, survivalOdds } from "../../hunter/power";
+import { combatPower, fightOdds, gainExp, survivalOdds } from "../../core/power";
 import { EPITHETS, mySect, npcName, saveSect, shiftAlign, type MySect } from "../m17core";
 import { ARTS, knows, learn } from "../martial/arts";
 import { calYear } from "../life/world";

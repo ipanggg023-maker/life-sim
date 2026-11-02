@@ -142,18 +142,15 @@ export const MORE_PASSIVES: PassiveDef[] = [
   P("p_never_awaken", "🙂", "คนธรรมดาที่ภูมิใจ", "อายุ 50 โดยไม่เคยตื่นพลัง (ในโลกที่มีพลัง)", (l) => l.age >= 50 && !l.power && !l.sys, { yearly: { happiness: 1 }, check: { smarts: 0.03, luck: 0.03 } }),
 
   // ───────── ประจำโลก ─────────
-  P("p_hunter_city", "🌆", "ชาวเมืองแห่ง Gate", "อยู่ในโลก Hunter จนอายุ 40", (l) => inWorld(l, "hunter") && l.age >= 40, { survival: 0.02 }),
   P("p_core_trader", "💠", "พ่อค้าคอร์", "เจอเหตุการณ์ตลาดคอร์ 6 ครั้ง (Hunter)", (l) => sp(l, "h16.mkt", "h16.m_") >= 6, { money: 0.05 }),
   P("p_murim_wanderer", "🍃", "จอมยุทธ์พเนจร", "เจอเหตุการณ์ยุทธภพ 40 เรื่อง", (l) => inWorld(l, "murim") && sp(l, "m", "murim") >= 40, { cp: 2, check: { health: 0.03 } }),
   P("p_jianghu_debts", "📒", "บุญคุณความแค้นยุทธภพ", "เจอเหตุการณ์สมุดบุญคุณ 5 เรื่อง", (l) => sp(l, "m17.l.") >= 5, { check: { luck: 0.03, smarts: 0.03 } }),
   P("p_court_player", "🎭", "นักเล่นเกมการเมือง", "เจอเหตุการณ์การเมืองในราชสำนัก 10 เรื่อง", (l) => sp(l, "c18.") >= 10, { check: { smarts: 0.04, looks: 0.03 } }),
-  P("p_novel_breaker", "📕", "ผู้แหกพล็อต", "เข้าร่างในนิยายแล้วรอดเกินอายุ 40", (l) => inWorld(l, "court") && !!l.flags.role && l.age >= 40, { survival: 0.03, check: { luck: 0.03 } }),
   P("p_tower_climber", "🗼", "นักปีนชั้นสูง", "ปีนหอคอยถึงชั้น 30", (l) => n(l, "floor") >= 30, { survival: 0.03, cp: 2 }),
   P("p_tower_peak", "☁️", "ผู้มองลงมาจากเมฆ", "ปีนหอคอยถึงชั้น 70", (l) => n(l, "floor") >= 70, { survival: 0.05, cp: 4 }),
   P("p_apoc_survivor", "☢️", "ผู้รอดจากวันสิ้นโลก", "มีชีวิตรอด 10 ปีหลังวันโลกพัง", (l) => !!l.flags.doomed && sp(l, "a20.", "apoc.") >= 20, { survival: 0.04, yearly: { health: 1 } }),
   P("p_base_builder", "🏗️", "ผู้สร้างฐาน", "เจอเหตุการณ์ในฐาน 10 เรื่อง", (l) => sp(l, "a20.b.", "a20.crisis.") >= 10, { survival: 0.03, money: 0.03 }),
   P("p_system_user", "🔔", "ผู้ใช้ระบบเต็มตัว", "ระบบชีวิตเลเวล 10 (โลกธรรมดา)", (l) => (l.sys?.level ?? 0) >= 10, { exp: 0.06, check: { smarts: 0.03 } }),
-  P("p_ordinary_hero", "🦸", "ฮีโร่ธรรมดา", "ภารกิจระบบสำเร็จ 10 ครั้ง (โลกธรรมดา)", (l) => inWorld(l, "ordinary") && (l.power?.gates ?? 0) >= 10, { survival: 0.02, check: { health: 0.03 } }),
   P("p_three_nations", "🌏", "สามแผ่นดิน", "เจอเหตุการณ์เฉพาะประเทศ 12 เรื่อง", (l) => sp(l, "cty.") >= 12, { check: { smarts: 0.03, luck: 0.02 } }),
   P("p_storyline", "📚", "ตัวละครหลักของเรื่อง", "จบเส้นเรื่องต่อเนื่อง 2 เรื่อง", (l) => Object.keys(l.flags).filter((k) => /^q_[a-z0-9]+$/.test(k) && Number(l.flags[k]) === 99).length >= 2, { exp: 0.05, check: { luck: 0.03 } }),
   P("p_nemesis_end", "🎯", "ปิดบัญชีคู่ปรับ", "ชนะคู่ปรับประจำชีวิต", (l) => !!l.flags.nemesisBeaten, { cp: 3, yearly: { happiness: 1 } }),

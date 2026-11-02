@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
-import { CAREERS } from "../content/hunter/careers";
+import { CAREERS } from "../content/core/careers";
 import { foundSect, mySect, saveSect } from "../content/murim/m17core";
 import { inheritMurim } from "../content/murim/life/generations";
 import { worldOfLife } from "../content/murim/life/world";

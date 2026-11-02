@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { loadMurimWorld } from "../content/murim";
 import { loadSharedEvents } from "../content/shared";
-import { fightOdds, survivalOdds } from "../content/hunter/power";
+import { fightOdds, survivalOdds } from "../content/core/power";
 import { MURIM_TALENTS, gift } from "../content/murim/life/gifts";
 import { hearRumor, rumorsOf, type Truth } from "../content/murim/life/rumors";
 import { worldOfLife } from "../content/murim/life/world";
 import { addQi, learnRate, qiYears, rootOf } from "../content/murim/martial/arts";
 import { talentById } from "../content/talents";
-import { careerById } from "../content/hunter/careers";
+import { careerById } from "../content/core/careers";
 import { injure, tickBody } from "./body";
 import { getEvent, labelOf, visibleChoices } from "./events";
 import { ageUp, choiceChance, createLife, lifespanHooks, migrateLife, resolveChoice, runEvent, salaryOf } from "./game";
@@ -45,8 +45,6 @@ describe("พรสวรรค์ยุทธภพมีผลจริง · 
         seen.add(t.id);
         expect(talentById(t.id)?.world === "murim" || MURIM_GENERIC.includes(t.id), t.id).toBe(true);
       }
-      const h = createLife({ seed: s * 7, worldId: "hunter" });
-      for (const t of h.talents) expect(talentById(t.id)?.world, t.id).toBeUndefined();
     }
     expect([...seen].filter((id) => id.startsWith("mt_")).length).toBeGreaterThanOrEqual(12);
     for (const t of MURIM_TALENTS) expect(t.desc).toContain(" — ");
@@ -73,10 +71,6 @@ describe("พรสวรรค์ยุทธภพมีผลจริง · 
     a.stats.health = b.stats.health = 90;
     ageUp(a); ageUp(b);
     expect(al(b) - b0).toBeLessThan(al(a) - a0 + 0.5);
-    // พรสวรรค์โลกอื่นไม่มีผลในยุทธภพ และพรสวรรค์ยุทธภพไม่มีผลนอกยุทธภพ
-    const h = createLife({ seed: 9, worldId: "hunter" });
-    h.talents = [{ id: "mt_born_fighter", revealed: true }];
-    expect(gift(h, "fight")).toBe(0);
   });
 
   it("เซฟเก่า: พรสวรรค์โลกอื่นถูกแปลงเป็นพรสวรรค์ยุทธภพที่มีผลจริง (ชุดทั่วไปที่เข้ากันคงไว้ · แปลงครั้งเดียว · โลกอื่นไม่แตะ)", () => {
@@ -99,10 +93,6 @@ describe("พรสวรรค์ยุทธภพมีผลจริง · 
     const before = JSON.stringify(l.talents);
     migrateLife(l);
     expect(JSON.stringify(l.talents)).toBe(before);
-    const h = createLife({ seed: 3, worldId: "hunter" });
-    h.talents = [{ id: "mana_heart", revealed: true }];
-    migrateLife(h);
-    expect(h.talents[0].id).toBe("mana_heart");
   });
 
   it("พรสวรรค์รากฐานกระดูกสอดคล้องกับตัวละคร: ศิลาตอบเสมอ รากฐานสูงตาม · ช่องลับถูกเผย · คนที่พลาดไปแล้วได้เปิดชีพจรทีหลัง", () => {

@@ -4,7 +4,7 @@ import { loadSharedEvents } from "../content/shared";
 import { artsOf, conflicted, learn, martialBonus, practise, qiYears, tickMartial } from "../content/murim/martial/arts";
 import { TRAIN_MODES, trainArt } from "../content/murim/martial/training";
 import { plansFor, setPlan } from "../content/murim/life/plan";
-import { awaken, combatPower } from "../content/hunter/power";
+import { awaken, combatPower } from "../content/core/power";
 import { visibleChoices } from "./events";
 import { ageUp, createLife, resolveChoice } from "./game";
 import { nextFloat } from "./rng";

@@ -7,7 +7,7 @@ import { feel, relOf, remember } from "../../../engine/npc";
 import { pick, randInt } from "../../../engine/rng";
 import type { Life, Person, Soul } from "../../../engine/types";
 import { addFame, addStat, createPerson, displayName, log, money, people, shortName } from "../../../engine/util";
-import { awaken, rankLabel } from "../../hunter/power";
+import { awaken, rankLabel } from "../../core/power";
 import { QI_NEED, addQi, artInfo, artsOf, learn } from "../martial/arts";
 import { mySect, saveSect } from "../m17core";
 import { courtOf } from "../world/court";

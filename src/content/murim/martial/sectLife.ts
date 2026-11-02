@@ -6,7 +6,7 @@ import type { Ctx, GameEvent } from "../../../engine/events";
 import { runEvent } from "../../../engine/game";
 import type { Life } from "../../../engine/types";
 import { addFame, clamp, displayName, log } from "../../../engine/util";
-import { guildById } from "../../hunter/power";
+import { guildById } from "../../core/power";
 import { DUEL_END } from "../life/duel";
 import { B, BIG, C, E, FIGHT, G, K, N, P, PAY, ab, near, type Res } from "../story/kit";
 import { factionById, mySectFaction, shiftRep } from "../world/factions";

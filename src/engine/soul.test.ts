@@ -1,13 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { displayName } from "./util";
-import { loadHunterWorld } from "../content/hunter";
 import { loadMurimWorld } from "../content/murim";
-import { loadCourtWorld } from "../content/court";
-import { loadTowerWorld } from "../content/tower";
-import { loadApocalypseWorld } from "../content/apocalypse";
-import { loadOrdinaryWorld } from "../content/ordinary";
 import { loadSharedEvents } from "../content/shared";
-import { worldFacts } from "../content/hunter/worldFacts";
+import { worldFacts } from "../content/core/worldFacts";
 import { exportCode, importCode } from "../save";
 import { visibleChoices } from "./events";
 import { ageUp, createLife, resolveChoice } from "./game";
@@ -15,12 +10,7 @@ import { nextFloat } from "./rng";
 import { buildRegression, claimAward, newSoul, nextEraOptions, regressTarget } from "./soul";
 import type { Life } from "./types";
 
-loadHunterWorld();
 loadMurimWorld();
-loadCourtWorld();
-loadTowerWorld();
-loadApocalypseWorld();
-loadOrdinaryWorld();
 loadSharedEvents();
 
 /** เล่นจนตาย (หรือถึงอายุ stopAt) โดยเก็บ snapshot ทุกปีไว้ใน Map แบบเดียวกับ UI */

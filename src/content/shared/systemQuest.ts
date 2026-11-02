@@ -5,7 +5,7 @@ import { yearHooks } from "../../engine/game";
 import { pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { addMoney, addStat, log, money, people } from "../../engine/util";
-import { gainExp, luckyRankUp } from "../hunter/power";
+import { gainExp, luckyRankUp } from "../core/power";
 import { worldOf } from "../worlds";
 import { nemesisOf } from "./nemesis";
 

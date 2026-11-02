@@ -7,7 +7,7 @@ import { yearHooks } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addMoney, clamp, log, shortName } from "../../../engine/util";
-import { fightOdds } from "../../hunter/power";
+import { fightOdds } from "../../core/power";
 import { DUEL_END } from "../life/duel";
 import { calYear } from "../life/world";
 import { B, BIG, C, E, FIGHT, G, K, N, P, TAEL, near, type Res } from "../story/kit";

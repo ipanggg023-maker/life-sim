@@ -4,7 +4,7 @@ import { kill } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp } from "../../engine/util";
-import { fightOdds, gainExp, luckyRankUp } from "../hunter/power";
+import { fightOdds, gainExp, luckyRankUp } from "../core/power";
 import { SPONSORS, sponsorOf } from "../sponsors";
 import { worldOf } from "../worlds";
 
@@ -15,8 +15,7 @@ const foe = (l: Life, d = 0) => clamp((l.power?.rank ?? 0) + d, 0, 8);
 /** ทำอาชีพออกภารกิจอยู่ */
 const questing = (l: Life) => !!l.power && worldOf(l.worldId).questJobs.includes(l.job?.careerId ?? "");
 /** ถึงจุดที่ดวงดาวเริ่มสนใจ: หอคอยชั้น 5 · วันสิ้นโลกผ่านฉากหลักแรก */
-const noticed = (l: Life) =>
-  (l.worldId === "tower" && Number(l.flags.floor ?? 0) >= 5) || (l.worldId === "apocalypse" && Number(l.flags.mainScenario ?? 0) >= 1);
+const noticed = (_l: Life) => false;
 
 function hurt(l: Life, min: number, max: number, cause: string): string {
   const d = randInt(l, min, max);

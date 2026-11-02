@@ -60,11 +60,7 @@ export const YT_GENRES = [
 ];
 
 /** คลิปพิเศษตามโลก (ต้องมีพลัง/ระบบ) */
-export function specialGenre(l: Life): string | undefined {
-  if (l.worldId === "hunter" && l.power) return "Vlog บุก Gate แบบ POV";
-  if (l.worldId === "tower" && l.power) return "ไฮไลต์การปีนหอคอยของฉัน";
-  if (l.worldId === "ordinary" && l.sys) return "ท้าทายร่างกาย 30 วัน (ระบบช่วยแอบๆ)";
-  if (l.worldId === "apocalypse" && !l.flags.doomed) return "เตรียมตัวรับวันสิ้นโลก (คนดูหัวเราะ)";
+export function specialGenre(_l: Life): string | undefined {
   return;
 }
 
@@ -124,7 +120,7 @@ export function startSwipe(l: Life) {
   for (let i = 0; i < 3; i++) {
     const g = l.gender === "m" ? "f" : "m";
     const n = randomName(l, g);
-    ctx[`n${i}`] = l.worldId === "hunter" || l.country === "th" || !l.country ? n.nick : n.first;
+    ctx[`n${i}`] = l.country === "th" || !l.country ? n.nick : n.first;
     ctx[`a${i}`] = clamp(l.age + randInt(l, -5, 6), 18, 80);
     ctx[`j${i}`] = pick(l, JOBS);
     ctx[`b${i}`] = pick(l, BIOS);

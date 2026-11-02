@@ -6,7 +6,7 @@ import { kill, yearHooks } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, displayName, log, money, uid } from "../../engine/util";
-import { combatPower, fightOdds, gainExp, guildById, survivalOdds } from "../hunter/power";
+import { combatPower, fightOdds, gainExp, guildById, survivalOdds } from "../core/power";
 import { TITLES } from "../titles";
 import { MURIM_FEMALE, MURIM_LAST, MURIM_MALE } from "./names";
 

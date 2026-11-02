@@ -7,7 +7,7 @@ import { lifespanHooks, yearHooks } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, log, shortName } from "../../../engine/util";
-import { gainExp } from "../../hunter/power";
+import { gainExp } from "../../core/power";
 import { startDuel } from "../life/duel";
 import { ARTS, REALM_LIFE, TYPE_NAME, addQi, artInfo, artsOf, comprehension, knows, learn, masteryWord, practise, styleOf, tickMartial, type ArtType } from "./arts";
 

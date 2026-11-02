@@ -9,7 +9,7 @@ import type { Life } from "./types";
 import { worldOfLife } from "../content/murim/life/world";
 import { addHeat } from "../content/murim/life/law";
 import { canFound, foundSect, masters, mySect, myPlace } from "../content/murim/m17core";
-import { CAREERS } from "../content/hunter/careers";
+import { CAREERS } from "../content/core/careers";
 
 loadMurimWorld();
 loadSharedEvents();

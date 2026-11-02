@@ -4,7 +4,7 @@
 import type { GameEvent } from "../../../engine/events";
 import type { Life } from "../../../engine/types";
 import { people } from "../../../engine/util";
-import { guildById } from "../../hunter/power";
+import { guildById } from "../../core/power";
 import { DUEL_END, startDuel } from "../life/duel";
 import { B, BIG, C, E, FIGHT, G, K, N, NEXT, P, PAY, S, flagged, near, nm, poor, rich, withPerson } from "./kit";
 

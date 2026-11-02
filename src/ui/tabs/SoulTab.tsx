@@ -4,8 +4,8 @@ import { COMBOS } from "../../content/murim/life/gifts";
 import { COUNTRIES } from "../../content/countries";
 import { ACHIEVEMENTS, ACH_CATEGORY, catInWorld, catOf, type AchCategory } from "../../content/achievements";
 import { TALENTS, RARITY_LABEL, talentById } from "../../content/talents";
-import { facultyById } from "../../content/hunter/careers";
-import { rankLabel } from "../../content/hunter/power";
+import { facultyById } from "../../content/core/careers";
+import { rankLabel } from "../../content/core/power";
 import { ageUp, resolveChoice, STAT_LABEL, type BirthOptions } from "../../engine/game";
 import { visibleChoices } from "../../engine/events";
 import { memoryOdds } from "../../engine/memory";
@@ -238,11 +238,11 @@ export function SoulTab({
             <div className="grave" key={g.id}>
               <div className="grave-name">
                 ชาติที่ {graveyard.length - i}: {g.name} · {g.age} ปี
-                {g.rank !== undefined && <span className={`rank r${g.rank}`}> [{rankLabel({ worldId: g.world ?? "hunter" }, g.rank)}]</span>}
+                {g.rank !== undefined && <span className={`rank r${g.rank}`}> [{rankLabel({ worldId: g.world ?? "murim" }, g.rank)}]</span>}
                 {g.regressed && " · ย้อนเวลา"}
               </div>
               <div className="grave-sub">
-                {g.cause} · {money({ worldId: g.world ?? "hunter" }, g.money)}
+                {g.cause} · {money({ worldId: g.world ?? "murim" }, g.money)}
                 {g.job ? ` · ${g.job}` : ""}
                 {g.degree ? ` · ${facultyById(g.degree).name}` : ""}
                 {g.points !== undefined && !real ? ` · +${g.points} แต้ม` : ""}
@@ -352,7 +352,7 @@ const STAT_KEYS: (keyof Stats)[] = ["health", "happiness", "smarts", "looks", "l
 /** Admin: สร้างตัวละครแบบ D&D และกรอเวลา */
 function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOptions) => void }) {
   const [gender, setGender] = useState<Gender>("m");
-  const [world, setWorld] = useState<WorldId>("hunter");
+  const [world, setWorld] = useState<WorldId>("murim");
   const [country, setCountry] = useState<Country | "">("");
   const [firstName, setFirstName] = useState("");
   const [wealth, setWealth] = useState<Wealth>("middle");
@@ -382,12 +382,7 @@ function DevPanel({ act, onNewLife }: { act: Act; onNewLife: (opts?: BirthOption
       <Fold kind="section" id="soul-s6" title={<>สร้างตัวละคร</>}>
       <div className="row">
         <select value={world} onChange={(e) => setWorld(e.target.value as WorldId)}>
-          <option value="hunter">โลก Hunter</option>
           <option value="murim">ยุทธภพ</option>
-          <option value="court">ราชสำนัก</option>
-          <option value="tower">หอคอย</option>
-          <option value="apocalypse">วันสิ้นโลก</option>
-          <option value="ordinary">โลกธรรมดา</option>
         </select>
         {worldOf(world).modern && (
           <select value={country} onChange={(e) => setCountry(e.target.value as Country | "")}>

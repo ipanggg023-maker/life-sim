@@ -5,7 +5,7 @@ import { kill } from "../../../engine/game";
 import { chance } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, money } from "../../../engine/util";
-import { gainExp, rankLabel } from "../../hunter/power";
+import { gainExp, rankLabel } from "../../core/power";
 import { hasBuilding, sectDefense } from "./jianghu";
 import { SECT_COST, canFound, foundSect, hurt, mySect, npcName, saveSect, sectChange, sectNameOptions, shiftAlign } from "../m17core";
 

@@ -7,7 +7,7 @@ import { profileOf, remember } from "../../../engine/npc";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, shortName } from "../../../engine/util";
-import { fightOdds, gainExp, survivalOdds } from "../../hunter/power";
+import { fightOdds, gainExp, survivalOdds } from "../../core/power";
 import { npcName, shiftAlign } from "../m17core";
 import { ARTS, knows, learn } from "../martial/arts";
 import { TAEL } from "../story/kit";

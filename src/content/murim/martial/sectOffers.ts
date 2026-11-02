@@ -2,7 +2,7 @@
 // ชีวิตหนึ่งเจอราวห้าหกสำนัก (สุ่มครั้งเดียวต่อชีวิต) ตัวเลือกในฉากรับศิษย์จะได้ไม่ยาวเป็นสิบปุ่ม
 import { nextFloat, pick } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
-import { guildsFor } from "../../hunter/power";
+import { guildsFor } from "../../core/power";
 
 export function sectOffers(l: Life): Set<string> {
   const have = String(l.flags.sectOffers ?? "");

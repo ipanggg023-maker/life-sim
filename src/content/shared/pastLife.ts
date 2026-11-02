@@ -1,32 +1,21 @@
 // วิญญาณข้ามโลก: ความทรงจำจากชาติก่อนในโลกอื่นค่อยๆ กลับมา
 // อดีต Hunter ในยุทธภพ · อดีตจอมยุทธ์ในราชสำนัก ฯลฯ
 import type { GameEvent } from "../../engine/events";
-import { randInt } from "../../engine/rng";
 import type { Life, WorldId } from "../../engine/types";
-import { addFame, addMoney, addStat, clamp, money } from "../../engine/util";
-import { gainExp, markTurn, rankLabel } from "../hunter/power";
+import { addFame, addStat, clamp } from "../../engine/util";
+import { gainExp, markTurn, rankLabel } from "../core/power";
 import { worldOf } from "../worlds";
 
 const pastWorld = (l: Life) => l.flags.pastWorld as WorldId | undefined;
 
 /** ตัวตนชาติก่อนในแต่ละโลก */
 const WHO: Record<WorldId, string> = {
-  hunter: "นักล่าในโลกที่มีประตูมิติเปิดอยู่ทั่วเมือง",
-  tower: "ผู้ท้าชิงที่ปีนหอคอยไม่มีที่สิ้นสุด",
-  apocalypse: "ผู้รอดชีวิตจากวันสิ้นโลก",
-  ordinary: "คนธรรมดาที่มีระบบอยู่คนเดียวในโลก",
   murim: "จอมยุทธ์ในยุทธภพ",
-  court: "ขุนนางในจักรวรรดิที่มีวงเวท",
 };
 
 /** ภาพในความฝันจากโลกเก่า */
 const DREAM: Record<WorldId, string> = {
-  hunter: "ตึกสูงเสียดฟ้า รถไฟใต้ดิน และประตูสีฟ้าที่มีมอนสเตอร์เดินออกมา",
-  tower: "หอคอยสีดำที่สูงจนมองไม่เห็นยอด ชั้นที่มีทะเลอยู่ข้างใน และเสียงประกาศของผู้ดูแลชั้น",
-  apocalypse: "เมืองที่พังทลาย หน้าต่างระบบสีน้ำเงินกลางอากาศ และเสียงหัวเราะของดวงดาว",
-  ordinary: "ห้องเล็กๆ ในเมืองใหญ่ เสียงรถติด และหน้าต่างสีฟ้าที่ไม่มีใครมองเห็นนอกจากตัวเอง",
   murim: "ยอดเขาหิมะ เสียงกระบี่กระทบกัน และกลิ่นสุราในโรงเตี๊ยม",
-  court: "ห้องบอลรูมแสงเทียน ชุดราตรีลากพื้น และเสียงกระซิบวางแผนหลังพัด",
 };
 
 const pastRank = (l: Life) => (l.flags.pastRank === undefined ? undefined : Number(l.flags.pastRank));
@@ -47,8 +36,7 @@ export const PAST_LIFE_EVENTS: GameEvent[] = [
         run: (l) => {
           l.flags.pastRemembered = true;
           const w = pastWorld(l)!;
-          if (w === "hunter") addStat(l, "smarts", 6);
-          else if (w === "murim") addStat(l, "health", 6);
+          if (w === "murim") addStat(l, "health", 6);
           else {
             addStat(l, "looks", 3);
             addStat(l, "smarts", 3);
@@ -99,7 +87,6 @@ export const PAST_LIFE_EVENTS: GameEvent[] = [
     title: "ความรู้จากชาติก่อน",
     text: (l) => {
       const w = pastWorld(l)!;
-      if (w === "hunter") return `คุณนึกออกว่าในโลกเก่ามีของที่โลกนี้ยังไม่มี — สบู่หอม ร่ม ซอสปรุงรส… ถ้าทำขายตอนนี้ล่ะ?`;
       if (w === "murim") return `ท่าลมปราณจากชาติก่อนยังติดอยู่ในร่างกาย คุณเริ่มฝึกหายใจแบบจอมยุทธ์ทุกเช้าโดยไม่รู้ตัว`;
       return `คุณอ่านเกมการเมืองรอบตัวออกหมด — มารยาท การวางตัว การพูดสองแง่สองง่าม ทั้งหมดคือสิ่งที่คุณเคยใช้เอาตัวรอดในราชสำนัก`;
     },
@@ -114,12 +101,6 @@ export const PAST_LIFE_EVENTS: GameEvent[] = [
             return { text: "ความรู้จากโลกเก่าใช้กับโลกนี้ได้ไม่ตรงทั้งหมด รอบนี้พลาดไปก่อน", kind: "bad" };
           }
           markTurn(l);
-          if (w === "hunter") {
-            const cash = Math.round(randInt(l, 8, 20) * 100_000 * (1 + clamp(l.stats.luck, 0, 100) / 100));
-            addMoney(l, cash);
-            addFame(l, 5);
-            return { text: `สินค้าจากโลกเก่าขายดีเป็นเทน้ำเทท่า ได้กำไร ${money(l, cash)}`, kind: "good" };
-          }
           if (w === "murim") {
             addStat(l, "health", 8);
             if (l.power) gainExp(l, 700);

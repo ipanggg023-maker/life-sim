@@ -5,7 +5,7 @@ import { ARTS, knows } from "../content/murim/martial/arts";
 import { sectOffers } from "../content/murim/martial/sectOffers";
 import { factionById } from "../content/murim/world/factions";
 import { worldOfLife } from "../content/murim/life/world";
-import { guildsFor } from "../content/hunter/power";
+import { guildsFor } from "../content/core/power";
 import { activitiesFor } from "./activities";
 import { visibleChoices } from "./events";
 import { createLife, resolveChoice, runEvent } from "./game";

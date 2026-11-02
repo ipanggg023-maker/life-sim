@@ -5,7 +5,7 @@ import { kill, yearHooks } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, displayName, log } from "../../../engine/util";
-import { gainExp } from "../../hunter/power";
+import { gainExp } from "../../core/power";
 import { shiftAlign } from "../m17core";
 import { calYear, worldOfLife } from "../life/world";
 import { regionOf } from "../life/region";

@@ -89,80 +89,8 @@ export const CLASSES: ClassInfo[] = [
     skills: [[1, "ฝ่ามือโลหิตมาร"], [10, "ดูดพลังมาร"], [25, "ร่างอสูรฟ้า"], [45, "จักรพรรดิมารสวรรค์"]],
   },
   // ── สายเวทในราชสำนัก ──
-  {
-    id: "c_fire", name: "เวทธาตุไฟ", emoji: "🔥", key: "smarts", desc: "ทำลายล้างสูง เผาทุกอย่างที่ขวางหน้า", cp: 3, survival: -0.03, world: "court",
-    skills: [[1, "ลูกไฟ"], [10, "กำแพงเพลิง"], [25, "ฝนอุกกาบาต"], [45, "เพลิงกัลป์"]],
-  },
-  {
-    id: "c_ice", name: "เวทน้ำแข็ง", emoji: "❄️", key: "smarts", desc: "ควบคุมสนามรบ แช่แข็งศัตรู", cp: 2, survival: 0.05, world: "court",
-    skills: [[1, "หอกน้ำแข็ง"], [10, "โล่หิมะ"], [25, "พายุหิมะนิรันดร์"], [45, "ราชินีน้ำแข็ง"]],
-  },
-  {
-    id: "c_holy", name: "พลังศักดิ์สิทธิ์", emoji: "🕊️", key: "happiness", desc: "รักษาและปัดเป่าปีศาจ — สายของนักบุญ", cp: -1, survival: 0.15, world: "court",
-    skills: [[1, "แสงเยียวยา"], [10, "ม่านศักดิ์สิทธิ์"], [25, "ปาฏิหาริย์"], [45, "นักบุญแห่งยุค"]],
-  },
-  {
-    id: "c_aura", name: "ดาบออร่า", emoji: "⚔️", key: "health", desc: "ปลุกออร่าบนคมดาบ สายอัศวินผู้ยิ่งใหญ่", cp: 3, survival: 0.03, world: "court",
-    skills: [[1, "ออร่าจาง"], [10, "ดาบออร่า"], [25, "ออร่าทะลวงฟ้า"], [45, "ปรมาจารย์ดาบ"]],
-  },
-  {
-    id: "c_spirit", name: "ผู้ทำสัญญาภูต", emoji: "🧚", key: "luck", desc: "ทำสัญญากับภูตธาตุ หายากและคาดเดาไม่ได้", cp: 4, survival: 0.05, world: "court",
-    skills: [[1, "ภูตลมน้อย"], [10, "ภูตไฟ"], [25, "ราชาภูต"], [45, "สัญญาแห่งโลกภูต"]],
-  },
-  {
-    id: "c_dark", name: "เวทมืด", emoji: "🌑", key: "luck", desc: "สายต้องห้าม รุนแรงที่สุด แต่วิหารตามล่า", cp: 7, survival: -0.04, world: "court",
-    skills: [[1, "เงาสาป"], [10, "กลืนวิญญาณ"], [25, "ประตูนรก"], [45, "จอมราชันย์ปีศาจ"]],
-  },
   // ── ตำแหน่งในหอคอย ──
-  {
-    id: "t_vanguard", name: "หัวหอก", emoji: "⚔️", key: "health", desc: "บุกเปิดทางให้ทีม ปะทะทุกอย่างตรงหน้า", cp: 3, survival: 0, world: "tower",
-    skills: [[1, "ทะลวงแนวหน้า"], [10, "ก้าวสายฟ้า"], [25, "หมัดพันชั้น"], [45, "ผู้ทะลวงยอดหอคอย"]],
-  },
-  {
-    id: "t_lancer", name: "มือขว้างหอก", emoji: "🔱", key: "luck", desc: "ขว้างหอกพลังงานจากระยะไกล ชี้ขาดการต่อสู้ในนัดเดียว", cp: 4, survival: -0.03, world: "tower",
-    skills: [[1, "หอกพลังงาน"], [10, "หอกนำวิถี"], [25, "ฝนหอก"], [45, "หอกทะลุมิติ"]],
-  },
-  {
-    id: "t_lantern", name: "ผู้ถือโคม", emoji: "🏮", key: "smarts", desc: "โคมสอดแนมมองเห็นทั้งสนาม ทีมที่มีผู้ถือโคมตายยาก", cp: -1, survival: 0.12, world: "tower",
-    skills: [[1, "โคมสอดแนม"], [10, "โคมคุ้มกัน"], [25, "เครือข่ายโคม"], [45, "ประภาคารแห่งหอคอย"]],
-  },
-  {
-    id: "t_wave", name: "ผู้ควบคุมพลังงาน", emoji: "🌊", key: "smarts", desc: "บิดพลังงานในอากาศให้เป็นอาวุธหรือกำแพง", cp: 3, survival: 0.04, world: "tower",
-    skills: [[1, "คลื่นพลังงาน"], [10, "เกราะพลังงาน"], [25, "ทะเลพลังงาน"], [45, "ผู้ปกครองพลังงาน"]],
-  },
-  {
-    id: "t_scout", name: "หน่วยสอดแนม", emoji: "👣", key: "luck", desc: "หาเส้นทางลับและกับดักก่อนใคร ผ่านบททดสอบด้วยทางที่ไม่มีใครคิด", cp: 1, survival: 0.07, world: "tower",
-    skills: [[1, "เดินไร้เสียง"], [10, "ตาเหยี่ยว"], [25, "เงาหลบหนี"], [45, "ผู้เห็นทุกเส้นทาง"]],
-  },
-  {
-    id: "t_outsider", name: "ผู้บุกรุก", emoji: "🌀", key: "luck", desc: "สายหายาก — เข้าหอคอยโดยไม่ได้รับเชิญ กฎของหอคอยใช้กับคุณไม่ได้ทั้งหมด", cp: 7, survival: -0.03, world: "tower",
-    skills: [[1, "ประตูต้องห้าม"], [10, "ฝ่ากฎหอคอย"], [25, "พลังจากภายนอก"], [45, "ผู้ทำลายหอคอย"]],
-  },
   // ── ผู้รอดชีวิตหลังวันสิ้นโลก ──
-  {
-    id: "a_blade", name: "นักสู้ระยะประชิด", emoji: "🪓", key: "health", desc: "ขวานดับเพลิงกับใจที่ไม่ถอย", cp: 3, survival: 0, world: "apocalypse",
-    skills: [[1, "ฟันสุดแรง"], [10, "ร่างเหล็ก"], [25, "พายุขวาน"], [45, "ผู้ยืนหยัดคนสุดท้าย"]],
-  },
-  {
-    id: "a_gunner", name: "มือปืน", emoji: "🔫", key: "luck", desc: "ยิงจากที่สูง กระสุนทุกนัดมีค่า", cp: 4, survival: -0.02, world: "apocalypse",
-    skills: [[1, "ยิงแม่นยำ"], [10, "กระสุนเจาะเกราะ"], [25, "ห่ากระสุน"], [45, "นัดเดียวจบฉาก"]],
-  },
-  {
-    id: "a_medic", name: "หมอสนาม", emoji: "🩹", key: "smarts", desc: "รักษาคนในฐาน — ทุกกลุ่มต้องการตัว", cp: -2, survival: 0.13, world: "apocalypse",
-    skills: [[1, "ปฐมพยาบาล"], [10, "ยาจากดวงดาว"], [25, "ห้องผ่าตัดสนาม"], [45, "มือที่ดึงคนจากความตาย"]],
-  },
-  {
-    id: "a_warden", name: "ผู้สร้างฐานที่มั่น", emoji: "🧱", key: "health", desc: "สร้างกำแพงและกับดัก ทำให้ทั้งกลุ่มรอด", cp: 0, survival: 0.12, world: "apocalypse",
-    skills: [[1, "กำแพงฉุกเฉิน"], [10, "กับดักรอบฐาน"], [25, "ป้อมเหล็ก"], [45, "เมืองที่ไม่มีวันล่ม"]],
-  },
-  {
-    id: "a_tamer", name: "ผู้ฝึกสัตว์อสูร", emoji: "🐺", key: "luck", desc: "ทำสัญญากับสัตว์ประหลาดที่บุกเข้ามา", cp: 5, survival: 0.04, world: "apocalypse",
-    skills: [[1, "สัตว์เลี้ยงอสูร"], [10, "ฝูงล่า"], [25, "ราชาสัตว์อสูร"], [45, "กองทัพสัตว์ร้าย"]],
-  },
-  {
-    id: "a_reader", name: "ผู้รู้ตอนจบ", emoji: "📖", key: "smarts", desc: "สายหายาก — คุณเคยอ่านนิยายที่เหมือนโลกนี้ทุกตัวอักษร", cp: 6, survival: 0.05, world: "apocalypse",
-    skills: [[1, "รู้เนื้อเรื่อง"], [10, "เขียนทับฉาก"], [25, "ผู้อ่านคนสุดท้าย"], [45, "ผู้เขียนตอนจบใหม่"]],
-  },
   // ── คลาสเพิ่มเติม (M22) ──
   {
     id: "archer", name: "นักธนู", emoji: "🏹", key: "luck", desc: "ยิงจากระยะไกล ไม่เคยให้ศัตรูเข้าใกล้", cp: 3, survival: 0.02,
@@ -196,71 +124,7 @@ export const CLASSES: ClassInfo[] = [
     id: "m_poison", name: "วิชาพิษ", emoji: "🐍", key: "smarts", desc: "พิษร้อยชนิดในแขนเสื้อ — ตระกูลถังยังต้องเกรง", cp: 4, survival: 0.02, world: "murim",
     skills: [[1, "เข็มพิษงูเห่า"], [10, "หมอกพิษ"], [25, "ร่างพิษพันปี"], [45, "ราชาแห่งพิษ"]],
   },
-  {
-    id: "c_alchemist", name: "นักเล่นแร่แปรธาตุ", emoji: "⚗️", key: "smarts", desc: "แปรสภาพสสาร ปรุงยา สร้างของที่วิหารเรียกว่านอกรีต", cp: 2, survival: 0.06, world: "court",
-    skills: [[1, "ยาฟื้นฟู"], [10, "ระเบิดแปรธาตุ"], [25, "หินนักปราชญ์จำลอง"], [45, "ศิลานักปราชญ์"]],
-  },
-  {
-    id: "c_shadow", name: "นักดาบเงา", emoji: "🗡️", key: "luck", desc: "องครักษ์ลับที่ไม่มีชื่อในทะเบียนราชสำนัก", cp: 3, survival: 0.03, world: "court",
-    skills: [[1, "ก้าวเงา"], [10, "ดาบในความมืด"], [25, "เงาพันร่าง"], [45, "ราชันแห่งรัตติกาล"]],
-  },
-  {
-    id: "c_paladin", name: "อัศวินศักดิ์สิทธิ์", emoji: "🛡️", key: "health", desc: "ดาบของวิหาร — ปกป้องผู้อ่อนแอด้วยศรัทธา", cp: 2, survival: 0.1, world: "court",
-    skills: [[1, "โล่แสง"], [10, "ดาบพิพากษา"], [25, "เกราะศรัทธา"], [45, "ผู้พิทักษ์แห่งเทพ"]],
-  },
-  {
-    id: "c_wind", name: "เวทลม", emoji: "🌪️", key: "luck", desc: "ลมพัดตามคำสั่ง เร็วและคาดเดาไม่ได้", cp: 3, survival: 0.04, world: "court",
-    skills: [[1, "ใบมีดลม"], [10, "ปีกลม"], [25, "พายุหมุน"], [45, "ราชาแห่งวายุ"]],
-  },
-  {
-    id: "t_shield", name: "ผู้ถือโล่", emoji: "🛡️", key: "health", desc: "ยืนหน้าสุดของทีม รับทุกอย่างแทนเพื่อน", cp: 1, survival: 0.12, world: "tower",
-    skills: [[1, "โล่พลังงาน"], [10, "กำแพงเคลื่อนที่"], [25, "ป้อมเดินได้"], [45, "โล่ที่ไม่เคยแตก"]],
-  },
-  {
-    id: "t_puppet", name: "ผู้เชิดหุ่น", emoji: "🪆", key: "smarts", desc: "หุ่นเชิดจากพลังงานหอคอยที่สู้แทนคุณ", cp: 4, survival: 0.03, world: "tower",
-    skills: [[1, "หุ่นเชิดตัวแรก"], [10, "กองทัพหุ่น"], [25, "หุ่นยักษ์"], [45, "ผู้เชิดโชคชะตา"]],
-  },
-  {
-    id: "t_bard", name: "นักดนตรีสงคราม", emoji: "🎻", key: "looks", desc: "เพลงที่ปลุกใจทีมและทำลายใจศัตรู", cp: 1, survival: 0.07, world: "tower",
-    skills: [[1, "เพลงปลุกใจ"], [10, "เพลงกล่อมศัตรู"], [25, "ซิมโฟนีสนามรบ"], [45, "บทเพลงของหอคอย"]],
-  },
-  {
-    id: "a_engineer", name: "วิศวกร", emoji: "🔧", key: "smarts", desc: "ซ่อมทุกอย่าง สร้างทุกอย่าง จากซากเมือง", cp: 2, survival: 0.06, world: "apocalypse",
-    skills: [[1, "ซ่อมทุกอย่าง"], [10, "ป้อมปืนอัตโนมัติ"], [25, "ยานเกราะดัดแปลง"], [45, "เมืองจักรกล"]],
-  },
-  {
-    id: "a_hunter", name: "นักล่าสัตว์อสูร", emoji: "🏹", key: "luck", desc: "ตามรอยสัตว์อสูรแล้วล่ากลับมาเป็นอาหาร", cp: 4, survival: 0.02, world: "apocalypse",
-    skills: [[1, "ตามรอย"], [10, "กับดักเหยื่อ"], [25, "ล่าข้ามคืน"], [45, "ราชันนักล่า"]],
-  },
-  {
-    id: "a_psyker", name: "ผู้รับสัญญาณดวงดาว", emoji: "📡", key: "luck", desc: "ได้ยินเสียงดวงดาวคุยกัน — รู้ล่วงหน้าว่าฉากต่อไปคืออะไร", cp: 3, survival: 0.04, world: "apocalypse",
-    skills: [[1, "ได้ยินเสียงดาว"], [10, "คำทำนาย"], [25, "ขอพรจากฟ้า"], [45, "ผู้สื่อสารแห่งดวงดาว"]],
-  },
   // ── เส้นทางของระบบชีวิต (โลกธรรมดา) ──
-  {
-    id: "o_fighter", name: "นักสู้ข้างถนน", emoji: "👊", key: "health", desc: "จากนักเลงโรงเรียน สู่สังเวียนระดับโลก", cp: 3, survival: 0.02, world: "ordinary",
-    skills: [[1, "หมัดตรงไร้เงา"], [10, "หลบพริบตา"], [25, "คอมโบสิบสามจังหวะ"], [45, "ราชาแห่งถนน"]],
-  },
-  {
-    id: "o_idol", name: "ไอดอล/นักแสดง", emoji: "🎤", key: "looks", desc: "เวที กล้อง และแฟนคลับนับล้าน", cp: 2, survival: 0.05, world: "ordinary",
-    skills: [[1, "เสียงร้องสวรรค์"], [10, "เต้นไร้ที่ติ"], [25, "ออร่าบนเวที"], [45, "ซูเปอร์สตาร์ระดับโลก"]],
-  },
-  {
-    id: "o_doctor", name: "หมออัจฉริยะ", emoji: "🩺", key: "smarts", desc: "ระบบบอกจุดผิดปกติในร่างกายคนไข้ได้ทันที", cp: 2, survival: 0.08, world: "ordinary",
-    skills: [[1, "ตาวินิจฉัย"], [10, "มือผ่าตัดไม่สั่น"], [25, "ผ่าตัดที่เป็นไปไม่ได้"], [45, "หัตถ์เทวดา"]],
-  },
-  {
-    id: "o_gamer", name: "โปรเกมเมอร์ VR", emoji: "🎮", key: "luck", desc: "ในโลกเสมือน คุณคือคนที่ทุกกิลด์อยากได้", cp: 3, survival: 0.04, world: "ordinary",
-    skills: [[1, "รีแอคชันเหนือมนุษย์"], [10, "อ่านเกมขาด"], [25, "คลาสลับในเกม"], [45, "ตำนานแห่งโลกเสมือน"]],
-  },
-  {
-    id: "o_chef", name: "เชฟ", emoji: "🍳", key: "happiness", desc: "อาหารของคุณทำให้คนร้องไห้ได้", cp: 2, survival: 0.05, world: "ordinary",
-    skills: [[1, "มีดไร้ที่ติ"], [10, "ลิ้นเทวดา"], [25, "เมนูที่ทำให้คนร้องไห้"], [45, "เชฟสามดาว"]],
-  },
-  {
-    id: "o_chaebol", name: "ทายาทแชโบลย้อนเวลา", emoji: "💼", key: "smarts", desc: "สายหายาก (ผู้ย้อนเวลาเท่านั้น) — คุณรู้อนาคตของตลาดทั้งหมด", cp: 5, survival: 0.05, world: "ordinary",
-    skills: [[1, "อ่านตลาด"], [10, "รู้ข่าวก่อนใคร"], [25, "ยึดอำนาจบริษัท"], [45, "จักรวรรดิแชโบล"]],
-  },
 ];
 
 export const classById = (id: HunterClass) => CLASSES.find((c) => c.id === id)!;
@@ -317,30 +181,9 @@ export const GUILDS: Guild[] = [
   { id: "vajra", name: "วัดวัชระ", minRank: 3, pay: 1.2, cp: 5, safety: 0.12, world: "murim", desc: "สำนักพุทธที่เก่าแก่ที่สุด ศิษย์ตายยาก" },
   { id: "cult", name: "ลัทธิมารสวรรค์", minRank: 2, pay: 2.5, cp: 6, safety: -0.06, world: "murim", demonic: true, desc: "ฝ่ายอธรรม จ่ายหนัก ฆ่าไม่เลือก ทั้งใต้หล้าเกลียดชัง" },
   // ── สังกัดในราชสำนัก ──
-  { id: "c_knights", name: "อัศวินแห่งจักรวรรดิ", minRank: 0, pay: 1.1, cp: 2, safety: 0.06, world: "court", desc: "ทหารรักษาดินแดน ภักดีต่อบัลลังก์ เกียรติยศสูงแต่เงินน้อย" },
-  { id: "c_tower", name: "หอคอยเวทเงิน", minRank: 1, pay: 1.6, cp: 3, safety: 0.04, world: "court", desc: "ที่รวมจอมเวทผู้ปราดเปรื่อง หมกมุ่นกับงานวิจัย" },
-  { id: "c_temple", name: "วิหารศักดิ์สิทธิ์", minRank: 1, pay: 1.2, cp: 2, safety: 0.12, world: "court", desc: "ศูนย์กลางศรัทธา มีอิทธิพลไม่แพ้ราชวงศ์" },
-  { id: "c_north", name: "กองอัศวินดยุกแห่งทิศเหนือ", minRank: 3, pay: 2, cp: 5, safety: 0.05, world: "court", desc: "ปกป้องชายแดนจากฝูงมอนสเตอร์ ดยุกเย็นชาที่สุดในจักรวรรดิ" },
-  { id: "c_shadow", name: "สมาคมจอมเวทมืด", minRank: 2, pay: 2.4, cp: 6, safety: -0.05, world: "court", demonic: true, desc: "เวทต้องห้าม ถ้าวิหารรู้ จะถูกเผาทั้งเป็น" },
-  { id: "c_guard", name: "หน่วยองครักษ์จักรพรรดิ", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "court", desc: "ยอดฝีมือที่ใกล้ชิดบัลลังก์ที่สุด" },
   // ── ทีมในหอคอย ──
-  { id: "t_rookie", name: "ทีมผู้ท้าชิงหน้าใหม่", minRank: 0, pay: 1, cp: 2, safety: 0.05, world: "tower", desc: "ทีมรวมคนแปลกหน้าที่เพิ่งเข้าหอคอย ไม่มีใครเก่ง แต่ทุกคนจริงใจ" },
-  { id: "t_hawk", name: "กิลด์เหยี่ยวเงิน", minRank: 2, pay: 1.6, cp: 3, safety: 0.05, world: "tower", desc: "กิลด์ที่ปีนเร็วที่สุดในรุ่น มีสปอนเซอร์จากโลกภายนอกหนุนหลัง" },
-  { id: "t_pk", name: "กลุ่มล่าผู้ท้าชิง", minRank: 2, pay: 2.4, cp: 6, safety: -0.06, world: "tower", demonic: true, desc: "ฆ่าผู้ท้าชิงคนอื่นเพื่อชิงคะแนน — หอคอยไม่ห้าม แต่ทุกคนเกลียด" },
-  { id: "t_family", name: "ตระกูลผู้ปกครองชั้นบน", minRank: 4, pay: 2.2, cp: 6, safety: 0.1, world: "tower", desc: "ตระกูลเก่าแก่ที่อยู่ในหอคอยมาหลายร้อยปี รับคนนอกยากมาก" },
-  { id: "t_summit", name: "สมาพันธ์ผู้มุ่งยอดหอคอย", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "tower", desc: "รวมผู้ท้าชิงที่เก่งที่สุดจากทุกประเทศ มีเป้าหมายเดียวคือชั้น 100" },
   // ── กลุ่มผู้รอดชีวิต ──
-  { id: "a_station", name: "ชุมชนใต้สถานีรถไฟฟ้า", minRank: 0, pay: 1, cp: 2, safety: 0.06, world: "apocalypse", desc: "คนธรรมดาหลายร้อยคนที่ช่วยกันเอาตัวรอดในอุโมงค์" },
-  { id: "a_army", name: "กองกำลังรัฐที่เหลืออยู่", minRank: 2, pay: 1.5, cp: 4, safety: 0.08, world: "apocalypse", desc: "ทหารที่ยังเชื่อว่ารัฐบาลจะกลับมา มีอาวุธแต่มีกฎเข้มงวด" },
-  { id: "a_raiders", name: "แก๊งปล้นผู้รอดชีวิต", minRank: 2, pay: 2.5, cp: 6, safety: -0.06, world: "apocalypse", demonic: true, desc: "ปล้นฐานอื่นเพื่อแลกเหรียญ ทุกกลุ่มเกลียด" },
-  { id: "a_cult", name: "ลัทธิบูชาดวงดาว", minRank: 3, pay: 2, cp: 4, safety: 0.04, world: "apocalypse", desc: "เชื่อว่าวันสิ้นโลกคือการคัดเลือกของพระเจ้า — ได้ของจากดวงดาวเยอะผิดปกติ" },
-  { id: "a_vanguard", name: "แนวหน้าผู้กอบกู้", minRank: 5, pay: 3, cp: 8, safety: 0.1, world: "apocalypse", desc: "ผู้รอดชีวิตที่แข็งแกร่งที่สุด มีเป้าหมายเดียวคือจบฉากสุดท้าย" },
   // ── สังกัดในโลกธรรมดา ──
-  { id: "o_gym", name: "ค่ายมวยเก่าย่านเมืองเก่า", minRank: 0, pay: 1, cp: 2, safety: 0.05, world: "ordinary", desc: "โค้ชแก่ปากร้ายที่เคยปั้นแชมป์มาแล้วสามคน" },
-  { id: "o_agency", name: "ค่ายบันเทิงยักษ์ใหญ่", minRank: 2, pay: 1.8, cp: 3, safety: 0.05, world: "ordinary", desc: "ค่ายที่ปั้นซูเปอร์สตาร์มานับไม่ถ้วน — สัญญาทาสก็นับไม่ถ้วนเช่นกัน" },
-  { id: "o_hospital", name: "โรงพยาบาลมหาวิทยาลัย", minRank: 1, pay: 1.4, cp: 3, safety: 0.08, world: "ordinary", desc: "การเมืองในโรงพยาบาลโหดกว่าห้องผ่าตัด" },
-  { id: "o_team", name: "ทีมอีสปอร์ตระดับโลก", minRank: 3, pay: 2, cp: 4, safety: 0.05, world: "ordinary", desc: "แชมป์โลกสามสมัย ซ้อมวันละสิบสี่ชั่วโมง" },
-  { id: "o_mafia", name: "เครือข่ายมาเฟีย", minRank: 2, pay: 2.6, cp: 6, safety: -0.06, world: "ordinary", demonic: true, desc: "เงินดี งานสกปรก ออกยาก" },
   // ── สำนักและตระกูลชุดใหม่ของยุทธภพ (design/MURIM_V2.md ระยะ 2) ──
   { id: "plum", name: "สำนักเขาบุปผา", minRank: 1, pay: 0.9, cp: 3, safety: 0.05, world: "murim", desc: "สำนักกระบี่บนยอดเขาที่ดอกเหมยบานทั้งปี — เคยยิ่งใหญ่ที่สุดในใต้หล้า ตอนนี้ยากจนจนศิษย์ต้องขายฟืน" },
   { id: "snow", name: "สำนักเขาหิมะตะวันตก", minRank: 2, pay: 1.4, cp: 4, safety: 0.06, world: "murim", desc: "สำนักบนเทือกเขาหิมะ ห่างไกลการเมืองของยุทธภพ ฝึกหนักจนหนาวเข้ากระดูก" },
@@ -471,35 +314,10 @@ export function rollAwakening(life: Life, bonus: number): number {
 /** เสนอสายอาชีพ 2–3 สายตามสเตตัสเด่น */
 export function offerClasses(life: Life): HunterClass[] {
   const byWorld: Record<WorldId, { map: Record<StatKey, HunterClass[]>; fallback: HunterClass; rare: HunterClass }> = {
-    hunter: {
-      map: { health: ["sword", "tank", "berserker"], smarts: ["mage", "healer", "psychic", "crafter"], luck: ["assassin", "archer"], looks: ["healer", "assassin", "archer"], happiness: ["healer", "crafter"] },
-      fallback: "sword",
-      rare: "summoner",
-    },
     murim: {
       map: { health: ["m_sword", "m_spear", "m_staff"], smarts: ["m_palm", "m_medic", "m_poison"], luck: ["m_hidden", "m_light"], looks: ["m_medic", "m_hidden", "m_qin"], happiness: ["m_medic", "m_qin"] },
       fallback: "m_sword",
       rare: "m_demon",
-    },
-    ordinary: {
-      map: { health: ["o_fighter"], smarts: ["o_doctor", "o_gamer"], luck: ["o_gamer", "o_chef"], looks: ["o_idol"], happiness: ["o_chef", "o_idol"] },
-      fallback: "o_fighter",
-      rare: "o_chaebol",
-    },
-    apocalypse: {
-      map: { health: ["a_blade", "a_warden"], smarts: ["a_medic", "a_warden", "a_engineer"], luck: ["a_gunner", "a_tamer", "a_hunter", "a_psyker"], looks: ["a_medic", "a_gunner"], happiness: ["a_medic", "a_psyker"] },
-      fallback: "a_blade",
-      rare: "a_reader",
-    },
-    tower: {
-      map: { health: ["t_vanguard", "t_shield"], smarts: ["t_wave", "t_lantern", "t_puppet"], luck: ["t_lancer", "t_scout"], looks: ["t_lantern", "t_lancer", "t_bard"], happiness: ["t_lantern", "t_bard"] },
-      fallback: "t_vanguard",
-      rare: "t_outsider",
-    },
-    court: {
-      map: { health: ["c_aura", "c_paladin"], smarts: ["c_fire", "c_ice", "c_alchemist"], luck: ["c_spirit", "c_shadow", "c_wind"], looks: ["c_holy", "c_ice", "c_wind"], happiness: ["c_holy", "c_paladin"] },
-      fallback: "c_aura",
-      rare: "c_dark",
     },
   };
   const w = byWorld[life.worldId ?? "hunter"];
@@ -541,9 +359,8 @@ export function awaken(life: Life, rank: number, cls: HunterClass) {
     life.flags.mwRoot = rank;
     life.power.rank = Math.min(rank, 1);
   }
-  if (life.worldId === "tower" && !life.flags.floor) life.flags.floor = 1; // เริ่มที่ชั้น 1
   // โลกธรรมดา: ไม่มีใครเห็นหน้าต่างระบบ จึงไม่ดังขึ้นเอง
-  if (life.worldId !== "ordinary") addFame(life, rank >= 8 ? 50 : rank >= 5 ? 25 : rank >= 3 ? 8 : 1);
+  addFame(life, rank >= 8 ? 50 : rank >= 5 ? 25 : rank >= 3 ? 8 : 1);
   addStat(life, "happiness", rank >= 3 ? 20 : 8);
   const track = trackOf(life);
   // ตื่นช้ากว่าคนอื่น แต่โตเร็วกว่า
@@ -587,7 +404,7 @@ export function rankUp(life: Life, reason: string, steps = 1) {
   }
   // ยุทธภพข้ามได้ทีละขั้นเสมอ (แต่ละขั้นต้องสะสมลมปราณใหม่)
   p.rank = Math.min(MAX_RANK, p.rank + (life.worldId === "murim" ? 1 : steps));
-  if (life.worldId !== "ordinary") addFame(life, p.rank >= 6 ? 15 : 5);
+  addFame(life, p.rank >= 6 ? 15 : 5);
   log(life, `${reason} — ${worldOf(life.worldId).labels.rank}เพิ่มขึ้นเป็น 【${rankLabel(life, p.rank)}】`, "system");
 }
 

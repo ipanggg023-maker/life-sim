@@ -3,7 +3,7 @@
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, log, money, shortName } from "../../../engine/util";
-import { gainExp } from "../../hunter/power";
+import { gainExp } from "../../core/power";
 import { familyOf, priceIndex } from "./world";
 import { ACTIVITIES, activityLocked, doActivity } from "../../../engine/activities";
 import { JOB_ACTIONS, doJobAction, jobActionLocked } from "./jobActions";
