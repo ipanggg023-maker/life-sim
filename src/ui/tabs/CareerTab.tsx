@@ -8,6 +8,7 @@ import { doJobAction, jobActionLocked, jobActionsFor } from "../../content/murim
 import { timeBudget, timeLeft } from "../../engine/activities";
 import { TimeBar } from "./ActivitiesTab";
 import { Fold } from "../Fold";
+import { canRetire, nextStep, pensionOf, retire, workActions } from "../../content/murim/life/workplace";
 
 const STAGE_LABEL: Record<SchoolStage, string> = {
   none: "ยังไม่เข้าเรียน",
@@ -18,6 +19,9 @@ const STAGE_LABEL: Record<SchoolStage, string> = {
   university: "มหาวิทยาลัย",
   done: "จบการศึกษา",
 };
+
+/** งานที่สมัครได้ขึ้นก่อน เรียงตามรายได้ */
+const sortedJobs = (life: Life) => CAREERS.filter((c) => worldMatches(c.world, life.worldId)).sort((a, b) => Number(!!jobRequirementMissing(life, a)) - Number(!!jobRequirementMissing(life, b)) || salaryOf(life, b, 1) - salaryOf(life, a, 1));
 
 export function CareerTab({ life, act }: { life: Life; act: Act }) {
   const ed = life.education;
@@ -53,6 +57,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
               <div className="fill high" style={{ width: `${job.performance}%` }} />
             </div>
           </div>
+          {nextStep(life) && <p className={`small ${job.performance < 25 ? "danger-text" : "muted"}`}>{nextStep(life)}</p>}
           <div className="row">
             <button className="btn" disabled={life.doneThisYear.includes("workhard")} onClick={() => act(workHard)}>
               ทุ่มเททำงาน
@@ -60,7 +65,21 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
             <button className="btn ghost" onClick={() => act(quitJob)}>
               ลาออก
             </button>
+            {canRetire(life) && (
+              <button className="btn ghost" onClick={() => act(retire)}>
+                เกษียณ · เบี้ยเลี้ยง {money(life, pensionOf(life))}/ปี
+              </button>
+            )}
           </div>
+          {workActions(life).length > 0 && (
+            <div className="row">
+              {workActions(life).map((a) => (
+                <button className="btn small" key={a.id} disabled={!!a.locked} title={a.locked} onClick={() => act(a.run)}>
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          )}
         </Fold>
       )}
 
@@ -92,7 +111,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
       {!job && (
         <>
           <Fold kind="section" id="career-s1" title={<>หางาน</>}>
-          {CAREERS.filter((c) => worldMatches(c.world, life.worldId)).map((c) => {
+          {sortedJobs(life).map((c) => {
             const missing = jobRequirementMissing(life, c);
             const applied = life.doneThisYear.includes(`apply:${c.id}`);
             return (

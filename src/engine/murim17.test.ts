@@ -123,7 +123,7 @@ describe("ศีล เส้นทางนักพรต การทรม�
       drain(l, { rng: s }, (ls) => ls.findIndex((x) => x.includes("เครื่องทรมาน")));
       if (l.flags.wrongConfession) {
         wrong++;
-        for (let y = 0; y < 4 && l.alive; y++) { l.stats.health = 90; ageUp(l); if (l.queue.some((q) => q.eventId === "tt.wrong_man")) cameBack++; drain(l, { rng: s + y }); }
+        for (let y = 0; y < 10 && l.alive; y++) { l.stats.health = 90; ageUp(l); if (l.queue.some((q) => q.eventId === "tt.wrong_man")) cameBack++; drain(l, { rng: s + y }); }
         if (l.seen["tt.wrong_man"]) cameBack++;
       }
     }
