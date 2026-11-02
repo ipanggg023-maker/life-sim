@@ -31,7 +31,7 @@ function personProt(p: Person): number {
 /** เป้าหมายทั้งหมดที่เลือกได้ (คนในชีวิต + คนในราชสำนักที่มีชื่อเสียง) */
 export function darkTargets(l: Life): Target[] {
   const out: Target[] = [];
-  const ppl = l.people.filter((p) => p.alive && !p.tags?.some((t) => t.startsWith("away:"))).sort((a, b) => Number(FAMILY.includes(b.relation)) - Number(FAMILY.includes(a.relation)));
+  const ppl = l.people.filter((p) => p.alive && !p.tags?.includes("sovereign") && !p.tags?.some((t) => t.startsWith("away:"))).sort((a, b) => Number(FAMILY.includes(b.relation)) - Number(FAMILY.includes(a.relation)));
   for (const p of ppl.slice(0, MAX_PEOPLE)) {
     const prot = personProt(p);
     out.push({ id: p.id, name: shortName(p), label: `${p.name} (${relationLabel(p, l)}${p.gender === "f" ? " ♀" : " ♂"})`, prot, high: prot >= 0.35 });

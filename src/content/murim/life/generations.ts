@@ -179,7 +179,8 @@ export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | 
 
 // ───────── เล่นต่อเป็นศิษย์ ─────────
 
-export const disciplesOf = (dead: Life): Person[] => dead.people.filter((p) => p.alive && p.tags?.includes("disciple") && p.age >= 12);
+/** ศิษย์เอกขึ้นก่อน */
+export const disciplesOf = (dead: Life): Person[] => dead.people.filter((p) => p.alive && p.tags?.includes("disciple") && p.age >= 12).sort((a, b) => Number(!!b.tags?.includes("chosen")) - Number(!!a.tags?.includes("chosen")));
 
 export function buildDisciple(dead: Life, pid: string): Life {
   const d = dead.people.find((p) => p.id === pid)!;

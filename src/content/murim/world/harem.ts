@@ -70,7 +70,7 @@ export const consortGender = (l: Life): Gender => (l.flags.lovesSameSex && chanc
 export function addConsort(l: Life, o: { gender: Gender; age: number; clan?: string; trait?: ConsortTrait; rank?: number; bond?: number }): Person {
   const clan = o.clan ?? pick(l, CLANS);
   // แซ่ของสนมตรงกับตระกูลที่ส่งเข้าวัง (ตระกูลจ่าง = แซ่จ่าง)
-  const p = createPerson(l, "spouse", { gender: o.gender, age: o.age, bond: o.bond ?? 40, lastName: CLANS.includes(clan) ? clan.slice("ตระกูล".length) : undefined });
+  const p = createPerson(l, "spouse", { gender: o.gender, age: Math.max(18, o.age), bond: o.bond ?? 40, lastName: CLANS.includes(clan) ? clan.slice("ตระกูล".length) : undefined });
   p.tags = [...(p.tags ?? []), "secondary", "consort"];
   const c: Consort = { pid: p.id, rank: 0, clan, trait: o.trait ?? pick(l, TRAITS), since: calYear(l), nights: 0, resent: 0 };
   (l.mw!.harem ??= []).push(c);

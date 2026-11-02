@@ -67,7 +67,12 @@ export function apply(l: Life, c: Ctx, fx: Fx): string {
   if (p && fx.mem) remember(l, p, fx.mem[0], fx.mem[1], fx.mem[2], {}, fx.mem[3] ?? true);
   if (fx.meet) {
     const m = fx.meet;
-    const np = createPerson(l, m.rel, { age: Math.max(0, m.age ?? l.age + randInt(l, -2, 2)), gender: m.gender, bond: m.bond ?? 50 });
+    // ความรักเป็นเรื่องของผู้ใหญ่: ก่อน 18 คนที่พบคือเพื่อน · มีคู่แล้วก็เป็นแค่คนรู้จัก
+    const romance = m.rel === "partner" || m.rel === "spouse";
+    const taken = l.people.some((x) => x.alive && (x.relation === "partner" || x.relation === "spouse"));
+    const rel = romance && (l.age < 18 || taken) ? "friend" : m.rel;
+    const age = Math.max(rel === m.rel && romance ? 18 : 0, m.age ?? l.age + randInt(l, -2, 2));
+    const np = createPerson(l, rel, { age, gender: m.gender, bond: m.bond ?? 50 });
     if (m.tag) np.tags = [m.tag];
     c.pid = np.id;
     extra += ` (${relationLabel(np, l)}ใหม่: ${shortName(np)})`;
@@ -279,9 +284,11 @@ export const S = (text: Txt, choices: Choice[], title?: string) => ({ title, tex
 const aliveOf = (l: Life, rels: Relation[]) => l.people.filter((p) => p.alive && rels.includes(p.relation));
 /** เลือกคนในครอบครัว/ความสัมพันธ์ที่ยังมีชีวิต ใส่ ctx.pid */
 export const withPerson = (rels: Relation[], f: (p: Person, l: Life) => boolean = () => true) => {
-  const when = (l: Life) => aliveOf(l, rels).some((p) => f(p, l));
+  // ฮ่องเต้ในฐานะสวามีอยู่นอกเหตุการณ์ชีวิตธรรมดา
+  const f2 = (p: Person, l: Life) => !p.tags?.includes("sovereign") && f(p, l);
+  const when = (l: Life) => aliveOf(l, rels).some((p) => f2(p, l));
   // prepare จำเงื่อนไขของตัวเองไว้ — E/A จะบังคับเงื่อนไขนี้เสมอ แม้ event จะเขียน when ของตัวเองทับ
-  const prepare = Object.assign((l: Life): Ctx => { const ps = aliveOf(l, rels).filter((p) => f(p, l)); return { pid: pick(l, ps).id }; }, { need: when, rels });
+  const prepare = Object.assign((l: Life): Ctx => { const ps = aliveOf(l, rels).filter((p) => f2(p, l)); return { pid: pick(l, ps).id }; }, { need: when, rels });
   return { when, prepare };
 };
 type NeedPrep = ((l: Life) => Ctx) & { need?: (l: Life) => boolean };

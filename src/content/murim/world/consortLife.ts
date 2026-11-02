@@ -1,12 +1,13 @@
 // วังหลังจากมุมของผู้เล่นหญิง: เข้าคัดเลือก → ไต่ตำแหน่งสนม → ฮองเฮา → ไทเฮา → จักรพรรดินี
 // ความโปรดปราน ลูก และการหักหลังคู่แข่งคือบันได · ทุกแผนทิ้งร่องรอย ถูกกล่าวหาแล้วต้องเอาตัวรอดด้วยความสามารถของตัวเอง
 import { ACTIVITIES, type Activity } from "../../../engine/activities";
-import type { Ctx, GameEvent } from "../../../engine/events";
+import { eligibilityFilters, type Ctx, type GameEvent } from "../../../engine/events";
 import { runEvent, yearHooks } from "../../../engine/game";
 import { chance } from "../../../engine/rng";
-import type { Life } from "../../../engine/types";
-import { addFame, addMoney, clamp, createPerson, log, people } from "../../../engine/util";
+import type { Life, Person } from "../../../engine/types";
+import { addFame, addMoney, clamp, createPerson, log, people, shortName } from "../../../engine/util";
 import { B, BIG, C, E, G, K, N, P, PAY, TAEL, ab, type Res } from "../story/kit";
+import { calYear } from "../life/world";
 import { courtOf } from "./court";
 import { castOf, type PNpc } from "./palace";
 import { claimThrone, schemeHeat } from "./palaceSchemes";
@@ -30,7 +31,20 @@ const rivals = (l: Life) => castOf(l).filter((n) => n.role === "consort").sort((
 const rival = (l: Life): PNpc | undefined => rivals(l)[0];
 const empress = (l: Life) => castOf(l).find((n) => n.role === "empress");
 const rn = (l: Life) => rival(l)?.name ?? "สนมคนนั้น";
-const canEnter = (l: Life) => l.gender === "f" && l.age >= 14 && l.age <= 28 && l.flags.qnRank === undefined && !l.flags.qnLeft && !l.flags.emperorSelf && !people(l, "spouse").length;
+const canEnter = (l: Life) => l.gender === "f" && l.age >= 18 && l.age <= 28 && l.flags.qnRank === undefined && !l.flags.qnLeft && !l.flags.emperorSelf && !people(l, "spouse").length && !people(l, "partner").length;
+
+/** ฮ่องเต้ในฐานะสวามี: คนจริงในแท็บผู้คน ความผูกพันคือความโปรดปราน */
+const sovereign = (l: Life): Person | undefined => l.people.find((p) => p.alive && p.tags?.includes("sovereign"));
+function ensureSovereign(l: Life) {
+  const e = courtOf(l).emperor;
+  if (sovereign(l) || l.flags.qnEmp !== e.name) return;
+  const p = createPerson(l, "spouse", { gender: "m", age: e.age, bond: favor(l) });
+  p.name = e.name; p.short = e.name;
+  p.tags = ["sovereign", "title:ฮ่องเต้ · พระสวามี"];
+}
+/** องค์ชายของคุณที่อาจขึ้นครองราชย์ */
+const ownSon = (l: Life) => people(l, "child").filter((p) => p.alive && p.gender === "m" && p.tags?.includes("royal")).sort((a, b) => b.age - a.age)[0];
+const seatOdds = (l: Life) => clamp(0.25 + favor(l) / 250 + qn(l) * 0.08 + (l.stats.smarts - 50) / 200 - schemeHeat(l) / 300, 0.05, 0.85);
 
 function setRank(l: Life, r: number, why: string) {
   l.flags.qnRank = r;
@@ -43,12 +57,14 @@ function enter(l: Life) {
   l.flags.qnEmp = courtOf(l).emperor.name;
   l.flags.palaceAccess = true;
   delete l.job;
+  ensureSovereign(l);
 }
 export function leavePalace(l: Life) {
   delete l.flags.qnRank; delete l.flags.qnCold; delete l.flags.qnAccused;
   l.flags.qnLeft = true;
   delete l.flags.palaceAccess;
   l.flags.schemeHeat = 0;
+  l.people = l.people.filter((p) => !p.tags?.includes("sovereign"));
 }
 function crown(l: Life) {
   const e = empress(l);
@@ -70,15 +86,26 @@ function punished(l: Life) {
 }
 
 ACTIVITIES.push(
-  M({ group: "วังหลัง", id: "mw_consort_enter", emoji: "🏮", name: "สมัครเข้ารับคัดเลือกสนม", desc: "ทางสู่ฮองเฮา สตรีโสดอายุไม่เกิน 28", minAge: 14, available: canEnter, run: (l) => { runEvent(l, "qn.selection"); return { text: "" }; } }),
-  M({ group: "วังหลัง", id: "mw_consort", emoji: "🪷", name: "เดินเกมในวังหลัง", desc: "เอาใจฮ่องเต้ ผูกมิตร หรือหักหลังคู่แข่ง", minAge: 14, available: (l) => inHarem(l) && !cold(l), run: (l) => { runEvent(l, "qn.menu"); return { text: "" }; } }),
+  M({ group: "วังหลัง", id: "mw_consort_enter", emoji: "🏮", name: "สมัครเข้ารับคัดเลือกสนม", desc: "ทางสู่ฮองเฮา สตรีโสดอายุ 18–28", minAge: 18, available: canEnter, run: (l) => { runEvent(l, "qn.selection"); return { text: "" }; } }),
+  M({ group: "วังหลัง", id: "mw_consort", emoji: "🪷", name: "เดินเกมในวังหลัง", desc: "เอาใจฮ่องเต้ ผูกมิตร หรือหักหลังคู่แข่ง", minAge: 18, available: (l) => inHarem(l) && !cold(l), run: (l) => { runEvent(l, "qn.menu"); return { text: "" }; } }),
 );
 
 const poison = (l: Life) => { const r = rival(l); if (r) r.alive = false; l.flags.mwKills = Number(l.flags.mwKills ?? 0) + 1; };
 const oust = (l: Life) => { const r = rival(l); if (r) r.out = true; };
 
 export const CONSORT_EVENTS: GameEvent[] = [
-  E("qn.selection", [14, 28], "ราชโองการคัดเลือกสนมมาถึงเมือง ขันทีตรวจหน้าตา กิริยา และลายมือ หญิงสาวทั้งแผ่นดินยืนเรียงกันหน้าวัง", [
+  {
+    id: "qn.audience", minAge: 18, maxAge: 120, manual: true, maxTimes: 0, title: "เข้าเฝ้า",
+    text: (l) => `${courtOf(l).emperor.name}รับสั่งให้คุณเข้าเฝ้าที่ห้องทรงพระอักษร ความโปรดปราน ${favor(l)}`,
+    choices: [
+      K("ถวายคำปรึกษาเรื่องบ้านเมือง", "smarts", 50, act(G("ฮ่องเต้วางพู่กัน แล้วถามความเห็นคุณอีกข้อ", { iq: 1 }), (l) => shift(l, 10)), act(N("ฮ่องเต้ทรงพระสรวลเบาๆ \"เรื่องนี้ไม่ใช่เรื่องของวังหลัง\"", {}), (l) => shift(l, -3))),
+      K("ชวนเล่นหมากชมจันทร์", "looks", 45, act(G("คุณแพ้ไปหนึ่งเม็ดอย่างตั้งใจ และพระองค์ไม่รู้", { joy: 3 }), (l) => shift(l, 8)), N("พระองค์ทรงง่วงตั้งแต่ตาที่สิบ", {})),
+      P("ทูลขอตำแหน่งให้ตระกูล", ab(0.35, "smarts", 0.6), act(G("ราชโองการไปถึงบ้านเกิดคุณก่อนจดหมายของคุณ ตระกูลคุณส่งของกำนัลกลับมา", { tael: 40, fame: 3 }), (l) => heat(l, 8)), act(B("พระองค์ทรงนิ่งไปนาน \"เจ้ามาหาข้า หรือมาหาตำแหน่ง\"", {}), (l) => shift(l, -6))),
+      C("นั่งฟังเงียบๆ", act(N("คืนนั้นพระองค์ตรัสเรื่องที่ไม่เคยตรัสกับใคร", {}), (l) => shift(l, 3))),
+    ],
+  } satisfies GameEvent,
+
+  E("qn.selection", [18, 28], "ราชโองการคัดเลือกสนมมาถึงเมือง ขันทีตรวจหน้าตา กิริยา และลายมือ หญิงสาวทั้งแผ่นดินยืนเรียงกันหน้าวัง", [
     P("เข้ารับการคัดเลือกด้วยรูปโฉม", ab(0.4, "looks", 0.8), act(BIG("ฮ่องเต้หยุดมองคุณนานกว่าคนอื่นสามลมหายใจ ป้ายชื่อคุณถูกเก็บไว้ ประตูวังปิดตามหลังคุณ", { joy: 3 }), enter), N("ขันทีส่ายหน้า คุณได้ผ้าหนึ่งพับเป็นค่าเดินทางกลับบ้าน", {})),
     P("แสดงความรู้ เขียนบทกวีถวาย", ab(0.35, "smarts", 0.8), act(BIG("บทกวีของคุณถูกอ่านออกเสียงในตำหนัก \"คนนี้ไม่เหมือนคนอื่น\" คุณได้เข้าวัง", { iq: 1 }), enter), N("บทกวีดี แต่ไม่มีใครอ่าน", {})),
     PAY("ติดสินบนขันทีให้ได้ชื่อเข้าวัง", 40, act(N("ชื่อคุณอยู่ในบัญชี แต่ขันทีรู้ราคาของคุณแล้ว", {}), (l) => { enter(l); heat(l, 10); })),
@@ -132,6 +159,14 @@ export const CONSORT_EVENTS: GameEvent[] = [
   ], { when: (l) => inHarem(l) && cold(l), weight: 25, maxTimes: 0, title: "ตำหนักเย็น" }),
 
   E("qn.widow", [20, 110], (l) => `ระฆังเก้าครั้งดังจากหอกลอง ฮ่องเต้สวรรคตแล้ว ${courtOf(l).emperor.name}ขึ้นครองราชย์ คุณมียศ${CONSORT_RANKS[qn(l)]} และสนมที่ไม่มีลูกชายมักถูกส่งไปวัดหลวง`, [
+    P((l) => `ผลักดันองค์ชาย${ownSon(l) ? shortName(ownSon(l)!) : ""}ขึ้นครองราชย์`, seatOdds, act(BIG(`พระราชพินัยกรรมถูกอ่านกลางท้องพระโรง ชื่อที่ออกจากปากขันทีคือลูกของคุณ คุณได้เป็นไทเฮาตั้งแต่วันนี้`, { fame: 15 }), (l) => {
+      const k = ownSon(l)!, c = courtOf(l);
+      c.reigns.push({ name: c.emperor.name, from: c.emperor.since, to: calYear(l), how: "สละราชสมบัติให้พระราชบุตรของพระสนม" });
+      c.emperor = { name: `ฮ่องเต้${k.name}`, age: k.age, temper: "wise", health: 100, since: calYear(l) };
+      c.regent = k.age < 16 ? `ไทเฮา${l.firstName}` : undefined;
+      k.tags = [...(k.tags ?? []), "title:ฮ่องเต้ · พระโอรส"];
+      l.flags.qnRank = DOWAGER; l.flags.qnBest = DOWAGER; l.flags.qnEmp = c.emperor.name; l.flags.qnSonOnThrone = k.id; delete l.flags.qnCold;
+    }), act(B("ฝ่ายองค์ชายอีกองค์เร็วกว่าคุณหนึ่งก้าว ฎีกาที่คุณเตรียมไว้กลายเป็นหลักฐาน", {}), (l) => heat(l, 30)), { tone: "danger", show: (l) => !!ownSon(l) && !cold(l) }),
     C((l) => (qn(l) >= EMPRESS || sons(l) ? "รับฐานันดรไทเฮา" : "ขอไปบวชที่วัดหลวง"), (l, c) => {
       if (qn(l) >= EMPRESS || sons(l)) { l.flags.qnRank = DOWAGER; l.flags.qnBest = DOWAGER; l.flags.qnEmp = courtOf(l).emperor.name; delete l.flags.qnCold; log(l, "ตอนนี้คุณคือไทเฮา คนในวังทั้งหมดต้องคุกเข่าให้คุณ", "milestone"); return BIG("ฮ่องเต้องค์ใหม่คุกเข่าถวายน้ำชาให้คุณ และคนทั้งราชสำนักเห็น", { fame: 8 })(l, c); }
       leavePalace(l);
@@ -147,13 +182,27 @@ export const CONSORT_EVENTS: GameEvent[] = [
 ];
 
 yearHooks.push((l) => {
-  if (l.worldId !== "murim" || !l.alive || !inHarem(l)) return;
+  if (l.flags.qnRank !== undefined && l.job) l.job = undefined; // คนในวังหลังไม่มีงานนอกวัง
+  if (l.worldId !== "murim" || !l.alive) return;
+  const sv = sovereign(l);
+  if (sv && sv.name !== courtOf(l).emperor.name) sv.alive = false; // สวรรคตหรือถูกโค่น · ผลัดแผ่นดินเล่าต่อใน qn.widow
+  if (!inHarem(l)) return;
+  ensureSovereign(l);
   if (!cold(l)) {
     shift(l, l.age >= 40 ? -6 : -3);
     if (qn(l) >= 1) addMoney(l, (qn(l) + 1) * 20 * TAEL);
     const h = schemeHeat(l);
     if (h > 0) { if (chance(l, h / 240)) l.flags.qnAccused = true; heat(l, -5); }
   }
+  const now = sovereign(l);
+  if (now) { now.bond = favor(l); now.age = courtOf(l).emperor.age; }
+});
+
+// คนในวังไม่มีเรื่องรักนอกกำแพงแบบชาวบ้าน · ราชบุตรเขยรับเมียรองไม่ได้
+eligibilityFilters.push((l, e) => {
+  if (inHarem(l) && /^(lv\.|fm\.spouse|fm\.widow|hh\.(husband|quarrel|poison|second))/.test(e.id)) return false;
+  if (l.flags.pcRank !== undefined && /^(hh\.(second|poison)|lv\.political)/.test(e.id)) return false;
+  return true;
 });
 
 export const consortLine = (l: Life) => (inHarem(l) ? `${CONSORT_RANKS[qn(l)]}${cold(l) ? " ในตำหนักเย็น" : ` · โปรดปราน ${favor(l)}`}` : "");

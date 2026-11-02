@@ -7,6 +7,7 @@ import { AXIS, goalOf, notableAxes, traitName, traitsOf, profileOf, relOf } from
 import { isRealistic } from "../../content/worlds";
 import { lineageOf } from "../../content/murim/life/generations";
 import { martialLabel } from "../../content/murim/life/npcMartial";
+import { isPrincess, isSovereign, personActions } from "../../content/murim/life/kinship";
 import { Fold } from "../Fold";
 
 /** กลุ่มคนในแท็บผู้คน — แต่ละกลุ่มย่อ/ขยายได้ */
@@ -34,6 +35,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
   return (
     <div className="tab-content">
       {life.worldId === "murim" && <LineageCard life={life} pick={(id) => { setOpen(id); document.getElementById(`person-${id}`)?.scrollIntoView({ block: "center" }); }} />}
+      {life.worldId === "murim" && life.age >= 3 && <KinCare life={life} act={act} />}
       {PEOPLE_GROUPS.map((grp) => {
         const members = list.filter((p) => grp.of(p));
         if (!members.length) return null;
@@ -51,6 +53,8 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
                 {p.job ? ` · ${p.job}` : ""}
                 {p.tags?.some((t) => t.startsWith("away:")) ? " · ย้ายไปอยู่ไกล" : ""}
                 {p.tags?.includes("life_rival") ? " · คู่ปรับตลอดชีวิต" : ""}
+                {p.tags?.includes("chosen") ? " · ศิษย์เอก" : ""}
+                {p.alive && drifting(p) ? " · เริ่มห่างเหิน" : ""}
                 {p.martial ? ` · ${martialLabel(life, p)}` : ""}
               </div>
             </div>
@@ -78,6 +82,32 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
           </Fold>
         );
       })}
+    </div>
+  );
+}
+
+const drifting = (p: Person) => p.bond < 30 && (FAMILY.includes(p.relation) || p.relation === "friend" || p.relation === "ally") && !isSovereign(p);
+const reachable = (p: Person) => p.alive && !isSovereign(p) && !p.tags?.some((t) => t.startsWith("away:"));
+
+/** สรุปคนที่ควรดูแลปีนี้ พร้อมปุ่มรวบเดียว */
+function KinCare({ life, act }: { life: Life; act: Act }) {
+  const fam = life.people.filter((p) => reachable(p) && FAMILY.includes(p.relation));
+  const left = fam.filter((p) => !life.doneThisYear.includes(`time:${p.id}`));
+  const far = life.people.filter((p) => p.alive && drifting(p));
+  const todo = life.people.flatMap((p) => personActions(life, p).filter((a) => !a.locked).map(() => p.id)).length;
+  if (!left.length && !far.length && !todo) return null;
+  return (
+    <div className="card kin-care">
+      <div className="small muted">
+        {far.length > 0 && `เริ่มห่างเหิน: ${far.slice(0, 3).map(shortName).join(" · ")}${far.length > 3 ? ` และอีก ${far.length - 3} คน` : ""}`}
+        {far.length > 0 && todo > 0 && " · "}
+        {todo > 0 && `มีเรื่องให้ดูแลรายคนอีก ${todo} อย่าง`}
+      </div>
+      {left.length > 0 && (
+        <button className="btn small" onClick={() => act((l) => { for (const p of l.people) if (left.some((x) => x.id === p.id)) spendTime(l, p); })}>
+          ใช้เวลากับครอบครัวทั้งหมด ({left.length} คน)
+        </button>
+      )}
     </div>
   );
 }
@@ -125,6 +155,8 @@ function PersonMind({ p }: { p: Person }) {
 
 function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
   const isParent = p.relation === "father" || p.relation === "mother";
+  const royal = isSovereign(p);
+  const special = personActions(life, p);
   if (life.age < 3)
     return (
       <div className="person-actions">
@@ -133,14 +165,19 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
     );
   return (
     <div className="person-actions">
-      {life.age >= 4 && (
+      {special.map((a) => (
+        <button className="btn small primary" key={a.id} disabled={!!a.locked} title={a.locked} onClick={() => act(a.run)}>
+          {a.label}{a.locked ? ` · ${a.locked}` : ""}
+        </button>
+      ))}
+      {!royal && life.age >= 4 && (
       <button className="btn small" disabled={life.doneThisYear.includes(`talk:${p.id}`)} onClick={() => act((l) => { l.doneThisYear.push(`talk:${p.id}`); runEvent(l, "talk.menu", { pid: p.id }); })}>
         คุย
       </button>
       )}
-      <button className="btn small" disabled={life.doneThisYear.includes(`time:${p.id}`)} onClick={() => act((l) => spendTime(l, p))}>
+      {!royal && <button className="btn small" disabled={life.doneThisYear.includes(`time:${p.id}`)} onClick={() => act((l) => spendTime(l, p))}>
         {life.age < 6 ? "เล่นด้วยกัน" : "ใช้เวลาด้วยกัน"}
-      </button>
+      </button>}
       {isParent && life.age >= 6 && (
         <button className="btn small" disabled={life.doneThisYear.includes(`ask:${p.id}`)} onClick={() => act((l) => askMoney(l, p))}>
           ขอเงิน
@@ -151,22 +188,22 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
           ขอแต่งงาน
         </button>
       )}
-      {p.relation === "spouse" && (
+      {p.relation === "spouse" && !royal && (
         <button className="btn small" disabled={life.doneThisYear.includes("baby")} onClick={() => act((l) => tryForBaby(l, p))}>
           มีลูก
         </button>
       )}
-      {(p.relation === "partner" || p.relation === "spouse") && (
+      {(p.relation === "partner" || p.relation === "spouse") && !royal && !isPrincess(p) && (
         <button className="btn small ghost" onClick={() => act((l) => breakUp(l, p))}>
           {p.relation === "spouse" ? "หย่า" : "เลิก"}
         </button>
       )}
-      {life.age >= 6 && (
+      {!royal && life.age >= 6 && (
         <button className="btn small" disabled={life.doneThisYear.includes(`gift:${p.id}`)} onClick={() => act((l) => giveGift(l, p))}>
           ให้ของขวัญ
         </button>
       )}
-      {["friend", "rival", "ally"].includes(p.relation) && life.age >= 15 && !life.people.some((x) => x.alive && (x.relation === "partner" || x.relation === "spouse")) && (
+      {["friend", "rival", "ally"].includes(p.relation) && life.age >= 18 && p.age >= 18 && !life.people.some((x) => x.alive && (x.relation === "partner" || x.relation === "spouse")) && (
         <button className="btn small" disabled={life.doneThisYear.includes("confess")} onClick={() => act((l) => confess(l, p))}>
           สารภาพรัก
         </button>
@@ -176,7 +213,7 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
           ตัดขาด
         </button>
       )}
-      {life.age >= 6 && (
+      {!royal && life.age >= 6 && (
         <button className="btn small ghost" onClick={() => act((l) => argue(l, p))}>
           ทะเลาะ
         </button>

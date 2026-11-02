@@ -93,7 +93,7 @@ export const MURIM_TALENTS: Talent[] = [
   G("mt_steady", "ใจนิ่ง", "common", "ไม่เคยร้องไห้แม้ตอนหกล้มหัวแตก", { deviation: -0.4 }, { happiness: 3 }),
   G("mt_hard_worker", "มือหยาบใจสู้", "common", "ทำงานหนักได้ทั้งวันโดยไม่บ่น", { work: 0.08, income: 0.1 }),
   G("mt_herb_nose", "จมูกสมุนไพร", "common", "แยกสมุนไพรร้อยชนิดได้ด้วยกลิ่น", { medicine: 0.12, poison: 0.3 }),
-  G("mt_sweet_face", "หน้าตาชวนมอง", "common", "แม่สื่อมาเคาะประตูตั้งแต่คุณยังไม่สิบห้า", { romance: 0.15 }, { looks: 6 }),
+  G("mt_sweet_face", "หน้าตาชวนมอง", "common", "ใครเห็นก็ทักว่าเด็กคนนี้หน้าตาดี", { romance: 0.15 }, { looks: 6 }),
   // ───── หายาก ─────
   G("mt_martial_eye", "ดวงตาแห่งยุทธ์", "rare", "ดูคนรำกระบี่ครั้งเดียวก็จำท่าได้", { learn: 0.3, fight: 0.04 }),
   G("mt_dragon_bones", "กระดูกมังกรซ่อน", "rare", "เส้นชีพจรกว้างกว่าคนทั่วไปเท่าตัว", { root: 1, break: 0.04, qi: 0.08 }),

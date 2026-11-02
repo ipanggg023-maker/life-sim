@@ -249,7 +249,7 @@ export function tickNpcs(l: Life) {
       log(l, `${name}แอบใส่เงิน ${money(l, gift)} ไว้ในห่อผ้าที่ส่งมาให้ "อย่าบอกใครนะ"`, "good");
       continue;
     }
-    if (p.relation === "spouse" && r.trust < 20 && r.love < 35 && chance(l, 0.08)) {
+    if (p.relation === "spouse" && !p.tags?.includes("sovereign") && !p.tags?.includes("princess") && r.trust < 20 && r.love < 35 && chance(l, 0.08)) {
       acted.add(p.id);
       l.people = l.people.filter((x) => x.id !== p.id);
       l.stats.happiness = clamp(l.stats.happiness - 15, 0, 100);

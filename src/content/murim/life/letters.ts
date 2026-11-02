@@ -27,7 +27,7 @@ const noTag = (p: Person, tag: string) => !p.tags?.includes(tag);
 
 const parent = withPerson(["father", "mother"]);
 const oldParent = withPerson(["father", "mother"], (p) => p.age >= 55 && noTag(p, "hlSick"));
-const sibWed = withPerson(["sibling"], (p) => p.age >= 16 && p.age <= 40 && noTag(p, "hlWed"));
+const sibWed = withPerson(["sibling"], (p) => p.age >= 18 && p.age <= 40 && noTag(p, "hlWed"));
 const childWed = withPerson(["child"], (p) => p.age >= 18 && p.age <= 35 && noTag(p, "hlWed"));
 const grandchild = withPerson(["child"], (p) => p.age >= 20 && p.age <= 45 && !noTag(p, "hlWed") && noTag(p, "hlGrand"));
 const childSick = withPerson(["child"], (p) => p.age >= 18 && noTag(p, "hlSick"));

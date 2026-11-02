@@ -37,7 +37,7 @@ function pickLabel(l: Life, start: string) {
 describe("หักหลังฮ่องเต้หลายทาง · เมื่อคุณเป็นฮ่องเต้ ราชสำนักเป็นของคุณจริง", () => {
   it("เมนูแผนชิงอำนาจมีทางเลือกหลากหลายตามขั้น", () => {
     const l = courtier(3, 3);
-    createPerson(l, "child", { age: 17, gender: "f" });
+    createPerson(l, "child", { age: 18, gender: "f" });
     runEvent(l, "ct.s_menu");
     const a = labels(l);
     for (const s of ["ปล่อยข่าวลางร้าย", "ให้หมอหลวงวางยาฮ่องเต้", "ส่งลูกเข้าวัง", "ซื้อใจขันที"]) expect(a.some((x) => x.startsWith(s)), `${s} ใน ${a.join(" | ")}`).toBe(true);

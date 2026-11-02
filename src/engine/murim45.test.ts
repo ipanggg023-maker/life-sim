@@ -84,7 +84,7 @@ describe("เส้นทางฮองเฮา", () => {
     const r = { rng: 3 };
     const seen = new Set<string>();
     for (let s = 1; s <= 40; s++) {
-      const l = lady(100 + s, 16);
+      const l = lady(100 + s, 18);
       enter(l);
       for (let y = 0; y < 50 && l.alive; y++) {
         l.stats.health = Math.max(l.stats.health, 60);

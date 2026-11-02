@@ -84,8 +84,8 @@ export function claimThrone(l: Life, how: string) {
 const eunuch = (l: Life) => castOf(l).filter((n) => n.role === "eunuch").sort((a, b) => b.inf - a.inf)[0];
 /** พรรคพวกที่ใช้ยึดอำนาจได้: แม่ทัพ หรือขันทีคุมประตูวัง */
 const ally = (l: Life) => { const g = npcById(l, l.flags.generalAlly); if (g?.alive && !g.out) return g; const e = npcById(l, l.flags.eunuchAlly); return e?.alive && !e.out ? e : undefined; };
-/** ลูกที่ส่งเข้าวังได้ (อายุ 14–30) */
-const marriageable = (l: Life) => people(l, "child").find((p) => p.alive && p.age >= 14 && p.age <= 30 && !p.tags?.includes("in_palace"));
+/** ลูกที่ส่งเข้าวังได้ (อายุ 18–30) */
+const marriageable = (l: Life) => people(l, "child").find((p) => p.alive && p.age >= 18 && p.age <= 30 && !p.tags?.includes("in_palace"));
 /** โอกาสขึ้นบัลลังก์: ชื่อเสียง สติปัญญา ลางร้ายที่ปล่อยไว้ พรรคพวก หักด้วยความชอบธรรมของราชวงศ์เดิมและร่องรอย */
 const throneOdds = (base: number) => (l: Life) => clamp(base + l.fame / 300 + (l.stats.smarts - 50) / 250 - (l.mw?.legitimacy ?? 50) / 400 + (l.flags.omenSpread ? 0.12 : 0) + (ally(l) ? 0.1 : 0) + (hasT(l, "mt_lost_royal") ? 0.1 : 0) - schemeHeat(l) / 250, 0.05, 0.85);
 const ego = (l: Life) => emperorTitle(l);

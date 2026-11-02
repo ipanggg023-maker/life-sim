@@ -45,7 +45,7 @@ const MAN_MORE: GameEvent[] = [
         : B(`${nm(l, c)}วางถ้วยชาลงแรงจนชาหก "ถ้าท่านพี่รับนางเข้ามา ข้าจะกลับบ้านเดิม"`, { feel: { trust: -4, jealousy: 15 } })(l, c);
     }, { pros: "ฮูหยินใหญ่รู้สึกว่าถูกให้เกียรติ", cons: "นางอาจไม่ยินยอม" }),
     C("รับเลย ไม่ต้องถาม", (l) => {
-      const np = createPerson(l, "spouse", { gender: "f", age: l.age - randInt(l, 5, 14), bond: 45 });
+      const np = createPerson(l, "spouse", { gender: "f", age: Math.max(18, l.age - randInt(l, 5, 14)), bond: 45 });
       tag(np, "secondary");
       remember(l, np, "married", "แต่งเข้าตระกูลเป็นฮูหยินรอง", 3, { loyalty: 20 });
       const m = mainWife(l);
@@ -59,7 +59,7 @@ const MAN_MORE: GameEvent[] = [
   E("hh.second_wife_consent", [22, 61], "ฮูหยินใหญ่ยินยอมแล้ว แม่สื่อรอคำตอบสุดท้ายอยู่ที่ห้องรับแขก", [
     C("รับนางเข้าบ้าน", (l) => {
       l.flags.wifeConsented = false;
-      const np = createPerson(l, "spouse", { gender: "f", age: l.age - randInt(l, 5, 14), bond: 50 });
+      const np = createPerson(l, "spouse", { gender: "f", age: Math.max(18, l.age - randInt(l, 5, 14)), bond: 50 });
       tag(np, "secondary");
       remember(l, np, "married", "แต่งเข้าตระกูลเป็นฮูหยินรอง", 3, { loyalty: 25 });
       const m = mainWife(l);

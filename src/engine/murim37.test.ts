@@ -33,7 +33,7 @@ describe("จุดเปลี่ยนชีวิตแบบมังฮว�
   it("ชีวิตธรรมดาเจอเด็กที่ถูกมองข้าม คืนฟ้าผ่า และโรงเตี๊ยมคืนพายุได้ · ผสมกันได้ในชีวิตเดียว", () => {
     const r = { rng: 9 };
     let overlooked = 0, turn = 0, inn = 0, mixed = 0;
-    for (let i = 1; i <= 40; i++) {
+    for (let i = 1; i <= 100; i++) {
       const { seen } = live(4000 + i, 45, r);
       const a = seen.includes("fv.mh.overlooked"), b = seen.includes("fv.mh.turn"), c = seen.includes("fv.fm.inn");
       overlooked += Number(a); turn += Number(b); inn += Number(c);

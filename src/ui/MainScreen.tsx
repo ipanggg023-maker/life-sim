@@ -15,6 +15,7 @@ import { currentPlan, plansFor, setPlan } from "../content/murim/life/plan";
 import { goalInfo } from "../content/murim/life/goals";
 import { arcLine } from "../content/murim/life/sideStories";
 import { consortLine } from "../content/murim/world/consortLife";
+import { fumaLine } from "../content/murim/world/princeConsort";
 import { Icon, noEmoji, type IconName } from "./Icon";
 import { disabilities, openInjuries } from "../engine/body";
 import { displayName, loc, money, shortName } from "../engine/util";
@@ -202,7 +203,7 @@ function WorldStrip({ life }: { life: Life }) {
   const w = worldSummary(life);
   const g = goalInfo(life);
   const arcs = arcLine(life);
-  const consort = consortLine(life);
+  const consort = consortLine(life) || fumaLine(life);
   return (
     <div className="meta-strip">
       {consort && (

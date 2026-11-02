@@ -30,6 +30,7 @@ const HOW: Record<string, string> = {
   "sect": "สมัครเข้าสำนักในแท็บอาชีพ ไต่ขั้นด้วยภารกิจ หรือชิงตำแหน่งเมื่อเจ้าสำนักแก่",
   "court": "สอบขุนนางในหมวดฝึกฝน หรือรับตำแหน่งเสมียนเมื่ออำเภอมาชวน",
   "throne": "เข้าวังผ่านงานขุนนางขั้นสูง หมอหลวง หรือองครักษ์ แล้วใช้วางแผนชิงอำนาจในหมวดราชสำนัก เกมจะบอกขั้นต่อไปในเมนูแผน",
+  "fuma": "ตัวละครชายโสดอายุ 18–32 ถวายตัวในหมวดวังหลัง แล้วใช้เดินเกมราชบุตรเขยสะสมความไว้วางใจ",
   "harem": "ตัวละครหญิงโสดอายุไม่เกิน 28 สมัครคัดเลือกสนมในหมวดวังหลัง แล้วใช้เดินเกมในวังหลัง",
   "wealth": "ทำงานเงินดี ซื้อทรัพย์สินที่มีรายได้ และอย่าใช้เกินตัว",
   "estate": "เก็บเงินแล้วดูหมวดทรัพย์สินในแท็บทำ",
@@ -49,6 +50,7 @@ export const ROUTES: Route[] = ([
   { id: "sect", name: "คนของสำนัก", stages: ["เข้าสำนัก", "ขึ้นเป็นเจ้าสำนัก", "ตั้งสำนักของตัวเอง"], gift: "smarts", tier: (l) => count(!!l.power?.guild || !!l.flags.sectHead || !!mySect(l), !!l.flags.sectHead || !!mySect(l), !!mySect(l)) },
   { id: "court", name: "ขุนนาง", stages: ["สอบผ่านระดับอำเภอหรือเป็นเสมียน", "สอบได้จิ้นซื่อ", "มีอำนาจเหนือราชสำนัก"], gift: "smarts", tier: (l) => count(l.job?.careerId === "official" || !!l.flags.rtClerk || !!l.flags.xiucai || !!l.flags.jinshi || Number(l.flags.courtRank ?? 0) >= 1, !!l.flags.jinshi || Number(l.flags.courtRank ?? 0) >= 3, Number(l.flags.courtRank ?? 0) >= 5) },
   { id: "throne", name: "บัลลังก์", stages: ["เข้าออกวังหลวงได้", "ยืนใกล้บัลลังก์", "เป็นฮ่องเต้"], gift: "luck", tier: (l) => count(palaceAccess(l), Number(l.flags.courtRank ?? 0) >= 3, !!l.flags.emperorSelf) },
+  { id: "fuma", name: "ราชบุตรเขย", stages: ["อภิเษกกับองค์หญิง", "เป็นคนสนิทฮ่องเต้", "ร่วมสำเร็จราชการ"], gift: "smarts", tier: (l) => { const r = Number(l.flags.pcBest ?? -1); return count(r >= 0, r >= 1, r >= 2); } },
   { id: "harem", name: "วังหลัง", stages: ["เข้าวังเป็นสนม", "ขึ้นเป็นเฟย", "เป็นฮองเฮา"], gift: "looks", tier: (l) => { const r = Math.max(Number(l.flags.qnRank ?? -1), Number(l.flags.qnBest ?? -1)); return count(r >= 0, r >= 2, r >= 4); } },
   { id: "wealth", name: "พ่อค้าใหญ่", stages: ["มีเงินห้าร้อยตำลึง", "มีเงินห้าพันตำลึง", "มีเงินสองหมื่นตำลึง"], gift: "luck", tier: (l) => count(l.money >= 500 * TAEL, l.money >= 5000 * TAEL, l.money >= 20000 * TAEL) },
   { id: "estate", name: "เจ้าของกิจการ", stages: ["ซื้อที่นาหรือกิจการ", "สร้างคฤหาสน์หรือสะพาน", "มีครบทั้งนา โรงเตี๊ยม และคาราวาน"], gift: "luck", tier: (l) => count(l.flags.estate_farm !== undefined || l.flags.estate_inn !== undefined || l.flags.estate_caravan !== undefined, l.flags.estate_manor !== undefined || !!l.flags.builtBridge, l.flags.estate_farm !== undefined && l.flags.estate_inn !== undefined && l.flags.estate_caravan !== undefined) },
@@ -79,7 +81,7 @@ export function recordRoutes(s: Soul, l: Life) {
 /** ทางที่ยังไม่เคยเดินไกล ไว้แนะนำชาติหน้า (สุ่มตาม seed ให้ไม่ซ้ำทุกครั้ง) */
 export function routeHints(s: Soul, l: Life, n = 3) {
   const after = (r: Route) => Math.max(s.routes?.[r.id] ?? 0, r.tier(l));
-  const open = ROUTES.filter((r) => after(r) < 3 && (r.id !== "harem" || l.gender === "f")).sort((a, b) => after(a) - after(b) || (a.id.charCodeAt(0) * 7 + l.seed) % 11 - (b.id.charCodeAt(0) * 7 + l.seed) % 11);
+  const open = ROUTES.filter((r) => after(r) < 3 && (r.id !== "harem" || l.gender === "f") && (r.id !== "fuma" || l.gender === "m")).sort((a, b) => after(a) - after(b) || (a.id.charCodeAt(0) * 7 + l.seed) % 11 - (b.id.charCodeAt(0) * 7 + l.seed) % 11);
   return open.slice(0, n).map((r) => ({ name: r.name, next: r.stages[after(r)], how: r.how }));
 }
 

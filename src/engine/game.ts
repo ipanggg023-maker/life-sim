@@ -237,6 +237,7 @@ export function kill(life: Life, cause: string) {
 function mortality(age: number, health: number) {
   let p = 0.0005 + Math.max(0, age - 55) ** 2 * 0.00012;
   if (health < 25) p += (25 - health) / 90;
+  if (health <= 0) p += 0.35; // ร่างกายถึงขีดสุดแล้ว อยู่ได้อีกไม่นาน
   return p;
 }
 
@@ -392,7 +393,8 @@ function progressPeople(life: Life) {
     p.age++;
     if ((p.relation === "friend" || p.relation === "partner") && !p.tags?.includes("sworn")) p.bond = clamp(p.bond - randInt(life, 1, 4), 0, 100);
     if (p.relation === "spouse") p.bond = clamp(p.bond - randInt(life, 0, 2), 0, 100);
-    if (chance(life, mortality(p.age, 70) * (p.age > 60 ? 1.2 : 0.5))) {
+    if (p.tags?.includes("sovereign")) continue; // ฮ่องเต้ตามความเป็นจริงของราชสำนัก ไม่ใช่สุ่มตายแบบคนรู้จัก
+    if (p.age >= 115 || chance(life, mortality(p.age, 70) * (p.age > 60 ? 1.2 : 0.5))) {
       p.alive = false;
       for (const h of kinDeathHooks) h(life, p, false);
       if (["father", "mother", "spouse", "child", "sibling"].includes(p.relation)) {
@@ -766,6 +768,8 @@ export function askMoney(life: Life, p: Person): Outcome {
 
 export function propose(life: Life, p: Person): Outcome {
   if (life.doneThisYear.includes("propose")) return { text: "รอปีหน้าค่อยลองใหม่นะ" };
+  if (life.age < 18 || p.age < 18) return { text: "ยังเด็กเกินไปสำหรับเรื่องแต่งงาน" };
+  if (life.people.some((x) => x.alive && x.relation === "spouse" && x.id !== p.id && (life.gender === "f" || x.tags?.includes("princess")))) return { text: "คุณมีคู่สมรสอยู่แล้ว" };
   if (life.worldId === "murim" && life.job?.careerId === "monk") return { text: "คุณบวชอยู่ — ต้องสึกก่อนจึงจะแต่งงานได้ (ลาออกจากอาชีพ)" };
   if (Number(life.flags.mourningUntil ?? -1) > life.age) return { text: "คุณยังไว้ทุกข์ให้พ่อแม่อยู่ — ธรรมเนียมห้ามแต่งงานจนครบสามปี" };
   life.doneThisYear.push("propose");
@@ -780,10 +784,11 @@ export function propose(life: Life, p: Person): Outcome {
       p.tags = [...(p.tags ?? []), "secondary"];
       for (const w of already) remember(life, w, "second_wife", "สามีรับคนใหม่เข้าบ้าน", 3, { trust: -12, jealousy: 25, love: -8 });
     }
-    const cost = { poor: 50_000, middle: 250_000, rich: 1_500_000, elite: 20_000_000 }[life.wealth];
+    // งานแต่งใหญ่เท่าที่จ่ายไหว ไม่ทำให้เป็นหนี้
+    const cost = Math.min({ poor: 50_000, middle: 250_000, rich: 1_500_000, elite: 20_000_000 }[life.wealth], Math.max(0, Math.round(life.money * 0.6)));
     addMoney(life, -cost);
     addStat(life, "happiness", 20);
-    const out = { text: `💍 ${shortName(p)}ตอบตกลง! งานแต่งจัดใหญ่ ค่าสินสอดและงานรวม ${money(life, cost)}`, kind: "milestone" as const };
+    const out = { text: cost > 0 ? `💍 ${shortName(p)}ตอบตกลง! งานแต่งจัดใหญ่ ค่าสินสอดและงานรวม ${money(life, cost)}` : `💍 ${shortName(p)}ตอบตกลง! งานแต่งเรียบง่าย มีแค่คนในบ้านกับฟ้าดินเป็นพยาน`, kind: "milestone" as const };
     log(life, out.text, out.kind);
     return out;
   }
@@ -827,6 +832,7 @@ export function giveGift(life: Life, p: Person): Outcome {
 /** สารภาพรักกับเพื่อน/คู่แข่ง/เพื่อนร่วมทีม */
 export function confess(life: Life, p: Person): Outcome {
   if (life.doneThisYear.includes("confess")) return { text: "ปีนี้หัวใจคุณเหนื่อยพอแล้ว" };
+  if (life.age < 18 || p.age < 18) return { text: "ยังเด็กเกินไปสำหรับเรื่องนี้" };
   life.doneThisYear.push("confess");
   const odds = clamp((p.bond - 35) / 55 + (life.stats.looks - 50) / 200 + gift(life, "romance"), 0.05, 0.95);
   if (chance(life, odds)) {

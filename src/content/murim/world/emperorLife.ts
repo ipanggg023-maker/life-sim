@@ -218,7 +218,7 @@ YEAR_PLANS.push(
 export const traitor = (n: PNpc) => n.amb >= 70 || n.you.grudge >= 30 || n.backs === "self" || (!!n.secret && n.amb >= 50);
 /** สิ่งที่ฮ่องเต้เห็นจากภายนอก (ยังไม่ได้สืบ) */
 const look = (n: PNpc) => n.vetted === "traitor" ? "สืบแล้ว: คิดคด" : n.vetted === "loyal" ? "สืบแล้ว: ภักดี" : n.you.grudge >= 20 ? "สายตาไม่เป็นมิตร" : n.amb >= 70 ? "ทะเยอทะยานเกินตำแหน่ง" : n.you.trust >= 20 ? "ดูภักดี" : "อ่านใจไม่ออก";
-const suspects = (l: Life) => ministers(l).slice().sort((a, b) => Number(b.vetted === "traitor") - Number(a.vetted === "traitor") || b.amb + b.you.grudge - (a.amb + a.you.grudge)).slice(0, 6);
+const suspects = (l: Life) => ministers(l).slice().sort((a, b) => Number(b.vetted === "traitor") - Number(a.vetted === "traitor") || b.amb + b.you.grudge - (a.amb + a.you.grudge)).filter((n, i, a) => a.findIndex((x) => x.name === n.name) === i).slice(0, 6);
 const who = (l: Life, c: Ctx) => npc(l, c.nid);
 const wn = (l: Life, c: Ctx) => who(l, c)?.name ?? "ขุนนางคนนั้น";
 /** ผลของการลงโทษ: คนผิดจริง = ราชสำนักเกรงใจ · คนบริสุทธิ์ = ความชอบธรรมพัง ขุนนางตงฉินหวาดกลัว */
