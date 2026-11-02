@@ -159,7 +159,7 @@ export type StyleId = "might" | "swift" | "mind" | "qi";
 export const STYLES: Record<StyleId, { name: string; effect: string }> = {
   might: { name: "ทางพละกำลัง", effect: "พลังต่อสู้ +2 · ฝึกหนักบาดเจ็บง่ายขึ้น" },
   swift: { name: "ทางพลิ้วไหว", effect: "พลังต่อสู้ +1 · ฝึกหนักบาดเจ็บน้อยลงครึ่งหนึ่ง" },
-  mind: { name: "ทางปัญญา", effect: "เรียนวิชาเร็วขึ้น 20% · ธาตุไฟเข้าแทรกน้อยลงครึ่งหนึ่ง" },
+  mind: { name: "ทางปัญญา", effect: "เรียนวิชาเร็วขึ้น 30% · ธาตุไฟเข้าแทรกน้อยลงครึ่งหนึ่ง" },
   qi: { name: "ทางลมปราณ", effect: "ลมปราณสะสมปีละ +0.3 · เรียนวิชาช้าลง 10%" },
 };
 export const styleOf = (l: Life) => l.flags.mwStyle as StyleId | undefined;
@@ -181,7 +181,7 @@ export function martialBonus(l: Life): number {
 }
 
 /** ความเร็วในการเรียน (คูณ) */
-export const learnRate = (l: Life) => (0.6 + comprehension(l) / 100 + rootOf(l) * 0.05) * (1 + gift(l, "learn")) * (styleOf(l) === "mind" ? 1.2 : styleOf(l) === "qi" ? 0.9 : 1);
+export const learnRate = (l: Life) => (0.6 + comprehension(l) / 100 + rootOf(l) * 0.05) * (1 + gift(l, "learn")) * (styleOf(l) === "mind" ? 1.3 : styleOf(l) === "qi" ? 0.9 : 1);
 
 /** ฝึกวิชาหนึ่งวิชา — เพิ่มความชำนาญตามความเข้าใจ */
 export function practise(l: Life, id: string, base: number): number {

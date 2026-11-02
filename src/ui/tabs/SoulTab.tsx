@@ -19,6 +19,7 @@ import { SaveTransfer } from "../SaveTransfer";
 import { CloudCard } from "../CloudCard";
 import { goalById } from "../../content/murim/life/goals";
 import { ROUTES } from "../../content/murim/life/routes";
+import { DYN_GOALS, dynTally, nextTries } from "../../content/murim/life/dynasty";
 import { ARCS, activeArcs, arcEndings } from "../../content/murim/life/sideStories";
 import { injuryLabel } from "../../engine/body";
 import { SeriesCover } from "../SeriesCover";
@@ -83,6 +84,27 @@ export function SoulTab({
                 ปี {c.year} · {noEmoji(c.text)}
               </p>
             ))}
+          />
+          <FoldList
+            title="ชีวิตนี้หรือชีวิตหน้าลองอะไรดี"
+            items={nextTries(soul, life).map((t) => (
+              <p className="small" key={t.title}>
+                <b>{t.kind}</b> · {t.title}
+                <span className="muted"> — {t.note}</span>
+              </p>
+            ))}
+          />
+          <FoldList
+            title={`เป้าหมายตระกูล ${(soul.dynGoals ?? []).length}/${DYN_GOALS.length} · สายนี้รุ่นที่ ${dynTally(life).gens}`}
+            items={DYN_GOALS.map((g) => {
+              const done = soul.dynGoals?.includes(g.id);
+              return (
+                <p className="small" key={g.id}>
+                  {g.name} {done ? "· สำเร็จแล้ว" : `· ${Math.min(dynTally(life)[g.key], g.need)}/${g.need}`}
+                  {!done && <span className="muted"> — {g.how}</span>}
+                </p>
+              );
+            })}
           />
           <FoldList
             title="เส้นทางชีวิต"

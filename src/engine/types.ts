@@ -300,6 +300,8 @@ export interface Soul {
   routes?: Record<string, number>;
   /** ตอนจบของเรื่องต่อเนื่องที่เคยเห็น "เรื่อง:ตอนจบ" */
   arcEnds?: string[];
+  /** เป้าหมายของสายตระกูลที่เคยทำสำเร็จ */
+  dynGoals?: string[];
   /** บันทึกยุทธภพ: ชีวิตทุกชีวิตและเหตุการณ์โลกที่ผ่านมา (MURIM_PLAN §9) */
   chronicle?: import("../content/murim/life/generations").ChronEntry[];
   perks: {

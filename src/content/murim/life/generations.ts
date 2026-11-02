@@ -13,6 +13,7 @@ import { mySect, saveSect } from "../m17core";
 import { courtOf } from "../world/court";
 import { courtLegacy } from "../world/palace";
 import { inheritSeeds } from "./seeds";
+import { carryDyn } from "./dynasty";
 import { activeArcs, carryArc } from "./sideStories";
 import { carryMartial } from "./npcMartial";
 import { legacyToWorld } from "../world/jianghu";
@@ -176,7 +177,7 @@ export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | 
   // ลูก/ศิษย์ที่ฝึกวิชามาแล้ว เริ่มชีวิตด้วยขั้นของตัวเอง (npcMartial.ts)
   if (how !== "era") carryMartial(next, heir);
   // ความแค้นและบุญคุณที่ยังไม่สุก ตกถึงลูก/ศิษย์ (seeds.ts)
-  if (how !== "era") { inheritSeeds(dead, next); carryArc(dead, next); }
+  if (how !== "era") { inheritSeeds(dead, next); carryArc(dead, next); carryDyn(dead, next); }
   next.flags.plHow = how;
   if (dead.flags.m17Epithet) next.flags.plEpithet = String(dead.flags.m17Epithet);
 }

@@ -15,7 +15,8 @@ import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds
 import { displayName, loc, money, people } from "../engine/util";
 import { disciplesOf, lifeSummary } from "../content/murim/life/generations";
 import { RIBBON_COUNT, ribbonOf } from "../content/murim/life/ribbons";
-import { routeGains, routeHints } from "../content/murim/life/routes";
+import { routeGains, } from "../content/murim/life/routes";
+import { dynReached, nextTries } from "../content/murim/life/dynasty";
 import { catInWorld } from "../content/achievements";
 
 export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}` | `heir:${string}` | `disciple:${string}`;
@@ -346,16 +347,19 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
 /** ทางที่ชีวิตนี้ขยับ และทางที่ยังไม่เคยเดิน */
 function RouteCard({ life, soul }: { life: Life; soul: Soul }) {
   const gains = routeGains(soul, life);
-  const hints = routeHints(soul, life);
+  const tries = nextTries(soul, life);
   return (
     <div className="card">
       {gains.length > 0 && <div className="card-title">เส้นทางที่ไปไกลกว่าเดิม</div>}
       {gains.map(({ r, tier }) => (
         <p className="small" key={r.id}>{r.name} ขั้น {tier}/3 · {r.stages[tier - 1]}</p>
       ))}
-      {hints.length > 0 && <div className="card-title">ชีวิตหน้าลองทางนี้</div>}
-      {hints.map((h) => (
-        <p className="small" key={h.name}>{h.name} · {h.next}<span className="muted"> — {h.how}</span></p>
+      {dynReached(life).map((g) => (
+        <p className="small" key={g.id}><b>เป้าหมายตระกูลสำเร็จ:</b> {g.name}</p>
+      ))}
+      {tries.length > 0 && <div className="card-title">ชีวิตหน้าลองทางนี้</div>}
+      {tries.map((h) => (
+        <p className="small" key={h.title}><b>{h.kind}</b> · {h.title}<span className="muted"> — {h.note}</span></p>
       ))}
     </div>
   );

@@ -11,6 +11,7 @@ import { seriesOf } from "../content/manhwa";
 import { awaken, offerClasses, rankLabel, rollAwakening } from "../content/hunter/power";
 import { ribbonOf } from "../content/murim/life/ribbons";
 import { applyRouteGifts, recordRoutes } from "../content/murim/life/routes";
+import { recordDynasty } from "../content/murim/life/dynasty";
 
 export function newSoul(): Soul {
   return {
@@ -55,7 +56,7 @@ export function claimAward(soul: Soul, life: Life, regress: boolean): number {
   soul.talentBook = [...new Set([...(soul.talentBook ?? []), ...life.talents.map((t) => t.id)])];
   const combos = Object.keys(life.flags).filter((k) => k.startsWith("combo:")).map((k) => k.slice(6));
   if (combos.length) soul.comboBook = [...new Set([...(soul.comboBook ?? []), ...combos])];
-  if (life.worldId === "murim") { soul.ribbons = [...new Set([...(soul.ribbons ?? []), ribbonOf(life).id])]; recordRoutes(soul, life); }
+  if (life.worldId === "murim") { soul.ribbons = [...new Set([...(soul.ribbons ?? []), ribbonOf(life).id])]; recordRoutes(soul, life); recordDynasty(soul, life); }
   return gained;
 }
 
