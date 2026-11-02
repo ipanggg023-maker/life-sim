@@ -29,6 +29,8 @@ import { CourtPoliticsCard } from "./CourtPoliticsCard";
 import { TowerTeamCard } from "./TowerTeamCard";
 import { BaseCard } from "./BaseCard";
 import { Fold } from "../Fold";
+import { artProject, createLocked, openCreate, setStyle, styleLine, styleLocked } from "../../content/murim/martial/creation";
+import { STYLES, styleOf, type StyleId } from "../../content/murim/martial/arts";
 
 /** คำเรียกในแท็บพลังของแต่ละโลก */
 const UI: Record<
@@ -350,10 +352,56 @@ export function WorldCard({ life }: { life: Life }) {
   );
 }
 
+/** ทางวิชา: เลือกว่าจะเก่งแบบไหน เปลี่ยนได้ทุก 5 ปี */
+function StyleCard({ life, act }: { life: Life; act: Act }) {
+  if (!life.power) return null;
+  const locked = styleLocked(life);
+  const cur = styleOf(life);
+  return (
+    <Fold always kind="section" id="power-style" title={<>ทางวิชา · {cur ? STYLES[cur].name : "ยังไม่ได้เลือก"}</>}>
+      {styleLine(life) && <p className="small muted">{styleLine(life)}{locked ? ` · ${locked}` : ""}</p>}
+      {(Object.keys(STYLES) as StyleId[]).filter((id) => id !== cur).map((id) => (
+        <div className={`job ${locked ? "locked" : ""}`} key={id}>
+          <div className="job-main">
+            <div className="job-name">{STYLES[id].name}</div>
+            <div className="job-sub">{STYLES[id].effect}</div>
+          </div>
+          <button className="btn small" disabled={!!locked} onClick={() => act((l) => setStyle(l, id))}>
+            เลือก
+          </button>
+        </div>
+      ))}
+    </Fold>
+  );
+}
+
+/** โครงการคิดค้นวิชาของตัวเอง */
+function CreateCard({ life, act }: { life: Life; act: Act }) {
+  if (!life.power) return null;
+  if (life.flags.createdArt) return <p className="small muted">วิชาที่คุณคิดค้น: 「{String(life.flags.createdArt)}」</p>;
+  const p = artProject(life);
+  const locked = createLocked(life);
+  return (
+    <Fold always kind="section" id="power-create" title={<>คิดค้นวิชาของตัวเอง{p ? ` · ${p.name} ${p.done}/100` : ""}</>}>
+      {p && (
+        <div className="exp">
+          <div className="bar">
+            <div className="fill" style={{ width: `${p.done}%` }} />
+          </div>
+        </div>
+      )}
+      <p className="small muted">{locked ?? (p ? "ค้นคว้าปีละครั้ง เมื่อครบ 100 จะได้ตั้งชื่อวิชา" : "หลอมสิ่งที่เรียนมาเป็นวิชาที่ไม่มีใครเคยเห็น ใช้เวลาหลายปี")}</p>
+      <button className="btn small" disabled={!!locked} onClick={() => act(openCreate)}>
+        {p ? "ค้นคว้าต่อ" : "เริ่มคิดค้น"}
+      </button>
+    </Fold>
+  );
+}
+
 /** เลือกวิชาและวิธีฝึก (ปีละครั้ง) */
 function TrainPanel({ life, act }: { life: Life; act: Act }) {
   const arts = artsOf(life);
-  const [art, setArt] = useState(arts[0]?.id ?? "");
+  const [art, setArt] = useState(String(life.flags.lastArt ?? arts[0]?.id ?? ""));
   if (!arts.length) return null;
   const done = life.doneThisYear.includes("mwTrain");
   const cur = arts.find((a) => a.id === art) ?? arts[0];
@@ -381,12 +429,14 @@ function TrainPanel({ life, act }: { life: Life; act: Act }) {
                 {why && <span className="danger-text"> · {why}</span>}
               </div>
             </div>
-            <button className="btn small" disabled={done || !!why} onClick={() => act((l) => trainArt(l, cur.id, m.id))}>
+            <button className="btn small" disabled={done || !!why} onClick={() => act((l) => { l.flags.lastArt = cur.id; trainArt(l, cur.id, m.id); })}>
               ฝึก
             </button>
           </div>
         );
       })}</Fold>
+      <StyleCard life={life} act={act} />
+      <CreateCard life={life} act={act} />
     </>
   );
 }

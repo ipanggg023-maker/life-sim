@@ -117,7 +117,11 @@ export function inheritMurim(dead: Life, next: Life, how: "heir" | "disciple" | 
   if (best) {
     next.flags.plArt = best.id;
     next.flags.plArtName = artInfo(best).name;
-    if (dead.flags.wroteManual && !dead.flags.buriedManual && how !== "era") learn(next, best.id, "ตำราประจำตระกูล", true);
+    if (dead.flags.wroteManual && !dead.flags.buriedManual && how !== "era") {
+      // วิชาที่คิดค้นเองไม่มีในทำเนียบ ต้องคัดลอกตัววิชามาด้วย
+      if (best.own) artsOf(next).push({ id: best.id, m: 0, src: "ตำราประจำตระกูล", since: next.age, own: best.own });
+      else learn(next, best.id, "ตำราประจำตระกูล", true);
+    }
     if (dead.flags.buriedManual) next.flags.plBuried = true;
   }
   // อาวุธ/ของประจำตระกูล

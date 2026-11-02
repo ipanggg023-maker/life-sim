@@ -6,20 +6,22 @@ import type { GameEvent, Outcome } from "../../../engine/events";
 import { lifespanHooks, yearHooks } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
 import type { Life } from "../../../engine/types";
-import { addFame, addMoney, addStat, log } from "../../../engine/util";
+import { addFame, addMoney, addStat, log, shortName } from "../../../engine/util";
 import { gainExp } from "../../hunter/power";
 import { startDuel } from "../life/duel";
-import { ARTS, REALM_LIFE, TYPE_NAME, addQi, artInfo, artsOf, comprehension, knows, learn, masteryWord, practise, tickMartial, type ArtType } from "./arts";
+import { ARTS, REALM_LIFE, TYPE_NAME, addQi, artInfo, artsOf, comprehension, knows, learn, masteryWord, practise, styleOf, tickMartial, type ArtType } from "./arts";
 
 const good = (text: string): Outcome => ({ text, kind: "good" });
 const bad = (text: string): Outcome => ({ text, kind: "bad" });
 const meh = (text: string): Outcome => ({ text });
 
 const hasMaster = (l: Life) => !!l.flags.coreDisciple || l.people.some((p) => p.alive && p.tags?.includes("master")) || !!l.power?.guild;
+/** คู่ซ้อมที่สนิทที่สุด */
+const trainMate = (l: Life) => l.people.filter((p) => p.alive && !!p.martial && !p.tags?.includes("sovereign") && !p.tags?.some((t) => t.startsWith("away:"))).sort((a, b) => b.bond - a.bond)[0];
 const fromManual = (l: Life, id: string) => artsOf(l).find((a) => a.id === id)?.src === "ตำรา";
 
 export interface TrainMode {
-  id: "safe" | "hard" | "master" | "manual" | "spar";
+  id: "safe" | "hard" | "master" | "manual" | "spar" | "partner";
   name: string;
   pros: string;
   cons: string;
@@ -38,7 +40,7 @@ export const TRAIN_MODES: TrainMode[] = [
       const d = practise(l, art, randInt(l, 7, 13));
       addQi(l, 0.6);
       if (l.power) gainExp(l, 150);
-      if (chance(l, 0.2)) { addStat(l, "health", -randInt(l, 6, 14)); return bad(`คุณฝึกจนกล้ามเนื้อฉีกขาด (ความชำนาญ +${d})${injure(l, pick(l, ["armR", "legL", "ribs"] as const), pick(l, ["cut", "broken"] as const), 1, "ฝึกหนักเกินกำลัง")}`); }
+      if (chance(l, styleOf(l) === "might" ? 0.3 : styleOf(l) === "swift" ? 0.1 : 0.2)) { addStat(l, "health", -randInt(l, 6, 14)); return bad(`คุณฝึกจนกล้ามเนื้อฉีกขาด (ความชำนาญ +${d})${injure(l, pick(l, ["armR", "legL", "ribs"] as const), pick(l, ["cut", "broken"] as const), 1, "ฝึกหนักเกินกำลัง")}`); }
       return good(`เหงื่อทุกหยดไม่สูญเปล่า (ความชำนาญ +${d})`);
     },
   },
@@ -61,6 +63,19 @@ export const TRAIN_MODES: TrainMode[] = [
       addQi(l, 0.4);
       if (l.power) gainExp(l, 100);
       return good(`คุณอ่านบรรทัดเดิมเป็นร้อยรอบจนเข้าใจในที่สุด (ความชำนาญ +${d})`);
+    },
+  },
+  {
+    id: "partner", name: "ฝึกคู่กับคนรู้จัก", pros: "ไม่เสี่ยง และสนิทกันมากขึ้น", cons: "ต้องมีคนที่มีวิชา ได้น้อยกว่าอาจารย์ชี้แนะ",
+    req: (l) => (!trainMate(l) ? "ไม่มีคนรู้จักที่ฝึกวิชา" : undefined),
+    run: (l, art) => {
+      const p = trainMate(l)!;
+      const d = practise(l, art, randInt(l, 6, 11));
+      addQi(l, 0.3);
+      if (l.power) gainExp(l, 80);
+      p.bond = Math.min(100, p.bond + 6);
+      if (p.martial) p.martial.xp = Math.min(100, p.martial.xp + 12);
+      return good(`คุณกับ${shortName(p)}ซ้อมมือกันจนค่ำ ต่างคนต่างเห็นช่องโหว่ของอีกฝ่าย (ความชำนาญ +${d})`);
     },
   },
   {
@@ -140,7 +155,7 @@ export const MARTIAL_EVENTS: GameEvent[] = [
     id: "mw.art.create",
     minAge: 38,
     maxAge: 95,
-    weight: (l) => (artsOf(l).filter((a) => a.m >= 50).length >= 3 && comprehension(l) >= 70 ? 12 : 0),
+    weight: (l) => (!l.flags.createdArt && !l.flags.artProjType && artsOf(l).filter((a) => a.m >= 50).length >= 3 && comprehension(l) >= 70 ? 12 : 0),
     maxTimes: 1,
     title: "คิดค้นวิชาของตัวเอง",
     text: () => "ระหว่างนั่งสมาธิใต้น้ำตก ท่าวิชาทั้งหมดที่คุณรู้เริ่มไหลรวมกันในหัว — เหมือนแม่น้ำหลายสายกำลังจะกลายเป็นทะเล",

@@ -154,6 +154,16 @@ export function comprehension(l: Life): number {
   return Number(l.flags.mwComp);
 }
 
+/** ทางวิชา: ผู้เล่นเลือกเองว่าจะเก่งแบบไหน */
+export type StyleId = "might" | "swift" | "mind" | "qi";
+export const STYLES: Record<StyleId, { name: string; effect: string }> = {
+  might: { name: "ทางพละกำลัง", effect: "พลังต่อสู้ +2 · ฝึกหนักบาดเจ็บง่ายขึ้น" },
+  swift: { name: "ทางพลิ้วไหว", effect: "พลังต่อสู้ +1 · ฝึกหนักบาดเจ็บน้อยลงครึ่งหนึ่ง" },
+  mind: { name: "ทางปัญญา", effect: "เรียนวิชาเร็วขึ้น 20% · ธาตุไฟเข้าแทรกน้อยลงครึ่งหนึ่ง" },
+  qi: { name: "ทางลมปราณ", effect: "ลมปราณสะสมปีละ +0.3 · เรียนวิชาช้าลง 10%" },
+};
+export const styleOf = (l: Life) => l.flags.mwStyle as StyleId | undefined;
+
 /** โบนัสพลังต่อสู้จากวิชาและลมปราณ (ยุทธภพ) — เพดานราวหนึ่งขั้นครึ่ง */
 export function martialBonus(l: Life): number {
   if (l.worldId !== "murim" || !l.power) return 0;
@@ -166,11 +176,12 @@ export function martialBonus(l: Life): number {
   const qi = Math.min(10, Math.sqrt(qiYears(l)) * 1.3);
   // อาวุธที่ตีเอง (งานช่างตีเหล็ก): ธรรมดา +1.5 · ชั้นดี +3 · ชั้นเลิศ +4.5 · ในตำนาน +6
   const weapon = Number(l.flags.mwWeaponTier ?? 0) * 1.5;
-  return Math.round(Math.min(18, arts) + qi + weapon);
+  const style = styleOf(l) === "might" ? 2 : styleOf(l) === "swift" ? 1 : 0;
+  return Math.round(Math.min(18, arts) + qi + weapon + style);
 }
 
 /** ความเร็วในการเรียน (คูณ) */
-export const learnRate = (l: Life) => (0.6 + comprehension(l) / 100 + rootOf(l) * 0.05) * (1 + gift(l, "learn"));
+export const learnRate = (l: Life) => (0.6 + comprehension(l) / 100 + rootOf(l) * 0.05) * (1 + gift(l, "learn")) * (styleOf(l) === "mind" ? 1.2 : styleOf(l) === "qi" ? 0.9 : 1);
 
 /** ฝึกวิชาหนึ่งวิชา — เพิ่มความชำนาญตามความเข้าใจ */
 export function practise(l: Life, id: string, base: number): number {
@@ -203,10 +214,10 @@ export function tickMartial(l: Life) {
   comprehension(l);
   if (l.power) {
     const hasInternal = artsOf(l).some((k) => artInfo(k).type === "internal");
-    addQi(l, (0.15 + (hasInternal ? 0.25 : 0) + (l.flags.plan === "train" ? 0.75 : 0)) * (1 + rootOf(l) * 0.14));
+    addQi(l, (0.15 + (hasInternal ? 0.25 : 0) + (l.flags.plan === "train" ? 0.75 : 0)) * (1 + rootOf(l) * 0.14) + (styleOf(l) === "qi" ? 0.3 : 0));
   }
   if (l.age % 10 === 0 && l.age >= 20 && Number(l.flags.mwComp) < 95) l.flags.mwComp = Number(l.flags.mwComp) + 1;
-  if (conflicted(l) && chance(l, 0.08 * Math.max(0, 1 + gift(l, "deviation")))) {
+  if (conflicted(l) && chance(l, 0.08 * Math.max(0, 1 + gift(l, "deviation")) * (styleOf(l) === "mind" ? 0.5 : 1))) {
     l.stats.health = clamp(l.stats.health - randInt(l, 6, 14), 0, 100);
     log(l, "🔥 ลมปราณธรรมะกับมารในตัวคุณปะทะกันกลางดึก — เลือดทะลักออกจากปาก ธาตุไฟเข้าแทรก", "bad");
     if (chance(l, 0.3)) injure(l, "meridians", "internal", 2, "ลมปราณต่างขั้วปะทะกัน");
