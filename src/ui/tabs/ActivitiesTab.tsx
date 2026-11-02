@@ -4,6 +4,9 @@ import { loc, money } from "../../engine/util";
 import type { Act } from "../App";
 import { noEmoji } from "../Icon";
 import { Fold } from "../Fold";
+import { placeHidden, placeName, placeOf } from "../../content/murim/life/place";
+
+const ROLE_GROUPS = new Set(["ทรัพย์สิน", "ราชสำนัก", "วังหลัง", "ชีวิตในวัง"]);
 
 export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
   if (life.age < BABY_AGE)
@@ -15,13 +18,22 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
         </div>
       </div>
     );
-  // ทรัพย์สินโผล่เมื่อมีเงินใกล้ถึง ของที่ยังซื้อไม่ได้ไม่ต้องขึ้นเป็นปุ่มล็อก
-  const list = activitiesFor(life).filter((a) => life.age >= a.minAge - 2 && (a.group !== "ทรัพย์สิน" || !a.available || a.available(life)));
-  const groups = [...new Set(list.map((a) => a.group ?? ""))];
+  // ของที่ยังซื้อไม่ได้และงานของตำแหน่งที่คุณไม่ได้เป็น ไม่ต้องขึ้นเป็นปุ่มล็อก
+  const list = activitiesFor(life).filter((a) => life.age >= a.minAge - 2 && (!ROLE_GROUPS.has(a.group ?? "") || !a.available || a.available(life)));
+  const place = placeOf(life);
+  // หมวดของสถานที่ขึ้นก่อน
+  const groups = [...new Set(list.map((a) => a.group ?? ""))].sort((a, b) => Number(b === place?.group) - Number(a === place?.group));
+  const hidden = place ? placeHidden(life) : 0;
   const left = timeLeft(life);
   return (
     <div className="tab-content">
       {left !== undefined && <TimeBar left={left} max={timeBudget.fn?.(life) ?? left} />}
+      {place && (
+        <div className="card place-card">
+          <b>ตอนนี้คุณอยู่: {place.name}</b>
+          <div className="small muted">{place.note}{hidden > 0 ? ` · ทำจากที่นี่ไม่ได้อีก ${hidden} อย่าง` : ""}</div>
+        </div>
+      )}
       {groups.map((g) => {
         const items = list.filter((a) => (a.group ?? "") === g).sort((a, b) => Number(!!activityLocked(life, a)) - Number(!!activityLocked(life, b)));
         const grid = (
@@ -31,7 +43,7 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
               const odds = a.odds?.(life);
               return (
                 <button key={a.id} className="activity" disabled={!!locked} onClick={() => act((l) => doActivity(l, a.id))}>
-                  <span className="act-name">{noEmoji(loc(life, a.name))}</span>
+                  <span className="act-name">{noEmoji(loc(life, placeName(life, a)))}</span>
                   <span className="act-desc">
                     {noEmoji(locked ?? loc(life, a.desc))}
                     {!locked && a.cost && life.age >= 18 ? ` · ${money(life, a.cost)}` : ""}

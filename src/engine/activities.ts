@@ -156,7 +156,7 @@ export const ACTIVITIES: Activity[] = [
 const REALISTIC_OFF = /^(club_|kid_|biz_|free_course|free_move|free_splurge)/;
 const inWorld = (a: Activity, w: WorldId) => (a.world === "all" || worldMatches(a.world, w)) && !(isRealistic(w) && REALISTIC_OFF.test(a.id));
 /** ระหว่างติดคุกทำได้แค่ไม่กี่อย่าง */
-const JAIL_OK = /^(gym|read|free_create|.*_rest|mw_body|mw_meditate|mw_manual)$/;
+const JAIL_OK = /^(gym|read|free_create|.*_rest|mw_body|mw_meditate|mw_manual|mw_j_.*)$/;
 
 /** อายุที่เริ่มทำอะไรเองได้ */
 export const BABY_AGE = 3;

@@ -149,7 +149,7 @@ const IN_JAIL = new Set(["mw_body", "mw_meditate", "mw_manual", "mw_rest"]);
 activityFilters.push((l, a) => {
   if (l.worldId !== "murim") return true;
   if (!a.id.startsWith("mw_") && !KEEP.has(a.id)) return false;
-  return !jailed(l) || IN_JAIL.has(a.id);
+  return !jailed(l) || a.group === "ในคุก" || IN_JAIL.has(a.id);
 });
 
 // เวลาในหนึ่งปีมีจำกัด (EXPANSION §3.1): เดินทางไกล/งานใหญ่กินเวลาสองส่วน

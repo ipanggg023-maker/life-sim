@@ -20,6 +20,7 @@ import { BETRAYAL_EVENTS } from "./life/betrayals";
 import { CONSORT_EVENTS } from "./world/consortLife";
 import { FUMA_EVENTS } from "./world/princeConsort";
 import { KINSHIP_EVENTS } from "./life/kinship";
+import "./life/place";
 import { RUMOR_EVENTS } from "./life/rumors";
 import { FAITH_EVENTS } from "./life/faith";
 import { TORTURE_EVENTS } from "./life/torture";

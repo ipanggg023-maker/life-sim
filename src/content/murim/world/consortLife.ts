@@ -3,9 +3,9 @@
 import { ACTIVITIES, type Activity } from "../../../engine/activities";
 import { eligibilityFilters, type Ctx, type GameEvent } from "../../../engine/events";
 import { runEvent, yearHooks } from "../../../engine/game";
-import { chance } from "../../../engine/rng";
+import { chance, randInt } from "../../../engine/rng";
 import type { Life, Person } from "../../../engine/types";
-import { addFame, addMoney, clamp, createPerson, log, people, shortName } from "../../../engine/util";
+import { addFame, addMoney, addStat, checkChance, clamp, createPerson, log, people, shortName } from "../../../engine/util";
 import { B, BIG, C, E, G, K, N, P, PAY, TAEL, ab, type Res } from "../story/kit";
 import { calYear } from "../life/world";
 import { courtOf } from "./court";
@@ -87,6 +87,24 @@ function punished(l: Life) {
 
 ACTIVITIES.push(
   M({ group: "วังหลัง", id: "mw_consort_enter", emoji: "🏮", name: "สมัครเข้ารับคัดเลือกสนม", desc: "ทางสู่ฮองเฮา สตรีโสดอายุ 18–28", minAge: 18, available: canEnter, run: (l) => { runEvent(l, "qn.selection"); return { text: "" }; } }),
+  M({ group: "ในวัง", id: "mw_q_dowager", emoji: "🍵", name: "เข้าเฝ้าไทเฮา", desc: "ผู้ใหญ่ในวังเอ็นดูแล้วคนอื่นก็เกรงใจ", minAge: 18, available: (l) => qn(l) < DOWAGER, odds: (l) => checkChance(l, "smarts", 45), run: (l) => {
+    if (!chance(l, checkChance(l, "smarts", 45))) return { text: "ไทเฮาทรงนับลูกประคำต่อ โดยไม่ตรัสอะไรกับคุณ" };
+    shift(l, 4); heat(l, -6);
+    return { text: "คุณรินชาได้ถูกจังหวะ ไทเฮาตรัสถามถึงคุณกับฮ่องเต้ในวันรุ่งขึ้น", kind: "good" };
+  } }),
+  M({ group: "ในวัง", id: "mw_q_study", emoji: "🧵", name: "ปักผ้าและอ่านตำราในตำหนัก", desc: "สติปัญญา + รูปลักษณ์เล็กน้อย", minAge: 18, run: (l) => { addStat(l, "smarts", randInt(l, 1, 2)); addStat(l, "looks", 1); return { text: "ลายปักของคุณละเอียดขึ้น และคุณอ่านตำราหมดไปอีกตู้", kind: "good" }; } }),
+  M({ group: "ในวัง", id: "mw_q_child", emoji: "🧸", name: "ดูแลลูกในตำหนัก", desc: "ลูกที่ใกล้แม่ปลอดภัยกว่า", minAge: 18, available: (l) => people(l, "child").some((p) => p.alive && p.age < 16), run: (l) => {
+    for (const k of people(l, "child")) if (k.alive && k.age < 16) k.bond = clamp(k.bond + 6, 0, 100);
+    addStat(l, "happiness", 4);
+    return { text: "คุณชิมข้าวให้ลูกทุกมื้อ ไม่ใช่เพราะหิว", kind: "good" };
+  } }),
+  M({ group: "ในวัง", id: "mw_q_home", emoji: "🏡", name: "ขอพระราชทานกลับเยี่ยมบ้าน", desc: "ความโปรดปราน 50+ · ทุก 5 ปี", minAge: 18, available: (l) => favor(l) >= 50 && l.age >= Number(l.flags.qnHomeNext ?? 0) && (people(l, "father").some((p) => p.alive) || people(l, "mother").some((p) => p.alive)), run: (l) => {
+    l.flags.qnHomeNext = l.age + 5;
+    for (const p of [...people(l, "father"), ...people(l, "mother")]) if (p.alive) p.bond = clamp(p.bond + 15, 0, 100);
+    addStat(l, "happiness", 10); addFame(l, 2);
+    return { text: "ขบวนเกี้ยวหยุดหน้าบ้านเก่า พ่อแม่คุกเข่ารับคุณตามธรรมเนียม แล้วคุณรีบดึงท่านขึ้นมากอด", kind: "good" };
+  } }),
+  M({ group: "ตำหนักเย็น", id: "mw_c_garden", emoji: "🥬", name: "ปลูกผักหลังตำหนัก", desc: "ประทังชีวิต สุขภาพ +", minAge: 18, run: (l) => { addStat(l, "health", randInt(l, 2, 5)); addStat(l, "happiness", 1); return { text: "ผักเหี่ยวไปครึ่งแปลง อีกครึ่งทำให้คุณมีอะไรให้รอคอย", kind: "good" }; } }),
   M({ group: "วังหลัง", id: "mw_consort", emoji: "🪷", name: "เดินเกมในวังหลัง", desc: "เอาใจฮ่องเต้ ผูกมิตร หรือหักหลังคู่แข่ง", minAge: 18, available: (l) => inHarem(l) && !cold(l), run: (l) => { runEvent(l, "qn.menu"); return { text: "" }; } }),
 );
 
