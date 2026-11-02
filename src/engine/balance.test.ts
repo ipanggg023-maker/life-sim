@@ -14,13 +14,16 @@ import { activitiesFor, activityLocked, doActivity } from "./activities";
 import { currentScene, visibleChoices } from "./events";
 import { ageUp, applyJob, choiceChance, createLife, propose, resolveChoice, tryForBaby, workHard } from "./game";
 import { nextFloat } from "./rng";
+import { createLocked, openCreate, setStyle, styleLocked } from "../content/murim/martial/creation";
+import { startTrip, tripLocked, warAction } from "../content/murim/life/journeys";
+import { REGIONS } from "../content/murim/life/region";
 import type { Life } from "./types";
 import { people } from "./util";
 
 loadMurimWorld();
 loadSharedEvents();
 
-type Bot = "careful" | "random";
+type Bot = "careful" | "random" | "full";
 
 function pick(l: Life, r: { rng: number }, bot: Bot): number {
   const q = l.queue[0];
@@ -47,6 +50,14 @@ function drain(l: Life, r: { rng: number }, bot: Bot) {
 
 interface Stats { ages: number[]; causes: Record<string, number>; realms: Record<string, number>; married: number; kids: number; perm: number; jobMoney: Record<string, number[]>; war: number; jailed: number }
 
+/** ผู้เล่นที่ใช้ทุกระบบทุกปี: เพดานที่เกมต้องรับได้ */
+function useEverything(l: Life, r: { rng: number }) {
+  if (l.power && !styleLocked(l) && !l.flags.mwStyle) setStyle(l, "swift");
+  if (!createLocked(l)) { openCreate(l); drain(l, r, "full"); }
+  if (l.stats.health >= 50) { const t = REGIONS.find((x) => !tripLocked(l, x.id)); if (t) { startTrip(l, t.id); drain(l, r, "full"); } }
+  if (l.stats.health >= 60) { const w = warAction(l); if (w && !w.locked) { w.run(l); drain(l, r, "full"); } }
+}
+
 function run(N: number, bot: Bot, seedMul: number): Stats {
   const st: Stats = { ages: [], causes: {}, realms: {}, married: 0, kids: 0, perm: 0, jobMoney: {}, war: 0, jailed: 0 };
   const murimJobs = CAREERS.filter((c) => c.world === "murim" && !["bandit", "pirate", "thief", "poisoner", "cultist", "m_assassin"].includes(c.id));
@@ -58,11 +69,12 @@ function run(N: number, bot: Bot, seedMul: number): Stats {
     while (l.alive && g++ < 130) {
       drain(l, r, bot);
       if (!l.alive) break;
-      if (bot === "careful") {
+      if (bot === "full" && l.alive) { useEverything(l, r); if (!l.alive) break; }
+      if (bot !== "random") {
         const opts = plansFor(l);
         const want = l.stats.health < 45 ? "rest" : l.power && l.age < 40 ? "train" : l.job ? "work" : "family";
         if (opts.some((o) => o.id === want)) setPlan(l, want);
-        if (l.power && artsOf(l)[0]) trainArt(l, artsOf(l)[0].id, l.stats.health >= 60 ? "hard" : "safe");
+        if (l.power && artsOf(l)[0]) trainArt(l, (bot === "full" ? artsOf(l).find((a) => a.m < 55) ?? artsOf(l)[0] : artsOf(l)[0]).id, l.stats.health >= 60 ? "hard" : "safe");
         if (!l.job && l.age >= 16) applyJob(l, murimJobs[Math.floor(nextFloat(r) * murimJobs.length)].id);
         if (l.job) workHard(l);
         for (const id of ["m_heal", "mw_matchmaker", "mw_meditate", "mw_doctor"]) { const a = activitiesFor(l).find((x) => x.id === id); if (a && !activityLocked(l, a) && (id !== "mw_doctor" || l.stats.health < 60)) { doActivity(l, id); drain(l, r, bot); } }
@@ -118,5 +130,12 @@ describe("Phase 9: สมดุลยุทธภพ", () => {
     const peak = (c.realms["จุดสูงสุด"] ?? 0) + (c.realms["เหนือจุดสูงสุด"] ?? 0) + (c.realms["หลอมรวม"] ?? 0);
     expect(peak).toBeGreaterThan(0);
     expect(peak / trained).toBeLessThan(0.25); // ยอดฝีมือต้องหายาก
+    // ใช้ทุกระบบแล้วเก่งขึ้นได้ แต่ยอดฝีมือต้องยังหายากและยังตายได้
+    const f = run(100, "full", 7841);
+    const fTrained = 100 - (f.realms["ไม่ได้ฝึก"] ?? 0);
+    const fPeak = (f.realms["จุดสูงสุด"] ?? 0) + (f.realms["เหนือจุดสูงสุด"] ?? 0) + (f.realms["หลอมรวม"] ?? 0);
+    console.log("BAL ใช้ทุกระบบ อายุ p25/50/75", q(f.ages, 0.25), q(f.ages, 0.5), q(f.ages, 0.75), "| ยอดฝีมือ %", Math.round((fPeak / fTrained) * 100));
+    expect(fPeak / fTrained).toBeLessThan(0.3);
+    expect(q(f.ages, 0.5)).toBeLessThan(100);
   }, 900_000);
 });

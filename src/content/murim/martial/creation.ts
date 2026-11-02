@@ -10,7 +10,7 @@ import { BIG, C, G, K, N, P, type Res } from "../story/kit";
 import { STYLES, TYPE_NAME, artsOf, comprehension, styleOf, type ArtType, type StyleId } from "./arts";
 
 const TYPES: ArtType[] = ["sword", "saber", "palm", "fist", "qinggong", "internal"];
-const NEED_M = 50, NEED_ARTS = 2, NEED_COMP = 50, MIN_AGE = 25;
+const NEED_M = 50, NEED_ARTS = 2, NEED_COMP = 40, MIN_AGE = 25;
 export const STYLE_WAIT = 5;
 
 const fx = (r: Res, f: (l: Life) => void): Res => Object.assign(((l: Life, c: Parameters<Res>[1]) => { f(l); return r(l, c); }) as Res, { fx: r.fx });
