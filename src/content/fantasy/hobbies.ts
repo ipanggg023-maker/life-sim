@@ -1,5 +1,5 @@
 // สิ่งที่ทำได้นอกงาน (แท็บทำ): สัตว์เลี้ยงและสัตว์รับใช้ ดันเจี้ยนหลายชั้น วิหารของเทพ ปรุงยาเอง และลูกเต๋ามังกร
-import { ACTIVITIES, type Activity } from "../../engine/activities";
+import { ACTIVITIES, activityFilters, type Activity } from "../../engine/activities";
 import type { Ctx, GameEvent } from "../../engine/events";
 import { runEvent, yearHooks } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
@@ -104,7 +104,7 @@ export const HOBBY_EVENTS: GameEvent[] = [
     P("บุกตรงเข้าไป", (l, c) => fightOdds(l, threatAt(l, D(c)) + (isBoss(l, D(c)) ? 8 : 0)), floorWin(1), floorLose("มันแข็งแกร่งกว่าที่คิด คุณถอยกลับขึ้นบันไดพร้อมแผล")),
     techChoice((l, c) => threatAt(l, D(c)) + (isBoss(l, D(c)) ? 8 : 0), () => floorWin(1.2), floorLose("ท่าไม้ตายพลาดเป้า มันสวนกลับทันที")),
     ...spellChoices((l, c) => threatAt(l, D(c)) + (isBoss(l, D(c)) ? 8 : 0), (_l, c) => D(c).weak, () => undefined, () => floorWin(1.1), floorLose("เวทของคุณสะท้อนกลับจากผนัง")),
-    K("ย่องผ่านไปเงียบๆ", "luck", 55, floorWin(0.6), floorLose("เท้าคุณเหยียบกับดักพอดี", 6), { show: (l, c) => !isBoss(l, D(c)) }),
+    P("ย่องผ่านไปเงียบๆ", (l, c) => 0.75 + (l.stats.luck - 50) / 200 - floorOf(l, D(c).id) * 0.08 - D(c).threat / 200, floorWin(0.6), floorLose("เท้าคุณเหยียบกับดักพอดี", 6), { show: (l, c) => !isBoss(l, D(c)) }),
     C("ถอยกลับ", N("คุณกลับขึ้นไปก่อน ดันเจี้ยนไม่หนีไปไหน")),
   ]),
   SCENE("ft.h.temple", "วิหาร", "วิหารหินขาวมีแท่นบูชาห้าแท่น เทียนบนแต่ละแท่นไหวต่างกัน", [
@@ -122,6 +122,8 @@ export const HOBBY_EVENTS: GameEvent[] = [
 
 export function loadHobbies() {
   ACTIVITIES.push(...ACTS);
+  // มีสัตว์เลี้ยงแล้วเห็นแต่ปุ่มเล่นกับมัน ยังไม่มีเห็นแต่ปุ่มหาสัตว์
+  activityFilters.push((l, a) => l.worldId !== "fantasy" || !l.ft || (a.id === "ft_h_pet" ? !petOf(l) : a.id === "ft_h_petplay" ? !!petOf(l) : true));
   yearHooks.push((l) => {
     if (l.worldId !== "fantasy" || !l.ft || !l.alive) return;
     const f = fl(l);
@@ -134,6 +136,7 @@ export function loadHobbies() {
     if (l.age - p.born >= info.life) { log(l, `${p.name}${info.name}ของคุณจากไปอย่างสงบหลังอยู่ด้วยกัน ${l.age - p.born} ปี`, "bad"); addStat(l, "happiness", -8); f.pet = undefined; return; }
     p.bond = clamp(p.bond - 6, 0, 100);
     if (p.bond <= 5 && chance(l, 0.5)) { log(l, `${p.name}หนีออกจากบ้านไปตอนกลางคืน คุณไม่ได้ดูแลมันนานเกินไป`, "bad"); f.pet = undefined; return; }
+    if (p.bond < 20) log(l, `${p.name}ดูเหงาและไม่ค่อยกินข้าว ถ้าไม่มีใครเล่นด้วย มันอาจหนีไป (เล่นกับสัตว์เลี้ยงได้ที่แท็บทำ)`, "bad");
     if (p.bond < 30) return;
     if (p.kind === "cat" && chance(l, 0.5)) addStat(l, "luck", 1);
     if (p.kind === "owl") f.magic += 4;

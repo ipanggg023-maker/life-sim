@@ -1,6 +1,6 @@
 // เมืองของแต่ละแผ่นดิน: เมืองหลวง เมืองท่า เมืองภูเขา ป้อมชายแดน เกาะเวท หมู่บ้านในป่า
 // เมืองที่อยู่เปลี่ยนงานที่รุ่ง ค่าครองชีพ สิ่งที่ทำได้ เทศกาล และเรื่องที่เกิดขึ้น
-import { ACTIVITIES, type Activity } from "../../engine/activities";
+import { ACTIVITIES, activityFilters, type Activity } from "../../engine/activities";
 import type { GameEvent } from "../../engine/events";
 import { runEvent } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
@@ -67,12 +67,12 @@ const learnMystery = (l: Life) => { const m = MYSTERIES.find((x) => !fl(l).mKnow
 const ACTS: Activity[] = [
   M({ id: "ft_city_move", name: "ย้ายไปเมืองอื่นในแผ่นดิน", desc: "ค่าเดินทาง 4 เหรียญทอง", minAge: 14, cost: 4 * GOLD, available: (l) => citiesOf(homeKingdom(l)).length > 1, run: (l) => { runEvent(l, "ft.city.move"); return { text: "" }; } }),
   M({ id: "ft_festival", name: "เที่ยวเทศกาลของเมือง", desc: "ปีละครั้ง · ความสุข และอาจเจอคนใหม่", minAge: 4, available: yearlyFlag("ftFest"), run: (l) => { l.flags.ftFest = l.age; runEvent(l, "ft.city.festival"); return { text: "" }; } }),
-  M({ id: "ft_c_tourney", name: "ชมการประลองหลวง", desc: "เมืองหลวง · อาจได้รู้จักขุนนาง", minAge: 8, cost: 2 * GOLD, available: (l) => cityOf(l).kind === "capital", run: (l) => { addMoney(l, -2 * GOLD); addStat(l, "happiness", 4); if (l.age >= 16 && chance(l, 0.25)) { const p = createPerson(l, "friend", { age: l.age + randInt(l, -5, 10), bond: 45, job: "ขุนนางหนุ่ม" }); addStanding(l, 1); return { text: `คุณเชียร์อัศวินคนเดียวกับ${shortName(p)} จนได้คุยกันทั้งบ่าย`, kind: "good" }; } return { text: "อัศวินในชุดเกราะทองพุ่งทวนจนแตกกระจาย ฝูงชนโห่ร้อง", kind: "good" }; } }),
-  M({ id: "ft_c_fish", name: "ตกปลาทะเล", desc: "เมืองท่า · ได้ปลาขาย บางทีได้ไข่มุก", minAge: 8, available: (l) => cityOf(l).kind === "port", run: (l) => { if (chance(l, 0.06)) { addMoney(l, 30 * GOLD); return { text: "ปลาตัวหนึ่งคายไข่มุกสีชมพูออกมาบนดาดฟ้าเรือ", kind: "good" }; } addMoney(l, randInt(l, 1, 4) * GOLD); addStat(l, "happiness", 2); return { text: "คุณกลับฝั่งพร้อมปลาเต็มตะกร้าและผิวไหม้แดด", kind: "good" }; } }),
-  M({ id: "ft_c_climb", name: "ปีนยอดเขา", desc: "เมืองภูเขา · พลังกาย บางทีเจอผลึก", minAge: 10, available: (l) => cityOf(l).kind === "mountain", run: (l) => { fl(l).body += randInt(l, 5, 9); if (chance(l, 0.08)) { addMoney(l, 25 * GOLD); return { text: "ในซอกหินบนยอดเขามีผลึกสีฟ้าส่องแสงอยู่", kind: "good" }; } return { text: "คุณยืนบนยอดเขา เห็นเมฆลอยอยู่ใต้เท้า", kind: "good" }; } }),
-  M({ id: "ft_c_wall", name: "อาสาเฝ้ากำแพงยามค่ำ", desc: "ป้อมชายแดน · พลังกายและชื่อเสียงในแผ่นดิน", minAge: 14, available: (l) => cityOf(l).kind === "frontier", odds: (l) => fightOdds(l, 16), run: (l) => { if (chance(l, fightOdds(l, 16))) { fl(l).body += 6; addStanding(l, 2); return { text: "สิ่งที่อยู่ในหมอกถอยกลับไปเมื่อเห็นคบไฟของคุณ", kind: "good" }; } addStat(l, "health", -6); return { text: "บางอย่างกระโจนออกมาจากหมอก คุณได้แผลที่แขนกลับมา", kind: "bad" }; } }),
-  M({ id: "ft_c_library", name: "อ่านหนังสือในหอสมุดลอยฟ้า", desc: "เมืองเวท · พลังเวทและสติปัญญา", minAge: 8, available: (l) => cityOf(l).kind === "arcane", run: (l) => { fl(l).magic += randInt(l, 4, 8); addStat(l, "smarts", 1); if (chance(l, 0.1)) { const m = learnMystery(l); if (m) return { text: `หนังสือเล่มหนึ่งบินมาเปิดหน้าตรงหน้าคุณเอง มันเล่าถึง${m.name}`, kind: "good" }; } return { text: "หนังสือที่คุณอ่านพยายามบินหนีกลับชั้นทุกครั้งที่คุณเผลอ", kind: "good" }; } }),
-  M({ id: "ft_c_herbs", name: "เก็บสมุนไพรในป่า", desc: "หมู่บ้านป่า · สุขภาพและเงินเล็กน้อย", minAge: 6, available: (l) => cityOf(l).kind === "forest", run: (l) => { addStat(l, "health", 3); addMoney(l, randInt(l, 1, 3) * GOLD); return { text: "ตะกร้าของคุณเต็มไปด้วยรากไม้ที่หมอยาให้ราคาดี", kind: "good" }; } }),
+  M({ id: "ft_c_tourney", name: "ชมการประลองหลวง", desc: "เมืองหลวง · อาจได้รู้จักขุนนาง", minAge: 8, cost: 2 * GOLD, run: (l) => { addMoney(l, -2 * GOLD); addStat(l, "happiness", 4); if (l.age >= 16 && chance(l, 0.25)) { const p = createPerson(l, "friend", { age: l.age + randInt(l, -5, 10), bond: 45, job: "ขุนนางหนุ่ม" }); addStanding(l, 1); return { text: `คุณเชียร์อัศวินคนเดียวกับ${shortName(p)} จนได้คุยกันทั้งบ่าย`, kind: "good" }; } return { text: "อัศวินในชุดเกราะทองพุ่งทวนจนแตกกระจาย ฝูงชนโห่ร้อง", kind: "good" }; } }),
+  M({ id: "ft_c_fish", name: "ตกปลาทะเล", desc: "เมืองท่า · ได้ปลาขาย บางทีได้ไข่มุก", minAge: 8, run: (l) => { if (chance(l, 0.06)) { addMoney(l, 30 * GOLD); return { text: "ปลาตัวหนึ่งคายไข่มุกสีชมพูออกมาบนดาดฟ้าเรือ", kind: "good" }; } addMoney(l, randInt(l, 1, 4) * GOLD); addStat(l, "happiness", 2); return { text: "คุณกลับฝั่งพร้อมปลาเต็มตะกร้าและผิวไหม้แดด", kind: "good" }; } }),
+  M({ id: "ft_c_climb", name: "ปีนยอดเขา", desc: "เมืองภูเขา · พลังกาย บางทีเจอผลึก", minAge: 10, run: (l) => { fl(l).body += randInt(l, 5, 9); if (chance(l, 0.08)) { addMoney(l, 25 * GOLD); return { text: "ในซอกหินบนยอดเขามีผลึกสีฟ้าส่องแสงอยู่", kind: "good" }; } return { text: "คุณยืนบนยอดเขา เห็นเมฆลอยอยู่ใต้เท้า", kind: "good" }; } }),
+  M({ id: "ft_c_wall", name: "อาสาเฝ้ากำแพงยามค่ำ", desc: "ป้อมชายแดน · พลังกายและชื่อเสียงในแผ่นดิน", minAge: 14, odds: (l) => fightOdds(l, 16), run: (l) => { if (chance(l, fightOdds(l, 16))) { fl(l).body += 6; addStanding(l, 2); return { text: "สิ่งที่อยู่ในหมอกถอยกลับไปเมื่อเห็นคบไฟของคุณ", kind: "good" }; } addStat(l, "health", -6); return { text: "บางอย่างกระโจนออกมาจากหมอก คุณได้แผลที่แขนกลับมา", kind: "bad" }; } }),
+  M({ id: "ft_c_library", name: "อ่านหนังสือในหอสมุดลอยฟ้า", desc: "เมืองเวท · พลังเวทและสติปัญญา", minAge: 8, run: (l) => { fl(l).magic += randInt(l, 4, 8); addStat(l, "smarts", 1); if (chance(l, 0.1)) { const m = learnMystery(l); if (m) return { text: `หนังสือเล่มหนึ่งบินมาเปิดหน้าตรงหน้าคุณเอง มันเล่าถึง${m.name}`, kind: "good" }; } return { text: "หนังสือที่คุณอ่านพยายามบินหนีกลับชั้นทุกครั้งที่คุณเผลอ", kind: "good" }; } }),
+  M({ id: "ft_c_herbs", name: "เก็บสมุนไพรในป่า", desc: "หมู่บ้านป่า · สุขภาพและเงินเล็กน้อย", minAge: 6, run: (l) => { addStat(l, "health", 3); addMoney(l, randInt(l, 1, 3) * GOLD); return { text: "ตะกร้าของคุณเต็มไปด้วยรากไม้ที่หมอยาให้ราคาดี", kind: "good" }; } }),
 ];
 
 type Opt = [label: string, text: string, fx?: Fx];
@@ -119,7 +119,11 @@ export const CITY_SCENES: GameEvent[] = [
   ]),
 ];
 
+/** กิจกรรมเฉพาะเมือง: แสดงเฉพาะในเมืองแบบนั้น ไม่ต้องเห็นปุ่มที่ใช้ไม่ได้ */
+const CITY_ONLY: Record<string, CityKind> = { ft_c_tourney: "capital", ft_c_fish: "port", ft_c_climb: "mountain", ft_c_wall: "frontier", ft_c_library: "arcane", ft_c_herbs: "forest" };
+
 export function loadCities() {
   ACTIVITIES.push(...ACTS);
+  activityFilters.push((l, a) => l.worldId !== "fantasy" || !l.ft || !CITY_ONLY[a.id] || cityOf(l).kind === CITY_ONLY[a.id]);
   for (const c of CAREERS) if (c.world === "fantasy") c.salary = (l, base) => base * (l.ft ? cityPay(l, c.id) : 1);
 }

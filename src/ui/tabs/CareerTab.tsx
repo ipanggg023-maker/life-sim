@@ -9,6 +9,7 @@ import { timeBudget, timeLeft } from "../../engine/activities";
 import { TimeBar } from "./ActivitiesTab";
 import { Fold } from "../Fold";
 import { FantasyCareerCard } from "./FantasyTabs";
+import { cityPay } from "../../content/fantasy/cities";
 import { canRetire, nextStep, pensionOf, retire, workActions } from "../../content/murim/life/workplace";
 
 const STAGE_LABEL: Record<SchoolStage, string> = {
@@ -125,6 +126,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
                   <div className="job-sub">
                     {money(life, salaryOf(life, c, 1))}/ปี
                     {missing ? ` · ${missing}` : ` · โอกาสผ่าน ${Math.round(jobChance(life, c) * 100)}%`}
+                    {life.worldId === "fantasy" && life.ft && cityPay(life, c.id) > 1 ? " · เมืองนี้จ่ายเพิ่ม" : ""}
                   </div>
                 </div>
                 <button className="btn small" disabled={!!missing || applied} onClick={() => act((l) => applyJob(l, c.id))}>
