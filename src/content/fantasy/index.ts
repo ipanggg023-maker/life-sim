@@ -7,6 +7,8 @@ import { clamp } from "../../engine/util";
 import { registerWorld } from "../../engine/worldModule";
 import { CIVIC_EVENTS, civicYear, loadCivic } from "./civic";
 import { DRAGON_EVENTS, dragonYear, loadDragons } from "./dragons";
+import { MYSTERY_EVENTS, loadMysteries } from "./mysteries";
+import { PEOPLE_EVENTS } from "./peoples";
 import { LEGEND_EVENTS, loadLegends } from "./legends";
 import { GOLD } from "./kit";
 import { RACES, attachWorld, setupLife } from "./life";
@@ -37,7 +39,8 @@ export function loadFantasyWorld() {
   loadMagic();
   loadCivic();
   loadDragons();
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS], "fantasy");
+  loadMysteries();
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS], "fantasy");
   const before = timeBudget.fn;
   timeBudget.fn = (l) => (l.worldId === "fantasy" ? (l.age < 10 ? 2 : l.age < 16 ? 3 : 5) : before?.(l));
   lifespanHooks.push((l) => (on(l) ? younger(l) + (fl(l).dragonblood ? 30 : 0) : 0));

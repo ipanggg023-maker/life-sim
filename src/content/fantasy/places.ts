@@ -17,7 +17,7 @@ export const SCHOOLS: School[] = [
   { id: "steelcrest", name: "สำนักดาบสตีลเครสต์", focus: "ดาบและร่างกาย", fee: 30, body: 14, magic: 0, odds: (l) => 0.35 + (l.stats.health - 50) / 120 + (l.stats.luck - 50) / 300 },
   { id: "lionheart", name: "วิทยาลัยหลวงไลออนฮาร์ต", focus: "ดาบและเวทมนตร์", fee: 120, body: 8, magic: 8, odds: (l) => 0.25 + (l.stats.smarts - 50) / 200 + ({ poor: 0, middle: 0.05, rich: 0.2, elite: 0.35 })[l.wealth] },
   { id: "mercy", name: "วิหารเยียวยาเมอร์ซี", focus: "การรักษาและเวทแสง", fee: 20, body: 2, magic: 10, odds: (l) => 0.4 + (l.stats.smarts - 50) / 250 + (l.stats.happiness - 50) / 250 },
-  { id: "beastwarden", name: "คอกนักฝึกสัตว์เบสต์วอร์เดน", focus: "สัตว์เวทและการต่อสู้คู่กาย", fee: 30, body: 8, magic: 5, odds: (l) => 0.35 + (l.stats.health - 50) / 200 + (l.stats.luck - 50) / 200 },
+  { id: "beastwarden", name: "คอกนักฝึกสัตว์เบสต์วอร์เดน", focus: "สัตว์เวทและการต่อสู้คู่กาย", fee: 30, body: 8, magic: 5, odds: (l) => 0.35 + (l.stats.health - 50) / 200 + (l.stats.luck - 50) / 200 + (fl(l).race === "beastfolk" ? 0.3 : 0) },
 ];
 export const schoolOf = (l: Life) => SCHOOLS.find((s) => s.id === fl(l).school);
 const MATERIALS: [string, number, number][] = [["ไม้ฮอลลี", 1, 40], ["ไม้เถ้า", 2, 120], ["กระดูกนกฟีนิกซ์", 3, 400]];
@@ -47,8 +47,8 @@ const threatOf = (l: Life) => CONTRACT_THREAT[fl(l).guild];
 const hurt = (text: string, extra: number): Res => (l, c) => (chance(l, deathOdds(l, CONTRACT_THREAT[fl(l).guild] + extra)) ? B("ป้ายกิลด์ของคุณถูกส่งกลับบ้าน", { die: "ตายระหว่างรับงานกิลด์" })(l, c) : B(text, { hp: -12 })(l, c));
 
 const ACTS: Activity[] = [
-  M({ group: "ฝึกฝน", id: "ft_train", emoji: "", name: "ฝึกดาบและร่างกาย", desc: "พลังกาย +", minAge: 6, run: (l) => { const d = randInt(l, 6, 12); fl(l).body += d; addStat(l, "health", 1); return { text: "คุณซ้อมจนฝ่ามือด้าน", kind: "good" }; } }),
-  M({ group: "ฝึกฝน", id: "ft_study", emoji: "", name: "ฝึกเวทมนตร์", desc: "พลังเวท + · ต้องร่ายได้", minAge: 6, available: canCast, run: (l) => { fl(l).magic += randInt(l, 5, 9) + fl(l).potential * 2; return { text: "ปลายคทาสว่างนานขึ้นอีกหนึ่งลมหายใจ", kind: "good" }; } }),
+  M({ group: "ฝึกฝน", id: "ft_train", emoji: "", name: "ฝึกดาบและร่างกาย", desc: "พลังกาย +", minAge: 6, run: (l) => { const d = randInt(l, 6, 12) + (fl(l).race === "orc" ? 3 : 0); fl(l).body += d; addStat(l, "health", 1); return { text: "คุณซ้อมจนฝ่ามือด้าน", kind: "good" }; } }),
+  M({ group: "ฝึกฝน", id: "ft_study", emoji: "", name: "ฝึกเวทมนตร์", desc: "พลังเวท + · ต้องร่ายได้", minAge: 6, available: canCast, run: (l) => { fl(l).magic += randInt(l, 5, 9) + fl(l).potential * 2 + (fl(l).race === "elf" ? 2 : 0); return { text: "ปลายคทาสว่างนานขึ้นอีกหนึ่งลมหายใจ", kind: "good" }; } }),
   M({ group: "ฝึกฝน", id: "ft_wand", emoji: "", name: "ซื้อคทา", desc: "ใครก็ร่ายเวทได้ถ้ามีคทา", minAge: 10, available: (l) => (fl(l).wand?.quality ?? 0) < 3, run: (l) => { runEvent(l, "ft.wandshop"); return { text: "" }; } }),
   M({ group: "ชีวิต", id: "ft_rest", emoji: "", name: "พักผ่อน", desc: "ความสุข + สุขภาพเล็กน้อย", minAge: 3, run: (l) => { addStat(l, "happiness", randInt(l, 3, 6)); addStat(l, "health", 1); return { text: "คุณนอนกลางวันใต้ต้นโอ๊กทั้งบ่าย", kind: "good" }; } }),
   M({ group: "ชีวิต", id: "ft_healer", emoji: "", name: "หาหมอรักษา", desc: "สุขภาพ +", minAge: 0, cost: 5 * GOLD, run: (l) => { addMoney(l, -5 * GOLD); addStat(l, "health", randInt(l, 8, 15)); return { text: "น้ำยาขมจนหน้าเบ้ แต่คุณลุกเดินได้", kind: "good" }; } }),

@@ -4,7 +4,7 @@ import type { Life } from "../../engine/types";
 import { clamp } from "../../engine/util";
 import { newWorldState, type WorldState } from "../../engine/worldState";
 
-export type RaceId = "human" | "elf" | "dwarf";
+export type RaceId = "human" | "elf" | "dwarf" | "orc" | "beastfolk" | "halfling";
 export type Element = "fire" | "water" | "earth" | "wind" | "light" | "dark";
 
 export interface Wand { name: string; quality: number; material: string }
@@ -67,10 +67,13 @@ export interface FLife {
   mount?: string;
   dragonFoe?: string;
   dragonblood?: boolean;
+  /** ปริศนาที่ตัวละครนี้รู้จัก · ความคืบหน้าอยู่ในโลก */
+  mKnown?: string[];
 }
 
 export interface Kingdom { id: string; name: string; ruler: string; rulerAge: number; power: number; stability: number; war?: string; plague?: number; prosperity?: number; famine?: number; laws?: LawId[] }
 export interface Dragon { id: string; name: string; title: string; element: Element; home: string; age: number; mood: number; alive: boolean; power: number; slainBy?: string; /** นามสกุลของครอบครัวที่เคยเลี้ยงมัน */ kin?: string }
+export interface Mystery { step: number; notes: string[]; solvedBy?: string }
 export interface Egg { mother: string; element: Element; laid: number }
 export interface Relic { id: string; name: string; power: string; holder: string; at: string; bonus: number; trial: "combat" | "wit" | "heart"; history?: string[] }
 export type LawId = "banMagic" | "heavyTax" | "freeTrade" | "harshCourts";
@@ -78,7 +81,7 @@ export type Good = "grain" | "iron" | "herbs";
 export type Role = "hero" | "mage" | "merchant" | "rogue" | "priest" | "general";
 export interface Notable { id: number; name: string; role: Role; age: number; power: number; kingdom: string; faction?: string; fame: number }
 export interface Faction { id: string; name: string; creed: string; power: number; leader: string; feud?: string; playerLed?: boolean }
-export interface FData { kingdoms: Kingdom[]; dragons: Dragon[]; eggs: Egg[]; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number; /** เซฟเก่าก่อนมีหลายมังกร */ dragon?: Omit<Dragon, "id" | "element" | "power"> }
+export interface FData { kingdoms: Kingdom[]; dragons: Dragon[]; eggs: Egg[]; mysteries: Record<string, Mystery>; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number; /** เซฟเก่าก่อนมีหลายมังกร */ dragon?: Omit<Dragon, "id" | "element" | "power"> }
 
 export const LAWS: Record<LawId, { name: string; desc: string }> = {
   banMagic: { name: "ห้ามเวทในที่สาธารณะ", desc: "ผู้ตรวจการตามล่าคนร่ายเวท" },
@@ -121,6 +124,7 @@ const newData = () => ({
   kingdoms: KINGDOMS.map((k) => ({ ...k })),
   dragons: DRAGONS.map((x) => ({ ...x })),
   eggs: [],
+  mysteries: {},
   relics: RELICS.map((x) => ({ ...x })),
 });
 const RELICS: Relic[] = [
@@ -150,6 +154,7 @@ export const newFantasyWorld = (seed: number, year = 1000): WorldState => {
 /** เติมสังคมให้โลกเก่าที่สร้างก่อนมีระบบนี้ */
 export function ensureSociety(w: WorldState) {
   const d = w.data as unknown as FData;
+  d.mysteries ??= {};
   if (!d.dragons) {
     d.dragons = DRAGONS.map((x) => ({ ...x }));
     if (d.dragon) Object.assign(d.dragons[0], d.dragon);
@@ -180,7 +185,9 @@ export const myRelic = (l: Life) => (fl(l).relic ? relicOf(l, fl(l).relic!) : un
 export const deed = (l: Life, text: string) => { fl(l).deeds.push(text); };
 /** ประวัติผู้ถืออาวุธตำนาน เก็บล่าสุดแปดคน */
 export const passRelic = (w: WorldState, r: Relic, who: string) => { r.history = [...(r.history ?? []), `ปี ${w.year} · ${who}`].slice(-8); };
-export const standingOf = (l: Life, k = fl(l).kingdom) => fl(l).standing?.[k] ?? 0;
+/** อคติที่บางเผ่าเจอตั้งแต่เกิด จนกว่าจะสร้างชื่อเสียงเอง */
+const PREJUDICE: Partial<Record<RaceId, number>> = { orc: -15, beastfolk: -5 };
+export const standingOf = (l: Life, k = fl(l).kingdom) => fl(l).standing?.[k] ?? PREJUDICE[fl(l).race] ?? 0;
 export function addStanding(l: Life, d: number, k = fl(l).kingdom) {
   const f = fl(l);
   f.standing = { ...f.standing, [k]: clamp(standingOf(l, k) + d, -100, 100) };

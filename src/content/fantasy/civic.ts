@@ -92,7 +92,7 @@ const takeLead: Res = BIG((l) => `ทั้งโถงลุกขึ้นย�
 });
 
 // ---------- อาชญากรรมและคดี ----------
-const nightBonus = (l: Life) => (inFaction(l, "night") ? 0.15 : 0);
+const nightBonus = (l: Life) => (inFaction(l, "night") ? 0.15 : 0) + (fl(l).race === "halfling" ? 0.1 : 0);
 const crimeOdds = (base: number) => (l: Life) => base + (l.stats.luck - 50) / 200 + (l.stats.smarts - 50) / 300 + nightBonus(l);
 const caught = (sev: number): Res => (l) => { runEvent(l, "ft.l.arrest", { sev }); return { text: "มือของยามตะปบไหล่คุณ", kind: "bad" }; };
 const got = (text: string, gold: number, drop: number): Res => G(text, { gold }, (l) => { addStanding(l, -drop); fl(l).crimes = (fl(l).crimes ?? 0) + 1; });
@@ -102,7 +102,7 @@ const jail = (l: Life, c: Ctx) => { const y = Number(c.sev) + (hereHas(l, "harsh
 // ---------- การค้า ----------
 const destOf = (l: Life, g: Good): Kingdom => away(l).sort((a, b) => priceOf(b, g) - priceOf(a, g))[0];
 export const capitalOf = (l: Life) => Math.min(Math.floor(l.money / GOLD), 120 + (fl(l).trades ?? 0) * 15 + (inFaction(l, "league") ? fl(l).fRank * 40 : 0));
-const tradeOdds = (l: Life, g: Good) => 0.8 - (destOf(l, g).war ? 0.15 : 0) + (inFaction(l, "league") ? 0.08 : 0) + (l.stats.luck - 50) / 400;
+const tradeOdds = (l: Life, g: Good) => 0.8 - (destOf(l, g).war ? 0.15 : 0) + (inFaction(l, "league") ? 0.08 : 0) + (fl(l).race === "halfling" ? 0.05 : 0) + (l.stats.luck - 50) / 400;
 export function tradeProfit(l: Life, g: Good) {
   const here = priceOf(homeKingdom(l), g), there = priceOf(destOf(l, g), g);
   return Math.round(capitalOf(l) * Math.max(0.15, there / here - 1) * (hereHas(l, "freeTrade") ? 1.25 : 1));

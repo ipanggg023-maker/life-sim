@@ -59,7 +59,7 @@ describe("เกิดและเผ่า", () => {
   it("เกิดแบบสุ่มมีเผ่า อาณาจักร และพลังแต่กำเนิด หลายแบบ", () => {
     const races = new Set<string>(), pots = new Set<number>(), homes = new Set<string>();
     for (let s = 1; s <= 200; s++) { const f = fl(createLife({ seed: s * 7, worldId: "fantasy" })); races.add(f.race); pots.add(f.potential); homes.add(f.kingdom); }
-    expect(races.size).toBe(3);
+    expect(races.size).toBe(6);
     expect(pots.size).toBeGreaterThanOrEqual(5);
     expect(homes.size).toBe(3);
   });

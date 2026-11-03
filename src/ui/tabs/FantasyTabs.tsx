@@ -7,6 +7,7 @@ import { classStanding, rivalOf } from "../../content/fantasy/schoollife";
 import { shortName } from "../../engine/util";
 import { FACTION_RANKS, myFaction, standingWord } from "../../content/fantasy/civic";
 import { bondOf, moodWord, mountOf } from "../../content/fantasy/dragons";
+import { MYSTERIES } from "../../content/fantasy/mysteries";
 import { GOODS, priceOf } from "../../content/fantasy/society";
 import { LAWS, ROLES, dataOf, fl, homeKingdom, myRelic, standingOf, worldOfLife, type Good } from "../../content/fantasy/state";
 import { talentById } from "../../content/talents";
@@ -91,6 +92,7 @@ export function FantasyPowerTab({ life }: { life: Life }) {
 export function FantasyWorldTab({ life }: { life: Life }) {
   const w = worldOfLife(life);
   const d = dataOf(life);
+  const f = fl(life);
   const here = homeKingdom(life);
   return (
     <div className="tab-content">
@@ -117,6 +119,9 @@ export function FantasyWorldTab({ life }: { life: Life }) {
       <Fold always id="ft-dragon" title={<>มังกร ({d.dragons.filter((x) => x.alive).length})</>}>
         {d.dragons.map((x) => <p className="small" key={x.id}>{x.alive ? `${x.name} ${x.title} · ธาตุ${ELEMENTS[x.element].name} · อายุ ${x.age} · พลัง ${x.power} · ${moodWord(x.mood)}${bondOf(life, x) ? ` · ผูกพัน ${bondOf(life, x)}` : ""}` : `${x.name} ถูกสังหารโดย${x.slainBy ?? "กาลเวลา"}`}</p>)}
         {d.eggs.length > 0 && <p className="small muted">มีไข่มังกรรอฟักอยู่ {d.eggs.length} ฟอง</p>}
+      </Fold>
+      <Fold id="ft-mysteries" title={<>ปริศนา</>}>
+        {MYSTERIES.map((m) => { const st = d.mysteries?.[m.id]; const knows = f.mKnown?.includes(m.id); return <p className="small" key={m.id}>{knows || st?.solvedBy ? m.name : "ปริศนาที่ยังไม่มีใครรู้"}{st?.solvedBy ? ` · ไขแล้วโดย${st.solvedBy}` : knows ? ` · ขั้น ${st?.step ?? 0}/${m.steps.length}` : ""}</p>; })}
       </Fold>
       <Fold id="ft-relics" title={<>อาวุธตำนาน</>}>
         {d.relics.map((r) => (

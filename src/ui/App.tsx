@@ -401,7 +401,7 @@ export function App() {
       <MainScreen life={life} onAgeUp={onAgeUp} onTab={(t) => { setFocus(null); setTab(t); }} who={who} setWho={setWho} onPerson={(id) => { setFocus(id); setTab("people"); }} />
 
       {tab && !life.queue.length && !resolved && (
-        <Sheet title={isRealistic(life.worldId) && tab === "soul" ? "บันทึก" : isRealistic(life.worldId) && tab === "power" ? (life.worldId === "fantasy" ? "พลัง" : "วิชายุทธ์") : TAB_TITLES[tab]} onClose={() => setTab(null)}>
+        <Sheet title={isRealistic(life.worldId) && tab === "soul" ? "บันทึก" : isRealistic(life.worldId) && tab === "power" ? (life.worldId === "fantasy" ? "พลัง" : "วิชายุทธ์") : life.worldId === "fantasy" && tab === "jianghu" ? "โลก" : TAB_TITLES[tab]} onClose={() => setTab(null)}>
           {tab === "career" && <CareerTab life={life} act={act} />}
           {tab === "people" && <PeopleTab life={life} act={act} focus={focus} onShowLog={(id) => { setWho(id); setTab(null); }} />}
           {tab === "power" && (life.ft ? <FantasyPowerTab life={life} /> : <PowerTab life={life} act={act} />)}

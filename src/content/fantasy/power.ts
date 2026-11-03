@@ -22,7 +22,7 @@ export function combat(l: Life): number {
   const body = f.bodyRank * 16 + Math.min(f.body, needXp(f.bodyRank)) / needXp(f.bodyRank) * 10;
   const magic = canCast(l) ? f.magicRank * 18 + Math.min(f.magic, needXp(f.magicRank)) / needXp(f.magicRank) * 10 + (f.wand?.quality ?? 0) * 2 : 0;
   const hurt = l.stats.health < 40 ? -8 : 0;
-  return Math.round(Math.max(body, magic) + Math.min(body, magic) * 0.3 + (myRelic(l)?.bonus ?? 0) + (f.rune ?? 0) * 3 + companion(l) + hurt);
+  return Math.round(Math.max(body, magic) + Math.min(body, magic) * 0.3 + (myRelic(l)?.bonus ?? 0) + (f.rune ?? 0) * (f.race === "dwarf" ? 6 : 3) + (f.race === "orc" ? 3 : 0) + companion(l) + hurt);
 }
 /** มังกรที่ขี่ช่วยสู้ ลูกมังกรที่โตแล้วช่วยตามพลังของมัน */
 const companion = (l: Life) => { const f = fl(l); return (f.mount ? 10 : 0) + (f.whelp && f.whelp.age >= 3 ? Math.min(15, Math.round(f.whelp.power / 5)) : 0) + (f.dragonblood ? 5 : 0); };

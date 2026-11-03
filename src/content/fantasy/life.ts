@@ -11,9 +11,12 @@ import { fastForward } from "./world";
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
   human: { name: "มนุษย์", younger: 0, desc: "ชีวิตสั้นแต่ไปได้ทุกทาง" },
   elf: { name: "เอลฟ์", younger: 250, desc: "มีอายุเป็นร้อยปี เห็นคนที่รักแก่ไปก่อน" },
-  dwarf: { name: "คนแคระ", younger: 70, desc: "ทนทาน สืบตระกูลใต้ภูเขา" },
+  dwarf: { name: "คนแคระ", younger: 70, desc: "ทนทาน สืบตระกูลใต้ภูเขา · อักษรรูนแรงเป็นสองเท่า" },
+  orc: { name: "ออร์ก", younger: -8, desc: "ฝึกกายได้เร็วและตีหนัก แต่ทุกแผ่นดินมองด้วยความระแวง" },
+  beastfolk: { name: "ชนเผ่าสัตว์", younger: -4, desc: "ประสาทสัมผัสคม ตามรอยเก่ง และเข้ากับสัตว์ได้ดี" },
+  halfling: { name: "ฮาล์ฟลิง", younger: 25, desc: "โชคดี เงียบ และมักถูกมองข้าม ซึ่งบางทีก็เป็นข้อดี" },
 };
-const RACE_IDS: RaceId[] = ["human", "elf", "dwarf"];
+const RACE_IDS = Object.keys(RACES) as RaceId[];
 export const STRANGER_GAP: [number, number] = [20, 60];
 export const TURNING_POINTS = [6, 12, 16, 20, 30, 45, 60, 80, 120, 200, 300];
 export const MERCY_AGE = 30;
@@ -27,7 +30,7 @@ function rollFlife(l: Life, race: RaceId): FLife {
 /** สร้างข้อมูลตอนเกิด · ยังไม่รู้จักวิญญาณ จะผูกกับโลกจริงใน attachWorld */
 export function setupLife(l: Life) {
   worldOfLife(l);
-  const race = weightedPick(l, RACE_IDS, (r) => ({ human: 70, elf: 15, dwarf: 15 })[r])!;
+  const race = weightedPick(l, RACE_IDS, (r) => ({ human: 55, elf: 12, dwarf: 12, orc: 8, beastfolk: 8, halfling: 5 })[r])!;
   applyRaceStats(l, race, 1);
   l.ft = { ...rollFlife(l, race), element: rollElement(l) };
   l.flags.allowance = true;
@@ -36,6 +39,9 @@ export function setupLife(l: Life) {
 function applyRaceStats(l: Life, r: RaceId, sign: number) {
   if (r === "elf") { addStat(l, "smarts", 6 * sign); addStat(l, "looks", 6 * sign); addStat(l, "health", -4 * sign); }
   if (r === "dwarf") { addStat(l, "health", 8 * sign); addStat(l, "looks", -4 * sign); }
+  if (r === "orc") { addStat(l, "health", 10 * sign); addStat(l, "smarts", -4 * sign); addStat(l, "looks", -4 * sign); }
+  if (r === "beastfolk") { addStat(l, "luck", 6 * sign); addStat(l, "health", 4 * sign); addStat(l, "smarts", -2 * sign); }
+  if (r === "halfling") { addStat(l, "luck", 8 * sign); addStat(l, "looks", 2 * sign); addStat(l, "health", -4 * sign); }
 }
 /** ปรับแต่งตอนเกิด: เปลี่ยนเผ่าได้ก่อนเริ่มชีวิต */
 export function setRace(l: Life, r: RaceId) {
