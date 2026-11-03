@@ -6,7 +6,7 @@ import { NAMES } from "../content/fantasy/names";
 import { combat } from "../content/fantasy/power";
 import { CAREERS } from "../content/core/careers";
 import { doJobAction, jobActionLocked } from "../content/murim/life/jobActions";
-import { ageUp, createLife, resolveChoice, salaryOf } from "./game";
+import { ageUp, createLife, resolveChoice, runEvent, salaryOf } from "./game";
 import { visibleChoices } from "./events";
 import { buildHeir } from "./soul";
 import { fantasyPersonActions } from "../content/fantasy/bonds";
@@ -190,6 +190,49 @@ describe("เมือง", () => {
     for (const list of Object.values(CITIES)) for (const c of list) {
       const n = allEvents().filter((e) => e.id.startsWith("ft.cy.") && e.when?.({ ...fantasy(1), ft: { ...fantasy(1).ft!, kingdom: Object.keys(CITIES).find((k) => CITIES[k].includes(c))!, city: c.id } } as never)).length;
       expect(n, c.id).toBeGreaterThanOrEqual(2);
+    }
+  });
+});
+
+describe("งานอดิเรก: สัตว์เลี้ยง ดันเจี้ยน วิหาร", () => {
+  const play = (l: ReturnType<typeof fantasy>, id: string, choice = 0) => {
+    runEvent(l, id);
+    const vis = visibleChoices(l, l.queue[0]);
+    resolveChoice(l, vis[Math.min(choice, vis.length - 1)].index);
+  };
+  it("สัตว์เลี้ยงช่วยตามชนิด แก่ตายตามอายุ และหนีถ้าไม่ดูแล", () => {
+    const l = fantasy(31);
+    l.age = 20;
+    l.ft!.pet = { kind: "wolf", name: "เขี้ยว", bond: 80, born: 20 };
+    const base = combat(l);
+    l.ft!.pet.bond = 10;
+    expect(combat(l)).toBe(base - 3);
+    l.ft!.pet = { kind: "cat", name: "หมอก", bond: 60, born: 0 };
+    l.age = 18;
+    ageUp(l);
+    expect(l.ft!.pet).toBeUndefined();
+  });
+  it("ดันเจี้ยนเลื่อนทีละชั้น ชั้นสุดท้ายได้อาวุธและวีรกรรม", () => {
+    const l = fantasy(33);
+    l.age = 40; l.ft!.bodyRank = 4; l.ft!.body = 9999; l.stats.health = 100;
+    let guard = 0;
+    while ((l.ft!.dungeons?.warren ?? 0) < 3 && guard++ < 40 && l.alive) {
+      runEvent(l, "ft.h.floor", { dg: "warren" });
+      const vis = visibleChoices(l, l.queue[0]);
+      resolveChoice(l, vis[0].index);
+      l.queue = []; l.stats.health = 100;
+    }
+    expect(l.ft!.dungeons?.warren).toBe(3);
+    expect(l.ft!.deeds).toContain("พิชิตรังก็อบลินใต้เนิน");
+    expect(l.ft!.weapon?.quality).toBeGreaterThanOrEqual(1);
+  });
+  it("ทุกฉากในงานอดิเรกเล่นได้ทุกทางเลือก", () => {
+    for (const id of ["ft.h.pet_shop", "ft.h.temple", "ft.h.brew", "ft.h.dice", "ft.h.dungeon", "ft.city.festival"]) {
+      for (let i = 0; i < 7; i++) {
+        const l = fantasy(40 + i);
+        l.age = 30; l.money = 500_000;
+        expect(() => play(l, id, i), `${id} ${i}`).not.toThrow();
+      }
     }
   });
 });

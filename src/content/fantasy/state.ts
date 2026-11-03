@@ -83,6 +83,10 @@ export interface FLife {
   mount?: string;
   dragonFoe?: string;
   dragonblood?: boolean;
+  /** สัตว์เลี้ยง (hobbies.ts) */
+  pet?: { kind: "cat" | "owl" | "wolf" | "fox" | "slime" | "golem"; name: string; bond: number; born: number };
+  /** ชั้นที่ผ่านแล้วของแต่ละดันเจี้ยน */
+  dungeons?: Record<string, number>;
   /** เมืองที่อยู่ในแผ่นดินนั้น (cities.ts) */
   city?: string;
   /** สายอาวุธ (styles.ts) */

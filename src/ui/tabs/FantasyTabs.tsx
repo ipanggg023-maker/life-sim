@@ -1,7 +1,7 @@
 // แท็บเฉพาะโลกแฟนตาซี: พลังของตัวละคร และสภาพโลก
 import { RACES } from "../../content/fantasy/life";
 import { BODY_RANKS, GUILD_RANKS, MAGIC_RANKS, canCast, combat, magicCap, needXp } from "../../content/fantasy/power";
-import { ELEMENTS, manaLeft, manaMax, spellsOf } from "../../content/fantasy/magic";
+import { ELEMENTS, SPELLS, manaLeft, manaMax, spellsOf } from "../../content/fantasy/magic";
 import { schoolOf } from "../../content/fantasy/places";
 import { classStanding, rivalOf } from "../../content/fantasy/schoollife";
 import { shortName } from "../../engine/util";
@@ -19,6 +19,7 @@ import { Fold } from "../Fold";
 import { ASSETS, assetIncome } from "../../content/fantasy/careers";
 import { epithetOf, styleOf, techsOf } from "../../content/fantasy/styles";
 import { KINDS, citiesOf, cityOf } from "../../content/fantasy/cities";
+import { DUNGEONS, PETS } from "../../content/fantasy/hobbies";
 import { RACE_LABEL, folkOf } from "../../content/fantasy/folk";
 import { careerById } from "../../content/core/careers";
 import { PARTY_MAX, partyLabel, partyOf } from "../../content/fantasy/bonds";
@@ -67,6 +68,7 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         <p className="small">{f.wand ? `${f.wand.name} · คุณภาพ ${f.wand.quality}` : "ไม่มีคทา"}{f.magicRank >= 3 ? " · ร่ายได้โดยไม่ต้องใช้คทา" : ""}</p>
         {f.weapon && <p className="small">{f.weapon.name} · คุณภาพ {f.weapon.quality}{f.weapon.enchant ? " · ลงอาคม" : ""}</p>}
         {f.armor && <p className="small">{f.armor.name} · คุณภาพ {f.armor.quality}</p>}
+        {f.pet && <p className="small">{PETS[f.pet.kind].name}ชื่อ{f.pet.name} · ผูกพัน {f.pet.bond} · {PETS[f.pet.kind].perk}{f.pet.bond < 30 ? " (ต้องดูแลมากกว่านี้จึงจะช่วย)" : ""}</p>}
         {relic && <p className="small"><b>{relic.name}</b> · {relic.power}</p>}
         {s && <p className="small">{f.graduated ? "ศิษย์เก่า" : "นักเรียน"}{s.name}{f.graduated ? "" : ` · ${classStanding(life)}`}{f.cups ? ` · แชมป์ ${f.cups} สมัย` : ""}</p>}
         {rivalOf(life)?.alive && <p className="small">คู่ปรับ: {shortName(rivalOf(life)!)} · พลัง {f.rivalPower}</p>}
@@ -97,8 +99,13 @@ export function FantasyPowerTab({ life }: { life: Life }) {
           <p className="small muted">คนละ +4 พลังต่อสู้ · ชวนเพื่อนสนิทเข้าปาร์ตี้ได้ที่แท็บผู้คน</p>
         </Fold>
       )}
+      {Object.keys(f.dungeons ?? {}).length > 0 && (
+        <Fold kind="section" id="ft-dungeons" title={<>ดันเจี้ยน</>}>
+          {DUNGEONS.map((d) => { const n = f.dungeons?.[d.id] ?? 0; return <p className="small" key={d.id}>{d.name} · {n >= d.floors ? "พิชิตแล้ว" : `ผ่าน ${n}/${d.floors} ชั้น`}</p>; })}
+        </Fold>
+      )}
       <Fold always kind="section" id="ft-magic" title={<>เวทมนตร์ · ธาตุ{ELEMENTS[f.element ?? "fire"].name}</>}>
-        <p className="small">มานาปีนี้ {manaLeft(life)}/{manaMax(life)} · บทสวด {f.chant ?? 0} · วงเวท {f.circle ?? 0} · อักษรรูน {f.rune ?? 0}</p>
+        <p className="small">มานาปีนี้ {manaLeft(life)}/{manaMax(life)} · บทสวด {f.chant ?? 0} · วงเวท {f.circle ?? 0} · อักษรรูน {f.rune ?? 0} · รู้เวท {spellsOf(life).length}/{SPELLS.length} บท</p>
         {spellsOf(life).length ? spellsOf(life).map((x) => <p className="small" key={x.id}>{x.name} · ธาตุ{ELEMENTS[x.element].name} ขั้น {x.tier}</p>) : <p className="small muted">ยังไม่รู้จักเวทบทไหน</p>}
       </Fold>
       {known.length > 0 && (
