@@ -327,3 +327,24 @@ describe("มหากาพย์ตำนาน", () => {
     expect(visibleChoices(l, l.queue[0]).length).toBe(4);
   });
 });
+
+describe("เรื่องของมังกร", () => {
+  it("ทุกเรื่องใช้ชื่อมังกรจริง ไม่มีช่องว่างค้าง และเล่นได้ทุกทาง", () => {
+    const evs = allEvents().filter((e) => e.id.startsWith("ft.dt."));
+    expect(evs.length).toBeGreaterThanOrEqual(30);
+    for (const e of evs) for (const i of [0, 1, 2]) {
+      const l = fantasy(91);
+      l.age = 30; l.money = 100_000;
+      l.ft!.whelp = { name: "ไซรัส", element: "fire", age: 8, bond: 60, power: 30, lastCare: 30, from: "x" };
+      l.ft!.mount = "whelp"; l.ft!.dragonblood = true; l.ft!.dragonBond = 20;
+      l.ft!.dBonds = { valgrias: 50 };
+      runEvent(l, e.id);
+      const q = l.queue[0];
+      expect(q, e.id).toBeTruthy();
+      expect(getEvent(e.id)!.text(l, q.ctx), e.id).not.toMatch(/\{[dtew]\}|undefined/);
+      const vis = visibleChoices(l, q);
+      const out = resolveChoice(l, vis[Math.min(i, vis.length - 1)].index);
+      expect(out?.text ?? "", e.id).not.toMatch(/\{[dtew]\}|undefined/);
+    }
+  });
+});
