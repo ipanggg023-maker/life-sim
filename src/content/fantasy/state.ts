@@ -83,6 +83,8 @@ export interface FLife {
   mount?: string;
   dragonFoe?: string;
   dragonblood?: boolean;
+  /** เมืองที่อยู่ในแผ่นดินนั้น (cities.ts) */
+  city?: string;
   /** สายอาวุธ (styles.ts) */
   style?: string;
   /** อาวุธและเกราะ · ช่างตีเองหรือซื้อมา · คุณภาพ 1–5 */

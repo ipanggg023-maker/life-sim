@@ -6,13 +6,15 @@ import { NAMES } from "../content/fantasy/names";
 import { combat } from "../content/fantasy/power";
 import { CAREERS } from "../content/core/careers";
 import { doJobAction, jobActionLocked } from "../content/murim/life/jobActions";
-import { ageUp, createLife, resolveChoice } from "./game";
+import { ageUp, createLife, resolveChoice, salaryOf } from "./game";
 import { visibleChoices } from "./events";
 import { buildHeir } from "./soul";
 import { fantasyPersonActions } from "../content/fantasy/bonds";
 import { SPELLS } from "../content/fantasy/magic";
 import { epithetOf, styleBonus, techsOf } from "../content/fantasy/styles";
-import { getEvent } from "./events";
+import { allEvents, getEvent } from "./events";
+import { CITIES, citiesOf, cityCost, cityOf } from "../content/fantasy/cities";
+import { dataOf } from "../content/fantasy/state";
 import { createPerson } from "./util";
 
 loadFantasyWorld();
@@ -155,5 +157,39 @@ describe("พลัง: เวท สายอาวุธ และฉายา
     expect(epithetOf(l)).toBe("นักผจญภัยขั้นมิธริล");
     l.ft!.magicRank = 4;
     expect(epithetOf(l)).toBe("อัครจอมเวท");
+  });
+});
+
+describe("เมือง", () => {
+  it("ทุกคนเกิดในเมืองของแผ่นดินตัวเอง และเมืองมีหลายแบบ", () => {
+    const kinds = new Set<string>();
+    for (let s = 1; s <= 80; s++) {
+      const l = fantasy(s * 29);
+      const c = cityOf(l);
+      expect(citiesOf(dataOf(l).kingdoms.find((k) => k.id === l.ft!.kingdom)!).map((x) => x.id)).toContain(c.id);
+      kinds.add(c.kind);
+    }
+    expect(kinds.size).toBeGreaterThanOrEqual(5);
+  });
+  it("งานที่ตรงกับเมืองได้ค่าจ้างมากขึ้น และหมู่บ้านป่าค่าครองชีพถูกกว่าเมืองหลวง", () => {
+    const l = fantasy(3);
+    l.ft!.kingdom = "aldria";
+    l.ft!.city = "galven";
+    const sailor = CAREERS.find((c) => c.id === "ft_sailor")!;
+    const farmer = CAREERS.find((c) => c.id === "ft_farmer")!;
+    const port = salaryOf(l, sailor, 1), portFarm = salaryOf(l, farmer, 1);
+    l.ft!.city = "irongate";
+    expect(port).toBeGreaterThan(salaryOf(l, sailor, 1));
+    expect(portFarm / salaryOf(l, farmer, 1)).toBeCloseTo(1);
+    l.ft!.kingdom = "thalos"; l.ft!.city = "willowdale";
+    const cheap = cityCost(l);
+    l.ft!.kingdom = "aldria"; l.ft!.city = "aldria_cap";
+    expect(cityCost(l)).toBeGreaterThan(cheap);
+  });
+  it("ทุกเมืองมีเรื่องของตัวเองอย่างน้อยสองเรื่อง", () => {
+    for (const list of Object.values(CITIES)) for (const c of list) {
+      const n = allEvents().filter((e) => e.id.startsWith("ft.cy.") && e.when?.({ ...fantasy(1), ft: { ...fantasy(1).ft!, kingdom: Object.keys(CITIES).find((k) => CITIES[k].includes(c))!, city: c.id } } as never)).length;
+      expect(n, c.id).toBeGreaterThanOrEqual(2);
+    }
   });
 });

@@ -25,6 +25,7 @@ import { ageElders, loadFolk, raceOf } from "./folk";
 import { CAREER_EVENTS, loadCareers } from "./careers";
 import { BOND_EVENTS, loadBonds } from "./bonds";
 import { STYLE_EVENTS } from "./styles";
+import { CITY_SCENES, cityCost, cityOf, loadCities } from "./cities";
 import { tickWorld } from "./world";
 import { TALENTS } from "../talents";
 
@@ -45,6 +46,7 @@ export function loadFantasyWorld() {
   loadPlaces();
   loadCareers();
   loadBonds();
+  loadCities();
   loadLegends();
   loadMagic();
   loadCivic();
@@ -53,7 +55,7 @@ export function loadFantasyWorld() {
   loadRealm();
   loadRealms();
   transform.fn = setRace;
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS], "fantasy");
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES], "fantasy");
   const before = timeBudget.fn;
   timeBudget.fn = (l) => (l.worldId === "fantasy" ? (l.age < 10 ? 2 : l.age < 16 ? 3 : 5) : before?.(l));
   lifespanHooks.push((l) => (on(l) ? younger(l) + (fl(l).dragonblood ? 30 : 0) + (fl(l).lifeBonus ?? 0) - (fl(l).pacts ?? 0) * 10 : 0));
@@ -71,12 +73,12 @@ export function loadFantasyWorld() {
   registerWorld({
     id: "fantasy",
     traits: { body: true, npcLife: true, hiddenTalents: true, repeatActs: true, surnameFirst: false, classicKinTerms: true },
-    birthplace: (l, fallback) => (l.ft ? `ดินแดนของ${homeKingdom(l).name}` : fallback),
+    birthplace: (l, fallback) => (l.ft ? `${cityOf(l).name}แห่ง${homeKingdom(l).name}` : fallback),
     livingCost: (l, kids, income) => {
       const k = homeKingdom(l), rich = (k.prosperity ?? 100) / 100;
       // เมืองรุ่งเรืองของแพงแต่คนเหลือเงินมากกว่า · ภาษีสงครามเพิ่มทั้งก้อน
       const tax = k.laws?.includes("heavyTax") ? 1.25 : 1;
-      return Math.round((3_000 + kids * 700) * rich * tax + Math.max(0, income) * clamp(0.25 - (rich - 1) / 4, 0.1, 0.4) * tax);
+      return Math.round(((3_000 + kids * 700) * rich * tax + Math.max(0, income) * clamp(0.25 - (rich - 1) / 4, 0.1, 0.4) * tax) * cityCost(l));
     },
     inheritance: (l) => ({ poor: 15, middle: 120, rich: 900, elite: 5_000 })[l.wealth] * GOLD,
     onCreate: setupLife,

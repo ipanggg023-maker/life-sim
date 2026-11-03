@@ -326,7 +326,8 @@ describe("สมดุล", () => {
       const f = fl(l);
       ages.push(l.age);
       if (f.bodyRank === 4 || f.magicRank === 4) top++;
-      if (f.relic) relics++;
+      // บอทสุ่มวางอาวุธคืนแท่นบ่อย นับทุกคนที่เคยได้ครอบครอง
+      if (f.relic || f.deeds.some((d) => d.startsWith("ครอบครอง"))) relics++;
       if (l.causeOfDeath?.includes("กิลด์")) guildDeaths++;
     }
     ages.sort((a, b) => a - b);

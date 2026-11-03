@@ -15,6 +15,13 @@ const BASE: Partial<Record<RaceId, number>> = { human: 58, elf: 9, dwarf: 11, or
 const FAMILY: Relation[] = ["father", "mother", "sibling"];
 const COMMON: RaceId[] = ["human", "elf", "dwarf", "orc", "beastfolk", "halfling"];
 
+/** สัดส่วนประชากรของแผ่นดิน เป็นเปอร์เซ็นต์ เรียงจากมากไปน้อย */
+export function folkOf(kingdom: string): [RaceId, number][] {
+  const w = FOLK[kingdom] ?? BASE;
+  const sum = Object.values(w).reduce((s, v) => s + (v ?? 0), 0);
+  return (Object.entries(w) as [RaceId, number][]).map(([r, v]): [RaceId, number] => [r, Math.round((v / sum) * 100)]).sort((a, b) => b[1] - a[1]);
+}
+
 /** อายุที่เผ่านี้แก่ช้ากว่ามนุษย์ (ปี) */
 export const RACE_YOUNGER: Record<RaceId, number> = { human: 0, elf: 250, dwarf: 70, orc: -8, beastfolk: -4, halfling: 25, dragon: 400, demon: 200 };
 export const RACE_LABEL: Record<RaceId, string> = { human: "มนุษย์", elf: "เอลฟ์", dwarf: "คนแคระ", orc: "ออร์ก", beastfolk: "ชนเผ่าสัตว์", halfling: "ฮาล์ฟลิง", dragon: "มังกรในร่างมนุษย์", demon: "ทายาทปีศาจ" };

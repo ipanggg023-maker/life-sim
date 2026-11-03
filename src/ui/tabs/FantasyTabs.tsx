@@ -18,6 +18,9 @@ import type { Life } from "../../engine/types";
 import { Fold } from "../Fold";
 import { ASSETS, assetIncome } from "../../content/fantasy/careers";
 import { epithetOf, styleOf, techsOf } from "../../content/fantasy/styles";
+import { KINDS, citiesOf, cityOf } from "../../content/fantasy/cities";
+import { RACE_LABEL, folkOf } from "../../content/fantasy/folk";
+import { careerById } from "../../content/core/careers";
 import { PARTY_MAX, partyLabel, partyOf } from "../../content/fantasy/bonds";
 
 const Bar = ({ label, value, need }: { label: string; value: number; need: number }) => (
@@ -125,10 +128,17 @@ export function FantasyWorldTab({ life }: { life: Life }) {
   return (
     <div className="tab-content">
       <Fold always id="ft-here" title={<>ที่อยู่ของคุณ</>}>
+        <p className="small"><b>{cityOf(life).name}</b> · {KINDS[cityOf(life).kind].name} · {KINDS[cityOf(life).kind].perk}</p>
+        <p className="small muted">{cityOf(life).desc}</p>
         <p className="small">{here.name} · ปกครองโดย{here.ruler}</p>
+        <p className="small muted">เทศกาลประจำเมือง: {cityOf(life).festival[0]} · ผู้คน: {folkOf(here.id).map(([r, n]) => `${RACE_LABEL[r]} ${n}%`).join(" · ")}</p>
         <p className="small muted">ปี {w.year}{here.war ? " · กำลังมีสงคราม" : ""}{here.plague ? " · มีโรคระบาด" : ""}{here.famine ? " · ทุพภิกขภัย" : ""}</p>
         {(here.laws ?? []).map((id) => <p className="small" key={id}><b>{LAWS[id].name}</b> · {LAWS[id].desc}</p>)}
         {(here.laws ?? []).length === 0 && <p className="small muted">ไม่มีกฎหมายพิเศษ</p>}
+      </Fold>
+      <Fold id="ft-cities" title={<>เมืองในแผ่นดินนี้</>}>
+        {citiesOf(here).map((c) => <p className="small" key={c.id}><b>{c.name}</b>{c.id === cityOf(life).id ? " · คุณอยู่ที่นี่" : ""} · {KINDS[c.kind].name} · งานที่รุ่ง: {KINDS[c.kind].jobs.map((j) => careerById(j)?.name).filter(Boolean).join(", ")}</p>)}
+        <p className="small muted">งานที่ตรงกับเมืองได้ค่าจ้างเพิ่ม 20% · ย้ายเมืองได้ที่แท็บทำ</p>
       </Fold>
       <Fold always id="ft-kingdoms" title={<>อาณาจักร</>}>
         {d.kingdoms.map((k) => (

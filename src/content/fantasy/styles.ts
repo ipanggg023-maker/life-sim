@@ -45,7 +45,7 @@ const pickStyle = (id: StyleId): Choice => C((l) => `${STYLES[id].name} · ${STY
 export const STYLE_EVENTS: GameEvent[] = [
   E("ft.style_pick", [8, 400], (l) => `ตอนนี้คุณเป็น${BODY_RANKS[fl(l).bodyRank]}แล้ว ครูฝึกถามว่าจะเอาดีทางอาวุธไหน${fl(l).race !== "human" ? " (บางสายเข้ากับเผ่าของคุณเป็นพิเศษ)" : ""}`, STYLE_IDS.map(pickStyle), { when: (l) => fl(l).bodyRank >= 1 && !fl(l).style, forced: true, maxTimes: 1, title: "เลือกสายอาวุธ" }),
   SCENE("ft.style_change", "เปลี่ยนสายอาวุธ", (l) => `ตอนนี้คุณใช้${styleOf(l)?.name ?? "อาวุธทั่วไป"} ครูฝึกในเมืองสอนได้ทุกสาย แต่ต้องเริ่มท่าใหม่จากพื้นฐาน`, [
-    ...STYLE_IDS.map((id) => PAY(`ฝึก${STYLES[id].name}`, 30, G((l) => `คุณวาง${weaponNoun(l)}ลง แล้วเริ่มนับหนึ่งกับ${STYLES[id].weapon}`, {}, (l) => { const f = fl(l); f.style = id; f.body = Math.round(f.body * 0.5); }), { show: (l) => fl(l).style !== id })),
+    ...STYLE_IDS.map((id) => PAY(`ฝึก${STYLES[id].name}`, 30, G((l) => `คุณวาง${weaponNoun(l)}ลง แล้วเริ่มนับหนึ่งกับ${STYLES[id].weapon}`, {}, (l) => { const f = fl(l); f.style = id; f.body = Math.round(f.body * 0.5); l.flags.ftStyleNext = l.age + 5; }), { show: (l) => fl(l).style !== id })),
     C("ใช้สายเดิมต่อ", N("คุณกลับไปซ้อมท่าเดิมให้คมกว่าเดิม")),
   ]),
 ];

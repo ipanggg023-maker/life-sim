@@ -10,6 +10,7 @@ import { rollElement } from "./magic";
 import { applyFtTalents } from "./talents";
 import { fastForward } from "./world";
 import { RACE_YOUNGER, renameFamily } from "./folk";
+import { citiesOf } from "./cities";
 
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
   human: { name: "มนุษย์", younger: RACE_YOUNGER.human, desc: "ชีวิตสั้นแต่ไปได้ทุกทาง" },
@@ -41,6 +42,7 @@ export function setupLife(l: Life) {
   applyRaceStats(l, race, 1);
   l.ft = { ...rollFlife(l, race), element: rollElement(l) };
   l.flags.ftBornRace = race;
+  l.ft.city = pick(l, citiesOf(kingdomsOf(l).find((k) => k.id === l.ft!.kingdom)!)).id;
   renameFamily(l, race);
   if (race === "demon") { l.ft.element = "dark"; l.ft.potential = Math.min(5, l.ft.potential + 1); }
   l.flags.allowance = true;
