@@ -37,6 +37,7 @@ const life: A[] = [
   { id: "fa_rich", name: "หีบทองหมื่นเหรียญ", desc: "มีทรัพย์สุทธิ 10,000 เหรียญทอง", points: 15, check: F((l) => l.money - l.debt >= 10_000 * GOLD) },
   { id: "fa_beloved", name: "ลูกรักของแผ่นดิน", desc: "ชื่อเสียงในแผ่นดินที่อยู่ถึง 80", points: 15, check: F((l) => standingOf(l) >= 80) },
   { id: "fa_scars", name: "แผลเป็นเล่าเรื่อง", desc: "มีแผลเป็น 5 แห่ง", points: 10, check: F((l) => fl(l).scars.length >= 5) },
+  { id: "fa_master", name: "งานชิ้นเอก", desc: "สร้างงานชิ้นเอกของอาชีพ", points: 25, check: F((l) => Number(l.flags.ftMaster ?? 0) >= 1) },
   { id: "fa_old", name: "อายุยืนเกินมนุษย์", desc: "มีชีวิตถึง 150 ปี", points: 25, check: F((l) => l.age >= 150) },
   { id: "fa_outlaw", name: "ใบประกาศจับ", desc: "ก่ออาชญากรรม 5 ครั้ง", points: 8, hidden: true, check: F((l) => (fl(l).crimes ?? 0) >= 5) },
 ];

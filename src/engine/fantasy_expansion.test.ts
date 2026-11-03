@@ -14,6 +14,7 @@ import { fantasyPersonActions } from "../content/fantasy/bonds";
 import { SPELLS } from "../content/fantasy/magic";
 import { SAGA_LIST } from "../content/fantasy/sagas";
 import { mArtsOf } from "../content/fantasy/mschools";
+import { MASTER_JOBS } from "../content/fantasy/arcs";
 import { epithetOf, styleBonus, techsOf } from "../content/fantasy/styles";
 import { allEvents, getEvent } from "./events";
 import { CITIES, citiesOf, cityCost, cityOf } from "../content/fantasy/cities";
@@ -374,5 +375,41 @@ describe("ศาสตร์แห่งเวท", () => {
       const vis = visibleChoices(l, l.queue[0]);
       expect(() => resolveChoice(l, vis[0].index), `${s} ${id}`).not.toThrow();
     }
+  });
+});
+
+describe("เส้นเรื่องยาว: งานชิ้นเอก ลูก รัก งานแต่ง", () => {
+  it("ทุกอาชีพมีงานชิ้นเอกเมื่อถึงตำแหน่งสูงสุด", () => {
+    for (const c of CAREERS.filter((x) => x.world === "fantasy")) {
+      expect(MASTER_JOBS, c.id).toContain(c.id);
+      const l = fantasy(111);
+      l.age = 40; l.job = { careerId: c.id, level: 5, years: 10, performance: 80 };
+      const ev = getEvent(`ft.mp.${c.id.slice(3)}`)!;
+      expect(ev.when!(l), c.id).toBe(true);
+      l.job.level = 4;
+      expect(ev.when!(l), c.id).toBe(false);
+    }
+  });
+  it("ลูกที่ได้สอนดาบสามครั้งออกเดินทางเป็นอัศวิน", () => {
+    const l = fantasy(113);
+    l.age = 45;
+    const k = createPerson(l, "child", { age: 19, bond: 70, lastName: l.lastName });
+    k.tags = [...(k.tags ?? []), "taught_body:3"];
+    runEvent(l, "ft.ar.destiny");
+    resolveChoice(l, visibleChoices(l, l.queue[0])[0].index);
+    expect(k.job).toBe("อัศวินหนุ่ม");
+  });
+  it("รักต่างเผ่าได้คู่เผ่านั้น และงานแต่งเป็นไปตามประเพณีของเผ่า", () => {
+    const l = fantasy(115);
+    l.age = 25; l.stats.looks = 100;
+    runEvent(l, "ft.ar.love_dwarf");
+    resolveChoice(l, visibleChoices(l, l.queue[0])[0].index);
+    const p = l.people.find((x) => x.relation === "partner")!;
+    expect(raceOf(p)).toBe("dwarf");
+    p.relation = "spouse";
+    runEvent(l, "ft.ar.wedding");
+    expect(getEvent("ft.ar.wedding")!.text(l, l.queue[0].ctx)).toContain("โถงหิน");
+    resolveChoice(l, visibleChoices(l, l.queue[0])[1].index);
+    expect(getEvent("ft.ar.wedding")!.when!(l)).toBe(false);
   });
 });
