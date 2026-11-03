@@ -5,6 +5,7 @@ import { relationLabel, shortName } from "../../engine/util";
 import type { Act } from "../App";
 import { AXIS, goalOf, notableAxes, traitName, traitsOf, profileOf, relOf } from "../../engine/npc";
 import { isRealistic } from "../../content/worlds";
+import { RACE_LABEL, raceOf } from "../../content/fantasy/folk";
 import { lineageOf } from "../../content/murim/life/generations";
 import { martialLabel } from "../../content/murim/life/npcMartial";
 import { isPrincess, isSovereign, personActions } from "../../content/murim/life/kinship";
@@ -50,6 +51,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
               </div>
               <div className="person-sub">
                 {relationLabel(p, life)} · อายุ {p.age}
+                {life.worldId === "fantasy" && raceOf(p) ? ` · ${RACE_LABEL[raceOf(p)!]}` : ""}
                 {p.job ? ` · ${p.job}` : ""}
                 {p.tags?.some((t) => t.startsWith("away:")) ? " · ย้ายไปอยู่ไกล" : ""}
                 {p.tags?.includes("life_rival") ? " · คู่ปรับตลอดชีวิต" : ""}

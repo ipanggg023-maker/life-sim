@@ -43,7 +43,7 @@ export function BirthScreen({
       <div className={real ? "card" : "sys-window"}>
         <div className={real ? "card-title" : "sys-head"}>{real ? "กำเนิด" : "ระบบ · สุ่มการเกิด"}</div>
         <p className="birth-name">
-          {life.gender === "m" ? "♂" : "♀"} {displayName(life)} ("{life.nickname}")
+          {life.gender === "m" ? "♂" : "♀"} {displayName(life)}{life.nickname && life.nickname !== life.firstName ? ` ("${life.nickname}")` : ""}
         </p>
         <p className="muted">
           {worldOf(life.worldId).name}{life.country ? ` · ${countryOf(life.country).flag} ${countryOf(life.country).name}` : ""} · {wealthLabel(life.wealth, life.worldId)} · {worldOf(life.worldId).yearLabel} {life.birthYear}

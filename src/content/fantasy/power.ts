@@ -22,8 +22,10 @@ export function combat(l: Life): number {
   const body = f.bodyRank * 16 + Math.min(f.body, needXp(f.bodyRank)) / needXp(f.bodyRank) * 10;
   const magic = canCast(l) ? f.magicRank * 18 + Math.min(f.magic, needXp(f.magicRank)) / needXp(f.magicRank) * 10 + (f.wand?.quality ?? 0) * 2 : 0;
   const hurt = l.stats.health < 40 ? -8 : 0;
-  return Math.round(Math.max(body, magic) + Math.min(body, magic) * 0.3 + (myRelic(l)?.bonus ?? 0) + (f.rune ?? 0) * (f.race === "dwarf" ? 6 : 3) + (f.race === "orc" ? 3 : 0) + companion(l) + hurt);
+  return Math.round(Math.max(body, magic) + Math.min(body, magic) * 0.3 + gearBonus(l) + (myRelic(l)?.bonus ?? 0) + (f.rune ?? 0) * (f.race === "dwarf" ? 6 : 3) + (f.race === "orc" ? 3 : 0) + companion(l) + hurt);
 }
+/** อาวุธช่วยมากกว่าเกราะ · อาวุธลงอาคมแรงขึ้นอีกขั้น */
+export const gearBonus = (l: Life) => { const f = fl(l); return (f.weapon ? f.weapon.quality * 3 + (f.weapon.enchant ? 4 : 0) : 0) + (f.armor ? f.armor.quality * 2 : 0); };
 /** มังกรที่ขี่ช่วยสู้ ลูกมังกรที่โตแล้วช่วยตามพลังของมัน */
 const companion = (l: Life) => { const f = fl(l); return (f.mount ? 10 : 0) + (f.race === "dragon" ? Math.min(60, Math.floor(l.age / 6)) : 0) + (f.demonHorn ? 10 : 0) + (f.whelp && f.whelp.age >= 3 ? Math.min(15, Math.round(f.whelp.power / 5)) : 0) + (f.dragonblood ? 5 : 0); };
 /** โอกาสชนะศัตรูระดับนี้ */
@@ -39,4 +41,4 @@ export const canBreak = (l: Life, track: "body" | "magic") => {
   return track === "body" ? f.body >= needXp(f.bodyRank) && f.bodyRank < MAX_RANK : f.magic >= needXp(f.magicRank) && f.magicRank < magicCap(l);
 };
 /** พลาดในงานอันตรายแล้วตายไหม: ยิ่งอ่อนกว่าศัตรูและยิ่งเจ็บ ยิ่งเสี่ยง */
-export const deathOdds = (l: Life, threat: number) => clamp(0.03 + Math.max(0, threat - combat(l)) / 160 + Math.max(0, 40 - l.stats.health) / 150, 0.02, 0.5);
+export const deathOdds = (l: Life, threat: number) => clamp((0.03 + Math.max(0, threat - combat(l)) / 160 + Math.max(0, 40 - l.stats.health) / 150) * (1 - (fl(l).armor?.quality ?? 0) * 0.08), 0.01, 0.5);

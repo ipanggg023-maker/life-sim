@@ -4,10 +4,11 @@ import { applyJob, gradeToGpa, isStudent, jobChance, jobRequirementMissing, quit
 import type { Life, SchoolStage } from "../../engine/types";
 import { money } from "../../engine/util";
 import type { Act } from "../App";
-import { doJobAction, jobActionLocked, jobActionsFor } from "../../content/murim/life/jobActions";
+import { doJobAction, jobActionLocked, jobActionsFor, jobCost } from "../../content/murim/life/jobActions";
 import { timeBudget, timeLeft } from "../../engine/activities";
 import { TimeBar } from "./ActivitiesTab";
 import { Fold } from "../Fold";
+import { FantasyCareerCard } from "./FantasyTabs";
 import { canRetire, nextStep, pensionOf, retire, workActions } from "../../content/murim/life/workplace";
 
 const STAGE_LABEL: Record<SchoolStage, string> = {
@@ -45,6 +46,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
         )}
       </Fold>}
 
+      {life.worldId === "fantasy" && life.ft && <FantasyCareerCard life={life} />}
       {job && career && (
         <Fold always id="career-1" title={<>งานปัจจุบัน</>}>
           <p>
@@ -97,7 +99,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
                   <span className="act-name">{a.name}</span>
                   <span className="act-desc">
                     {locked ?? a.desc}
-                    {!locked && a.cost ? ` · ${a.cost} ตำลึง` : ""}
+                    {!locked && a.cost ? ` · ${money(life, jobCost(life, a))}` : ""}
                     {!locked && odds !== undefined ? ` · สำเร็จ ${Math.round(odds * 100)}%` : ""}
                   </span>
                 </button>

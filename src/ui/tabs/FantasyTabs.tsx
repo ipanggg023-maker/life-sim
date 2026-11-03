@@ -16,6 +16,7 @@ import { LAWS, ROLES, dataOf, fl, homeKingdom, myRelic, standingOf, worldOfLife,
 import { talentById } from "../../content/talents";
 import type { Life } from "../../engine/types";
 import { Fold } from "../Fold";
+import { ASSETS, assetIncome } from "../../content/fantasy/careers";
 
 const Bar = ({ label, value, need }: { label: string; value: number; need: number }) => (
   <div className="mini-bar">
@@ -56,7 +57,9 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         <p className="small muted">{canCast(life) ? `ร่ายเวทได้ เพดานตอนนี้: ${MAGIC_RANKS[magicCap(life)]}` : "ยังร่ายเวทไม่ได้ ซื้อคทาได้ที่แท็บทำ"}</p>
       </Fold>
       <Fold always kind="section" id="ft-gear" title={<>ของติดตัว</>}>
-        <p className="small">{f.wand ? f.wand.name : "ไม่มีคทา"}{f.magicRank >= 3 ? " · ร่ายได้โดยไม่ต้องใช้คทา" : ""}</p>
+        <p className="small">{f.wand ? `${f.wand.name} · คุณภาพ ${f.wand.quality}` : "ไม่มีคทา"}{f.magicRank >= 3 ? " · ร่ายได้โดยไม่ต้องใช้คทา" : ""}</p>
+        {f.weapon && <p className="small">{f.weapon.name} · คุณภาพ {f.weapon.quality}{f.weapon.enchant ? " · ลงอาคม" : ""}</p>}
+        {f.armor && <p className="small">{f.armor.name} · คุณภาพ {f.armor.quality}</p>}
         {relic && <p className="small"><b>{relic.name}</b> · {relic.power}</p>}
         {s && <p className="small">{f.graduated ? "ศิษย์เก่า" : "นักเรียน"}{s.name}{f.graduated ? "" : ` · ${classStanding(life)}`}{f.cups ? ` · แชมป์ ${f.cups} สมัย` : ""}</p>}
         {rivalOf(life)?.alive && <p className="small">คู่ปรับ: {shortName(rivalOf(life)!)} · พลัง {f.rivalPower}</p>}
@@ -151,5 +154,20 @@ export function FantasyWorldTab({ life }: { life: Life }) {
         {w.chronicle.slice(-20).reverse().map((c, i) => <p className="small" key={i}>ปี {c.year} · {c.text}</p>)}
       </Fold>
     </div>
+  );
+}
+
+/** แท็บอาชีพของโลกแฟนตาซี: ของติดตัวที่ทำหรือซื้อ และทรัพย์สินที่ให้รายได้ทุกปี */
+export function FantasyCareerCard({ life }: { life: Life }) {
+  const f = fl(life);
+  const owned = Object.entries(ASSETS).filter(([k]) => Number(life.flags[k] ?? 0) > 0);
+  if (!f.weapon && !f.armor && !owned.length) return null;
+  return (
+    <Fold always id="ft-assets" title={<>ทรัพย์สินและของติดตัว</>}>
+      {f.weapon && <p className="small"><b>{f.weapon.name}</b> · คุณภาพ {f.weapon.quality}{f.weapon.enchant ? " · ลงอาคมแล้ว" : ""}</p>}
+      {f.armor && <p className="small"><b>{f.armor.name}</b> · คุณภาพ {f.armor.quality}</p>}
+      {owned.map(([k, a]) => <p className="small" key={k}>{a.name} {Math.min(Number(life.flags[k]), a.max)}/{a.max} · ปีละ {Math.min(Number(life.flags[k]), a.max) * a.gold} เหรียญทอง</p>)}
+      {owned.length > 0 && <p className="small muted">รายได้จากทรัพย์สินรวมปีละ {assetIncome(life)} เหรียญทอง</p>}
+    </Fold>
   );
 }

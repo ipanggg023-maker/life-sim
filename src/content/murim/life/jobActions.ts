@@ -3,7 +3,7 @@
 import type { Outcome } from "../../../engine/events";
 import { kill, runEvent } from "../../../engine/game";
 import { chance, pick, randInt } from "../../../engine/rng";
-import type { Life, StatKey } from "../../../engine/types";
+import type { Life, StatKey, WorldId } from "../../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, log, money, shortName } from "../../../engine/util";
 import { gainExp } from "../../core/power";
 import { addQi, artsOf, practise } from "../martial/arts";
@@ -17,6 +17,8 @@ import { plantSeed } from "./seedStore";
 
 export interface JobAction {
   id: string;
+  /** โลกของงานนี้ (ไม่ใส่ = ยุทธภพ) */
+  world?: WorldId;
   jobs: string[];
   emoji: string;
   name: string;
@@ -152,7 +154,10 @@ export const JOB_ACTIONS: JobAction[] = [
   { id: "wand_road", jobs: ["wanderer"], emoji: "🍶", name: "ช่วยเหลือคนตามทาง", desc: "ชื่อเสียงและมิตรสหาย", odds: by("luck", 0.5), run: (l, s) => { if (s) { addFame(l, 3); const p = createPerson(l, "friend", { age: l.age + randInt(l, -8, 8), bond: 55 }); return ok(`คุณช่วยขบวนผู้อพยพจากโจร — ${shortName(p)}สาบานจะตอบแทน${shiftAlign(l, 2)}`); } return meh("ปีนี้ถนนเงียบสงบ ไม่มีใครต้องการความช่วยเหลือ"); } },
 ];
 
-export const jobActionsFor = (l: Life) => (l.worldId === "murim" && l.job ? JOB_ACTIONS.filter((a) => a.jobs.includes(l.job!.careerId)) : []);
+/** หน่วยเงินของค่าใช้จ่ายในงาน: ยุทธภพคิดเป็นตำลึง แฟนตาซีคิดเป็นเหรียญทอง */
+const costUnit = (l: Life) => (l.worldId === "murim" ? TAEL : 100);
+export const jobCost = (l: Life, a: JobAction) => (a.cost ?? 0) * costUnit(l);
+export const jobActionsFor = (l: Life) => (l.job ? JOB_ACTIONS.filter((a) => (a.world ?? "murim") === l.worldId && a.jobs.includes(l.job!.careerId)) : []);
 
 export function jobActionLocked(l: Life, a: JobAction): string | undefined {
   if (!l.job || !a.jobs.includes(l.job.careerId)) return "ไม่ใช่งานของคุณ";
@@ -160,7 +165,7 @@ export function jobActionLocked(l: Life, a: JobAction): string | undefined {
   if (l.doneThisYear.includes(`job:${a.id}`)) return "ปีนี้ทำแล้ว";
   if ((timeLeft(l) ?? 1) < 1) return "ปีนี้ไม่มีเวลาเหลือ";
   if (a.minLevel && l.job.level < a.minLevel) return `ต้องเป็นตำแหน่งขั้น ${a.minLevel} ขึ้นไป`;
-  if (a.cost && l.money < a.cost * TAEL) return `ต้องมี ${money(l, a.cost * TAEL)}`;
+  if (a.cost && l.money < jobCost(l, a)) return `ต้องมี ${money(l, jobCost(l, a))}`;
   if (l.queue.length) return "กำลังมีเหตุการณ์อยู่";
   return a.req?.(l);
 }
@@ -169,10 +174,10 @@ export function doJobAction(l: Life, id: string): Outcome | undefined {
   const a = JOB_ACTIONS.find((x) => x.id === id);
   if (!a || jobActionLocked(l, a)) return;
   l.doneThisYear.push(`job:${a.id}`);
-  if (a.cost) addMoney(l, -a.cost * TAEL);
+  if (a.cost) addMoney(l, -jobCost(l, a));
   const p = a.odds?.(l);
   const s = p === undefined ? true : chance(l, p);
   const out = a.run(l, s);
-  if (out.text) log(l, `${a.emoji} ${out.text}`, out.kind ?? "normal");
+  if (out.text) log(l, a.emoji ? `${a.emoji} ${out.text}` : out.text, out.kind ?? "normal");
   return out;
 }

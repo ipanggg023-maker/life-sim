@@ -62,7 +62,12 @@ export function firstPerson(life: Life, relation: Relation): Person | undefined 
   return people(life, relation)[0];
 }
 
-export function randomName(life: Life, gender: Gender) {
+/** โลกที่ตั้งชื่อเอง (แฟนตาซี: ชื่อตามเผ่าของคนนั้น) · tags ติดไปกับคนที่สร้าง */
+export const nameHooks: Partial<Record<WorldId, (life: Life, gender: Gender, relation?: Relation) => { first: string; nick: string; last: string; tags?: string[] } | undefined>> = {};
+
+export function randomName(life: Life, gender: Gender, relation?: Relation) {
+  const hooked = nameHooks[life.worldId]?.(life, gender, relation);
+  if (hooked) return hooked;
   const c = countryIn(life);
   if (c && c !== "th") {
     const k = countryOf(c).names;
@@ -85,8 +90,8 @@ export function createPerson(
   const gender = opts.gender ?? (nextFloat(life) < 0.5 ? "m" : "f");
   // กันชื่อตัวซ้ำกับคนที่รู้จักอยู่แล้ว (เช่น ลูกชื่อเดียวกับพ่อ)
   const taken = new Set([life.firstName, ...life.people.map((p) => p.name)]);
-  let n = randomName(life, gender);
-  for (let i = 0; i < 6 && [...taken].some((t) => t === n.first || t.endsWith(n.first)); i++) n = randomName(life, gender);
+  let n: ReturnType<typeof randomName> = randomName(life, gender, relation);
+  for (let i = 0; i < 6 && [...taken].some((t) => t === n.first || t.endsWith(n.first)); i++) n = randomName(life, gender, relation);
   const c = countryIn(life);
   const familyFirst = !!c && countryOf(c).familyFirst;
   const person: Person = {
@@ -105,6 +110,7 @@ export function createPerson(
     alive: true,
     job: opts.job,
     ...(familyFirst ? { short: n.first } : {}),
+    ...("tags" in n && n.tags?.length ? { tags: [...n.tags] } : {}),
   };
   life.people.push(person);
   return person;

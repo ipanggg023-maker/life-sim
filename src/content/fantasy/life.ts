@@ -9,16 +9,17 @@ import { inheritThrone, passThrone } from "./realm";
 import { rollElement } from "./magic";
 import { applyFtTalents } from "./talents";
 import { fastForward } from "./world";
+import { RACE_YOUNGER, renameFamily, renameHeir } from "./folk";
 
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
-  human: { name: "มนุษย์", younger: 0, desc: "ชีวิตสั้นแต่ไปได้ทุกทาง" },
-  elf: { name: "เอลฟ์", younger: 250, desc: "มีอายุเป็นร้อยปี เห็นคนที่รักแก่ไปก่อน" },
-  dwarf: { name: "คนแคระ", younger: 70, desc: "ทนทาน สืบตระกูลใต้ภูเขา · อักษรรูนแรงเป็นสองเท่า" },
-  orc: { name: "ออร์ก", younger: -8, desc: "ฝึกกายได้เร็วและตีหนัก แต่ทุกแผ่นดินมองด้วยความระแวง" },
-  beastfolk: { name: "ชนเผ่าสัตว์", younger: -4, desc: "ประสาทสัมผัสคม ตามรอยเก่ง และเข้ากับสัตว์ได้ดี" },
-  halfling: { name: "ฮาล์ฟลิง", younger: 25, desc: "โชคดี เงียบ และมักถูกมองข้าม ซึ่งบางทีก็เป็นข้อดี" },
-  dragon: { name: "มังกรในร่างมนุษย์", younger: 400, desc: "เผ่าหายาก · เกิดมาอ่อนแอแต่แกร่งขึ้นตามอายุ ร่ายเวทได้เอง มังกรทุกตัวนับเป็นญาติ แต่คนกลัว" },
-  demon: { name: "ทายาทปีศาจ", younger: 200, desc: "เผ่าหายาก · เวทมืดติดตัว พรสวรรค์เวทสูง แต่ทุกแผ่นดินระแวงและศาสนจักรตามล่า" },
+  human: { name: "มนุษย์", younger: RACE_YOUNGER.human, desc: "ชีวิตสั้นแต่ไปได้ทุกทาง" },
+  elf: { name: "เอลฟ์", younger: RACE_YOUNGER.elf, desc: "มีอายุเป็นร้อยปี เห็นคนที่รักแก่ไปก่อน" },
+  dwarf: { name: "คนแคระ", younger: RACE_YOUNGER.dwarf, desc: "ทนทาน สืบตระกูลใต้ภูเขา · อักษรรูนแรงเป็นสองเท่า" },
+  orc: { name: "ออร์ก", younger: RACE_YOUNGER.orc, desc: "ฝึกกายได้เร็วและตีหนัก แต่ทุกแผ่นดินมองด้วยความระแวง" },
+  beastfolk: { name: "ชนเผ่าสัตว์", younger: RACE_YOUNGER.beastfolk, desc: "ประสาทสัมผัสคม ตามรอยเก่ง และเข้ากับสัตว์ได้ดี" },
+  halfling: { name: "ฮาล์ฟลิง", younger: RACE_YOUNGER.halfling, desc: "โชคดี เงียบ และมักถูกมองข้าม ซึ่งบางทีก็เป็นข้อดี" },
+  dragon: { name: "มังกรในร่างมนุษย์", younger: RACE_YOUNGER.dragon, desc: "เผ่าหายาก · เกิดมาอ่อนแอแต่แกร่งขึ้นตามอายุ ร่ายเวทได้เอง มังกรทุกตัวนับเป็นญาติ แต่คนกลัว" },
+  demon: { name: "ทายาทปีศาจ", younger: RACE_YOUNGER.demon, desc: "เผ่าหายาก · เวทมืดติดตัว พรสวรรค์เวทสูง แต่ทุกแผ่นดินระแวงและศาสนจักรตามล่า" },
 };
 /** เผ่าที่เลือกเองตอนเกิดไม่ได้ ต้องเกิดมาเป็นเท่านั้น */
 export const RARE_RACES: RaceId[] = ["dragon", "demon"];
@@ -40,6 +41,7 @@ export function setupLife(l: Life) {
   applyRaceStats(l, race, 1);
   l.ft = { ...rollFlife(l, race), element: rollElement(l) };
   l.flags.ftBornRace = race;
+  renameFamily(l, race);
   if (race === "demon") { l.ft.element = "dark"; l.ft.potential = Math.min(5, l.ft.potential + 1); }
   l.flags.allowance = true;
   l.flags.seenRuler = "";
@@ -95,6 +97,7 @@ export function inheritLife(dead: Life, next: Life) {
   if (next.ft.potential > 5) next.ft.potential = 5;
   next.flags.seenRuler = "";
   next.flags.allowance = true;
+  renameHeir(next, d.race);
   inheritThrone(dead, next);
   applyFtTalents(next);
 }

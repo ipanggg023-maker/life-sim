@@ -21,6 +21,8 @@ import { fl, homeKingdom, worldOfLife } from "./state";
 import { STORY_EVENTS } from "./story";
 import { FANTASY_TALENTS } from "./talents";
 import "./achievements";
+import { loadFolk, raceOf } from "./folk";
+import { CAREER_EVENTS, loadCareers } from "./careers";
 import { tickWorld } from "./world";
 import { TALENTS } from "../talents";
 
@@ -37,7 +39,9 @@ export function loadFantasyWorld() {
   eligibilityFilters.push((l, e) => l.worldId !== "fantasy" || e.world === "fantasy");
   activityFilters.push((l, a) => l.worldId !== "fantasy" || a.world === "fantasy");
   TALENTS.push(...FANTASY_TALENTS);
+  loadFolk();
   loadPlaces();
+  loadCareers();
   loadLegends();
   loadMagic();
   loadCivic();
@@ -46,7 +50,7 @@ export function loadFantasyWorld() {
   loadRealm();
   loadRealms();
   transform.fn = setRace;
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS], "fantasy");
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS], "fantasy");
   const before = timeBudget.fn;
   timeBudget.fn = (l) => (l.worldId === "fantasy" ? (l.age < 10 ? 2 : l.age < 16 ? 3 : 5) : before?.(l));
   lifespanHooks.push((l) => (on(l) ? younger(l) + (fl(l).dragonblood ? 30 : 0) + (fl(l).lifeBonus ?? 0) - (fl(l).pacts ?? 0) * 10 : 0));
@@ -74,6 +78,6 @@ export function loadFantasyWorld() {
     onCreate: setupLife,
     onNewBirth: (l, s) => attachWorld(l, s),
     bodyYounger: younger,
-    npcYounger: (l, p) => (["father", "mother", "sibling", "child"].includes(p.relation) ? younger(l) : 0),
+    npcYounger: (l, p) => { const r = raceOf(p); return r ? RACES[r].younger : ["father", "mother", "sibling", "child"].includes(p.relation) ? younger(l) : 0; },
   });
 }

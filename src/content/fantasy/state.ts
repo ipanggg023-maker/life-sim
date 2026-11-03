@@ -3,6 +3,7 @@ import { pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { clamp } from "../../engine/util";
 import { newWorldState, type WorldState } from "../../engine/worldState";
+import { notableName } from "./names";
 
 export type RaceId = "human" | "elf" | "dwarf" | "orc" | "beastfolk" | "halfling" | "dragon" | "demon";
 export type Realm = "demon" | "dragon" | "divine";
@@ -82,10 +83,14 @@ export interface FLife {
   mount?: string;
   dragonFoe?: string;
   dragonblood?: boolean;
+  /** อาวุธและเกราะ · ช่างตีเองหรือซื้อมา · คุณภาพ 1–5 */
+  weapon?: Gear;
+  armor?: Gear;
   /** ปริศนาที่ตัวละครนี้รู้จัก · ความคืบหน้าอยู่ในโลก */
   mKnown?: string[];
 }
 
+export interface Gear { name: string; quality: number; enchant?: boolean }
 export interface Kingdom { id: string; name: string; ruler: string; rulerAge: number; power: number; stability: number; war?: string; plague?: number; prosperity?: number; famine?: number; laws?: LawId[]; /** เป็นเมืองขึ้นของ */ overlord?: string; playerRuled?: boolean; /** ชื่อผู้เล่นที่เป็นคู่ครองและจะสืบบัลลังก์ */ consortHeir?: string; dynasty?: string; elective?: boolean; nextElection?: number; founded?: number }
 export interface Dragon { id: string; name: string; title: string; element: Element; home: string; age: number; mood: number; alive: boolean; power: number; slainBy?: string; /** นามสกุลของครอบครัวที่เคยเลี้ยงมัน */ kin?: string }
 export interface Mystery { step: number; notes: string[]; solvedBy?: string }
@@ -106,9 +111,10 @@ export const LAWS: Record<LawId, { name: string; desc: string }> = {
 };
 export const ROLES: Record<Role, string> = { hero: "นักรบ", mage: "จอมเวท", merchant: "พ่อค้าใหญ่", rogue: "จอมโจร", priest: "นักบวช", general: "แม่ทัพ" };
 export const NOTABLE_CAP = 120;
-const FIRST = ["อัลดริค", "เบรนนา", "คาเซีย", "ดาริอัส", "เอลวิน", "ฟิออน", "กาเลน", "ฮาเดรียน", "อิโซลด์", "จอริน", "คาลิสตา", "ลูเซียน", "มาร์ซิน", "นีเรีย", "โอเวน", "เพอร์ซิวาล", "ควินน์", "โรเวนา", "เซรีน", "ธาเดียส", "อูร์ซูลา", "วาเลเรีย", "เวสลีย์", "ยอริค"];
+
 const EPITHET = ["ผู้ไร้พ่าย", "มือเหล็ก", "ตาเดียว", "แห่งหอคอยขาว", "เงาพเนจร", "ผู้ร่ำรวย", "ดาบสองคม", "ลิ้นเงิน", "แห่งทะเลเหนือ", "หัวใจน้ำแข็ง", "ผู้ไถ่บาป", "เพลิงแดง", "ไร้ปรานี", "ผู้ไม่หลับใหล", "แห่งป่าหมอก",
-  "แห่งเนินเถ้า", "ผู้ถือโคม", "กระดูกเหล็ก", "เสียงฟ้าร้อง", "แห่งหุบเขาลม", "ผู้ล่าหมาป่า", "มือทอง", "ผู้เงียบงัน", "แห่งเกาะหมอก", "หน้ากากเงิน", "ผู้ข้ามทะเลทราย", "ตาเหยี่ยว", "ใจสิงห์", "แห่งเมืองจม", "ผู้แบกระฆัง", "ดาบหัก", "ผู้นับดาว", "แห่งทุ่งกุหลาบ", "ผู้ไม่เคยยิ้ม", "เขี้ยวเงิน", "แห่งประตูเหนือ", "ผู้หัวเราะ", "มือซ้าย", "แห่งหอระฆัง", "ผู้กลับจากความตาย"];
+  "แห่งเนินเถ้า", "ผู้ถือโคม", "กระดูกเหล็ก", "เสียงฟ้าร้อง", "แห่งหุบเขาลม", "ผู้ล่าหมาป่า", "มือทอง", "ผู้เงียบงัน", "แห่งเกาะหมอก", "หน้ากากเงิน", "ผู้ข้ามทะเลทราย", "ตาเหยี่ยว", "ใจสิงห์", "แห่งเมืองจม", "ผู้แบกระฆัง", "ดาบหัก", "ผู้นับดาว", "แห่งทุ่งกุหลาบ", "ผู้ไม่เคยยิ้ม", "เขี้ยวเงิน", "แห่งประตูเหนือ", "ผู้หัวเราะ", "มือซ้าย", "แห่งหอระฆัง", "ผู้กลับจากความตาย",
+  "ผู้ขี่พายุ", "แห่งหอคอยดำ", "มือเพลิง", "ผู้เฝ้าประตู", "แห่งเกาะไกล", "ลิ้นทอง", "ผู้ไม่เคยแพ้", "แห่งป่าเถ้า", "ตาสีเงิน", "ผู้ทำลายโซ่", "แห่งยอดหิมะ", "มือไม่สั่น", "ผู้อ่านดวงดาว", "แห่งท่าเรือเก่า", "เกราะทอง", "ผู้ไร้เงา", "แห่งเหมืองลึก", "ผู้ร้องเพลงศึก", "ขวานคู่", "แห่งทุ่งเลือด"];
 const ROLE_FACTION: Partial<Record<Role, string>> = { hero: "silver", mage: "conclave", merchant: "league", rogue: "night", priest: "dawn" };
 const FACTIONS: Faction[] = [
   { id: "silver", name: "ภาคีโล่เงิน", creed: "อัศวินผู้พิทักษ์", power: 55, leader: "" },
@@ -123,7 +129,7 @@ const KINGDOM_LAWS: Record<string, LawId[]> = { aldria: ["harshCourts"], varn: [
 export function newNotable(r: Pick<Life, "rng">, d: Pick<FData, "kingdoms" | "nextId" | "notables">, age = randInt(r, 18, 30)): Notable {
   const role = pick(r, Object.keys(ROLES) as Role[]);
   const faction = randInt(r, 1, 12) === 1 ? "ember" : ROLE_FACTION[role];
-  const roll = () => `${pick(r, FIRST)} ${pick(r, EPITHET)}`;
+  const roll = () => `${notableName(r)} ${pick(r, EPITHET)}`;
   let name = roll();
   for (let i = 0; i < 6 && d.notables.some((n) => n.name === name); i++) name = roll();
   const peak = Math.max(randInt(r, 35, 95), randInt(r, 35, 95));
