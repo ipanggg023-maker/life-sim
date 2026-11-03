@@ -24,6 +24,8 @@ export interface FLife {
   persona?: { m: number; h: number; c: number; f: number };
   /** เมล็ดชะตาที่ปลูกไว้ (echoes.ts) */
   seeds?: { id: string; age: number; note: string; who?: string; done?: number }[];
+  /** สิ่งที่คุณเปลี่ยนแผ่นดิน (worldmark.ts) */
+  marks?: { text: string; k: string; age: number }[];
   body: number;
   magic: number;
   bodyRank: number;

@@ -21,7 +21,11 @@ export interface Tag extends Partial<Persona> {
   rumor?: [string, 1 | -1, number?];
   /** ความทรงจำของคนในฉาก (ctx.pid): ชนิด ข้อความ น้ำหนัก ความรู้สึก */
   mem?: [string, string, 1 | 2 | 3, Partial<RelAxes>];
+  /** เปลี่ยนแผ่นดิน: ข้อความ · p รุ่งเรือง s มั่นคง w กำลังทัพ */
+  world?: [string, { p?: number; s?: number; w?: number }];
 }
+/** worldmark.ts ลงทะเบียน · กัน import วน */
+export const worldHook: { fn?: (l: Life, text: string, fx: { p?: number; s?: number; w?: number }) => void } = {};
 export const TAGS: Record<string, Tag> = {};
 const tagOf = new WeakMap<Choice, Tag>();
 export const MARK = "จะถูกจดจำ";
@@ -75,6 +79,7 @@ export function loadConseq() {
     if (!t) return;
     if (t.seed && (ok || !t.ok)) plant(l, t.seed, who(l, ctx)?.name);
     if (t.rumor) spread(l, t.rumor[0], t.rumor[1], t.rumor[2] ?? 35);
+    if (t.world && (ok || !t.ok)) worldHook.fn?.(l, t.world[0], t.world[1]);
     if (t.mem) { const p = who(l, ctx); if (p) remember(l, p, t.mem[0], t.mem[1], t.mem[2], t.mem[3]); }
   });
   oddsHooks.push((l, c, _ctx, p) => (l.worldId === "fantasy" ? p + inCharacter(l, c) : p));

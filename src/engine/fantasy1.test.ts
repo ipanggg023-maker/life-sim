@@ -330,7 +330,8 @@ describe("สมดุล", () => {
       // บอทสุ่มเลือกทางในบททดสอบ (รวมถอยกลับ) จึงวัดว่าไปถึงบททดสอบอาวุธตำนานได้ และไม่มีใครได้ง่ายเกินไป
       if (f.relic || f.deeds.some((d) => d.startsWith("ครอบครอง"))) relics++;
       trials += l.seen["ft.relic_trial"] ?? 0;
-      if (l.causeOfDeath?.includes("กิลด์")) guildDeaths++;
+      // งานอันตรายต้องฆ่าคนได้จริง: กิลด์ ภารกิจ ดันเจี้ยน หรือสัตว์ร้าย
+      if (/กิลด์|ภารกิจ|ดันเจี้ยน|ถ้ำ|หอคอย|สังหาร|มังกร/.test(l.causeOfDeath ?? "")) guildDeaths++;
     }
     ages.sort((a, b) => a - b);
     const med = ages[N >> 1];

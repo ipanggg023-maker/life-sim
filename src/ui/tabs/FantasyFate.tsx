@@ -6,7 +6,8 @@ import { seedsOf } from "../../content/fantasy/conseq";
 import { heatWord, kingdomName, oldTales, talkIn } from "../../content/fantasy/rumors";
 import { feelingWords, topMemories } from "../../content/fantasy/people2";
 import { goalOf, traitName, traitsOf } from "../../engine/npc";
-import { kingdomsOf } from "../../content/fantasy/state";
+import { dataOf, homeKingdom, kingdomsOf } from "../../content/fantasy/state";
+import { TEMPERS, marksOf, regard, regardWord, rulerView, temperOf, viewWord } from "../../content/fantasy/worldmark";
 import { bossOf, matesOf, workFactors } from "../../content/fantasy/worklife";
 
 /** นิสัยของคุณในสายตาคนอื่น · แสดงเป็นแถบสองขั้ว */
@@ -97,5 +98,35 @@ export function WorkplaceCard({ life }: { life: Life }) {
       )}
       <p className="muted">ผลงานถึง 60 จะได้ลุ้นชิงตำแหน่งกับเพื่อนร่วมงาน · เรื่องในที่ทำงานจะมาให้เลือกเป็นระยะ</p>
     </div>
+  );
+}
+
+/** รอยเท้าของคุณ: สิ่งที่คุณเปลี่ยนแผ่นดิน · ผู้ครองแต่ละแผ่นดิน · ฝ่ายอำนาจ · บทบาทในสงคราม */
+export function WorldMarkFolds({ life }: { life: Life }) {
+  if (!life.ft) return null;
+  const marks = [...marksOf(life)].reverse().slice(0, 12);
+  const lands = kingdomsOf(life);
+  const facs = dataOf(life).factions;
+  const war = homeKingdom(life).war ? kingdomsOf(life).find((k) => k.id === homeKingdom(life).war) : undefined;
+  const merit = Number(life.flags.ftWarMerit ?? 0);
+  return (
+    <>
+      {war && (
+        <Fold always kind="section" id="ft-war-role" title={<>สงครามกับ{war.name}</>}>
+          <p className="small">บทบาทของคุณ: {merit >= 6 ? "คนที่ทั้งเมืองจะจดจำ" : merit >= 2 ? "ช่วยแผ่นดินอยู่ไม่น้อย" : merit <= -5 ? "มีคนเริ่มนับบัญชีคุณ" : merit < 0 ? "มีคนมองคุณด้วยสายตาแปลกๆ" : "ยังเป็นแค่คนธรรมดาในสงคราม"}</p>
+          <p className="small muted">เมื่อสงครามจบ แผ่นดินจะตัดสินว่าคุณทำอะไรระหว่างนั้น</p>
+        </Fold>
+      )}
+      <Fold kind="section" id="ft-marks" title={<>รอยเท้าของคุณบนแผ่นดิน <span className="fold-count">{marksOf(life).length}</span></>}>
+        {marks.length === 0 && <p className="small muted">สิ่งที่คุณทำซึ่งเปลี่ยนแผ่นดินจะถูกจดไว้ที่นี่</p>}
+        {marks.map((m, i) => <p className="small" key={i}>อายุ {m.age} · {m.text} · <span className="muted">{lands.find((k) => k.id === m.k)?.name}</span></p>)}
+      </Fold>
+      <Fold kind="section" id="ft-rulers" title={<>ผู้ครองแต่ละแผ่นดินมองคุณ</>}>
+        {lands.map((k) => <p className="small" key={k.id}><b>{k.ruler}</b> แห่ง{k.name} · {TEMPERS[temperOf(k)].name} ({TEMPERS[temperOf(k)].desc}) · {viewWord(rulerView(life, k))}</p>)}
+      </Fold>
+      <Fold kind="section" id="ft-regard" title={<>ฝ่ายอำนาจมองคุณ</>}>
+        {facs.map((x) => <p className="small" key={x.id}><b>{x.name}</b> · {regardWord(regard(life, x))}</p>)}
+      </Fold>
+    </>
   );
 }
