@@ -192,7 +192,7 @@
 /* ─── หน้าต่างเหตุการณ์: ไพ่ชะตาพลิกเข้ามา ─── */
 :root[data-world="fantasy"] .modal-overlay { background: var(--scrim); perspective: 1400px; }
 :root[data-world="fantasy"] .modal {
-  position: relative; overflow: hidden; padding: 0 20px 16px; border: 0; border-radius: 16px;
+  position: relative; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 20px 16px; border: 0; border-radius: 16px;
   background: #11163f;
   box-shadow: inset 0 0 0 1px rgba(240, 212, 146, 0.9), inset 0 0 0 6px #11163f, inset 0 0 0 6.8px rgba(217, 181, 106, 0.35), 0 34px 70px rgba(0, 0, 0, 0.6);
   animation: fateFlip 0.9s cubic-bezier(0.3, 0.85, 0.25, 1) both;
