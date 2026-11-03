@@ -1,12 +1,12 @@
 // ชีวิตในโรงเรียนเชิงลึก: สอบประจำปี อันดับในรุ่น งานประลอง คู่ปรับที่เติบโตเอง ความลับ และทางเลือกนอกโรงเรียน
-import type { GameEvent } from "../../engine/events";
+import type { Ctx, GameEvent } from "../../engine/events";
 import { runEvent, yearHooks } from "../../engine/game";
 import { randInt } from "../../engine/rng";
 import type { Life, Person } from "../../engine/types";
 import { clamp, createPerson, log, shortName } from "../../engine/util";
 import { recordChronicle } from "../../engine/worldState";
-import { B, BIG, C, E, G, K, N, P, SCENE } from "./kit";
-import { learnSpell, spellsOf, SPELLS } from "./magic";
+import { B, BIG, C, E, G, K, N, P, SCENE, type Res } from "./kit";
+import { learnSpell, spellChoices, spellsOf, SPELLS } from "./magic";
 import { fightOdds } from "./power";
 import { deed, fl, worldOfLife } from "./state";
 
@@ -28,6 +28,16 @@ const SECRETS: Record<string, [string, string, string]> = {
 };
 
 
+const roundThreat = (l: Life, c: Ctx) => (Number(c.round) >= 3 ? fl(l).rivalPower ?? 20 : 4 + Number(c.round) * 4 + (l.age - 11));
+const roundThreatOdds = (l: Life, c: Ctx) => fightOdds(l, roundThreat(l, c));
+const roundLose = N("คุณตกรอบ แต่ได้ประสบการณ์กลับไป", { hp: -2, body: 3, magic: 2 });
+const roundWin: Res = (l, c) => {
+  const r = Number(c.round);
+  if (r >= 3) return BIG(`คุณชนะ${rivalName(l)} ถ้วยรางวัลเป็นของคุณ`, { fame: 8, joy: 8, body: 5, magic: 5 }, (x) => { score(x, 12); fl(x).cups = (fl(x).cups ?? 0) + 1; if (fl(x).cups === 1) deed(x, "แชมป์งานประลองโรงเรียน"); })(l, c);
+  runEvent(l, "ft.s.round", { round: r + 1 });
+  return { text: `คุณผ่านรอบที่ ${r}`, kind: "good" };
+};
+
 export const SCHOOL_EVENTS: GameEvent[] = [
   E("ft.s.exam", [11, 40], (l) => `สอบปลายปีแล้ว ตอนนี้คุณอยู่${classStanding(l)}`, [
     K("อ่านหนังสือจนเช้า", "smarts", 50, G("ชื่อคุณขึ้นบนกระดาน", { iq: 1 }, (l) => score(l, 12)), N("ข้อสุดท้ายออกเรื่องที่คุณข้ามไป", {}, (l) => score(l, -6))),
@@ -40,12 +50,8 @@ export const SCHOOL_EVENTS: GameEvent[] = [
     C("ถอนตัวปีนี้", N("คุณนั่งดูจากอัฒจันทร์และจดท่าของคู่แข่ง", { body: 2 })),
   ], { when: (l) => student(l) && (l.age - Number(fl(l).schoolSince)) % 2 === 1, forced: true, maxTimes: 0, title: "งานประลอง" }),
   SCENE("ft.s.round", "งานประลอง", (l, c) => (Number(c.round) >= 3 ? `รอบชิงชนะเลิศ คนตรงหน้าคือ${rivalName(l)} คู่ปรับของคุณ` : `รอบที่ ${c.round}`), [
-    P("สู้เต็มที่", (l, c) => fightOdds(l, Number(c.round) >= 3 ? fl(l).rivalPower ?? 20 : 4 + Number(c.round) * 4 + (l.age - 11)), (l, c) => {
-      const r = Number(c.round);
-      if (r >= 3) return BIG(`คุณชนะ${rivalName(l)} ถ้วยรางวัลเป็นของคุณ`, { fame: 8, joy: 8, body: 5, magic: 5 }, (x) => { score(x, 12); fl(x).cups = (fl(x).cups ?? 0) + 1; if (fl(x).cups === 1) deed(x, "แชมป์งานประลองโรงเรียน"); })(l, c);
-      runEvent(l, "ft.s.round", { round: r + 1 });
-      return { text: `คุณผ่านรอบที่ ${r}`, kind: "good" };
-    }, N("คุณตกรอบ แต่ได้ประสบการณ์กลับไป", { hp: -2, body: 3, magic: 2 })),
+    P("สู้เต็มที่", roundThreatOdds, roundWin, roundLose),
+    ...spellChoices(roundThreat, () => undefined, () => undefined, () => roundWin, roundLose),
   ]),
   E("ft.s.rival_talk", [12, 40], (l) => `${rivalName(l)}มานั่งข้างคุณบนหลังคาหอพัก คืนนี้ไม่มีใครทะเลาะกัน`, [
     C("คุยกันตรงๆ", G("คุณรู้ว่าเขาเองก็กลัวเหมือนกัน", { joy: 3 }, (l) => { const r = rivalOf(l); if (r) { r.bond = clamp(r.bond + 20, 0, 100); r.relation = r.bond >= 60 ? "friend" : "rival"; } })),

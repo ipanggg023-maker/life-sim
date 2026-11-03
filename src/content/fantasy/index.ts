@@ -3,8 +3,11 @@ import { activityFilters, timeBudget } from "../../engine/activities";
 import { eligibilityFilters, registerEvents } from "../../engine/events";
 import { lifespanHooks, yearHooks } from "../../engine/game";
 import type { Life } from "../../engine/types";
+import { clamp } from "../../engine/util";
 import { registerWorld } from "../../engine/worldModule";
+import { CIVIC_EVENTS, civicYear, loadCivic } from "./civic";
 import { LEGEND_EVENTS, loadLegends } from "./legends";
+import { GOLD } from "./kit";
 import { RACES, attachWorld, setupLife } from "./life";
 import { MAGIC_EVENTS, loadMagic } from "./magic";
 import { PLACE_EVENTS, loadPlaces } from "./places";
@@ -31,7 +34,8 @@ export function loadFantasyWorld() {
   loadPlaces();
   loadLegends();
   loadMagic();
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS], "fantasy");
+  loadCivic();
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS], "fantasy");
   const before = timeBudget.fn;
   timeBudget.fn = (l) => (l.worldId === "fantasy" ? (l.age < 10 ? 2 : l.age < 16 ? 3 : 5) : before?.(l));
   lifespanHooks.push((l) => (on(l) ? younger(l) : 0));
@@ -40,13 +44,20 @@ export function loadFantasyWorld() {
     const w = worldOfLife(l);
     w.year = l.birthYear + l.age;
     tickWorld(w, l);
+    civicYear(l);
     if (!l.flags.seenRuler) l.flags.seenRuler = homeKingdom(l).ruler;
   });
   registerWorld({
     id: "fantasy",
     traits: { body: true, npcLife: true, hiddenTalents: true, repeatActs: true, surnameFirst: false, classicKinTerms: true },
     birthplace: (l, fallback) => (l.ft ? `ดินแดนของ${homeKingdom(l).name}` : fallback),
-    livingCost: (_l, kids, income) => 3_000 + kids * 700 + Math.round(income * 0.25),
+    livingCost: (l, kids, income) => {
+      const k = homeKingdom(l), rich = (k.prosperity ?? 100) / 100;
+      // เมืองรุ่งเรืองของแพงแต่คนเหลือเงินมากกว่า · ภาษีสงครามเพิ่มทั้งก้อน
+      const tax = k.laws?.includes("heavyTax") ? 1.25 : 1;
+      return Math.round((3_000 + kids * 700) * rich * tax + Math.max(0, income) * clamp(0.25 - (rich - 1) / 4, 0.1, 0.4) * tax);
+    },
+    inheritance: (l) => ({ poor: 15, middle: 120, rich: 900, elite: 5_000 })[l.wealth] * GOLD,
     onCreate: setupLife,
     onNewBirth: (l, s) => attachWorld(l, s),
     bodyYounger: younger,

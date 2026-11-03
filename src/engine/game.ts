@@ -413,7 +413,7 @@ function progressPeople(life: Life) {
   if (!parentsAlive && !life.flags.inherited) {
     life.flags.inherited = true;
     const heirs = 1 + people(life, "sibling").length;
-    const amount = Math.round(INHERITANCE[life.wealth] / heirs);
+    const amount = Math.round((moduleOf(life.worldId)?.inheritance?.(life) ?? INHERITANCE[life.wealth]) / heirs);
     addMoney(life, amount);
     log(life, `คุณได้รับมรดกจากพ่อแม่ ${money(life, amount)}`, "milestone");
   }

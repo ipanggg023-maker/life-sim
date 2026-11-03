@@ -24,6 +24,8 @@ export interface WorldModule {
   birthplace?: (l: Life, fallback: string) => string;
   /** ค่าครองชีพต่อปี */
   livingCost?: (l: Life, kids: number, income: number) => number;
+  /** กองมรดกก่อนหารพี่น้อง · ไม่ใส่ = ใช้ตารางกลาง */
+  inheritance?: (l: Life) => number;
   /** เหตุผลที่ยังแต่งงานไม่ได้ */
   marriageBlock?: (l: Life) => string | undefined;
   /** ปรับเซฟเก่าตอนโหลด */

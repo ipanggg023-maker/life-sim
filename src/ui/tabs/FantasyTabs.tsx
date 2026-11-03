@@ -5,7 +5,9 @@ import { ELEMENTS, manaLeft, manaMax, spellsOf } from "../../content/fantasy/mag
 import { schoolOf } from "../../content/fantasy/places";
 import { classStanding, rivalOf } from "../../content/fantasy/schoollife";
 import { shortName } from "../../engine/util";
-import { dataOf, fl, homeKingdom, myRelic, worldOfLife } from "../../content/fantasy/state";
+import { FACTION_RANKS, myFaction, standingWord } from "../../content/fantasy/civic";
+import { GOODS, priceOf } from "../../content/fantasy/society";
+import { LAWS, ROLES, dataOf, fl, homeKingdom, myRelic, standingOf, worldOfLife, type Good } from "../../content/fantasy/state";
 import { talentById } from "../../content/talents";
 import type { Life } from "../../engine/types";
 import { Fold } from "../Fold";
@@ -24,6 +26,8 @@ export function FantasyPowerTab({ life }: { life: Life }) {
   const s = schoolOf(life);
   const relic = myRelic(life);
   const known = life.talents.filter((t) => t.revealed);
+  const d = dataOf(life);
+  const faction = myFaction(life);
   return (
     <div className="tab-content">
       <Fold always id="ft-power" title={<>ตัวคุณ</>}>
@@ -51,6 +55,10 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         {relic && <p className="small"><b>{relic.name}</b> · {relic.power}</p>}
         {s && <p className="small">{f.graduated ? "ศิษย์เก่า" : "นักเรียน"}{s.name}{f.graduated ? "" : ` · ${classStanding(life)}`}{f.cups ? ` · แชมป์ ${f.cups} สมัย` : ""}</p>}
         {rivalOf(life)?.alive && <p className="small">คู่ปรับ: {shortName(rivalOf(life)!)} · พลัง {f.rivalPower}</p>}
+        {faction && <p className="small">{FACTION_RANKS[f.fRank]}แห่ง{faction.name}{f.fRank < 3 ? ` · ผลงาน ${f.fMerit ?? 0}` : ""}</p>}
+        {f.foe && <p className="small">มีคนตามล่า: {d.factions.find((x) => x.id === f.foe)?.name}</p>}
+        <p className="small">ชื่อเสียงใน{homeKingdom(life).name}: {standingWord(standingOf(life))} ({standingOf(life)})</p>
+        {Number(life.flags.jailUntil ?? -1) > life.age && <p className="small">ติดคุกถึงอายุ {String(life.flags.jailUntil)} ปี</p>}
         {life.flags.dragonRider && <p className="small">สหายของมังกร{dataOf(life).dragon.name}</p>}
       </Fold>
       <Fold always kind="section" id="ft-magic" title={<>เวทมนตร์ · ธาตุ{ELEMENTS[f.element ?? "fire"].name}</>}>
@@ -84,12 +92,23 @@ export function FantasyWorldTab({ life }: { life: Life }) {
     <div className="tab-content">
       <Fold always id="ft-here" title={<>ที่อยู่ของคุณ</>}>
         <p className="small">{here.name} · ปกครองโดย{here.ruler}</p>
-        <p className="small muted">ปี {w.year}{here.war ? " · กำลังมีสงคราม" : ""}{here.plague ? " · มีโรคระบาด" : ""}</p>
+        <p className="small muted">ปี {w.year}{here.war ? " · กำลังมีสงคราม" : ""}{here.plague ? " · มีโรคระบาด" : ""}{here.famine ? " · ทุพภิกขภัย" : ""}</p>
+        {(here.laws ?? []).map((id) => <p className="small" key={id}><b>{LAWS[id].name}</b> · {LAWS[id].desc}</p>)}
+        {(here.laws ?? []).length === 0 && <p className="small muted">ไม่มีกฎหมายพิเศษ</p>}
       </Fold>
       <Fold always id="ft-kingdoms" title={<>อาณาจักร</>}>
         {d.kingdoms.map((k) => (
-          <p className="small" key={k.id}>{k.name} · {k.ruler} · กำลัง {k.power}{k.war ? " · สงคราม" : ""}</p>
+          <p className="small" key={k.id}>{k.name} · {k.ruler} · กำลัง {k.power} · เศรษฐกิจ {k.prosperity ?? 100}{k.war ? " · สงคราม" : ""}{k.famine ? " · ทุพภิกขภัย" : ""}{k.plague ? " · โรคระบาด" : ""}</p>
         ))}
+      </Fold>
+      <Fold id="ft-prices" title={<>ราคาสินค้า</>}>
+        {d.kingdoms.map((k) => <p className="small" key={k.id}>{k.name} · {(Object.keys(GOODS) as Good[]).map((g) => `${GOODS[g].name} ${priceOf(k, g)}`).join(" · ")}</p>)}
+      </Fold>
+      <Fold id="ft-factions" title={<>ฝ่ายอำนาจ</>}>
+        {d.factions.map((x) => <p className="small" key={x.id}><b>{x.name}</b> · {x.creed} · กำลัง {x.power} · ผู้นำ {x.leader || "ว่าง"}{x.feud ? ` · ศึกกับ${d.factions.find((o) => o.id === x.feud)?.name}` : ""}</p>)}
+      </Fold>
+      <Fold id="ft-notables" title={<>บุคคลสำคัญ</>}>
+        {d.notables.slice().sort((a, b) => b.fame * 5 + b.power - a.fame * 5 - a.power).slice(0, 12).map((n) => <p className="small" key={n.id}>{n.name} · {ROLES[n.role]} · อายุ {n.age} · พลัง {n.power}</p>)}
       </Fold>
       <Fold always id="ft-dragon" title={<>มังกร</>}>
         <p className="small">{d.dragon.alive ? `${d.dragon.name} ${d.dragon.title} อายุ ${d.dragon.age} ปี` : `${d.dragon.name} ถูกสังหารโดย${d.dragon.slainBy}`}</p>

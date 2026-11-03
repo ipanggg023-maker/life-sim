@@ -3,10 +3,19 @@ import { chance, pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { clamp } from "../../engine/util";
 import { advanceWorld, recordChronicle, type WorldState } from "../../engine/worldState";
-import type { FData, Kingdom } from "./state";
+import { reformLaws, seekerOf, tickSociety } from "./society";
+import { ensureSociety, type FData, type Kingdom } from "./state";
 
 type Rng = Pick<Life, "rng">;
-const HEIRS = ["เจ้าชายคาเอล", "เจ้าหญิงไอลีน", "ลอร์ดโรวาน", "เลดี้เอลาร่า", "แม่ทัพกาเรธ", "ท่านหญิงมิร่า"];
+const HEIR_M = ["คาเอล", "โรวาน", "กาเรธ", "ลูเซียน", "ดาริอัส", "ฮาเดรียน", "เอลวิน", "ธาเดียส", "ออเรลิอัส", "ซีเดริค"];
+const HEIR_F = ["ไอลีน", "เอลาร่า", "มิร่า", "อิโซลด์", "คาลิสตา", "โรเวนา", "เซรีน", "วาเลเรีย", "เบียทริซ", "ออโรร่า"];
+/** ทายาทแต่ละแผ่นดินไม่ซ้ำกับผู้ครองคนอื่นที่ยังอยู่ */
+function newRuler(d: FData, r: Rng) {
+  const roll = () => (chance(r, 0.5) ? `${pick(r, ["เจ้าชาย", "ลอร์ด", "ดยุก"])}${pick(r, HEIR_M)}` : `${pick(r, ["เจ้าหญิง", "เลดี้", "ดัชเชส"])}${pick(r, HEIR_F)}`);
+  let name = roll();
+  for (let i = 0; i < 8 && d.kingdoms.some((k) => k.ruler.endsWith(name.replace(/^(เจ้าชาย|ลอร์ด|ดยุก|เจ้าหญิง|เลดี้|ดัชเชส)/, ""))); i++) name = roll();
+  return name;
+}
 const SEEKERS = ["อัศวินดำโอริน", "นักล่าสมบัติเซล", "จอมเวทมัลคอร์", "ทหารรับจ้างบรานน์"];
 
 function tickKingdom(w: WorldState, d: FData, k: Kingdom, r: Rng) {
@@ -15,10 +24,11 @@ function tickKingdom(w: WorldState, d: FData, k: Kingdom, r: Rng) {
   if (k.plague && --k.plague <= 0) { k.plague = undefined; recordChronicle(w, `โรคระบาดใน${k.name}สงบลง`); }
   if (k.rulerAge > 62 && chance(r, 0.08 + (k.rulerAge - 62) * 0.015)) {
     const old = k.ruler;
-    k.ruler = pick(r, HEIRS);
+    k.ruler = newRuler(d, r);
     k.rulerAge = randInt(r, 22, 45);
     k.stability = clamp(k.stability - 12, 5, 95);
     recordChronicle(w, `${old}สิ้นพระชนม์ ${k.ruler}ขึ้นครอง${k.name}`);
+    reformLaws(w, k, r);
   }
   if (!k.plague && chance(r, 0.012)) { k.plague = randInt(r, 2, 4); recordChronicle(w, `โรคระบาดแพร่ไปทั่ว${k.name}`); }
   if (!k.war && chance(r, 0.03)) {
@@ -38,8 +48,9 @@ function tickKingdom(w: WorldState, d: FData, k: Kingdom, r: Rng) {
 }
 
 export function tickWorld(w: WorldState, r: Rng) {
-  const d = w.data as unknown as FData;
+  const d = ensureSociety(w);
   for (const k of d.kingdoms) tickKingdom(w, d, k, r);
+  tickSociety(w, d, r);
   const dr = d.dragon;
   if (dr.alive) {
     dr.age++;
@@ -53,7 +64,7 @@ export function tickWorld(w: WorldState, r: Rng) {
   for (const rl of d.relics) {
     if (rl.holder === "player") continue;
     if (rl.holder === "lost" ? chance(r, 0.006) : chance(r, 0.02)) {
-      const by = rl.holder === "lost" ? pick(r, SEEKERS) : "lost";
+      const by = rl.holder === "lost" ? seekerOf(d, r)?.name ?? pick(r, SEEKERS) : "lost";
       recordChronicle(w, by === "lost" ? `${rl.name}หายไปจากมือ${rl.holder}อีกครั้ง` : `${by}พบ${rl.name}`);
       rl.holder = by;
       rl.at = pick(r, d.kingdoms).id;

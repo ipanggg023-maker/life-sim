@@ -20,7 +20,7 @@ const SCARS = ["มีเงาตัวเองขยับช้ากว่�
 
 function rollFlife(l: Life, race: RaceId): FLife {
   const potential = weightedPick(l, [0, 1, 2, 3, 4, 5], (p) => [34, 26, 20, 12, 6, 2][p])!;
-  return { race, kingdom: pick(l, kingdomsOf(l)).id, potential, body: 0, magic: 0, bodyRank: 0, magicRank: 0, guild: 0, contracts: 0, clues: {}, dragonBond: 0, deeds: [], scars: [], threads: l.talents.some((t) => t.id === "ft_fate_thread") ? 2 : 0 };
+  return { race, kingdom: pick(l, kingdomsOf(l)).id, potential, body: 0, magic: 0, bodyRank: 0, magicRank: 0, guild: 0, contracts: 0, fRank: 0, clues: {}, dragonBond: 0, deeds: [], scars: [], threads: l.talents.some((t) => t.id === "ft_fate_thread") ? 2 : 0 };
 }
 
 /** สร้างข้อมูลตอนเกิด · ยังไม่รู้จักวิญญาณ จะผูกกับโลกจริงใน attachWorld */
@@ -60,6 +60,7 @@ export function closeLife(s: Soul, l: Life) {
   w.year = l.birthYear + l.age;
   recordChronicle(w, `${displayName(l)}จากโลกไปเมื่ออายุ ${l.age} ปี`);
   for (const r of (w.data as { relics: { holder: string; id: string; at: string }[] }).relics) if (r.holder === "player") { r.holder = "lost"; r.at = f.kingdom; }
+  for (const x of (w.data as { factions?: { playerLed?: boolean; leader: string }[] }).factions ?? []) if (x.playerLed) { x.playerLed = false; x.leader = ""; }
   const top = f.deeds.at(-1);
   if (top && (l.fame >= 30 || f.deeds.length >= 2)) addLegend(w, { name: displayName(l), deed: top, lifeId: l.id });
   s.fantasyWorld = w;
@@ -69,7 +70,7 @@ export function closeLife(s: Soul, l: Life) {
 export function inheritLife(dead: Life, next: Life) {
   const d = fl(dead);
   next.fw = dead.fw;
-  next.ft = { ...rollFlife(next, d.race), element: d.element, kingdom: d.kingdom, potential: Math.max(0, d.potential + randInt(next, -1, 1)) };
+  next.ft = { ...rollFlife(next, d.race), element: d.element, kingdom: d.kingdom, standing: Object.fromEntries(Object.entries(d.standing ?? {}).map(([k, v]) => [k, Math.trunc(v / 2)])), potential: Math.max(0, d.potential + randInt(next, -1, 1)) };
   if (next.ft.potential > 5) next.ft.potential = 5;
   next.flags.seenRuler = "";
   next.flags.allowance = true;

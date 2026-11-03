@@ -9,7 +9,7 @@ import { CAREERS } from "../core/careers";
 import { B, BIG, C, E, G, GOLD, K, N, P, PAY, SCENE, type Res } from "./kit";
 import { GUILD_RANKS, canCast, deathOdds, fightOdds } from "./power";
 import { ELEMENTS, learnSpell, spellChoices } from "./magic";
-import { fl, kingdomsOf, deed, type Element } from "./state";
+import { addStanding, fl, kingdomsOf, deed, type Element } from "./state";
 
 export interface School { id: string; name: string; focus: string; odds: (l: Life) => number; fee: number; body: number; magic: number }
 export const SCHOOLS: School[] = [
@@ -91,6 +91,7 @@ function reward(l: Life, mul: number) {
   addMoney(l, Math.round((10 + f.guild * 18) * mul) * GOLD);
   f.body += 9; f.magic += canCast(l) ? 5 : 0;
   f.contracts++;
+  addStanding(l, 1);
   if (f.contracts >= f.guild * 6 && f.guild < 5) {
     f.guild++; f.contracts = 0;
     deed(l, `นักผจญภัยขั้น${GUILD_RANKS[f.guild]}`);
