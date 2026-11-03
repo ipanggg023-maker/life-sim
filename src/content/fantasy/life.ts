@@ -120,6 +120,7 @@ export function applyRewind(dead: Life, snap: Life): Life {
   f.mercyUsed = fl(dead).mercyUsed || usedMercy;
   f.threads = usedMercy ? fl(dead).threads : fl(dead).threads - 1;
   f.scars = [...fl(dead).scars, scar];
+  next.flags.ftScarAge = snap.age;
   log(next, `คุณตายตอนอายุ ${dead.age} แล้วลืมตาขึ้นตอนอายุ ${snap.age} ชะตาทิ้งแผลไว้: ${scar}`, "milestone");
   addStat(next, "happiness", -3);
   return next;

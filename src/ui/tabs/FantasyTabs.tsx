@@ -20,6 +20,7 @@ import { ASSETS, assetIncome } from "../../content/fantasy/careers";
 import { epithetOf, styleOf, techsOf } from "../../content/fantasy/styles";
 import { KINDS, citiesOf, cityOf } from "../../content/fantasy/cities";
 import { DUNGEONS, PETS } from "../../content/fantasy/hobbies";
+import { sleeping } from "../../content/fantasy/talentEvo";
 import { RACE_LABEL, folkOf } from "../../content/fantasy/folk";
 import { careerById } from "../../content/core/careers";
 import { PARTY_MAX, partyLabel, partyOf } from "../../content/fantasy/bonds";
@@ -110,7 +111,8 @@ export function FantasyPowerTab({ life }: { life: Life }) {
       </Fold>
       {known.length > 0 && (
         <Fold kind="section" id="ft-talents" title={<>พรสวรรค์</>}>
-          {known.map((t) => <p className="small" key={t.id}><b>{talentById(t.id)?.name}</b> · {talentById(t.id)?.desc}</p>)}
+          {known.map((t) => <p className="small" key={t.id}><b>{talentById(t.id)?.name}</b>{/_[ld]$/.test(t.id) ? <span className="muted"> · ร่างที่ตื่นแล้ว ({t.id.endsWith("_l") ? "ทางสว่าง" : "ทางมืด"})</span> : null} · {talentById(t.id)?.desc}</p>)}
+          {sleeping(life).length > 0 && <p className="small muted">พรสวรรค์ {sleeping(life).map((t) => talentById(t.id)?.name).join(", ")} ยังตื่นสู่ร่างใหม่ได้ เมื่อทำสิ่งที่มันรอ หรือเมื่อชีวิตถึงจุดวิกฤต</p>}
         </Fold>
       )}
       {f.deeds.length > 0 && (

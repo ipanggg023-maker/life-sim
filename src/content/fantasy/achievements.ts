@@ -23,6 +23,8 @@ const power: A[] = [
   { id: "fa_spells6", name: "หกบทในหัว", desc: "รู้เวท 6 บท", points: 10, check: F((l) => (fl(l).spells?.length ?? 0) >= 6) },
   { id: "fa_spells12", name: "ตำราเวทเดินได้", desc: "รู้เวท 12 บท", points: 25, check: F((l) => (fl(l).spells?.length ?? 0) >= 12) },
   { id: "fa_arts", name: "สามศาสตร์", desc: "ศึกษาบทสวด วงเวท และอักษรรูนครบทั้งสาม", points: 15, check: F((l) => !!fl(l).chant && !!fl(l).circle && !!fl(l).rune) },
+  { id: "fa_evo1", name: "พรสวรรค์ตื่น", desc: "พรสวรรค์ตื่นสู่ร่างใหม่ครั้งแรก", points: 10, check: F((l) => Number(l.flags.ftEvolved ?? 0) >= 1) },
+  { id: "fa_evo3", name: "สามร่างในชีวิตเดียว", desc: "พรสวรรค์ตื่นสู่ร่างใหม่ 3 ครั้งในชีวิตเดียว", points: 30, check: F((l) => Number(l.flags.ftEvolved ?? 0) >= 3) },
   { id: "fa_wandless", name: "ไม่ต้องพึ่งคทา", desc: "ร่ายเวทได้ด้วยมือเปล่า", points: 10, check: F((l) => !!l.flags.wandless) },
 ];
 

@@ -5,6 +5,7 @@ import { raceOf } from "../content/fantasy/folk";
 import { NAMES } from "../content/fantasy/names";
 import { combat } from "../content/fantasy/power";
 import { CAREERS } from "../content/core/careers";
+import { TALENTS, talentById } from "../content/talents";
 import { doJobAction, jobActionLocked } from "../content/murim/life/jobActions";
 import { ageUp, createLife, resolveChoice, runEvent, salaryOf } from "./game";
 import { visibleChoices } from "./events";
@@ -257,5 +258,37 @@ describe("เหตุการณ์ชุดที่สี่", () => {
         expect(out?.text ?? "", e.id).not.toMatch(/\{n\}|\{k\}|undefined/);
       }
     }
+  });
+});
+
+describe("พรสวรรค์ตื่น", () => {
+  it("ทุกพรสวรรค์แฟนตาซีมีร่างสว่างและมืด และมีฉากตื่น", () => {
+    for (const t of TALENTS.filter((x) => x.world === "fantasy" && !x.noRoll)) {
+      expect(talentById(`${t.id}_l`), t.id).toBeTruthy();
+      expect(talentById(`${t.id}_d`), t.id).toBeTruthy();
+      expect(getEvent(`ft.te.${t.id.slice(3)}`), t.id).toBeTruthy();
+    }
+  });
+  it("ตื่นเมื่อทำสิ่งที่พรสวรรค์รอ เลือกทางแล้วได้ผลจริง และรอได้", () => {
+    const l = fantasy(71);
+    l.age = 25;
+    l.talents = [{ id: "ft_blade", revealed: true }];
+    const ev = getEvent("ft.te.blade")!;
+    expect(ev.when!(l)).toBe(false);
+    l.ft!.bodyRank = 3;
+    expect(ev.when!(l)).toBe(true);
+    const before = l.ft!.body;
+    runEvent(l, "ft.te.blade");
+    resolveChoice(l, visibleChoices(l, l.queue[0])[1].index);
+    expect(l.talents[0].id).toBe("ft_blade_d");
+    expect(l.ft!.body).toBeGreaterThan(before + 100);
+    expect(l.flags.ftEvolved).toBe(1);
+    const m = fantasy(72);
+    m.age = 25; m.talents = [{ id: "ft_lucky", revealed: true }];
+    m.flags.lossAge = 25;
+    expect(getEvent("ft.te.lucky")!.when!(m)).toBe(true);
+    runEvent(m, "ft.te.lucky");
+    resolveChoice(m, visibleChoices(m, m.queue[0])[2].index);
+    expect(getEvent("ft.te.lucky")!.when!(m)).toBe(false);
   });
 });
