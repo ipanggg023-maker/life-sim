@@ -9,6 +9,7 @@ import { B, BIG, C, E, G, K, N, P, SCENE, type Res } from "./kit";
 import { learnSpell, spellChoices, spellsOf, SPELLS } from "./magic";
 import { fightOdds } from "./power";
 import { deed, fl, worldOfLife } from "./state";
+import { underdogWin } from "./stars";
 
 const student = (l: Life) => !!fl(l).school && !fl(l).graduated;
 const noSchool = (l: Life) => !fl(l).school;
@@ -69,7 +70,7 @@ export const SCHOOL_EVENTS: GameEvent[] = [
   ], { when: (l) => !!fl(l).school && (fl(l).secret ?? 0) < 3, weight: 40, maxTimes: 8, title: "ความลับของโรงเรียน" }),
 
   E("ft.s.rival_return", [26, 80], (l) => `${rivalName(l)} คู่ปรับสมัยเรียน กลับมาพร้อมชื่อเสียง เขาบอกว่ายังติดค้างการประลองกับคุณอยู่`, [
-    P("รับคำท้า", (l) => fightOdds(l, fl(l).rivalPower ?? 30), G("คุณชนะ และเขาหัวเราะเป็นครั้งแรกในรอบสิบปี", { fame: 8, joy: 5 }), B("เขาเก่งขึ้นมาก คุณได้แผลเป็นเป็นที่ระลึก", { hp: -8 })),
+    P("รับคำท้า", (l) => fightOdds(l, fl(l).rivalPower ?? 30), (l, c) => ({ ...G("คุณชนะ และเขาหัวเราะเป็นครั้งแรกในรอบสิบปี", { fame: 8, joy: 5 })(l, c), text: `คุณชนะ และเขาหัวเราะเป็นครั้งแรกในรอบสิบปี${underdogWin(l, rivalOf(l)?.stars)}` }), B("เขาเก่งขึ้นมาก คุณได้แผลเป็นเป็นที่ระลึก", { hp: -8 })),
     C("ชวนไปดื่มแทน", G("พวกคุณเล่าเรื่องเก่าจนร้านปิด", { joy: 7 })),
   ], { when: (l) => !!fl(l).graduated && !!rivalOf(l)?.alive, weight: 10, maxTimes: 2, title: "คู่ปรับเก่า" }),
 

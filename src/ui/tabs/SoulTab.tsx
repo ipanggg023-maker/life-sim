@@ -244,6 +244,7 @@ export function SoulTab({
                 ชาติที่ {graveyard.length - i}: {g.name} · {g.age} ปี
                 {g.rank !== undefined && <span className={`rank r${g.rank}`}> [{rankLabel({ worldId: g.world ?? "murim" }, g.rank)}]</span>}
                 {g.regressed && " · ย้อนเวลา"}
+                {g.stars && ` · กาย ${g.stars.b}★ เวท ${g.stars.m}★`}
               </div>
               <div className="grave-sub">
                 {g.cause} · {money({ worldId: g.world ?? "murim" }, g.money)}

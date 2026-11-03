@@ -4,7 +4,8 @@ import type { Choice, Ctx, GameEvent } from "../../engine/events";
 import type { Life } from "../../engine/types";
 import { clamp } from "../../engine/util";
 import { C, E, G, N, P, PAY, SCENE, type Res } from "./kit";
-import { BODY_RANKS, MAGIC_RANKS, MAX_RANK, fightOdds } from "./power";
+import { BODY_RANKS, MAGIC_RANKS, MASTER, fightOdds } from "./power";
+import { twinStar } from "./stars";
 import { dataOf, fl, homeKingdom, myRelic, type RaceId } from "./state";
 
 export type StyleId = "sword" | "spear" | "axe" | "bow" | "daggers" | "hammer" | "fist" | "shield";
@@ -22,7 +23,7 @@ export const STYLES: Record<StyleId, Style> = {
 export const STYLE_IDS = Object.keys(STYLES) as StyleId[];
 
 export const styleOf = (l: Life) => (fl(l).style ? STYLES[fl(l).style as StyleId] : undefined);
-export const techsOf = (l: Life) => styleOf(l)?.techs.slice(0, Math.min(MAX_RANK, fl(l).bodyRank)) ?? [];
+export const techsOf = (l: Life) => styleOf(l)?.techs.slice(0, Math.min(MASTER, fl(l).bodyRank)) ?? [];
 export const weaponNoun = (l: Life) => styleOf(l)?.weapon ?? "ดาบ";
 const affinity = (l: Life) => !!styleOf(l)?.races.includes(fl(l).race);
 /** สายที่เลือกช่วยสู้ · เผ่าที่ถนัดได้มากกว่า */
@@ -57,8 +58,10 @@ export function epithetOf(l: Life): string | undefined {
   if (k) return `ผู้ครอง${k.name}`;
   if (d.dragons.some((x) => x.slainBy === me)) return "ผู้สังหารมังกร";
   if (f.race === "dragon" && l.flags.ftBornRace !== "dragon") return "ผู้กลายเป็นมังกร";
-  if (f.magicRank >= MAX_RANK) return MAGIC_RANKS[MAX_RANK];
-  if (f.bodyRank >= MAX_RANK) return `ปรมาจารย์${styleOf(l)?.name ?? "ดาบ"}`;
+  if (twinStar(l)) return "ดาวคู่";
+  if (f.magicRank > MASTER || f.bodyRank > MASTER) return f.magicRank >= f.bodyRank ? MAGIC_RANKS[f.magicRank] : BODY_RANKS[f.bodyRank];
+  if (f.magicRank >= MASTER) return MAGIC_RANKS[MASTER];
+  if (f.bodyRank >= MASTER) return `ปรมาจารย์${styleOf(l)?.name ?? "ดาบ"}`;
   if (l.flags.dragonRider) return "ผู้ขี่มังกร";
   if (myRelic(l)) return `ผู้ถือ${myRelic(l)!.name}`;
   if (f.fRank >= 3 && f.faction) return `ผู้นำ${d.factions.find((x) => x.id === f.faction)?.name ?? "ฝ่าย"}`;

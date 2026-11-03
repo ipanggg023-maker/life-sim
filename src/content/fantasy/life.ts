@@ -11,6 +11,7 @@ import { applyFtTalents } from "./talents";
 import { fastForward } from "./world";
 import { RACE_YOUNGER, renameFamily } from "./folk";
 import { citiesOf } from "./cities";
+import { applyStarStart, childStars, rollStars } from "./stars";
 
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
   human: { name: "มนุษย์", younger: RACE_YOUNGER.human, desc: "ชีวิตสั้นแต่ไปได้ทุกทาง" },
@@ -31,8 +32,8 @@ export const MERCY_AGE = 30;
 const SCARS = ["มีเงาตัวเองขยับช้ากว่าร่างครึ่งก้าว", "แมวทุกตัวขู่ใส่คุณ", "ฝันถึงวันตายของตัวเองทุกปีใหม่", "ผมขาวขึ้นหนึ่งปอย", "นาฬิกาแดดหยุดเมื่อคุณเดินผ่าน"];
 
 function rollFlife(l: Life, race: RaceId): FLife {
-  const potential = weightedPick(l, [0, 1, 2, 3, 4, 5], (p) => [34, 26, 20, 12, 6, 2][p])!;
-  return { race, kingdom: pick(l, kingdomsOf(l)).id, potential, body: 0, magic: 0, bodyRank: 0, magicRank: 0, guild: 0, contracts: 0, fRank: 0, clues: {}, dragonBond: 0, deeds: [], scars: [], threads: l.talents.some((t) => t.id === "ft_fate_thread") ? 2 : 0 };
+  const s = rollStars(l, race);
+  return { race, kingdom: pick(l, kingdomsOf(l)).id, potential: s.m, bstars: s.b, body: 0, magic: 0, bodyRank: 0, magicRank: 0, guild: 0, contracts: 0, fRank: 0, clues: {}, dragonBond: 0, deeds: [], scars: [], threads: l.talents.some((t) => t.id === "ft_fate_thread") ? 2 : 0 };
 }
 
 /** สร้างข้อมูลตอนเกิด · ยังไม่รู้จักวิญญาณ จะผูกกับโลกจริงใน attachWorld */
@@ -44,10 +45,11 @@ export function setupLife(l: Life) {
   l.flags.ftBornRace = race;
   l.ft.city = pick(l, citiesOf(kingdomsOf(l).find((k) => k.id === l.ft!.kingdom)!)).id;
   renameFamily(l, race);
-  if (race === "demon") { l.ft.element = "dark"; l.ft.potential = Math.min(5, l.ft.potential + 1); }
+  if (race === "demon") l.ft.element = "dark";
   l.flags.allowance = true;
   l.flags.seenRuler = "";
   applyFtTalents(l);
+  applyStarStart(l);
 }
 function applyRaceStats(l: Life, r: RaceId, sign: number) {
   if (r === "elf") { addStat(l, "smarts", 6 * sign); addStat(l, "looks", 6 * sign); addStat(l, "health", -4 * sign); }
@@ -92,16 +94,19 @@ export function closeLife(s: Soul, l: Life) {
 }
 
 /** ลูกรับเผ่า อาณาจักร และความแค้นของบ้าน · ฝีมือต้องฝึกเอง */
-export function inheritLife(dead: Life, next: Life) {
+export function inheritLife(dead: Life, next: Life, heirId?: string) {
   const d = fl(dead);
+  const kid = dead.people.find((p) => p.id === heirId)?.stars ?? childStars(next, { b: d.bstars ?? 0, m: d.potential }, dead.people.find((p) => p.relation === "spouse")?.stars);
   next.fw = dead.fw;
-  next.ft = { ...rollFlife(next, d.race), element: d.element, kingdom: d.kingdom, egg: d.egg ? { ...d.egg, lastCare: 0 } : undefined, standing: Object.fromEntries(Object.entries(d.standing ?? {}).map(([k, v]) => [k, Math.trunc(v / 2)])), potential: Math.max(0, d.potential + randInt(next, -1, 1)) };
-  if (next.ft.potential > 5) next.ft.potential = 5;
+  next.ft = { ...rollFlife(next, d.race), element: d.element, kingdom: d.kingdom, egg: d.egg ? { ...d.egg, lastCare: 0 } : undefined, standing: Object.fromEntries(Object.entries(d.standing ?? {}).map(([k, v]) => [k, Math.trunc(v / 2)])), potential: kid.m, bstars: kid.b };
   next.flags.seenRuler = "";
   next.flags.allowance = true;
   next.flags.ftEldersAged = true;
   inheritThrone(dead, next);
   applyFtTalents(next);
+  applyStarStart(next);
+  // ลูกที่โตพอแล้วเคยอ่านดาวมาแล้ว
+  if (next.age >= 6) next.flags.ftStarsSeen = true;
 }
 
 /** ย้อนชะตาได้ไหม · เด็กตายเร็วได้โอกาสหนึ่งครั้ง พรสวรรค์หายากให้เพิ่ม */

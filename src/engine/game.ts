@@ -915,6 +915,7 @@ export function toPastLife(life: Life): PastLife {
     regressed: (life.regressions ?? 0) > 0,
     birthYear: life.birthYear,
     series: seriesOf(life),
+    stars: life.ft ? { b: life.ft.bstars ?? 0, m: life.ft.potential } : undefined,
   };
 }
 

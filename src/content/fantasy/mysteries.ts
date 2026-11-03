@@ -8,6 +8,7 @@ import { addLegend, recordChronicle } from "../../engine/worldState";
 import { B, BIG, C, E, G, N, SCENE } from "./kit";
 import { canCast, fightOdds } from "./power";
 import { dataOf, deed, fl, homeKingdom, worldOfLife, type Mystery, type RaceId } from "./state";
+import { addStars } from "./stars";
 
 interface Way { label: string; odds: (l: Life) => number; show?: (l: Life) => boolean; ok: string; fail: string; hurt?: number }
 interface Step { text: string; ways: Way[] }
@@ -45,7 +46,7 @@ export const MYSTERIES: Def[] = [
       ] },
     ],
     solved: "ค้นพบนครออเรเลียนใต้ทะเล",
-    reward: (l) => { const f = fl(l); f.potential = Math.min(5, f.potential + 1); f.magic += 40; const k = dataOf(l).kingdoms.find((x) => x.id === "thalos"); if (k) k.prosperity = clamp((k.prosperity ?? 100) + 20, 40, 140); },
+    reward: (l) => { const f = fl(l); addStars(l, "magic", 2); f.magic += 40; const k = dataOf(l).kingdoms.find((x) => x.id === "thalos"); if (k) k.prosperity = clamp((k.prosperity ?? 100) + 20, 40, 140); },
   },
   {
     id: "undying", name: "ราชาที่ไม่เคยตาย",

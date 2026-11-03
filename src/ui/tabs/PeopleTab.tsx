@@ -8,6 +8,7 @@ import { isRealistic } from "../../content/worlds";
 import { RACE_LABEL, raceOf } from "../../content/fantasy/folk";
 import { lineageOf } from "../../content/murim/life/generations";
 import { martialLabel } from "../../content/murim/life/npcMartial";
+import { npcStarText } from "../../content/fantasy/stars";
 import { isPrincess, isSovereign, personActions } from "../../content/murim/life/kinship";
 import { Fold } from "../Fold";
 
@@ -58,6 +59,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
                 {p.tags?.includes("chosen") ? " · ศิษย์เอก" : ""}
                 {p.alive && drifting(p) ? " · เริ่มห่างเหิน" : ""}
                 {p.martial ? ` · ${martialLabel(life, p)}` : ""}
+                {life.worldId === "fantasy" && p.stars ? ` · ${npcStarText(p)}` : ""}
               </div>
             </div>
             {p.alive && (

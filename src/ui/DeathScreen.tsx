@@ -14,6 +14,7 @@ import { SHOP, heirsOf, previewAward, regressTarget } from "../engine/soul";
 import type { Life, Soul, WorldId } from "../engine/types";
 import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds";
 import { canMercy, canRewind, rewindTarget } from "../content/fantasy/life";
+import { BODY_RANKS, MAGIC_RANKS } from "../content/fantasy/power";
 import { displayName, loc, money, people } from "../engine/util";
 import { disciplesOf, lifeSummary } from "../content/murim/life/generations";
 import { RIBBON_COUNT, ribbonOf } from "../content/murim/life/ribbons";
@@ -112,6 +113,7 @@ export function DeathScreen({
         )}
         <p>งานสุดท้าย: {job ? `${job.titles[life.job!.level - 1]} (${job.name})` : "-"}</p>
         {life.power && real && <p>ฝีมือ: ขั้น{rankLabel(life, life.power.rank)}</p>}
+        {life.worldId === "fantasy" && life.ft && <p>ดาวแต่กำเนิด: กาย {life.ft.bstars ?? 0}★ · เวท {life.ft.potential}★ · {BODY_RANKS[life.ft.bodyRank]} · {MAGIC_RANKS[life.ft.magicRank]}</p>}
         {life.power && !real && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · ภารกิจ {life.power.gates}</p>}
         <p>
           ครอบครัว: {spouse ? "แต่งงาน" : "โสด"} · ลูก {kids} คน · ชื่อเสียง {life.fame}

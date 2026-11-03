@@ -109,7 +109,7 @@ describe("ปริศนา", () => {
     for (const w of ["ค้นหอจดหมายเหตุ", "ดำน้ำ", "ถอดอักษร", "สลักรูน", "สู้กับผู้พิทักษ์"]) solveStep(l, "sunken", w);
     const s = mysteryState(l, "sunken");
     expect(s.solvedBy).toBeTruthy();
-    expect(fl(l).potential).toBe(Math.min(5, pot + 1));
+    expect(fl(l).potential).toBe(Math.min(10, pot + 2));
     expect(worldOfLife(l).legends.some((g) => g.deed === "ค้นพบนครออเรเลียนใต้ทะเล")).toBe(true);
     expect(activityLocked(l, activitiesFor(l).find((a) => a.id === "ft_mystery")!)).toBeTruthy();
   });

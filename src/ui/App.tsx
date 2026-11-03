@@ -281,7 +281,7 @@ export function App() {
         if (choice.startsWith("disciple:")) next = buildDisciple(life, pid);
         else {
           next = buildHeir(life, pid);
-          if (life.worldId === "fantasy") inheritLife(life, next);
+          if (life.worldId === "fantasy") inheritLife(life, next, pid);
           else inheritMurim(life, next, "heir", pid);
         }
         applySoul(next, soul, true);

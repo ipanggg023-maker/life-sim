@@ -74,6 +74,8 @@ export interface Person {
   secret?: { text: string; known: boolean };
   /** วิชายุทธ์ของ NPC (ยุทธภพ): ขั้น 0–8 · สาย · สำนัก · ความคืบหน้าสู่ขั้นถัดไป (0–100) */
   martial?: { rank: number; style: string; sect?: string; xp: number };
+  /** ดาวพรสวรรค์กายและเวทของคนสำคัญในโลกแฟนตาซี 0–10 */
+  stars?: { b: number; m: number };
 }
 
 export type Wealth = "poor" | "middle" | "rich" | "elite";
@@ -284,6 +286,8 @@ export interface PastLife {
   world?: WorldId;
   /** มังฮวาของชีวิตนี้ (M7) */
   series?: Series;
+  /** ดาวกายและเวทแต่กำเนิด (โลกแฟนตาซี) */
+  stars?: { b: number; m: number };
 }
 
 export interface Soul {

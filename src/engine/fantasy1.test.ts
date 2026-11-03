@@ -172,10 +172,10 @@ describe("ตำนานและมังกร", () => {
     runEvent(l, "ft.dragon_meet");
     force(l, "ท้าสู้");
     expect(dataOf(l).dragons[0].alive).toBe(false);
-    const d = life(13);
-    runEvent(d, "ft.dragon_meet");
-    force(d, "ท้าสู้", false);
-    expect(d.alive).toBe(false);
+    // แพ้แล้วตายแค่บางครั้ง · ลองหลายคนจนเจอคนที่ไม่รอด
+    let died = false;
+    for (let seed = 13; seed < 40 && !died; seed++) { const d = life(seed); runEvent(d, "ft.dragon_meet"); force(d, "ท้าสู้", false); died = !d.alive; }
+    expect(died).toBe(true);
     const f = life(14);
     fl(f).dragonBond = 60;
     runEvent(f, "ft.dragon_meet");

@@ -9,8 +9,9 @@ import { addLegend, recordChronicle } from "../../engine/worldState";
 import { addBond, aliveDragons } from "./dragons";
 import { B, BIG, C, E, G, K, N, P, SCENE, type Res } from "./kit";
 import { learnSpell, SPELLS } from "./magic";
-import { canCast, fightOdds, MAX_RANK } from "./power";
+import { canCast, fightOdds, MASTER } from "./power";
 import { addStanding, dataOf, deed, fl, kingdomsOf, worldOfLife, type Gate, type Realm } from "./state";
+import { addStars } from "./stars";
 
 export const REALMS: Record<Realm, { name: string; desc: string }> = {
   demon: { name: "ภพปีศาจ", desc: "พันธสัญญา สมบัติ และเจ้าชายที่ไม่เคยแพ้" },
@@ -27,7 +28,7 @@ const MAX_PACTS = 3;
 const W = (l: Life) => worldOfLife(l);
 const gateHere = (l: Life, r: Realm) => dataOf(l).gates.some((g) => g.realm === r && g.kingdom === fl(l).kingdom && g.until >= W(l).year);
 /** ใครเข้าภพไหนได้: ประตูที่เปิดอยู่ในแผ่นดินนี้ เผ่าที่ภพนั้นเป็นบ้าน หรือคุณสมบัติพิเศษ */
-export const godly = (l: Life) => { const f = fl(l); return (f.bodyRank === MAX_RANK || f.magicRank === MAX_RANK) && l.fame >= 70 && f.deeds.length >= 5; };
+export const godly = (l: Life) => { const f = fl(l); return (f.bodyRank >= MASTER || f.magicRank >= MASTER) && l.fame >= 70 && f.deeds.length >= 5; };
 export function canEnter(l: Life, r: Realm) {
   const f = fl(l);
   if (r === "demon") return gateHere(l, r) || f.race === "demon" || (f.circle ?? 0) >= 3;
@@ -67,7 +68,7 @@ export const REALM_TRAVEL_EVENTS: GameEvent[] = [
   SCENE("ft.v.choose", "ประตูมิติ", "อากาศตรงหน้าคุณบิดเหมือนผิวน้ำ อีกฟากหนึ่งคือโลกที่ไม่มีใครกลับมาเล่าครบทุกคน", [go("demon"), go("dragon"), go("divine"), C("ถอยกลับ", N("ประตูปิดลงต่อหน้าคุณ"))]),
 
   SCENE("ft.v.demon", "ภพปีศาจ", (l) => `ท้องฟ้าสีเลือดและหินที่ร้อนจนเท้าพอง${fl(l).race === "demon" ? " แต่สำหรับคุณ ที่นี่คือบ้าน" : ""}`, [
-    C(`ทำพันธสัญญาแลกพลัง (อายุขัยหาย ${PACT_YEARS} ปี)`, BIG("หมึกสีดำซึมเข้าผิวคุณ พลังที่ไม่ใช่ของคุณไหลเข้ามาเต็มอก", { magic: 60 }, (l) => { const f = fl(l); f.pacts = (f.pacts ?? 0) + 1; f.potential = Math.min(5, f.potential + 1); addStanding(l, -10); if (f.pacts === 1) deed(l, "ทำพันธสัญญากับเจ้าปีศาจ"); }), { show: (l) => (fl(l).pacts ?? 0) < MAX_PACTS }),
+    C(`ทำพันธสัญญาแลกพลัง (อายุขัยหาย ${PACT_YEARS} ปี)`, BIG("หมึกสีดำซึมเข้าผิวคุณ พลังที่ไม่ใช่ของคุณไหลเข้ามาเต็มอก", { magic: 60 }, (l) => { const f = fl(l); f.pacts = (f.pacts ?? 0) + 1; addStars(l, "magic", 2); addStanding(l, -10); if (f.pacts === 1) deed(l, "ทำพันธสัญญากับเจ้าปีศาจ"); }), { show: (l) => (fl(l).pacts ?? 0) < MAX_PACTS }),
     P("ขโมยสมบัติจากคลังนรก", (l) => fightOdds(l, 75), G("คุณกลับมาพร้อมเหรียญที่ร้อนจนต้องแช่น้ำ", { gold: 200 }), lethal(0.35, "ถูกทิ้งไว้ในภพปีศาจ", "ผู้เฝ้าคลังไล่ตามคุณถึงประตู", 30), { tone: "danger" }),
     K("ปลดปล่อยวิญญาณที่ติดอยู่", "luck", 50, G("วิญญาณนับร้อยตามคุณกลับไปยังโลกมนุษย์ และกระซิบชื่อคุณในวิหาร", { fame: 5, joy: 6 }, (l) => addStanding(l, 10)), B("พวกมันเกาะคุณแน่นจนลากคุณล้ม", { hp: -10 })),
     P("ท้าดวลเจ้าชายปีศาจ", (l) => fightOdds(l, 95), BIG("เขาเจ้าชายปีศาจหักอยู่ในมือคุณ ทั้งภพโค้งคำนับ", { fame: 30, body: 40 }, (l) => { fl(l).demonHorn = true; deed(l, "ปราบเจ้าชายปีศาจ"); addLegend(W(l), { name: displayName(l), deed: "ปราบเจ้าชายปีศาจในภพของเขาเอง", lifeId: l.id }); }), lethal(0.5, "สิ้นชีพในภพปีศาจ", "เจ้าชายหัวเราะแล้วโยนคุณกลับผ่านประตู", 40), { tone: "danger", show: (l) => !fl(l).demonHorn }),

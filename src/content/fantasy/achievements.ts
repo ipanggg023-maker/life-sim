@@ -4,7 +4,8 @@ import { ACHIEVEMENTS, type Achievement } from "../achievements";
 import type { Life } from "../../engine/types";
 import { displayName } from "../../engine/util";
 import { GOLD } from "./kit";
-import { MAX_RANK } from "./power";
+import { MASTER } from "./power";
+import { seen, topStar } from "./stars";
 import { dataOf, fl, standingOf, worldOfLife } from "./state";
 
 const on = (l: Life) => l.worldId === "fantasy" && !!l.ft;
@@ -15,16 +16,23 @@ type A = Omit<Achievement, "cat">;
 const power: A[] = [
   { id: "fa_body1", name: "ก้าวแรกบนเส้นทางดาบ", desc: "เป็นนักสู้", points: 5, check: F((l) => fl(l).bodyRank >= 1) },
   { id: "fa_body3", name: "ยอดนักดาบ", desc: "ฝีมือถึงขั้นยอดนักดาบ", points: 15, check: F((l) => fl(l).bodyRank >= 3) },
-  { id: "fa_body4", name: "ปรมาจารย์ดาบ", desc: "ฝีมือถึงขั้นสูงสุดของสายกาย", points: 35, check: F((l) => fl(l).bodyRank >= MAX_RANK) },
+  { id: "fa_body4", name: "ปรมาจารย์ดาบ", desc: "ฝีมือถึงขั้นปรมาจารย์ของสายกาย", points: 35, check: F((l) => fl(l).bodyRank >= MASTER) },
   { id: "fa_magic1", name: "ประกายเวทแรก", desc: "เป็นผู้ฝึกเวท", points: 5, check: F((l) => fl(l).magicRank >= 1) },
   { id: "fa_magic3", name: "จอมเวท", desc: "เวทถึงขั้นจอมเวท", points: 15, check: F((l) => fl(l).magicRank >= 3) },
-  { id: "fa_magic4", name: "อัครจอมเวท", desc: "เวทถึงขั้นสูงสุด", points: 35, check: F((l) => fl(l).magicRank >= MAX_RANK) },
+  { id: "fa_magic4", name: "อัครจอมเวท", desc: "เวทถึงขั้นอัครจอมเวท", points: 35, check: F((l) => fl(l).magicRank >= MASTER) },
   { id: "fa_both", name: "ดาบในมือขวา คทาในมือซ้าย", desc: "ขั้นสามขึ้นไปทั้งสายกายและสายเวท", points: 30, check: F((l) => fl(l).bodyRank >= 3 && fl(l).magicRank >= 3) },
   { id: "fa_spells6", name: "หกบทในหัว", desc: "รู้เวท 6 บท", points: 10, check: F((l) => (fl(l).spells?.length ?? 0) >= 6) },
   { id: "fa_spells12", name: "ตำราเวทเดินได้", desc: "รู้เวท 12 บท", points: 25, check: F((l) => (fl(l).spells?.length ?? 0) >= 12) },
   { id: "fa_arts", name: "สามศาสตร์", desc: "ศึกษาบทสวด วงเวท และอักษรรูนครบทั้งสาม", points: 15, check: F((l) => !!fl(l).chant && !!fl(l).circle && !!fl(l).rune) },
   { id: "fa_evo1", name: "พรสวรรค์ตื่น", desc: "พรสวรรค์ตื่นสู่ร่างใหม่ครั้งแรก", points: 10, check: F((l) => Number(l.flags.ftEvolved ?? 0) >= 1) },
   { id: "fa_evo3", name: "สามร่างในชีวิตเดียว", desc: "พรสวรรค์ตื่นสู่ร่างใหม่ 3 ครั้งในชีวิตเดียว", points: 30, check: F((l) => Number(l.flags.ftEvolved ?? 0) >= 3) },
+  { id: "fa_star10", name: "หนึ่งในยุค", desc: "เกิดมาพร้อมสิบดาวในสายใดสายหนึ่ง", points: 30, check: F((l) => seen(l) && topStar(l) >= 10) },
+  { id: "fa_zero_master", name: "ศิลาคิดผิด", desc: "เกิดมาไร้ดาวในสายนั้น แต่ไปถึงขั้นปรมาจารย์", points: 40, check: F((l) => { const [b, m] = String(l.flags.ftBornStars ?? "").split("/").map(Number); return (b === 0 && fl(l).bodyRank >= MASTER) || (m === 0 && fl(l).magicRank >= MASTER); }) },
+  { id: "fa_twinstar", name: "ดาวคู่", desc: "เดินทางดาบเวทจนถึงขั้นปรมาจารย์ทั้งสองสาย", points: 45, check: F((l) => !!l.flags.ftTwinStar) },
+  { id: "fa_underdog", name: "สามัญชนล้มอัจฉริยะ", desc: "ชนะคนที่มีดาวมากกว่าห้าดาวขึ้นไป", points: 20, check: F((l) => Number(l.flags.ftUnderdog ?? 0) >= 1) },
+  { id: "fa_bloom", name: "ดาวตื่นช้า", desc: "ดาวที่หลับมาตั้งแต่เกิดตื่นขึ้นตอนโต", points: 15, check: F((l) => !!l.flags.ftBloomed) },
+  { id: "fa_mythic5", name: "ขั้นตำนาน", desc: "เป็นนักบุญดาบหรือปราชญ์เวท", points: 40, check: F((l) => fl(l).bodyRank >= 5 || fl(l).magicRank >= 5) },
+  { id: "fa_mythic6", name: "เหนือดวงดาว", desc: "เป็นเทพดาบหรือจอมเวทแห่งดวงดาว", points: 60, check: F((l) => fl(l).bodyRank >= 6 || fl(l).magicRank >= 6) },
   { id: "fa_wandless", name: "ไม่ต้องพึ่งคทา", desc: "ร่ายเวทได้ด้วยมือเปล่า", points: 10, check: F((l) => !!l.flags.wandless) },
 ];
 

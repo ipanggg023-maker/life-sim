@@ -1,6 +1,7 @@
 // แท็บเฉพาะโลกแฟนตาซี: พลังของตัวละคร และสภาพโลก
 import { RACES } from "../../content/fantasy/life";
-import { BODY_RANKS, GUILD_RANKS, MAGIC_RANKS, canCast, combat, magicCap, needXp } from "../../content/fantasy/power";
+import { BODY_RANKS, GUILD_RANKS, MAGIC_RANKS, bodyCap, canCast, combat, magicCap, needXp } from "../../content/fantasy/power";
+import { AWAKEN_AGE, BLADE_ARTS, BODY_ARTS, MAGIC_ARTS, bladeArts, dual, seen, starsOff, starsOn, tierOf, type StarArt } from "../../content/fantasy/stars";
 import { ELEMENTS, SPELLS, manaLeft, manaMax, spellsOf } from "../../content/fantasy/magic";
 import { schoolOf } from "../../content/fantasy/places";
 import { classStanding, rivalOf } from "../../content/fantasy/schoollife";
@@ -27,6 +28,14 @@ import { BEASTS, homeOf, omenOf } from "../../content/fantasy/world2";
 import { RACE_LABEL, folkOf } from "../../content/fantasy/folk";
 import { careerById } from "../../content/core/careers";
 import { PARTY_MAX, partyLabel, partyOf } from "../../content/fantasy/bonds";
+
+const StarLine = ({ label, n, open }: { label: string; n: number; open: boolean }) => (
+  <>
+    <span>{label}</span>
+    <b>{open ? <><span className="stars">{starsOn(n)}</span><span className="stars-off">{starsOff(n)}</span> <span className="muted small">{n} ดาว · {tierOf(n)}</span></> : <span className="muted">??? · รู้ตอนอายุ {AWAKEN_AGE} ขวบ</span>}</b>
+  </>
+);
+const Arts = ({ arts, n }: { arts: StarArt[]; n: number }) => <>{arts.map((a) => <p className={`small ${n >= a.at ? "" : "muted"}`} key={a.name}>{n >= a.at ? <b>{a.name}</b> : a.name} · {a.at} ดาว · {a.desc}</p>)}</>;
 
 const Bar = ({ label, value, need }: { label: string; value: number; need: number }) => (
   <div className="mini-bar">
@@ -56,8 +65,8 @@ export function FantasyPowerTab({ life }: { life: Life }) {
           <b>{BODY_RANKS[f.bodyRank]}</b>
           <span>สายเวท</span>
           <b>{MAGIC_RANKS[f.magicRank]}</b>
-          <span>พรสวรรค์เวท</span>
-          <b>{"★".repeat(f.potential) || "ไม่มี"}</b>
+          <StarLine label="ดาวกาย" n={f.bstars ?? 0} open={seen(life)} />
+          <StarLine label="ดาวเวท" n={f.potential} open={seen(life)} />
           <span>สายอาวุธ</span>
           <b>{styleOf(life)?.name ?? (f.bodyRank >= 1 ? "ยังไม่เลือก" : "—")}</b>
           <span>กิลด์</span>
@@ -66,8 +75,20 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         <Bar label="ฝึกกาย" value={f.body} need={needXp(f.bodyRank)} />
         <Bar label="ฝึกเวท" value={f.magic} need={needXp(f.magicRank)} />
         <p className="small muted">{RACES[f.race].desc}</p>
+        {seen(life) && <p className="small muted">เพดานสายกาย: {BODY_RANKS[Math.max(bodyCap(life), f.bodyRank)]}{dual(life) ? " · ดาวสองสายสูง เดินทางดาบเวทได้" : ""}</p>}
         <p className="small muted">{canCast(life) ? `ร่ายเวทได้ เพดานตอนนี้: ${MAGIC_RANKS[magicCap(life)]}` : "ยังร่ายเวทไม่ได้ ซื้อคทาได้ที่แท็บทำ"}</p>
       </Fold>
+      {seen(life) && (
+        <Fold kind="section" id="ft-star-arts" title={<>วิชาประจำดาว</>}>
+          <p className="small muted">ได้เองเมื่อดาวถึง ไม่ต้องฝึก</p>
+          <p className="small"><b>สายกาย</b></p>
+          <Arts arts={BODY_ARTS} n={f.bstars ?? 0} />
+          <p className="small"><b>สายเวท</b></p>
+          <Arts arts={MAGIC_ARTS} n={f.potential} />
+          {dual(life) && <p className="small"><b>ดาบเวท</b></p>}
+          {dual(life) && BLADE_ARTS.map((a, i) => <p className={`small ${i < bladeArts(life).length ? "" : "muted"}`} key={a}>{i < bladeArts(life).length ? <b>{a}</b> : a} · สองสายถึงขั้น {i + 1}</p>)}
+        </Fold>
+      )}
       <Fold always kind="section" id="ft-gear" title={<>ของติดตัว</>}>
         <p className="small">{f.wand ? `${f.wand.name} · คุณภาพ ${f.wand.quality}` : "ไม่มีคทา"}{f.magicRank >= 3 ? " · ร่ายได้โดยไม่ต้องใช้คทา" : ""}</p>
         {f.weapon && <p className="small">{f.weapon.name} · คุณภาพ {f.weapon.quality}{f.weapon.enchant ? " · ลงอาคม" : ""}</p>}

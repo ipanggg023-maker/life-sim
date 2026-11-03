@@ -16,8 +16,10 @@ export interface Wand { name: string; quality: number; material: string }
 export interface FLife {
   race: RaceId;
   kingdom: string;
-  /** พลังเวทแต่กำเนิด 0–5 · 0 ยังใช้คทาได้ */
+  /** ดาวเวทแต่กำเนิด 0–10 · 0 ยังใช้คทาได้ */
   potential: number;
+  /** ดาวกายแต่กำเนิด 0–10 (stars.ts) · เซฟเก่าไม่มี */
+  bstars?: number;
   body: number;
   magic: number;
   bodyRank: number;

@@ -8,6 +8,7 @@ import { addMoney, clamp } from "../../engine/util";
 import { B, C, G, GOLD, K, N, P, SCENE, type Res } from "./kit";
 import { canCast, fightOdds } from "./power";
 import { fl, type Element } from "./state";
+import { starMana } from "./stars";
 
 export const ELEMENTS: Record<Element, { name: string; beats: Element }> = {
   fire: { name: "ไฟ", beats: "wind" },
@@ -35,7 +36,7 @@ export const spellById = (id: string) => SPELLS.find((s) => s.id === id)!;
 
 export const rollElement = (l: Life): Element => pick(l, IDS);
 export const spellsOf = (l: Life) => (fl(l).spells ?? []).map(spellById);
-export const manaMax = (l: Life) => { const f = fl(l); return 2 + f.magicRank * 2 + f.potential; };
+export const manaMax = (l: Life) => { const f = fl(l); return 2 + f.magicRank * 2 + Math.floor(f.potential / 2) + starMana(l); };
 export const manaLeft = (l: Life) => Math.max(0, manaMax(l) - (fl(l).manaUsed ?? 0));
 const learned = (l: Life, s: Spell) => !!fl(l).spells?.includes(s.id);
 /** เรียนได้ถึงขั้นเท่าระดับเวท · ธาตุของตัวเองเรียนถูกกว่า */
