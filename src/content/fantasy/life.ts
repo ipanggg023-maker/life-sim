@@ -4,6 +4,7 @@ import type { Life, Soul } from "../../engine/types";
 import { addStat, displayName, log } from "../../engine/util";
 import { addLegend, recordChronicle } from "../../engine/worldState";
 import { fl, kingdomsOf, worldOfLife, type FLife, type RaceId } from "./state";
+import { rollElement } from "./magic";
 import { fastForward } from "./world";
 
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
@@ -27,7 +28,7 @@ export function setupLife(l: Life) {
   worldOfLife(l);
   const race = weightedPick(l, RACE_IDS, (r) => ({ human: 70, elf: 15, dwarf: 15 })[r])!;
   applyRaceStats(l, race, 1);
-  l.ft = { ...rollFlife(l, race) };
+  l.ft = { ...rollFlife(l, race), element: rollElement(l) };
   l.flags.allowance = true;
   l.flags.seenRuler = "";
 }
@@ -68,7 +69,7 @@ export function closeLife(s: Soul, l: Life) {
 export function inheritLife(dead: Life, next: Life) {
   const d = fl(dead);
   next.fw = dead.fw;
-  next.ft = { ...rollFlife(next, d.race), kingdom: d.kingdom, potential: Math.max(0, d.potential + randInt(next, -1, 1)) };
+  next.ft = { ...rollFlife(next, d.race), element: d.element, kingdom: d.kingdom, potential: Math.max(0, d.potential + randInt(next, -1, 1)) };
   if (next.ft.potential > 5) next.ft.potential = 5;
   next.flags.seenRuler = "";
   next.flags.allowance = true;

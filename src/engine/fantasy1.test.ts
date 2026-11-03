@@ -112,7 +112,7 @@ describe("พลัง", () => {
 
 describe("โรงเรียน กิลด์ อาชีพ", () => {
   it("มีสามโรงเรียน โอกาสสอบขึ้นกับตัวละคร และสอบไม่ติดยังเล่นต่อได้", () => {
-    expect(SCHOOLS.length).toBe(3);
+    expect(SCHOOLS.length).toBe(5);
     const a = life(6, 12), b = life(6, 12);
     fl(a).potential = 5; fl(b).potential = 0;
     expect(SCHOOLS[0].odds(a)).toBeGreaterThan(SCHOOLS[0].odds(b));
@@ -138,7 +138,7 @@ describe("โรงเรียน กิลด์ อาชีพ", () => {
     const l = life(8);
     doActivity(l, "ft_guild");
     expect(fl(l).guild).toBe(1);
-    for (let i = 0; i < 6; i++) { runEvent(l, "ft.contract"); force(l, "กำจัดสัตว์อสูร"); }
+    for (let i = 0; i < 6; i++) { runEvent(l, "ft.contract", { mon: 0 }); force(l, "กำจัดสัตว์อสูร"); }
     expect(fl(l).guild).toBe(2);
   });
   it("สมัครงานในโลกนี้ได้ และงานนักเวทต้องร่ายเวทเป็น", () => {

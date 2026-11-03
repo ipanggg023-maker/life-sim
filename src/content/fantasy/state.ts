@@ -3,6 +3,7 @@ import type { Life } from "../../engine/types";
 import { newWorldState, type WorldState } from "../../engine/worldState";
 
 export type RaceId = "human" | "elf" | "dwarf";
+export type Element = "fire" | "water" | "earth" | "wind" | "light" | "dark";
 
 export interface Wand { name: string; quality: number; material: string }
 
@@ -30,6 +31,21 @@ export interface FLife {
   mercyUsed?: boolean;
   scars: string[];
   threads: number;
+  element?: Element;
+  spells?: string[];
+  manaUsed?: number;
+  /** ศาสตร์เวท ขั้น 0–3 */
+  chant?: number;
+  circle?: number;
+  rune?: number;
+  classScore?: number;
+  cups?: number;
+  rivalId?: string;
+  rivalPower?: number;
+  /** เพดานของคู่ปรับคนนี้ · บางคนเป็นตำนาน บางคนไม่ */
+  rivalPeak?: number;
+  /** ความคืบหน้าความลับของโรงเรียน 0–3 */
+  secret?: number;
 }
 
 export interface Kingdom { id: string; name: string; ruler: string; rulerAge: number; power: number; stability: number; war?: string; plague?: number }

@@ -1,7 +1,10 @@
 // แท็บเฉพาะโลกแฟนตาซี: พลังของตัวละคร และสภาพโลก
 import { RACES } from "../../content/fantasy/life";
 import { BODY_RANKS, GUILD_RANKS, MAGIC_RANKS, canCast, combat, magicCap, needXp } from "../../content/fantasy/power";
+import { ELEMENTS, manaLeft, manaMax, spellsOf } from "../../content/fantasy/magic";
 import { schoolOf } from "../../content/fantasy/places";
+import { classStanding, rivalOf } from "../../content/fantasy/schoollife";
+import { shortName } from "../../engine/util";
 import { dataOf, fl, homeKingdom, myRelic, worldOfLife } from "../../content/fantasy/state";
 import { talentById } from "../../content/talents";
 import type { Life } from "../../engine/types";
@@ -44,10 +47,15 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         <p className="small muted">{canCast(life) ? `ร่ายเวทได้ เพดานตอนนี้: ${MAGIC_RANKS[magicCap(life)]}` : "ยังร่ายเวทไม่ได้ ซื้อคทาได้ที่แท็บทำ"}</p>
       </Fold>
       <Fold always kind="section" id="ft-gear" title={<>ของติดตัว</>}>
-        <p className="small">{f.wand ? f.wand.name : "ไม่มีคทา"}</p>
+        <p className="small">{f.wand ? f.wand.name : "ไม่มีคทา"}{f.magicRank >= 3 ? " · ร่ายได้โดยไม่ต้องใช้คทา" : ""}</p>
         {relic && <p className="small"><b>{relic.name}</b> · {relic.power}</p>}
-        {s && <p className="small">{f.graduated ? "ศิษย์เก่า" : "นักเรียน"}{s.name}</p>}
+        {s && <p className="small">{f.graduated ? "ศิษย์เก่า" : "นักเรียน"}{s.name}{f.graduated ? "" : ` · ${classStanding(life)}`}{f.cups ? ` · แชมป์ ${f.cups} สมัย` : ""}</p>}
+        {rivalOf(life)?.alive && <p className="small">คู่ปรับ: {shortName(rivalOf(life)!)} · พลัง {f.rivalPower}</p>}
         {life.flags.dragonRider && <p className="small">สหายของมังกร{dataOf(life).dragon.name}</p>}
+      </Fold>
+      <Fold always kind="section" id="ft-magic" title={<>เวทมนตร์ · ธาตุ{ELEMENTS[f.element ?? "fire"].name}</>}>
+        <p className="small">มานาปีนี้ {manaLeft(life)}/{manaMax(life)} · บทสวด {f.chant ?? 0} · วงเวท {f.circle ?? 0} · อักษรรูน {f.rune ?? 0}</p>
+        {spellsOf(life).length ? spellsOf(life).map((x) => <p className="small" key={x.id}>{x.name} · ธาตุ{ELEMENTS[x.element].name} ขั้น {x.tier}</p>) : <p className="small muted">ยังไม่รู้จักเวทบทไหน</p>}
       </Fold>
       {known.length > 0 && (
         <Fold kind="section" id="ft-talents" title={<>พรสวรรค์</>}>

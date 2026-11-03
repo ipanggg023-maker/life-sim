@@ -1,6 +1,6 @@
 // โรงเรียน กิลด์นักผจญภัย อาชีพ และกิจกรรมประจำปี
 import { ACTIVITIES, type Activity } from "../../engine/activities";
-import type { GameEvent } from "../../engine/events";
+import type { Ctx, GameEvent } from "../../engine/events";
 import { runEvent } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
 import type { Life } from "../../engine/types";
@@ -8,13 +8,16 @@ import { addMoney, addStat, checkChance, createPerson, shortName } from "../../e
 import { CAREERS } from "../core/careers";
 import { B, BIG, C, E, G, GOLD, K, N, P, PAY, SCENE, type Res } from "./kit";
 import { GUILD_RANKS, canCast, deathOdds, fightOdds } from "./power";
-import { fl, kingdomsOf, deed } from "./state";
+import { ELEMENTS, learnSpell, spellChoices } from "./magic";
+import { fl, kingdomsOf, deed, type Element } from "./state";
 
 export interface School { id: string; name: string; focus: string; odds: (l: Life) => number; fee: number; body: number; magic: number }
 export const SCHOOLS: School[] = [
   { id: "arcanvale", name: "สถาบันเวทอาร์คานเวล", focus: "เวทมนตร์", fee: 60, body: 2, magic: 14, odds: (l) => 0.1 + fl(l).potential * 0.17 + (l.stats.smarts - 50) / 200 },
   { id: "steelcrest", name: "สำนักดาบสตีลเครสต์", focus: "ดาบและร่างกาย", fee: 30, body: 14, magic: 0, odds: (l) => 0.35 + (l.stats.health - 50) / 120 + (l.stats.luck - 50) / 300 },
   { id: "lionheart", name: "วิทยาลัยหลวงไลออนฮาร์ต", focus: "ดาบและเวทมนตร์", fee: 120, body: 8, magic: 8, odds: (l) => 0.25 + (l.stats.smarts - 50) / 200 + ({ poor: 0, middle: 0.05, rich: 0.2, elite: 0.35 })[l.wealth] },
+  { id: "mercy", name: "วิหารเยียวยาเมอร์ซี", focus: "การรักษาและเวทแสง", fee: 20, body: 2, magic: 10, odds: (l) => 0.4 + (l.stats.smarts - 50) / 250 + (l.stats.happiness - 50) / 250 },
+  { id: "beastwarden", name: "คอกนักฝึกสัตว์เบสต์วอร์เดน", focus: "สัตว์เวทและการต่อสู้คู่กาย", fee: 30, body: 8, magic: 5, odds: (l) => 0.35 + (l.stats.health - 50) / 200 + (l.stats.luck - 50) / 200 },
 ];
 export const schoolOf = (l: Life) => SCHOOLS.find((s) => s.id === fl(l).school);
 const MATERIALS: [string, number, number][] = [["ไม้ฮอลลี", 1, 40], ["ไม้เถ้า", 2, 120], ["กระดูกนกฟีนิกซ์", 3, 400]];
@@ -34,6 +37,13 @@ const M = (a: Omit<Activity, "world">): Activity => ({ ...a, world: "fantasy" })
 const school = (l: Life) => !!fl(l).school && !fl(l).graduated;
 const free = (l: Life) => !fl(l).school || !!fl(l).graduated;
 const CONTRACT_THREAT = [0, 10, 25, 42, 60, 80];
+const MONSTERS: { name: string; weak: Element; strong: Element }[] = [
+  { name: "ซาลาแมนเดอร์เพลิง", weak: "water", strong: "fire" }, { name: "โกเลมศิลา", weak: "wind", strong: "earth" }, { name: "ภูตหนองน้ำ", weak: "earth", strong: "water" },
+  { name: "ฮาร์ปี้", weak: "fire", strong: "wind" }, { name: "ซอมบี้ฝูงใหญ่", weak: "light", strong: "dark" }, { name: "อัศวินเงา", weak: "light", strong: "dark" },
+  { name: "ไวเวิร์นหนุ่ม", weak: "water", strong: "fire" }, { name: "ราชาก็อบลิน", weak: "fire", strong: "earth" },
+];
+const monster = (c: Ctx) => MONSTERS[Number(c.mon ?? 0)];
+const threatOf = (l: Life) => CONTRACT_THREAT[fl(l).guild];
 const hurt = (text: string, extra: number): Res => (l, c) => (chance(l, deathOdds(l, CONTRACT_THREAT[fl(l).guild] + extra)) ? B("ป้ายกิลด์ของคุณถูกส่งกลับบ้าน", { die: "ตายระหว่างรับงานกิลด์" })(l, c) : B(text, { hp: -12 })(l, c));
 
 const ACTS: Activity[] = [
@@ -48,7 +58,7 @@ const ACTS: Activity[] = [
   M({ group: "การศึกษา", id: "ft_apply", emoji: "", name: "สอบเข้าโรงเรียน", desc: "สมัครได้จนอายุ 20", minAge: 11, available: (l) => !fl(l).school && l.age <= 20, run: (l) => { runEvent(l, "ft.school_apply"); return { text: "" }; } }),
   M({ group: "การศึกษา", id: "ft_school", emoji: "", name: "ชีวิตในโรงเรียน", desc: "เรียน ประลอง และเพื่อนร่วมรุ่น", minAge: 11, available: school, run: (l) => { runEvent(l, "ft.school_day"); return { text: "" }; } }),
   M({ group: "ผจญภัย", id: "ft_guild", emoji: "", name: "สมัครกิลด์นักผจญภัย", desc: "เริ่มที่ขั้นเหล็ก", minAge: 14, available: (l) => fl(l).guild === 0 && free(l), run: (l) => { fl(l).guild = 1; return { text: "เจ้าหน้าที่กิลด์ยื่นป้ายเหล็กให้ \"อย่าตายในเดือนแรกก็พอ\"", kind: "good" }; } }),
-  M({ group: "ผจญภัย", id: "ft_contract", emoji: "", name: "รับงานจากกิลด์", desc: "อันตรายตามขั้น", minAge: 14, time: 2, available: (l) => fl(l).guild > 0, odds: (l) => fightOdds(l, CONTRACT_THREAT[fl(l).guild]), run: (l) => { runEvent(l, "ft.contract"); return { text: "" }; } }),
+  M({ group: "ผจญภัย", id: "ft_contract", emoji: "", name: "รับงานจากกิลด์", desc: "อันตรายตามขั้น", minAge: 14, time: 2, available: (l) => fl(l).guild > 0, odds: (l) => fightOdds(l, CONTRACT_THREAT[fl(l).guild]), run: (l) => { runEvent(l, "ft.contract", { mon: randInt(l, 0, MONSTERS.length - 1) }); return { text: "" }; } }),
 ];
 
 export const PLACE_EVENTS: GameEvent[] = [
@@ -56,7 +66,7 @@ export const PLACE_EVENTS: GameEvent[] = [
 
   E("ft.school_letter", [11, 12], (l) => `จดหมายจากโรงเรียนต่างๆ มาถึงบ้าน ทุกแห่งเปิดสอบปีนี้${fl(l).potential >= 3 ? " และครูเวทคนหนึ่งเขียนชื่อคุณเองบนซอง" : ""}`, [C("ไปสอบเข้า", (l) => { runEvent(l, "ft.school_apply"); return { text: "คุณเก็บกระเป๋าเดินทางไปเมืองที่มีโรงเรียน" }; }), C("อยู่บ้านต่อ", N("คุณวางจดหมายไว้บนหิ้ง ชีวิตมีทางอื่นอีกมาก"))], { forced: true, title: "จดหมายเชิญ" }),
   SCENE("ft.school_apply", "สอบเข้า", "ผู้สมัครเรียงแถวยาวถึงประตู คุณจะลองที่ไหน", [
-    ...SCHOOLS.map((s) => P(`${s.name} · ${s.focus}`, s.odds, BIG(`ชื่อคุณอยู่ในประกาศ! คุณได้เข้า${s.name}`, { joy: 10, fame: 2 }, (l) => { fl(l).school = s.id; fl(l).schoolSince = l.age; const r = createPerson(l, "rival", { age: l.age, bond: 30 }); r.job = `เพื่อนร่วมรุ่นที่${s.name}`; l.flags.ftMark = true; }), N(`คุณสอบ${s.name}ไม่ผ่าน ยังมีทางอื่นเสมอ`, { joy: -4 }))),
+    ...SCHOOLS.map((s) => P(`${s.name} · ${s.focus}`, s.odds, BIG(`ชื่อคุณอยู่ในประกาศ! คุณได้เข้า${s.name}`, { joy: 10, fame: 2 }, (l) => { const f = fl(l); f.school = s.id; f.schoolSince = l.age; f.classScore = 50; const r = createPerson(l, "rival", { age: l.age, bond: 30 }); r.job = `เพื่อนร่วมรุ่นที่${s.name}`; f.rivalId = r.id; f.rivalPower = 12 + randInt(l, 0, 8); f.rivalPeak = randInt(l, 35, 95); if (s.magic >= 8) { f.wand ??= { name: "คทาประจำโรงเรียน", quality: 1, material: "ไม้" }; learnSpell(l, `${f.element ?? "fire"}1`); } l.flags.ftMark = true; }), N(`คุณสอบ${s.name}ไม่ผ่าน ยังมีทางอื่นเสมอ`, { joy: -4 }))),
     C("เปลี่ยนใจไม่สอบ", N("คุณเดินออกจากแถว")),
   ]),
   SCENE("ft.school_day", "ชีวิตในโรงเรียน", (l) => `ปีนี้ที่${schoolOf(l)?.name ?? "โรงเรียน"} คุณจะทุ่มให้อะไร`, [
@@ -67,8 +77,9 @@ export const PLACE_EVENTS: GameEvent[] = [
   ]),
   E("ft.graduate", [15, 40], (l) => `หลังหลายปีที่${schoolOf(l)?.name} ถึงวันจบการศึกษาแล้ว`, [C("รับป้ายจบการศึกษา", BIG("อาจารย์ใหญ่ส่งป้ายให้ พร้อมบอกว่าประตูโรงเรียนจะเปิดให้คุณเสมอ", { fame: 4, joy: 6 }, (l) => { const s = schoolOf(l)!; fl(l).graduated = true; fl(l).body += s.body * 2; fl(l).magic += s.magic * 2; deed(l, `จบจาก${s.name}`); }))], { when: (l) => school(l) && l.age - Number(fl(l).schoolSince) >= 5, forced: true, maxTimes: 1, title: "จบการศึกษา" }),
 
-  SCENE("ft.contract", "งานจากกิลด์", (l) => `กระดานประกาศของกิลด์ขั้น${GUILD_RANKS[fl(l).guild]}เต็มไปด้วยงาน`, [
-    P("กำจัดสัตว์อสูร", (l) => fightOdds(l, CONTRACT_THREAT[fl(l).guild]), G("คุณนำเขี้ยวของมันกลับมาขึ้นเงินรางวัล", { fame: 1 }, (l) => reward(l, 1)), hurt("มันแข็งแกร่งกว่าที่ประกาศบอก คุณหนีกลับมาพร้อมแผล", 0)),
+  SCENE("ft.contract", "งานจากกิลด์", (l, c) => `กระดานประกาศของกิลด์ขั้น${GUILD_RANKS[fl(l).guild]}: ${monster(c).name}${l.stats.smarts >= 50 ? ` · จุดอ่อนธาตุ${ELEMENTS[monster(c).weak].name}` : " · ไม่รู้จุดอ่อน"}`, [
+    P("กำจัดสัตว์อสูรด้วยอาวุธ", (l) => fightOdds(l, threatOf(l)), G("คุณนำเขี้ยวของมันกลับมาขึ้นเงินรางวัล", { fame: 1 }, (l) => reward(l, 1)), hurt("มันแข็งแกร่งกว่าที่ประกาศบอก คุณหนีกลับมาพร้อมแผล", 0)),
+    ...spellChoices(threatOf, (_l, c) => monster(c).weak, (_l, c) => monster(c).strong, (sp) => G(`${sp.name}ของคุณจัดการมันได้เรียบร้อย`, { fame: 1, magic: 3 }, (l) => reward(l, 1.1)), hurt("เวทของคุณทำอะไรมันแทบไม่ได้", 0)),
     P("คุ้มกันกองคาราวาน", (l) => fightOdds(l, CONTRACT_THREAT[fl(l).guild] - 6), G("กองคาราวานถึงปลายทางครบทุกเล่ม", {}, (l) => reward(l, 0.8)), hurt("โจรมามากกว่าที่คิด สินค้าหายไปครึ่งหนึ่ง", -6)),
     K("สำรวจดันเจี้ยนเก่า", "luck", 50, G("คุณเจอห้องที่ยังไม่มีใครแตะ", { magic: 4, body: 4 }, (l) => reward(l, 1.4)), hurt("กับดักหลังประตูยังทำงานได้ดีเกินไป", 8)),
     C("เลือกงานง่ายๆ ปีนี้", G("คุณตามหาแมวของคุณนายให้ แล้วได้ค่าจ้างพอกินข้าว", { gold: 4 })),

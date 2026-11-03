@@ -22,7 +22,7 @@ export function combat(l: Life): number {
   const body = f.bodyRank * 16 + Math.min(f.body, needXp(f.bodyRank)) / needXp(f.bodyRank) * 10;
   const magic = canCast(l) ? f.magicRank * 18 + Math.min(f.magic, needXp(f.magicRank)) / needXp(f.magicRank) * 10 + (f.wand?.quality ?? 0) * 2 : 0;
   const hurt = l.stats.health < 40 ? -8 : 0;
-  return Math.round(Math.max(body, magic) + Math.min(body, magic) * 0.3 + (myRelic(l)?.bonus ?? 0) + hurt);
+  return Math.round(Math.max(body, magic) + Math.min(body, magic) * 0.3 + (myRelic(l)?.bonus ?? 0) + (f.rune ?? 0) * 3 + hurt);
 }
 /** โอกาสชนะศัตรูระดับนี้ */
 export const fightOdds = (l: Life, threat: number) => clamp(0.5 + (combat(l) - threat) / 60 + (l.stats.luck - 50) / 400, 0.04, 0.96);
