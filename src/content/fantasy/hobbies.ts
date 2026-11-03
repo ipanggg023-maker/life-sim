@@ -59,7 +59,7 @@ const floorWin = (mul: number): Res => (l, c) => {
 };
 const floorLose = (text: string, extra = 0): Res => (l, c) => {
   const d = D(c);
-  if (chance(l, deathOdds(l, threatAt(l, d) + extra) * 0.8)) return B("คบไฟของคุณดับลงในความมืดชั้นล่าง", { die: `ตายใน${d.name}` })(l, c);
+  if (chance(l, deathOdds(l, threatAt(l, d) + extra) * 0.6)) return B("คบไฟของคุณดับลงในความมืดชั้นล่าง", { die: `ตายใน${d.name}` })(l, c);
   return B(text, { hp: -randInt(l, 8, 14) })(l, c);
 };
 
@@ -94,7 +94,7 @@ export const HOBBY_EVENTS: GameEvent[] = [
   ]),
   SCENE("ft.h.dungeon", "เลือกดันเจี้ยน", "แผนที่ของกิลด์ระบุดันเจี้ยนห้าแห่ง ยิ่งลึกยิ่งอันตราย และยิ่งร่ำรวย", [
     ...DUNGEONS.map((d) => C(
-      (l) => `${d.name} · ชั้น ${floorOf(l, d.id) + 1}/${d.floors}${floorOf(l, d.id) === d.floors - 1 ? ` · บอส: ${d.boss}` : ""} · ความอันตราย ${threatAt(l, d)}`,
+      (l) => `${d.name} · ชั้น ${floorOf(l, d.id) + 1}/${d.floors}${floorOf(l, d.id) === d.floors - 1 ? ` · บอส: ${d.boss}` : ""} · บุกตรงผ่าน ${Math.round(fightOdds(l, threatAt(l, d) + (isBoss(l, d) ? 8 : 0)) * 100)}%`,
       (l) => { runEvent(l, "ft.h.floor", { dg: d.id }); return { text: `คุณจุดคบไฟแล้วก้าวลงบันไดของ${d.name} ${d.desc}` }; },
       { show: (l) => floorOf(l, d.id) < d.floors },
     )),
