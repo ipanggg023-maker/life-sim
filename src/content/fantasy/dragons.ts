@@ -17,7 +17,7 @@ export const dragonById = (l: Life, id: unknown) => dataOf(l).dragons.find((x) =
 /** มังกรที่อยู่ในฉาก · ไม่ระบุ = ตัวที่เก่าแก่ที่สุดที่ยังอยู่ */
 const D = (l: Life, c: Ctx): Dragon => dragonById(l, c.dg) ?? aliveDragons(l)[0] ?? dataOf(l).dragons[0];
 /** ความผูกพัน = ความชอบมังกรโดยกำเนิด + ความผูกพันกับตัวนี้ + ญาติของมังกรที่ครอบครัวเคยเลี้ยง */
-export const bondOf = (l: Life, d: Dragon) => fl(l).dragonBond + (fl(l).dBonds?.[d.id] ?? 0) + (d.kin && d.kin === l.lastName ? 40 : 0);
+export const bondOf = (l: Life, d: Dragon) => fl(l).dragonBond + (fl(l).dBonds?.[d.id] ?? 0) + (d.kin && d.kin === l.lastName ? 40 : 0) + (fl(l).race === "dragon" ? 40 : 0);
 export function addBond(l: Life, d: Dragon, n: number) {
   const f = fl(l);
   const gain = n > 0 && f.relic === "dragonhorn" ? n * 2 : n;

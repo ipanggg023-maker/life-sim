@@ -16,7 +16,11 @@ export const RACES: Record<RaceId, { name: string; younger: number; desc: string
   orc: { name: "ออร์ก", younger: -8, desc: "ฝึกกายได้เร็วและตีหนัก แต่ทุกแผ่นดินมองด้วยความระแวง" },
   beastfolk: { name: "ชนเผ่าสัตว์", younger: -4, desc: "ประสาทสัมผัสคม ตามรอยเก่ง และเข้ากับสัตว์ได้ดี" },
   halfling: { name: "ฮาล์ฟลิง", younger: 25, desc: "โชคดี เงียบ และมักถูกมองข้าม ซึ่งบางทีก็เป็นข้อดี" },
+  dragon: { name: "มังกรในร่างมนุษย์", younger: 400, desc: "เผ่าหายาก · เกิดมาอ่อนแอแต่แกร่งขึ้นตามอายุ ร่ายเวทได้เอง มังกรทุกตัวนับเป็นญาติ แต่คนกลัว" },
+  demon: { name: "ทายาทปีศาจ", younger: 200, desc: "เผ่าหายาก · เวทมืดติดตัว พรสวรรค์เวทสูง แต่ทุกแผ่นดินระแวงและศาสนจักรตามล่า" },
 };
+/** เผ่าที่เลือกเองตอนเกิดไม่ได้ ต้องเกิดมาเป็นเท่านั้น */
+export const RARE_RACES: RaceId[] = ["dragon", "demon"];
 const RACE_IDS = Object.keys(RACES) as RaceId[];
 export const STRANGER_GAP: [number, number] = [20, 60];
 export const TURNING_POINTS = [6, 12, 16, 20, 30, 45, 60, 80, 120, 200, 300];
@@ -31,9 +35,11 @@ function rollFlife(l: Life, race: RaceId): FLife {
 /** สร้างข้อมูลตอนเกิด · ยังไม่รู้จักวิญญาณ จะผูกกับโลกจริงใน attachWorld */
 export function setupLife(l: Life) {
   worldOfLife(l);
-  const race = weightedPick(l, RACE_IDS, (r) => ({ human: 55, elf: 12, dwarf: 12, orc: 8, beastfolk: 8, halfling: 5 })[r])!;
+  const race = weightedPick(l, RACE_IDS, (r) => ({ human: 55, elf: 12, dwarf: 12, orc: 8, beastfolk: 8, halfling: 5, dragon: 0.6, demon: 1.2 })[r])!;
   applyRaceStats(l, race, 1);
   l.ft = { ...rollFlife(l, race), element: rollElement(l) };
+  l.flags.ftBornRace = race;
+  if (race === "demon") { l.ft.element = "dark"; l.ft.potential = Math.min(5, l.ft.potential + 1); }
   l.flags.allowance = true;
   l.flags.seenRuler = "";
 }
@@ -43,6 +49,8 @@ function applyRaceStats(l: Life, r: RaceId, sign: number) {
   if (r === "orc") { addStat(l, "health", 10 * sign); addStat(l, "smarts", -4 * sign); addStat(l, "looks", -4 * sign); }
   if (r === "beastfolk") { addStat(l, "luck", 6 * sign); addStat(l, "health", 4 * sign); addStat(l, "smarts", -2 * sign); }
   if (r === "halfling") { addStat(l, "luck", 8 * sign); addStat(l, "looks", 2 * sign); addStat(l, "health", -4 * sign); }
+  if (r === "dragon") { addStat(l, "health", 6 * sign); addStat(l, "smarts", 4 * sign); addStat(l, "happiness", -6 * sign); }
+  if (r === "demon") { addStat(l, "smarts", 6 * sign); addStat(l, "looks", 4 * sign); addStat(l, "happiness", -8 * sign); }
 }
 /** ปรับแต่งตอนเกิด: เปลี่ยนเผ่าได้ก่อนเริ่มชีวิต */
 export function setRace(l: Life, r: RaceId) {
@@ -72,7 +80,8 @@ export function closeLife(s: Soul, l: Life) {
   passThrone(l);
   if (f.whelp) { release(w, l, f.whelp, "บินกลับขุนเขาหลังเจ้าของจากไป"); f.whelp = undefined; }
   const top = f.deeds.at(-1);
-  if (top && (l.fame >= 30 || f.deeds.length >= 2)) addLegend(w, { name: displayName(l), deed: top, lifeId: l.id });
+  // ชีวิตที่มีตำนานบันทึกไว้แล้ว ไม่ต้องสรุปซ้ำตอนจากไป
+  if (top && (l.fame >= 30 || f.deeds.length >= 2) && !w.legends.some((g) => g.lifeId === l.id)) addLegend(w, { name: displayName(l), deed: top, lifeId: l.id });
   s.fantasyWorld = w;
 }
 
@@ -89,7 +98,8 @@ export function inheritLife(dead: Life, next: Life) {
 
 /** ย้อนชะตาได้ไหม · เด็กตายเร็วได้โอกาสหนึ่งครั้ง พรสวรรค์หายากให้เพิ่ม */
 export const canMercy = (l: Life) => l.age < MERCY_AGE && !fl(l).mercyUsed;
-export const canRewind = (l: Life) => l.age > 0 && (canMercy(l) || fl(l).threads > 0);
+/** ขึ้นเป็นเทพคือการเลือกจากไปเอง ย้อนกลับไม่ได้ */
+export const canRewind = (l: Life) => l.age > 0 && !l.causeOfDeath?.startsWith("ขึ้นสู่สวรรค์") && (canMercy(l) || fl(l).threads > 0);
 export const rewindTarget = (l: Life) => [...TURNING_POINTS].reverse().find((a) => a < l.age) ?? 0;
 
 /** กลับไปที่ snapshot พร้อมโลกทั้งใบ · เหลือแต่ความจำกับแผลแห่งชะตา */

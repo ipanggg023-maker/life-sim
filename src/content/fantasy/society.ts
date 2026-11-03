@@ -3,6 +3,7 @@ import { chance, pick, randInt, weightedPick } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { clamp } from "../../engine/util";
 import { recordChronicle, type WorldState } from "../../engine/worldState";
+import { tickGates } from "./realms";
 import { LAWS, NOTABLE_CAP, newNotable, passRelic, ROLES, type Dragon, type FData, type Faction, type Good, type Kingdom, type LawId, type Notable } from "./state";
 
 type Rng = Pick<Life, "rng">;
@@ -177,6 +178,7 @@ export function tickDragons(w: WorldState, d: FData, r: Rng) {
 
 export function tickSociety(w: WorldState, d: FData, r: Rng) {
   dropWorld = w;
+  tickGates(d, w.year, r, (t) => recordChronicle(w, t));
   tickDragons(w, d, r);
   for (const k of d.kingdoms) { tickEconomy(w, k, r); tickCoup(w, d, k, r); }
   tickNotables(w, d, r);

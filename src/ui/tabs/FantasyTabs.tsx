@@ -10,6 +10,7 @@ import { bondOf, moodWord, mountOf } from "../../content/fantasy/dragons";
 import { MYSTERIES } from "../../content/fantasy/mysteries";
 import { titleOf } from "../../content/fantasy/empire";
 import { throneOf } from "../../content/fantasy/realm";
+import { DOMAINS, REALMS } from "../../content/fantasy/realms";
 import { GOODS, priceOf } from "../../content/fantasy/society";
 import { LAWS, ROLES, dataOf, fl, homeKingdom, myRelic, standingOf, worldOfLife, type Good } from "../../content/fantasy/state";
 import { talentById } from "../../content/talents";
@@ -69,6 +70,10 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         {f.egg && <p className="small">ไข่มังกรธาตุ{ELEMENTS[f.egg.element].name} · ความอุ่น {f.egg.warmth}/4</p>}
         {f.whelp && <p className="small">ลูกมังกร{f.whelp.name} · อายุ {f.whelp.age} · ผูกพัน {f.whelp.bond} · พลัง {f.whelp.power}</p>}
         {f.dragonblood && <p className="small">เลือดมังกรไหลในตัวคุณ</p>}
+        {(f.pacts ?? 0) > 0 && <p className="small">พันธสัญญาปีศาจ {f.pacts} ฉบับ · อายุขัยหายไป {(f.pacts ?? 0) * 10} ปี</p>}
+        {f.demonHorn && <p className="small">เขาของเจ้าชายปีศาจ</p>}
+        {(f.divine ?? 0) > 0 && <p className="small">ผ่านบททดสอบแห่งสวรรค์ {f.divine}/3</p>}
+        {f.realmVisits && <p className="small">เคยไป: {(Object.keys(f.realmVisits) as (keyof typeof REALMS)[]).map((r) => REALMS[r].name).join(", ")}</p>}
       </Fold>
       <Fold always kind="section" id="ft-magic" title={<>เวทมนตร์ · ธาตุ{ELEMENTS[f.element ?? "fire"].name}</>}>
         <p className="small">มานาปีนี้ {manaLeft(life)}/{manaMax(life)} · บทสวด {f.chant ?? 0} · วงเวท {f.circle ?? 0} · อักษรรูน {f.rune ?? 0}</p>
@@ -123,6 +128,11 @@ export function FantasyWorldTab({ life }: { life: Life }) {
       <Fold always id="ft-dragon" title={<>มังกร ({d.dragons.filter((x) => x.alive).length})</>}>
         {d.dragons.map((x) => <p className="small" key={x.id}>{x.alive ? `${x.name} ${x.title} · ธาตุ${ELEMENTS[x.element].name} · อายุ ${x.age} · พลัง ${x.power} · ${moodWord(x.mood)}${bondOf(life, x) ? ` · ผูกพัน ${bondOf(life, x)}` : ""}` : `${x.name} ถูกสังหารโดย${x.slainBy ?? "กาลเวลา"}`}</p>)}
         {d.eggs.length > 0 && <p className="small muted">มีไข่มังกรรอฟักอยู่ {d.eggs.length} ฟอง</p>}
+      </Fold>
+      <Fold id="ft-beyond" title={<>ภพอื่นและเทพ</>}>
+        {d.gates.filter((g) => g.until >= w.year).map((g, i) => <p className="small" key={i}>ประตูสู่{REALMS[g.realm].name}เปิดอยู่ที่{d.kingdoms.find((k) => k.id === g.kingdom)?.name} ถึงปี {g.until}</p>)}
+        {d.gates.every((g) => g.until < w.year) && <p className="small muted">ตอนนี้ไม่มีประตูมิติเปิดอยู่</p>}
+        {d.gods.map((g, i) => <p className="small" key={i}>เทพ{g.name} · เทพแห่ง{DOMAINS[g.domain as keyof typeof DOMAINS]} · ขึ้นสวรรค์ปี {g.year}</p>)}
       </Fold>
       <Fold id="ft-mysteries" title={<>ปริศนา</>}>
         {MYSTERIES.map((m) => { const st = d.mysteries?.[m.id]; const knows = f.mKnown?.includes(m.id); return <p className="small" key={m.id}>{knows || st?.solvedBy ? m.name : "ปริศนาที่ยังไม่มีใครรู้"}{st?.solvedBy ? ` · ไขแล้วโดย${st.solvedBy}` : knows ? ` · ขั้น ${st?.step ?? 0}/${m.steps.length}` : ""}</p>; })}

@@ -1,4 +1,4 @@
-import { RACES } from "../content/fantasy/life";
+import { RACES, RARE_RACES } from "../content/fantasy/life";
 import type { RaceId } from "../content/fantasy/state";
 import { useEffect, useState } from "react";
 import { RARITY_LABEL, talentById, talentFlavor } from "../content/talents";
@@ -120,7 +120,7 @@ export function BirthScreen({
             <label className="plan-pick fade-in">
               <span className="plan-label">เผ่า</span>
               <select value={life.ft.race} onChange={(e) => onRace(e.target.value as RaceId)}>
-                {(Object.keys(RACES) as RaceId[]).map((r) => <option key={r} value={r}>{RACES[r].name} · {RACES[r].desc}</option>)}
+                {(Object.keys(RACES) as RaceId[]).filter((r) => !RARE_RACES.includes(r) || r === life.flags.ftBornRace).map((r) => <option key={r} value={r}>{RACES[r].name} · {RACES[r].desc}</option>)}
               </select>
             </label>
           )}

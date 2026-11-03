@@ -4,7 +4,10 @@ import type { Life } from "../../engine/types";
 import { clamp } from "../../engine/util";
 import { newWorldState, type WorldState } from "../../engine/worldState";
 
-export type RaceId = "human" | "elf" | "dwarf" | "orc" | "beastfolk" | "halfling";
+export type RaceId = "human" | "elf" | "dwarf" | "orc" | "beastfolk" | "halfling" | "dragon" | "demon";
+export type Realm = "demon" | "dragon" | "divine";
+export interface Gate { realm: Realm; kingdom: string; until: number }
+export interface God { name: string; domain: string; year: number; kin?: string }
 export type Element = "fire" | "water" | "earth" | "wind" | "light" | "dark";
 
 export interface Wand { name: string; quality: number; material: string }
@@ -60,6 +63,14 @@ export interface FLife {
   beatGreat?: boolean;
   /** แผ่นดินที่ครองอยู่ */
   throne?: string;
+  realmVisits?: Partial<Record<Realm, number>>;
+  /** พันธสัญญาปีศาจ · ครั้งละสิบปีของอายุขัย */
+  pacts?: number;
+  demonHorn?: boolean;
+  /** บททดสอบแห่งสวรรค์ 0–2 */
+  divine?: number;
+  /** อายุขัยที่ได้เพิ่มจากภพอื่น */
+  lifeBonus?: number;
   /** แผ่นดินที่เป็นคู่ครองของผู้ครอง */
   consort?: string;
   /** ความผูกพันกับมังกรแต่ละตัว · dragonBond คือความชอบมังกรโดยกำเนิด */
@@ -85,7 +96,7 @@ export type Good = "grain" | "iron" | "herbs";
 export type Role = "hero" | "mage" | "merchant" | "rogue" | "priest" | "general";
 export interface Notable { id: number; name: string; role: Role; age: number; power: number; kingdom: string; faction?: string; fame: number; /** เพดานฝีมือของคนนี้ · ส่วนใหญ่ธรรมดา บางคนเป็นตำนาน */ peak?: number }
 export interface Faction { id: string; /** แบบของงานและผลประโยชน์ · ไม่ใส่ = ใช้ id */ kind?: string; name: string; creed: string; power: number; leader: string; feud?: string; playerLed?: boolean }
-export interface FData { kingdoms: Kingdom[]; dragons: Dragon[]; eggs: Egg[]; mysteries: Record<string, Mystery>; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number; /** เซฟเก่าก่อนมีหลายมังกร */ dragon?: Omit<Dragon, "id" | "element" | "power"> }
+export interface FData { kingdoms: Kingdom[]; dragons: Dragon[]; eggs: Egg[]; gates: Gate[]; gods: God[]; mysteries: Record<string, Mystery>; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number; /** เซฟเก่าก่อนมีหลายมังกร */ dragon?: Omit<Dragon, "id" | "element" | "power"> }
 
 export const LAWS: Record<LawId, { name: string; desc: string }> = {
   banMagic: { name: "ห้ามเวทในที่สาธารณะ", desc: "ผู้ตรวจการตามล่าคนร่ายเวท" },
@@ -129,6 +140,8 @@ const newData = () => ({
   kingdoms: KINGDOMS.map((k) => ({ ...k })),
   dragons: DRAGONS.map((x) => ({ ...x })),
   eggs: [],
+  gates: [],
+  gods: [],
   mysteries: {},
   relics: RELICS.map((x) => ({ ...x })),
 });
@@ -160,6 +173,8 @@ export const newFantasyWorld = (seed: number, year = 1000): WorldState => {
 export function ensureSociety(w: WorldState) {
   const d = w.data as unknown as FData;
   d.mysteries ??= {};
+  d.gates ??= [];
+  d.gods ??= [];
   const thalos = d.kingdoms.find((k) => k.id === "thalos");
   if (thalos && thalos.elective === undefined) thalos.elective = true;
   if (!d.dragons) {
@@ -193,7 +208,7 @@ export const deed = (l: Life, text: string) => { fl(l).deeds.push(text); };
 /** ประวัติผู้ถืออาวุธตำนาน เก็บล่าสุดแปดคน */
 export const passRelic = (w: WorldState, r: Relic, who: string) => { r.history = [...(r.history ?? []), `ปี ${w.year} · ${who}`].slice(-8); };
 /** อคติที่บางเผ่าเจอตั้งแต่เกิด จนกว่าจะสร้างชื่อเสียงเอง */
-const PREJUDICE: Partial<Record<RaceId, number>> = { orc: -15, beastfolk: -5 };
+const PREJUDICE: Partial<Record<RaceId, number>> = { orc: -15, beastfolk: -5, dragon: -25, demon: -40 };
 export const standingOf = (l: Life, k = fl(l).kingdom) => fl(l).standing?.[k] ?? PREJUDICE[fl(l).race] ?? 0;
 export function addStanding(l: Life, d: number, k = fl(l).kingdom) {
   const f = fl(l);

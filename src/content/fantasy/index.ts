@@ -10,9 +10,10 @@ import { DRAGON_EVENTS, dragonYear, loadDragons } from "./dragons";
 import { MYSTERY_EVENTS, loadMysteries } from "./mysteries";
 import { PEOPLE_EVENTS } from "./peoples";
 import { REALM_EVENTS, loadRealm, realmYear } from "./realm";
+import { RARE_EVENTS, REALM_TRAVEL_EVENTS, loadRealms, transform } from "./realms";
 import { LEGEND_EVENTS, loadLegends } from "./legends";
 import { GOLD } from "./kit";
-import { RACES, attachWorld, setupLife } from "./life";
+import { RACES, attachWorld, setRace, setupLife } from "./life";
 import { MAGIC_EVENTS, loadMagic } from "./magic";
 import { PLACE_EVENTS, loadPlaces } from "./places";
 import { SCHOOL_EVENTS } from "./schoollife";
@@ -42,10 +43,12 @@ export function loadFantasyWorld() {
   loadDragons();
   loadMysteries();
   loadRealm();
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS], "fantasy");
+  loadRealms();
+  transform.fn = setRace;
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS], "fantasy");
   const before = timeBudget.fn;
   timeBudget.fn = (l) => (l.worldId === "fantasy" ? (l.age < 10 ? 2 : l.age < 16 ? 3 : 5) : before?.(l));
-  lifespanHooks.push((l) => (on(l) ? younger(l) + (fl(l).dragonblood ? 30 : 0) : 0));
+  lifespanHooks.push((l) => (on(l) ? younger(l) + (fl(l).dragonblood ? 30 : 0) + (fl(l).lifeBonus ?? 0) - (fl(l).pacts ?? 0) * 10 : 0));
   yearHooks.push((l) => {
     if (!on(l) || !l.alive) return;
     const w = worldOfLife(l);

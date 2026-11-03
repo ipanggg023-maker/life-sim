@@ -80,7 +80,7 @@ const kindOf = (l: Life) => { const x = myFaction(l); return x?.kind ?? x?.id ??
 const jobOf = (l: Life) => JOBS[kindOf(l)];
 const jobCheck = (l: Life, j: Job) => checkChance(l, j.stat, j.dc);
 
-const joinOdds = (l: Life, x: Faction) => clamp(0.35 + standingOf(l) / 200 + l.fame / 200 + (l.stats.smarts + l.stats.health - 100) / 300 - (x.id === "silver" || x.id === "dawn" ? (wanted(l) ? 0.5 : 0) : 0), 0.05, 0.9);
+const joinOdds = (l: Life, x: Faction) => clamp(0.35 + standingOf(l) / 200 + l.fame / 200 + (l.stats.smarts + l.stats.health - 100) / 300 - (x.id === "silver" || x.id === "dawn" ? (wanted(l) ? 0.5 : 0) + (fl(l).race === "demon" ? 0.5 : 0) : 0), 0.05, 0.9);
 const joinChoice = (i: number): Choice => P((l) => { const x = dataOf(l).factions[i]; return x ? `${x.name} · ${x.creed}` : "—"; }, (l) => joinOdds(l, dataOf(l).factions[i]), BIG((l) => `คุณกล่าวคำสาบานเข้าร่วม${dataOf(l).factions[i].name}`, { joy: 4 }, (l) => { const f = fl(l); f.faction = dataOf(l).factions[i].id; f.fRank = 0; f.fMerit = 0; if (f.foe === f.faction) f.foe = undefined; }), N("พวกเขามองคุณแล้วส่ายหน้า ยังไม่ใช่ตอนนี้", { joy: -2 }), { show: (l) => !!dataOf(l).factions[i] });
 
 const leaderPower = (l: Life) => { const x = myFaction(l)!; return dataOf(l).notables.find((n) => n.name === x.leader)?.power ?? 40; };

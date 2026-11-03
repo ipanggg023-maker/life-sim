@@ -31,10 +31,10 @@ const force = (l: Life, start: string, ok = true) => {
 
 describe("เผ่าใหม่", () => {
   it("มีหกเผ่า และเกิดเป็นเผ่าใหม่ได้จริง", () => {
-    expect(Object.keys(RACES).length).toBe(6);
+    expect(Object.keys(RACES).length).toBe(8);
     const seen = new Set<string>();
     for (let s = 1; s <= 300; s++) seen.add(fl(createLife({ seed: s, worldId: "fantasy" })).race);
-    expect(seen.size).toBe(6);
+    expect(seen.size).toBeGreaterThanOrEqual(6);
   });
   it("ออร์กตีหนักกว่าแต่ถูกระแวงตั้งแต่เกิด จนสร้างชื่อเองได้", () => {
     const h = life(1), o = life(1, "orc");
