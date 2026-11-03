@@ -1,7 +1,7 @@
 # ชีวิตนับร้อยชาติ (Life Sim)
 
-Life simulator แบบ BitLife ผสม trope มังฮวา · เว็บเกม (React + TypeScript + Vite)
-รายละเอียดการออกแบบอยู่ที่ [design/GDD.md](design/GDD.md)
+Life simulator แบบ BitLife · เว็บเกม (React + TypeScript + Vite) · มีสองโลก: แฟนตาซีและยุทธภพ
+แผนการออกแบบอยู่ที่ [design/FANTASY_PLAN.md](design/FANTASY_PLAN.md) และ [design/MURIM_PLAN.md](design/MURIM_PLAN.md)
 
 ## รันเกม
 
@@ -29,4 +29,4 @@ npm run dev
 
 ## เพิ่ม event ใหม่
 
-เพิ่มออบเจกต์ใน `src/content/hunter/events/*.ts` — ดูชนิดข้อมูล `GameEvent` ใน `src/engine/events.ts`
+เพิ่มออบเจกต์ใน `src/content/fantasy/*.ts` หรือ `src/content/murim/` — ดูชนิดข้อมูล `GameEvent` ใน `src/engine/events.ts`
