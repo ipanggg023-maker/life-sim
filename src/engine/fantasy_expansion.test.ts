@@ -15,6 +15,7 @@ import { SPELLS } from "../content/fantasy/magic";
 import { SAGA_LIST } from "../content/fantasy/sagas";
 import { mArtsOf } from "../content/fantasy/mschools";
 import { MASTER_JOBS } from "../content/fantasy/arcs";
+import { BEASTS, homeOf } from "../content/fantasy/world2";
 import { epithetOf, styleBonus, techsOf } from "../content/fantasy/styles";
 import { allEvents, getEvent } from "./events";
 import { CITIES, citiesOf, cityCost, cityOf } from "../content/fantasy/cities";
@@ -411,5 +412,33 @@ describe("เส้นเรื่องยาว: งานชิ้นเอ�
     expect(getEvent("ft.ar.wedding")!.text(l, l.queue[0].ctx)).toContain("โถงหิน");
     resolveChoice(l, visibleChoices(l, l.queue[0])[1].index);
     expect(getEvent("ft.ar.wedding")!.when!(l)).toBe(false);
+  });
+});
+
+describe("ลาง ภารกิจเมือง สัตว์ในตำนาน และบ้าน", () => {
+  it("ลางเกิดขึ้นในโลก และผู้เล่นเห็นครั้งเดียวต่อลาง", () => {
+    const l = fantasy(121);
+    let seen = 0;
+    for (let y = 0; y < 80 && l.alive; y++) {
+      ageUp(l);
+      while (l.queue.length && l.alive) { if (l.queue[0].eventId === "ft.om.seen") seen++; resolveChoice(l, visibleChoices(l, l.queue[0])[0].index); }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+  it("กระดานมีสามงานไม่ซ้ำกันทุกปี ล่าสัตว์ตำนานได้ครั้งเดียว และบ้านขยายทีละขั้น", () => {
+    const l = fantasy(123);
+    l.age = 30; l.money = 1_000_000; l.ft!.bodyRank = 4; l.ft!.body = 9999;
+    runEvent(l, "ft.w2.board");
+    const labels = visibleChoices(l, l.queue[0]).map((v) => v.index);
+    expect(labels.length).toBe(4);
+    resolveChoice(l, labels[0]); l.queue = [];
+    for (let i = 0; i < 20 && !l.ft!.trophies?.length; i++) { l.stats.health = 100; runEvent(l, "ft.w2.hunt", { bs: "stag" }); resolveChoice(l, visibleChoices(l, l.queue[0])[0].index); l.queue = []; }
+    expect(l.ft!.trophies).toContain("เขากวางทองคำ");
+    runEvent(l, "ft.w2.beasts");
+    expect(visibleChoices(l, l.queue[0]).length).toBe(BEASTS.length);
+    l.queue = [];
+    runEvent(l, "ft.w2.home");
+    resolveChoice(l, visibleChoices(l, l.queue[0])[0].index);
+    expect(homeOf(l).name).toBe("กระท่อมของตัวเอง");
   });
 });

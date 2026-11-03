@@ -23,6 +23,7 @@ import { DUNGEONS, PETS } from "../../content/fantasy/hobbies";
 import { sleeping } from "../../content/fantasy/talentEvo";
 import { activeSagas, doneSagas } from "../../content/fantasy/sagas";
 import { mArtsOf, mschoolOf } from "../../content/fantasy/mschools";
+import { BEASTS, homeOf, omenOf } from "../../content/fantasy/world2";
 import { RACE_LABEL, folkOf } from "../../content/fantasy/folk";
 import { careerById } from "../../content/core/careers";
 import { PARTY_MAX, partyLabel, partyOf } from "../../content/fantasy/bonds";
@@ -71,6 +72,8 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         <p className="small">{f.wand ? `${f.wand.name} · คุณภาพ ${f.wand.quality}` : "ไม่มีคทา"}{f.magicRank >= 3 ? " · ร่ายได้โดยไม่ต้องใช้คทา" : ""}</p>
         {f.weapon && <p className="small">{f.weapon.name} · คุณภาพ {f.weapon.quality}{f.weapon.enchant ? " · ลงอาคม" : ""}</p>}
         {f.armor && <p className="small">{f.armor.name} · คุณภาพ {f.armor.quality}</p>}
+        <p className="small">บ้าน: {homeOf(life).name} · {homeOf(life).desc}</p>
+        {(f.trophies ?? []).length > 0 && <p className="small">ถ้วยรางวัล: {f.trophies!.join(", ")}</p>}
         {f.pet && <p className="small">{PETS[f.pet.kind].name}ชื่อ{f.pet.name} · ผูกพัน {f.pet.bond} · {PETS[f.pet.kind].perk}{f.pet.bond < 30 ? " (ต้องดูแลมากกว่านี้จึงจะช่วย)" : ""}</p>}
         {relic && <p className="small"><b>{relic.name}</b> · {relic.power}</p>}
         {s && <p className="small">{f.graduated ? "ศิษย์เก่า" : "นักเรียน"}{s.name}{f.graduated ? "" : ` · ${classStanding(life)}`}{f.cups ? ` · แชมป์ ${f.cups} สมัย` : ""}</p>}
@@ -159,6 +162,10 @@ export function FantasyWorldTab({ life }: { life: Life }) {
         <p className="small muted">ปี {w.year}{here.war ? " · กำลังมีสงคราม" : ""}{here.plague ? " · มีโรคระบาด" : ""}{here.famine ? " · ทุพภิกขภัย" : ""}</p>
         {(here.laws ?? []).map((id) => <p className="small" key={id}><b>{LAWS[id].name}</b> · {LAWS[id].desc}</p>)}
         {(here.laws ?? []).length === 0 && <p className="small muted">ไม่มีกฎหมายพิเศษ</p>}
+      </Fold>
+      {omenOf(life) && <Fold always id="ft-omen" title={<>ลางแห่งยุค</>}><p className="small"><b>{omenOf(life)!.name}</b> · {omenOf(life)!.desc} · ถึงปี {omenOf(life)!.until}</p></Fold>}
+      <Fold id="ft-beasts" title={<>สัตว์ในตำนาน</>}>
+        {BEASTS.map((b) => { const by = (d as unknown as { beasts?: Record<string, string> }).beasts?.[b.id]; return <p className={`small ${by ? "muted" : ""}`} key={b.id}><b>{b.name}</b> · {by ? `ถูกล่าโดย${by}` : b.desc}</p>; })}
       </Fold>
       <Fold id="ft-cities" title={<>เมืองในแผ่นดินนี้</>}>
         {citiesOf(here).map((c) => <p className="small" key={c.id}><b>{c.name}</b>{c.id === cityOf(life).id ? " · คุณอยู่ที่นี่" : ""} · {KINDS[c.kind].name} · งานที่รุ่ง: {KINDS[c.kind].jobs.map((j) => careerById(j)?.name).filter(Boolean).join(", ")}</p>)}

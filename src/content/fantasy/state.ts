@@ -83,6 +83,8 @@ export interface FLife {
   mount?: string;
   dragonFoe?: string;
   dragonblood?: boolean;
+  /** ถ้วยรางวัลจากสัตว์ในตำนาน (world2.ts) */
+  trophies?: string[];
   /** ศาสตร์แห่งเวทที่เลือก (mschools.ts) */
   mschool?: string;
   /** มหากาพย์ที่กำลังตาม: บทที่อยู่ · 99 = จบแล้ว (sagas.ts) */

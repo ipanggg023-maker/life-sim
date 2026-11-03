@@ -318,7 +318,7 @@ describe("สมดุล", () => {
   it("คนบ้าบิ่นตายเร็ว ยอดฝีมือหายาก แต่คนใช้ชีวิตเงียบๆ อยู่ได้นาน", () => {
     const N = 80;
     const ages: number[] = [];
-    let top = 0, guildDeaths = 0, relics = 0;
+    let top = 0, guildDeaths = 0, relics = 0, trials = 0;
     for (let s = 1; s <= N; s++) {
       const l = createLife({ seed: s * 211, worldId: "fantasy" });
       setRace(l, "human");
@@ -326,8 +326,9 @@ describe("สมดุล", () => {
       const f = fl(l);
       ages.push(l.age);
       if (f.bodyRank === 4 || f.magicRank === 4) top++;
-      // บอทสุ่มวางอาวุธคืนแท่นบ่อย นับทุกคนที่เคยได้ครอบครอง
+      // บอทสุ่มเลือกทางในบททดสอบ (รวมถอยกลับ) จึงวัดว่าไปถึงบททดสอบอาวุธตำนานได้ และไม่มีใครได้ง่ายเกินไป
       if (f.relic || f.deeds.some((d) => d.startsWith("ครอบครอง"))) relics++;
+      trials += l.seen["ft.relic_trial"] ?? 0;
       if (l.causeOfDeath?.includes("กิลด์")) guildDeaths++;
     }
     ages.sort((a, b) => a - b);
@@ -339,7 +340,7 @@ describe("สมดุล", () => {
     quiet.sort((a, b) => a - b);
     expect(quiet[15]).toBeGreaterThanOrEqual(55);
     expect(top / N).toBeLessThan(0.45);
-    expect(relics).toBeGreaterThan(0);
+    expect(trials).toBeGreaterThan(0);
     expect(relics / N).toBeLessThan(0.6);
     expect(guildDeaths).toBeGreaterThan(0);
   }, 120_000);
