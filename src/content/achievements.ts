@@ -2,7 +2,7 @@ import type { Life, Soul } from "../engine/types";
 import { hasTalent, people } from "../engine/util";
 import { talentById } from "./talents";
 
-export type AchCategory = "life" | "power" | "social" | "hunter" | "murim" | "murim_life" | "murim_goal" | "murim_throne" | "court" | "tower" | "apocalypse" | "ordinary";
+export type AchCategory = "life" | "power" | "social" | "hunter" | "murim" | "murim_life" | "murim_goal" | "murim_throne" | "fantasy" | "fantasy_life" | "fantasy_legend" | "fantasy_throne" | "court" | "tower" | "apocalypse" | "ordinary";
 
 export interface Achievement {
   id: string;
@@ -25,6 +25,10 @@ export const ACH_CATEGORY: Record<AchCategory, string> = {
   murim_life: "🏮 ชีวิตในยุทธภพ",
   murim_goal: "🎯 เป้าหมายชีวิต",
   murim_throne: "🐉 บัลลังก์มังกร",
+  fantasy: "🗡️ ดาบและเวท",
+  fantasy_life: "🧭 ชีวิตนักผจญภัย",
+  fantasy_legend: "🐲 ตำนาน",
+  fantasy_throne: "👑 ฝ่ายอำนาจและบัลลังก์",
   court: "👑 ราชสำนัก",
   tower: "🗼 หอคอย",
   apocalypse: "☄️ วันสิ้นโลก",

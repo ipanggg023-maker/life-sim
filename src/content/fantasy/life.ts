@@ -7,6 +7,7 @@ import { fl, kingdomsOf, worldOfLife, type FLife, type RaceId } from "./state";
 import { release } from "./dragons";
 import { inheritThrone, passThrone } from "./realm";
 import { rollElement } from "./magic";
+import { applyFtTalents } from "./talents";
 import { fastForward } from "./world";
 
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
@@ -42,6 +43,7 @@ export function setupLife(l: Life) {
   if (race === "demon") { l.ft.element = "dark"; l.ft.potential = Math.min(5, l.ft.potential + 1); }
   l.flags.allowance = true;
   l.flags.seenRuler = "";
+  applyFtTalents(l);
 }
 function applyRaceStats(l: Life, r: RaceId, sign: number) {
   if (r === "elf") { addStat(l, "smarts", 6 * sign); addStat(l, "looks", 6 * sign); addStat(l, "health", -4 * sign); }
@@ -94,6 +96,7 @@ export function inheritLife(dead: Life, next: Life) {
   next.flags.seenRuler = "";
   next.flags.allowance = true;
   inheritThrone(dead, next);
+  applyFtTalents(next);
 }
 
 /** ย้อนชะตาได้ไหม · เด็กตายเร็วได้โอกาสหนึ่งครั้ง พรสวรรค์หายากให้เพิ่ม */

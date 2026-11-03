@@ -20,6 +20,7 @@ const life = (seed: number, age = 25): Life => {
   setRace(l, "human");
   l.age = age; l.queue = []; l.money = 500_000; l.stats.health = 90; l.stats.smarts = 70; l.stats.looks = 70; l.stats.luck = 70;
   fl(l).wand = { name: "ค", quality: 1, material: "ไม้" };
+  fl(l).dragonBond = 0; // ตัดผลพรสวรรค์ที่สุ่มได้ตอนเกิด ให้วัดแต่ความผูกพันที่ทดสอบ
   return l;
 };
 const labels = (l: Life) => visibleChoices(l, l.queue[0]).map((x) => labelOf(x.c, l, l.queue[0].ctx));

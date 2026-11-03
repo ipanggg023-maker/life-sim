@@ -1,5 +1,4 @@
-import { RACES, RARE_RACES } from "../content/fantasy/life";
-import type { RaceId } from "../content/fantasy/state";
+import { RACES } from "../content/fantasy/life";
 import { useEffect, useState } from "react";
 import { RARITY_LABEL, talentById, talentFlavor } from "../content/talents";
 import { wealthLabel } from "../engine/game";
@@ -18,13 +17,11 @@ export function BirthScreen({
   rerolls,
   onReroll,
   onStart,
-  onRace,
 }: {
   life: Life;
   rerolls: number;
   onReroll: () => void;
   onStart: () => void;
-  onRace?: (r: RaceId) => void;
 }) {
   const [step, setStep] = useState(0);
   const talents = life.talents;
@@ -117,16 +114,8 @@ export function BirthScreen({
 
       {step >= total && (
         <>
-          {life.ft && onRace && <BirthChart race={life.ft.race} name={RACES[life.ft.race].name} />}
-          {life.ft && onRace && (
-            <label className="plan-pick fade-in">
-              <span className="plan-label">เผ่า</span>
-              <select value={life.ft.race} onChange={(e) => onRace(e.target.value as RaceId)}>
-                {(Object.keys(RACES) as RaceId[]).filter((r) => !RARE_RACES.includes(r) || r === life.flags.ftBornRace).map((r) => <option key={r} value={r}>{RACES[r].name}</option>)}
-              </select>
-            </label>
-          )}
-          {life.ft && onRace && <p className="race-desc fade-in">{RACES[life.ft.race].desc}</p>}
+          {life.ft && <BirthChart race={life.ft.race} name={RACES[life.ft.race].name} />}
+          {life.ft && <p className="race-desc fade-in"><b>เผ่า{RACES[life.ft.race].name}</b> · {RACES[life.ft.race].desc}</p>}
           <button className="btn primary big fade-in" onClick={onStart}>
             เริ่มต้นชีวิต
           </button>

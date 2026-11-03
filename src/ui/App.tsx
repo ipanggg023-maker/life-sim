@@ -6,7 +6,7 @@ import { applySoul, buildHeir, buildRegression, claimAward, nextEraOptions, regr
 import type { Life, PastLife, Soul, WorldId } from "../engine/types";
 import { loc } from "../engine/util";
 import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds";
-import { TURNING_POINTS, applyRewind, closeLife, inheritLife, rewindTarget, setRace } from "../content/fantasy/life";
+import { TURNING_POINTS, applyRewind, closeLife, inheritLife, rewindTarget } from "../content/fantasy/life";
 import { FantasyPowerTab, FantasyWorldTab } from "./tabs/FantasyTabs";
 import { AstralSky } from "./Astral";
 
@@ -385,7 +385,7 @@ export function App() {
     return (
       <div className="app">
         {life.worldId === "fantasy" && <AstralSky />}
-        <BirthScreen onRace={(r) => { setRace(life, r); void commit(life); }} key={life.id} life={life} rerolls={soul.perks.reroll} onReroll={reroll} onStart={() => setStarted(true)} />
+        <BirthScreen key={life.id} life={life} rerolls={soul.perks.reroll} onReroll={reroll} onStart={() => setStarted(true)} />
       </div>
     );
   }

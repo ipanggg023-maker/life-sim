@@ -20,6 +20,7 @@ import { SCHOOL_EVENTS } from "./schoollife";
 import { fl, homeKingdom, worldOfLife } from "./state";
 import { STORY_EVENTS } from "./story";
 import { FANTASY_TALENTS } from "./talents";
+import "./achievements";
 import { tickWorld } from "./world";
 import { TALENTS } from "../talents";
 

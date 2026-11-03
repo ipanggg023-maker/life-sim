@@ -109,6 +109,8 @@ export const MURIM_TALENTS: Talent[] = [
   G("mt_blessed", "วาสนาบุญหนา", "legendary", "รอดมาได้ทุกครั้งแม้ไม่ควรรอด", { survival: 0.1, heal: 0.4, lifespan: 5 }, { luck: 10 }),
   // ───── ศักดิ์สิทธิ์ ─────
   G("mt_immortal_body", "ร่างเซียน", "divine", "ทารกที่ไม่ร้องไห้ ลมหายใจมีกลิ่นดอกบัว", { root: 2, qi: 0.2, break: 0.06, deviation: -0.6, lifespan: 20 }, { health: 10 }),
+  // ───── หนึ่งเดียวในใต้หล้า ─────
+  G("mt_heaven_mandate", "ลิขิตฟ้า", "mythic", "คืนที่คุณเกิด ดาวทั้งฟ้าเรียงเป็นอักษรเดียว — หนึ่งเดียวในใต้หล้า", { root: 3, qi: 0.3, learn: 0.3, break: 0.08, survival: 0.1, lifespan: 30 }, { health: 10, luck: 15 }),
   // ───── ใหม่: ร่างพิเศษ · จิตและปัญญา · ดวงชะตา · ฝีมือช่างและวิชามาร (design/TALENTS.md) ─────
   G("mt_frail_body", "ร่างอ่อนแอ", "common", "ป่วยบ่อยตั้งแต่เกิด ลมปราณไหลเข้าแล้วรั่วออกเหมือนตะกร้าใส่น้ำ — แต่ร่างที่อ่อนแอที่สุดกลับรับพิษได้ดีที่สุด", { qi: -0.25, poison: 0.5, medicine: 0.1 }, { health: -8 }),
   G("mt_sword_bones", "กระดูกกระบี่", "rare", "นิ้วยาวตรงเหมือนด้ามกระบี่ จับไม้ไผ่ทีไรก็ตั้งท่าโดยไม่มีใครสอน", { learn: 0.12, fight: 0.06, break: 0.02 }),
@@ -201,6 +203,8 @@ export const EVOLVED_TALENTS: Talent[] = [
   V("mt_blood_demon_d", "จอมมารโลหิต", "divine", "หยุดฝืนแล้ว — ยิ่งฆ่า ยิ่งแข็งแกร่ง", { qi: 0.45, fight: 0.15, dark: 2, deviation: 0.25 }),
   V("mt_immortal_body_l", "ร่างเซียนตื่น", "mythic", "ฟ้าผ่าเก้าครั้งไม่อาจทำลาย — ร่างนี้ใกล้เซียนกว่ามนุษย์", { root: 3, qi: 0.3, break: 0.1, deviation: -0.8, lifespan: 30 }),
   V("mt_immortal_body_d", "ร่างเซียนตกสวรรค์", "mythic", "เซียนที่ปฏิเสธสวรรค์ — พลังทั้งหมดอยู่บนโลกนี้", { root: 3, qi: 0.4, fight: 0.12, lifespan: 15 }),
+  V("mt_heaven_mandate_l", "ลิขิตฟ้าบริบูรณ์", "mythic", "ทุกก้าวเป็นไปตามที่ฟ้าเขียน — และฟ้าเขียนแต่ชัยชนะ", { root: 3, qi: 0.35, learn: 0.35, break: 0.1, survival: 0.15, lifespan: 35 }),
+  V("mt_heaven_mandate_d", "ผู้ฉีกลิขิต", "mythic", "ฟ้าไม่ได้เขียนชะตาของคุณอีกต่อไป — คุณเขียนเอง", { root: 3, qi: 0.4, fight: 0.12, break: 0.12, lifespan: 20 }),
   V("mt_light_body_l", "ฝีเท้าเหยียบเมฆ", "legendary", "เดินบนยอดหญ้าโดยหญ้าไม่ลู่ วิ่งบนผิวน้ำได้สิบก้าว", { survival: 0.12, info: 0.1, fight: 0.04 }),
   V("mt_light_body_d", "เงาไร้รอย", "legendary", "ไม่มีประตูไหนกันคุณได้ ไม่มีห้องไหนที่คุณเข้าไม่ถึง", { survival: 0.08, info: 0.18, income: 0.15 }),
   V("mt_iron_body_l", "ร่างวัชระ", "legendary", "ร่างที่ฝึกจนแข็งเหมือนรูปพระวัชระในวัด — ดาบฟันไม่เข้า ใจไม่หวั่น", { survival: 0.14, fight: 0.06, lifespan: 4 }),
