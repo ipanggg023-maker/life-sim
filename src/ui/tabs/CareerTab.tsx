@@ -9,6 +9,7 @@ import { timeBudget, timeLeft } from "../../engine/activities";
 import { TimeBar } from "./ActivitiesTab";
 import { Fold } from "../Fold";
 import { FantasyCareerCard } from "./FantasyTabs";
+import { WorkplaceCard } from "./FantasyFate";
 import { cityPay } from "../../content/fantasy/cities";
 import { canRetire, nextStep, pensionOf, retire, workActions } from "../../content/murim/life/workplace";
 
@@ -61,6 +62,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
             </div>
           </div>
           {nextStep(life) && <p className={`small ${job.performance < 25 ? "danger-text" : "muted"}`}>{nextStep(life)}</p>}
+          {life.worldId === "fantasy" && <WorkplaceCard life={life} />}
           <div className="row">
             <button className="btn" disabled={life.doneThisYear.includes("workhard")} onClick={() => act(workHard)}>
               ทุ่มเททำงาน

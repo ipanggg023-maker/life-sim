@@ -45,6 +45,7 @@ import { PEOPLE2_EVENTS, loadPeople2 } from "./people2";
 import { addExclusive } from "./exclusive";
 import { loadDoings } from "./doings";
 import { MOMENT_EVENTS } from "./moments";
+import { WORK_ECHOES, WORK_EVENTS, loadWorklife } from "./worklife";
 import { TALENTS } from "../talents";
 
 export { newFantasyWorld } from "./state";
@@ -69,6 +70,7 @@ export function loadFantasyWorld() {
   loadRumors();
   loadConseq();
   loadDoings();
+  loadWorklife();
   loadCities();
   loadHobbies();
   loadSagas();
@@ -83,7 +85,7 @@ export function loadFantasyWorld() {
   loadRealm();
   loadRealms();
   transform.fn = setRace;
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS, ...ECHOES_1, ...ECHOES_2, ...PERSONA_EVENTS, ...RUMOR_EVENTS, ...PEOPLE2_EVENTS, ...MOMENT_EVENTS], "fantasy");
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS, ...ECHOES_1, ...ECHOES_2, ...PERSONA_EVENTS, ...RUMOR_EVENTS, ...PEOPLE2_EVENTS, ...MOMENT_EVENTS, ...WORK_EVENTS, ...WORK_ECHOES], "fantasy");
   addExclusive();
   applyTags();
   const before = timeBudget.fn;

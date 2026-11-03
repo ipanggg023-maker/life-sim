@@ -7,6 +7,7 @@ import { heatWord, kingdomName, oldTales, talkIn } from "../../content/fantasy/r
 import { feelingWords, topMemories } from "../../content/fantasy/people2";
 import { goalOf, traitName, traitsOf } from "../../engine/npc";
 import { kingdomsOf } from "../../content/fantasy/state";
+import { bossOf, matesOf, workFactors } from "../../content/fantasy/worklife";
 
 /** นิสัยของคุณในสายตาคนอื่น · แสดงเป็นแถบสองขั้ว */
 export function PersonaCard({ life }: { life: Life }) {
@@ -76,5 +77,25 @@ export function RumorFold({ life }: { life: Life }) {
       ))}
       {old.length > 0 && <p className="small muted">เรื่องเล่าของคนรุ่นก่อน: {old.map((r) => `${r.who}${r.text}`).join(" · ")}</p>}
     </Fold>
+  );
+}
+
+/** ที่ทำงาน: เจ้านาย เพื่อนร่วมงาน และสิ่งที่ทำให้ผลงานขึ้นลง */
+export function WorkplaceCard({ life }: { life: Life }) {
+  if (!life.ft || !life.job?.careerId.startsWith("ft_")) return null;
+  const boss = bossOf(life);
+  const mates = matesOf(life);
+  const fx = workFactors(life);
+  return (
+    <div className="workplace small">
+      {boss && <p>เจ้านาย: <b>{boss.name}</b>{feelingWords(boss)[0] ? ` · ${feelingWords(boss)[0]}` : ""}</p>}
+      {mates.length > 0 && <p>เพื่อนร่วมงาน: {mates.map((m) => `${m.name}${feelingWords(m)[0] ? ` (${feelingWords(m)[0]})` : ""}`).join(" · ")}</p>}
+      {fx.length > 0 ? (
+        <p className="muted">ผลงานปีนี้: {fx.map((x) => `${x.label} ${x.value > 0 ? "+" : ""}${x.value}`).join(" · ")}</p>
+      ) : (
+        <p className="muted">ผลงานขึ้นกับเจ้านาย เพื่อนร่วมงาน นิสัยที่เหมาะกับงาน และชื่อเสียงของคุณ</p>
+      )}
+      <p className="muted">ผลงานถึง 60 จะได้ลุ้นชิงตำแหน่งกับเพื่อนร่วมงาน · เรื่องในที่ทำงานจะมาให้เลือกเป็นระยะ</p>
+    </div>
   );
 }
