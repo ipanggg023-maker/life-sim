@@ -83,6 +83,8 @@ export interface FLife {
   mount?: string;
   dragonFoe?: string;
   dragonblood?: boolean;
+  /** ศาสตร์แห่งเวทที่เลือก (mschools.ts) */
+  mschool?: string;
   /** มหากาพย์ที่กำลังตาม: บทที่อยู่ · 99 = จบแล้ว (sagas.ts) */
   sagas?: Record<string, number>;
   /** สัตว์เลี้ยง (hobbies.ts) */

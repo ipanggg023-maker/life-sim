@@ -22,6 +22,7 @@ import { KINDS, citiesOf, cityOf } from "../../content/fantasy/cities";
 import { DUNGEONS, PETS } from "../../content/fantasy/hobbies";
 import { sleeping } from "../../content/fantasy/talentEvo";
 import { activeSagas, doneSagas } from "../../content/fantasy/sagas";
+import { mArtsOf, mschoolOf } from "../../content/fantasy/mschools";
 import { RACE_LABEL, folkOf } from "../../content/fantasy/folk";
 import { careerById } from "../../content/core/careers";
 import { PARTY_MAX, partyLabel, partyOf } from "../../content/fantasy/bonds";
@@ -93,6 +94,12 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         <Fold always kind="section" id="ft-style" title={<>{styleOf(life)!.name} · ท่าไม้ตาย</>}>
           {styleOf(life)!.techs.map((t, i) => <p className={`small ${i < techsOf(life).length ? "" : "muted"}`} key={t}>{i < techsOf(life).length ? <b>{t}</b> : `${t} · เปิดเมื่อเป็น${BODY_RANKS[i + 1]}`}</p>)}
           <p className="small muted">ใช้ท่าไม้ตายได้ปีละครั้งในการต่อสู้{life.flags.ftTechUsed === life.age ? " · ปีนี้ใช้ไปแล้ว" : ""}</p>
+        </Fold>
+      )}
+      {mschoolOf(life) && (
+        <Fold always kind="section" id="ft-mschool" title={<>{mschoolOf(life)!.name}</>}>
+          <p className="small muted">{mschoolOf(life)!.desc}</p>
+          {mschoolOf(life)!.arts.map((a, i) => <p className={`small ${i < mArtsOf(life).length ? "" : "muted"}`} key={a}>{i < mArtsOf(life).length ? <b>{a}</b> : `${a} · เปิดเมื่อเป็น${MAGIC_RANKS[i + 2]}`}</p>)}
         </Fold>
       )}
       {partyOf(life).length > 0 && (

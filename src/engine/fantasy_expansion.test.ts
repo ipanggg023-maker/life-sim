@@ -13,6 +13,7 @@ import { buildHeir } from "./soul";
 import { fantasyPersonActions } from "../content/fantasy/bonds";
 import { SPELLS } from "../content/fantasy/magic";
 import { SAGA_LIST } from "../content/fantasy/sagas";
+import { mArtsOf } from "../content/fantasy/mschools";
 import { epithetOf, styleBonus, techsOf } from "../content/fantasy/styles";
 import { allEvents, getEvent } from "./events";
 import { CITIES, citiesOf, cityCost, cityOf } from "../content/fantasy/cities";
@@ -345,6 +346,33 @@ describe("เรื่องของมังกร", () => {
       const vis = visibleChoices(l, q);
       const out = resolveChoice(l, vis[Math.min(i, vis.length - 1)].index);
       expect(out?.text ?? "", e.id).not.toMatch(/\{[dtew]\}|undefined/);
+    }
+  });
+});
+
+describe("ศาสตร์แห่งเวท", () => {
+  it("เลือกเมื่อเป็นนักเวท วิชาเปิดตามขั้น และแต่ละศาสตร์ให้ผลต่างกัน", () => {
+    const l = fantasy(101);
+    l.age = 25; l.ft!.wand = { name: "ค", quality: 1, material: "ไม้" }; l.ft!.magicRank = 2;
+    expect(getEvent("ft.ms.pick")!.when!(l)).toBe(true);
+    l.ft!.mschool = "summon";
+    expect(mArtsOf(l).length).toBe(1);
+    const base = combat(l);
+    l.ft!.magicRank = 4;
+    expect(mArtsOf(l).length).toBe(3);
+    expect(combat(l)).toBeGreaterThan(base);
+    l.ft!.mschool = "time"; l.ft!.potential = 2;
+    runEvent(l, "ft.ms.pick");
+    const vis = visibleChoices(l, l.queue[0]);
+    expect(vis.length).toBeGreaterThanOrEqual(6);
+  });
+  it("ทุกฉากของศาสตร์เวทเล่นได้", () => {
+    for (const s of ["death", "time", "summon", "healing", "illusion", "elemental"] as const) for (const id of ["ft.ms.inquisitor", "ft.ms.time_echo", "ft.ms.summon_wild", "ft.ms.plague_heal", "ft.ms.illusion_heist", "ft.ms.element_storm"]) {
+      const l = fantasy(103);
+      l.age = 30; l.ft!.wand = { name: "ค", quality: 1, material: "ไม้" }; l.ft!.magicRank = 4; l.ft!.mschool = s;
+      runEvent(l, id);
+      const vis = visibleChoices(l, l.queue[0]);
+      expect(() => resolveChoice(l, vis[0].index), `${s} ${id}`).not.toThrow();
     }
   });
 });

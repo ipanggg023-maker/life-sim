@@ -30,6 +30,7 @@ import { HOBBY_EVENTS, loadHobbies } from "./hobbies";
 import { TALENT_EVO_EVENTS, loadTalentEvo } from "./talentEvo";
 import { SAGA_EVENTS, loadSagas } from "./sagas";
 import { DRAGON_PLEA, DRAGON_SCENES, DRAGON_TALES, loadDragonTales } from "./dragonTales";
+import { MSCHOOL_EVENTS, loadMSchools } from "./mschools";
 import { tickWorld } from "./world";
 import { TALENTS } from "../talents";
 
@@ -55,6 +56,7 @@ export function loadFantasyWorld() {
   loadHobbies();
   loadSagas();
   loadDragonTales();
+  loadMSchools();
   loadLegends();
   loadMagic();
   loadCivic();
@@ -63,7 +65,7 @@ export function loadFantasyWorld() {
   loadRealm();
   loadRealms();
   transform.fn = setRace;
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA], "fantasy");
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS], "fantasy");
   const before = timeBudget.fn;
   timeBudget.fn = (l) => (l.worldId === "fantasy" ? (l.age < 10 ? 2 : l.age < 16 ? 3 : 5) : before?.(l));
   lifespanHooks.push((l) => (on(l) ? younger(l) + (fl(l).dragonblood ? 30 : 0) + (fl(l).lifeBonus ?? 0) - (fl(l).pacts ?? 0) * 10 : 0));
