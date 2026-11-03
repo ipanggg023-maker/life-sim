@@ -1,4 +1,6 @@
 import { del, get, keys, set } from "idb-keyval";
+import type { WorldState } from "./engine/worldState";
+import type { WorldId } from "./engine/types";
 import { newSoul } from "./engine/soul";
 import type { Life, PastLife, Soul } from "./engine/types";
 
@@ -6,6 +8,7 @@ const CURRENT = "lifesim/current";
 const GRAVEYARD = "lifesim/graveyard";
 const SOUL = "lifesim/soul";
 const SNAP = "lifesim/snap/";
+const WORLD = "lifesim/world/";
 
 export async function loadCurrent(): Promise<Life | undefined> {
   try {
@@ -213,4 +216,23 @@ export async function applyBundle(b: Bundle) {
   await pruneSnapshots();
   if (b.life) await saveCurrent(b.life);
   else await clearCurrent();
+}
+
+// ───────────────────────── โลกที่อยู่ต่อหลังตัวละครตาย ─────────────────────────
+
+export async function loadWorldState(id: WorldId): Promise<WorldState | undefined> {
+  try {
+    const w = await get<WorldState>(`${WORLD}${id}`);
+    return w?.version === 1 ? w : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function saveWorldState(w: WorldState) {
+  try {
+    await set(`${WORLD}${w.worldId}`, w);
+  } catch (e) {
+    console.warn("บันทึกโลกไม่สำเร็จ", e);
+  }
 }

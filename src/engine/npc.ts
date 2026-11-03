@@ -3,6 +3,7 @@
 import { chance, randInt } from "./rng";
 import type { Life, Person } from "./types";
 import { clamp, log, money, shortName } from "./util";
+import { traitsOf as worldTraits } from "./worldModule";
 
 export type Axis = "love" | "trust" | "respect" | "fear" | "debt" | "grudge" | "jealousy" | "loyalty";
 export type RelAxes = Record<Axis, number>;
@@ -192,7 +193,7 @@ const FAMILY = ["father", "mother", "sibling", "spouse", "child"];
 
 /** ทุกปี: ความรู้สึกเปลี่ยนตามเวลา และ NPC ลงมือทำตามความรู้สึก/บุคลิกของตัวเอง (เฉพาะโลกสมจริง) */
 export function tickNpcs(l: Life) {
-  if (l.worldId !== "murim" || !l.alive) return;
+  if (!worldTraits(l.worldId).npcLife || !l.alive) return;
   const acted = new Set<string>();
   for (const p of l.people) {
     if (!p.alive) continue;

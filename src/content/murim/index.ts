@@ -1,3 +1,4 @@
+import { registerWorld } from "../../engine/worldModule";
 import { registerEvents } from "../../engine/events";
 import "./m17core"; // ระบบทำเนียบ ธรรมะ-มาร สมุดบุญคุณ สำนักของตัวเอง (ตัวระบบ ไม่ใช่เนื้อเรื่อง)
 import "./careers"; // ลงทะเบียนอาชีพและกิจกรรมของยุทธภพ
@@ -50,11 +51,14 @@ import "./life/deathCause";
 import { TALENT_ENGINE_EVENTS } from "./life/talentArcs";
 import { TALENT_STORY_EVENTS } from "./life/talentStories";
 import { TALENT_STORY2_EVENTS } from "./life/talentStories2";
+// ต้องอยู่ท้ายสุด: yearHooks ทำงานตามลำดับ import ถ้าย้ายขึ้นไปจะสลับลำดับระบบรายปีของยุทธภพ
+import { MURIM_MODULE } from "./module";
 
 let loaded = false;
 
 export function loadMurimWorld() {
   if (loaded) return;
   loaded = true;
+  registerWorld(MURIM_MODULE);
   registerEvents([...MILESTONE_EVENTS, ...CRISIS_EVENTS, ...GOAL_EVENTS, ...NPC_EVENTS, ...DUEL_EVENTS, ...BODY_EVENTS, ...STORY_EVENTS, ...MARTIAL_EVENTS, ...HOUSEHOLD_EVENTS, ...WORLD_EVENTS, ...GENERATION_EVENTS, ...CRIME_EVENTS, ...TRAVEL_EVENTS, ...FAMILY_RITE_EVENTS, ...GOAL2_EVENTS, ...GOAL_CHANCE_EVENTS, ...TURNING_EVENTS, ...ALL_SECT_LIFE_EVENTS, ...TREASURE_EVENTS, ...THREE_KINGDOMS_EVENTS, ...WUXIA_FILM_EVENTS, ...LETTER_EVENTS, ...TURNCOAT_EVENTS, ...ESTATE_EVENTS, ...SIDE_STORY_EVENTS, ...SIDE_STORY2_EVENTS, ...PATHWAY_EVENTS, ...BETRAYAL_EVENTS, ...CONSORT_EVENTS, ...FUMA_EVENTS, ...KINSHIP_EVENTS, ...JOURNEY_EVENTS, ...CREATION_EVENTS, ...WORKPLACE_EVENTS, ...RUMOR_EVENTS, ...FAITH_EVENTS, ...TORTURE_EVENTS, ...RITE_EVENTS, ...SEED_EVENTS, ...NPC_LIFE_EVENTS, ...CALM_EVENTS, ...JOB2A_EVENTS, ...JOB2B_EVENTS, ...JOB2C_EVENTS, ...DAILY3_EVENTS, ...DARK_EVENTS, ...ROMANCE_EVENTS, ...RIVAL_EVENTS, ...TALENT_ENGINE_EVENTS, ...TALENT_STORY_EVENTS, ...TALENT_STORY2_EVENTS], "murim");
 }

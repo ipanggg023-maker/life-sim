@@ -45,7 +45,30 @@ const taels = (n: number) => {
   return `${n < 0 ? "-" : ""}${t < 10 ? t.toFixed(1) : Math.round(t).toLocaleString("th-TH")} ตำลึง`;
 };
 
+const gold = (n: number) => `${n < 0 ? "-" : ""}${Math.round(Math.abs(n) / 100).toLocaleString("th-TH")} เหรียญทอง`;
+
 export const WORLDS: Record<WorldId, WorldInfo> = {
+  fantasy: {
+    id: "fantasy",
+    name: "แฟนตาซี",
+    tagline: "มังกร ดาบในตำนาน โรงเรียนเวทมนตร์ และชีวิตที่คุณเลือกเอง",
+    emoji: "🐉",
+    birthplace: "หมู่บ้านเล็กๆ ในอาณาจักรแห่งหนึ่ง",
+    startYear: 1000,
+    yearLabel: "ปี",
+    currency: gold,
+    names: { male: ["เอเดน", "ลีออน", "โรวาน", "แกเรธ", "คาเอล", "ทริสตัน"], female: ["ไอรา", "เซเรน่า", "ลูน่า", "เอลาร่า", "มิร่า", "โรซาลิน"], nickM: ["เอด", "ลี", "โร"], nickF: ["ไอ", "ซี", "ลู"], last: ["แอชฟอร์ด", "สตอร์มเวล", "ไบรต์วูด", "เรเวนฮาร์ท", "โอคเชด"] },
+    parentJobs: { poor: ["ชาวนา", "คนงานเหมือง"], middle: ["ช่างตีเหล็ก", "พ่อค้า"], rich: ["เจ้าของกองเรือสินค้า", "นักเวทประจำเมือง"], elite: ["ขุนนาง", "เจ้าเมือง"] },
+    wealthLabel: { poor: "ครอบครัวชาวนา", middle: "ครอบครัวช่างฝีมือ", rich: "ตระกูลพ่อค้าใหญ่", elite: "ตระกูลขุนนาง" },
+    deathYoung: ["ไข้หนาว", "อุบัติเหตุในเหมือง"],
+    deathOld: ["ชราภาพ", "หลับไปอย่างสงบ"],
+    awakenAge: [10, 12],
+    awakenEarly: [5, 9],
+    awakenLate: [13, 30],
+    labels: { rank: "ขั้น", power: "มานา", guild: "สังกัด", raid: "ภารกิจ", raidUnit: (r) => `ภารกิจระดับ${r}`, train: "ฝึกฝน", trainText: "ลานฝึก" },
+    questJobs: [],
+    ranks: ["สามัญ", "ฝึกหัด", "ฝีมือ", "ชำนาญ", "ยอดฝีมือ", "ปรมาจารย์", "ตำนาน", "เทพนิยาย", "เหนือมนุษย์"],
+  },
   murim: {
     id: "murim",
     name: "ยุทธภพ",
@@ -90,7 +113,7 @@ export const OPEN_WORLDS: WorldId[] = ["murim"];
 export const isOpenWorld = (id: WorldId) => OPEN_WORLDS.includes(id);
 
 /** โลกแบบสมจริง: ไม่มีหน้าต่างระบบ ไม่ย้อนเวลา ไม่ข้ามโลก ไม่มีร้านวิญญาณ ไม่มีคอมเมนต์ผู้อ่าน */
-const REALISTIC: WorldId[] = ["murim"];
+const REALISTIC: WorldId[] = ["murim", "fantasy"];
 export const isRealistic = (id: WorldId | undefined) => REALISTIC.includes(id ?? "murim");
 
 /**

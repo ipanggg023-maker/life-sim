@@ -2,7 +2,7 @@
 import type { Ctx, GameEvent, Outcome } from "../../engine/events";
 import { kill } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
-import type { Life, Person, WorldId } from "../../engine/types";
+import type { Life, Person, LegacyWorld } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, createPerson, people, randomName, shortName } from "../../engine/util";
 import { fightOdds, gainExp, partySize } from "../core/power";
 import { worldOf } from "../worlds";
@@ -11,13 +11,13 @@ const good = (text: string): Outcome => ({ text, kind: "good" });
 const bad = (text: string): Outcome => ({ text, kind: "bad" });
 const meh = (text: string): Outcome => ({ text });
 
-const W = <T>(l: Life, t: Record<WorldId, T>): T => t[l.worldId ?? "hunter"];
+const W = <T>(l: Life, t: Record<LegacyWorld, T>): T => t[(l.worldId ?? "murim") as LegacyWorld];
 const allies = (l: Life) => people(l, "ally");
 const questing = (l: Life) => !!l.power && worldOf(l.worldId).questJobs.includes(l.job?.careerId ?? "");
 const byId = (l: Life, c: Ctx) => l.people.find((p) => p.id === c.id && p.alive);
 
 /** บุคลิก + บทบาทของเพื่อนร่วมทีม (เก็บใน Person.job) */
-const ARCHETYPES: Record<WorldId, string[]> = {
+const ARCHETYPES: Record<LegacyWorld, string[]> = {
   murim: ["ศิษย์น้องขี้แยที่ฝีมือดาบไม่ธรรมดา", "จอมยุทธ์พเนจรขี้เมาที่ซ่อนวิชาไว้", "หมอยาสาวปากร้าย", "ขอทานหนุ่มจากพรรคกระยาจก", "มือสังหารที่ล้างมือในอ่างทองคำแล้ว"],
 };
 
@@ -33,9 +33,9 @@ export const PARTY_EVENTS: GameEvent[] = [
     prepare: (l) => {
       const g = chance(l, 0.5) ? "m" : "f";
       const n = randomName(l, g);
-      const full = l.worldId === "murim" ? `${n.last}${n.first}` : l.worldId === "court" ? `${n.first} ${n.last}` : `${n.first} (${n.nick}) ${n.last}`;
+      const full = l.worldId === "murim" ? `${n.last}${n.first}` : `${n.first} ${n.last}`;
       const name = worldOf(l.worldId).modern ? n.nick : full;
-      return { g, full, name, arch: pick(l, ARCHETYPES[l.worldId ?? "hunter"]) };
+      return { g, full, name, arch: pick(l, ARCHETYPES[(l.worldId ?? "hunter") as LegacyWorld]) };
     },
     text: (l, c) =>
       W(l, {

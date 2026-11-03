@@ -1,7 +1,7 @@
 // วิญญาณข้ามโลก: ความทรงจำจากชาติก่อนในโลกอื่นค่อยๆ กลับมา
 // อดีต Hunter ในยุทธภพ · อดีตจอมยุทธ์ในราชสำนัก ฯลฯ
 import type { GameEvent } from "../../engine/events";
-import type { Life, WorldId } from "../../engine/types";
+import type { Life, WorldId, LegacyWorld } from "../../engine/types";
 import { addFame, addStat, clamp } from "../../engine/util";
 import { gainExp, markTurn, rankLabel } from "../core/power";
 import { worldOf } from "../worlds";
@@ -9,12 +9,12 @@ import { worldOf } from "../worlds";
 const pastWorld = (l: Life) => l.flags.pastWorld as WorldId | undefined;
 
 /** ตัวตนชาติก่อนในแต่ละโลก */
-const WHO: Record<WorldId, string> = {
+const WHO: Record<LegacyWorld, string> = {
   murim: "จอมยุทธ์ในยุทธภพ",
 };
 
 /** ภาพในความฝันจากโลกเก่า */
-const DREAM: Record<WorldId, string> = {
+const DREAM: Record<LegacyWorld, string> = {
   murim: "ยอดเขาหิมะ เสียงกระบี่กระทบกัน และกลิ่นสุราในโรงเตี๊ยม",
 };
 
@@ -29,7 +29,7 @@ export const PAST_LIFE_EVENTS: GameEvent[] = [
     when: (l) => !!pastWorld(l),
     title: "ความฝันจากต่างโลก",
     text: (l) =>
-      `คุณฝันเห็น${DREAM[pastWorld(l)!]}ซ้ำๆ ทุกคืน… ในฝัน มีคนเรียกคุณว่า "${l.flags.pastName}" — ${WHO[pastWorld(l)!]}`,
+      `คุณฝันเห็น${DREAM[(pastWorld(l)!) as LegacyWorld]}ซ้ำๆ ทุกคืน… ในฝัน มีคนเรียกคุณว่า "${l.flags.pastName}" — ${WHO[(pastWorld(l)!) as LegacyWorld]}`,
     choices: [
       {
         label: "ตั้งใจจำทุกอย่างไว้",
@@ -64,7 +64,7 @@ export const PAST_LIFE_EVENTS: GameEvent[] = [
     title: "วิชาจากต่างโลก",
     system: true,
     text: (l) =>
-      `[ระบบ] ตรวจพบวิชาที่ไม่มีอยู่ในโลกนี้ —「${l.flags.pastSkill}」จากชาติที่คุณเป็น${WHO[pastWorld(l)!]} ร่างกายนี้ยังจำการเคลื่อนไหวนั้นได้`,
+      `[ระบบ] ตรวจพบวิชาที่ไม่มีอยู่ในโลกนี้ —「${l.flags.pastSkill}」จากชาติที่คุณเป็น${WHO[(pastWorld(l)!) as LegacyWorld]} ร่างกายนี้ยังจำการเคลื่อนไหวนั้นได้`,
     choices: [
       {
         label: "ฝึกวิชาจากชาติก่อน",

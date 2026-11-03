@@ -109,7 +109,7 @@ export function DeathScreen({
         )}
         <p>งานสุดท้าย: {job ? `${job.titles[life.job!.level - 1]} (${job.name})` : "-"}</p>
         {life.power && real && <p>ฝีมือ: ขั้น{rankLabel(life, life.power.rank)}</p>}
-        {life.power && !real && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · {""}{life.worldId === "murim" ? "ภารกิจ" : life.worldId === "tower" ? "บททดสอบ" : life.worldId === "apocalypse" ? "ฉากภารกิจ" : life.worldId === "ordinary" ? "ภารกิจระบบ" : "Gate"} {life.power.gates}</p>}
+        {life.power && !real && <p>{worldOf(life.worldId).labels.rank}: {rankLabel(life, life.power.rank)} · Lv.{life.power.level} · ภารกิจ {life.power.gates}</p>}
         <p>
           ครอบครัว: {spouse ? "แต่งงาน" : "โสด"} · ลูก {kids} คน · ชื่อเสียง {life.fame}
         </p>

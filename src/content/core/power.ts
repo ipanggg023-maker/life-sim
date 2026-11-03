@@ -1,7 +1,7 @@
 import { QI_NEED, martialBonus } from "../murim/martial/arts";
 import { combatFactor } from "../../engine/body";
 import { chance, nextFloat, pick, weightedPick } from "../../engine/rng";
-import type { HunterClass, Life, StatKey, WorldId } from "../../engine/types";
+import type { HunterClass, Life, StatKey, WorldId, LegacyWorld } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, log, money as fmtMoney } from "../../engine/util";
 import { worldOf } from "../worlds";
 import { titleBonus } from "../titles";
@@ -313,14 +313,14 @@ export function rollAwakening(life: Life, bonus: number): number {
 
 /** เสนอสายอาชีพ 2–3 สายตามสเตตัสเด่น */
 export function offerClasses(life: Life): HunterClass[] {
-  const byWorld: Record<WorldId, { map: Record<StatKey, HunterClass[]>; fallback: HunterClass; rare: HunterClass }> = {
+  const byWorld: Record<LegacyWorld, { map: Record<StatKey, HunterClass[]>; fallback: HunterClass; rare: HunterClass }> = {
     murim: {
       map: { health: ["m_sword", "m_spear", "m_staff"], smarts: ["m_palm", "m_medic", "m_poison"], luck: ["m_hidden", "m_light"], looks: ["m_medic", "m_hidden", "m_qin"], happiness: ["m_medic", "m_qin"] },
       fallback: "m_sword",
       rare: "m_demon",
     },
   };
-  const w = byWorld[life.worldId ?? "hunter"];
+  const w = byWorld[(life.worldId ?? "hunter") as LegacyWorld];
   const keys = (["health", "smarts", "luck", "looks"] as StatKey[]).sort((a, b) => life.stats[b] - life.stats[a]);
   const offer = new Set<HunterClass>();
   offer.add(pick(life, w.map[keys[0]]));

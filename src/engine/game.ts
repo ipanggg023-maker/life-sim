@@ -6,9 +6,8 @@ import type { Career } from "../content/core/careers";
 import type { Country, Faculty, Gender, SysStat, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
 import { isRealistic, worldMatches, worldOf } from "../content/worlds";
 import { feel, relOf, remember } from "./npc";
-import { birthplaceOf } from "../content/murim/life/region";
 import { SAVE_VERSION, repairLife } from "./validate";
-import { convertOldTalents, gift } from "../content/murim/life/gifts";
+import { moduleOf, traitsOf, worldGift as gift } from "./worldModule";
 
 /** ระบบความรู้สึกหลายแกนของ NPC ใช้เฉพาะโลกสมจริง (โลกอื่นใช้ความสนิทแบบเดิม) */
 const npcOn = (l: Life) => isRealistic(l.worldId);
@@ -183,7 +182,7 @@ export function createLife(opts: BirthOptions = {}): Life {
   for (const id of ids) {
     life.talents.push({ id, revealed: false });
     // ยุทธภพ: เห็นตอนเกิดเฉพาะพรสวรรค์ธรรมดา — ของหายากขึ้นไปซ่อนอยู่จนมีเหตุการณ์ปลุก (design/TALENTS.md)
-    if (life.worldId !== "murim" || opts.talents || talentById(id)?.rarity === "common") revealTalent(life, id);
+    if (!traitsOf(life.worldId).hiddenTalents || opts.talents || talentById(id)?.rarity === "common") revealTalent(life, id);
   }
   life.talents.push({ id: rollTalent(life, opts.blessed ? BLESSED_HIDDEN : HIDDEN_RARITY_ODDS, ids, true), revealed: false });
   rollAwakenTrack(life);
@@ -202,7 +201,7 @@ export function createLife(opts: BirthOptions = {}): Life {
   birthArc(life);
   log(
     life,
-    `คุณเกิดเป็น${life.gender === "m" ? "ผู้ชาย" : "ผู้หญิง"} ชื่อ ${displayName(life)} (ชื่อเรียกในบ้าน "${life.nickname}") ใน${wealthLabel(life.wealth, life.worldId)} ที่${birthplaceOf(life, worldOf(life.worldId).birthplace)}`,
+    `คุณเกิดเป็น${life.gender === "m" ? "ผู้ชาย" : "ผู้หญิง"} ชื่อ ${displayName(life)} (ชื่อเรียกในบ้าน "${life.nickname}") ใน${wealthLabel(life.wealth, life.worldId)} ที่${moduleOf(life.worldId)?.birthplace?.(life, worldOf(life.worldId).birthplace) ?? worldOf(life.worldId).birthplace}`,
     "milestone",
   );
   const dad = firstPerson(life, "father")!;
@@ -371,7 +370,7 @@ function progressMoney(life: Life) {
   // หลังวันสิ้นโลกไม่มีค่าเช่า ไม่มีห้าง — ใช้จ่ายแค่ของจำเป็น
   const ruins = life.flags.doomed && !life.flags.rebuilt;
   // ยุทธภพ: ค่าครองชีพยุคโบราณถูกกว่าค่าเช่าเมืองใหญ่ งานธรรมดาพอเลี้ยงครอบครัวได้
-  const living = ruins ? 30_000 + kids * 15_000 : life.worldId === "murim" ? 35_000 + kids * 18_000 + Math.round(income * 0.25) : 84_000 + kids * 60_000 + Math.round(income * 0.4);
+  const living = ruins ? 30_000 + kids * 15_000 : moduleOf(life.worldId)?.livingCost?.(life, kids, income) ?? 84_000 + kids * 60_000 + Math.round(income * 0.4);
   addMoney(life, -living);
   if (life.debt > 0 && life.money > 0) {
     const pay = Math.min(life.debt, Math.round(life.money * 0.3));
@@ -487,7 +486,7 @@ export function ageUp(life: Life) {
   if (!life.alive || life.queue.length) return;
   life.age++;
   // จำกิจกรรม/งานของปีที่ผ่านมา (ปุ่ม "ซ้ำปีก่อน" ในยุทธภพ)
-  if (life.worldId === "murim") life.flags.lastActs = life.doneThisYear.filter((x) => x.startsWith("act:") || x.startsWith("job:")).join("|");
+  if (traitsOf(life.worldId).repeatActs) life.flags.lastActs = life.doneThisYear.filter((x) => x.startsWith("act:") || x.startsWith("job:")).join("|");
   life.doneThisYear = [];
   life.flags.income = 0;
 
@@ -546,7 +545,7 @@ export function migrateLife(life: Life): Life {
   });
   repairLife(life);
   // พรสวรรค์ชุดเก่า/โลกอื่นในเซฟยุทธภพ → พรสวรรค์ยุทธภพที่มีผลจริง
-  convertOldTalents(life);
+  moduleOf(life.worldId)?.migrate?.(life);
   // เซฟรุ่นเก่า: เล่นต่อได้จนจบชีวิตนี้ (ระบบใหม่เริ่มนับจากตอนโหลด) — รุ่นถัดไปเกิดเป็นเซฟรุ่นใหม่เต็มตัว
   if ((life.sv ?? 1) < SAVE_VERSION) {
     if (life.worldId === "murim" && life.alive) life.flags.legacySave = life.sv ?? 1;
@@ -770,7 +769,8 @@ export function propose(life: Life, p: Person): Outcome {
   if (life.doneThisYear.includes("propose")) return { text: "รอปีหน้าค่อยลองใหม่นะ" };
   if (life.age < 18 || p.age < 18) return { text: "ยังเด็กเกินไปสำหรับเรื่องแต่งงาน" };
   if (life.people.some((x) => x.alive && x.relation === "spouse" && x.id !== p.id && (life.gender === "f" || x.tags?.includes("princess")))) return { text: "คุณมีคู่สมรสอยู่แล้ว" };
-  if (life.worldId === "murim" && life.job?.careerId === "monk") return { text: "คุณบวชอยู่ — ต้องสึกก่อนจึงจะแต่งงานได้ (ลาออกจากอาชีพ)" };
+  const blocked = moduleOf(life.worldId)?.marriageBlock?.(life);
+  if (blocked) return { text: blocked };
   if (Number(life.flags.mourningUntil ?? -1) > life.age) return { text: "คุณยังไว้ทุกข์ให้พ่อแม่อยู่ — ธรรมเนียมห้ามแต่งงานจนครบสามปี" };
   life.doneThisYear.push("propose");
   if (chance(life, clamp((p.bond - 30) / 60, 0.05, 0.95))) {

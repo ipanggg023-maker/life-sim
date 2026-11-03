@@ -5,14 +5,14 @@ import { isRealistic } from "../worlds";
 import type { GameEvent, Outcome } from "../../engine/events";
 import { kill } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
-import type { Life, Person, WorldId } from "../../engine/types";
+import type { Life, Person, LegacyWorld } from "../../engine/types";
 import { addFame, addMoney, addStat, checkChance, clamp, createPerson, shortName } from "../../engine/util";
 import { gainExp, luckyRankUp, markTurn } from "../core/power";
 
 const good = (text: string): Outcome => ({ text, kind: "good" });
 const bad = (text: string): Outcome => ({ text, kind: "bad" });
 const meh = (text: string): Outcome => ({ text });
-const W = <T>(l: Life, t: Record<WorldId, T>): T => t[l.worldId ?? "hunter"];
+const W = <T>(l: Life, t: Record<LegacyWorld, T>): T => t[(l.worldId ?? "murim") as LegacyWorld];
 
 export const nemesisOf = (l: Life): Person | undefined => l.people.find((p) => p.id === l.flags.nemesisId && p.alive);
 const stage = (l: Life) => (l.flags.nemesisStage as "rival" | "enemy" | "friend" | undefined) ?? "rival";

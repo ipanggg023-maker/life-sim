@@ -1,12 +1,14 @@
 ﻿import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { loadMurimWorld } from "./content/murim";
+import { loadFantasyWorld } from "./content/fantasy";
 import { loadSharedEvents } from "./content/shared";
 import { App } from "./ui/App";
 import "./ui/styles.css";
 import { mountInkDefs } from "./ui/inkDefs";
 
 loadMurimWorld();
+loadFantasyWorld();
 loadSharedEvents();
 mountInkDefs();
 

@@ -1,4 +1,6 @@
-export type WorldId = "murim";
+export type WorldId = "murim" | "fantasy";
+/** ตารางเก่าที่มีเฉพาะยุทธภพ โลกใหม่ใช้เนื้อหาของตัวเอง */
+export type LegacyWorld = "murim";
 
 /** ประเทศที่เกิด (เฉพาะโลกยุคปัจจุบัน) */
 export type Country = "th" | "kr" | "jp";

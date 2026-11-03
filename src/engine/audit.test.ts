@@ -13,7 +13,7 @@ loadMurimWorld();
 loadSharedEvents();
 
 const WORLDS: WorldId[] = ["murim"];
-const QJ: Record<WorldId, string> = { murim: "wanderer" };
+const QJ: Partial<Record<WorldId, string>> = { murim: "wanderer" };
 
 /** ปัญหาที่เจอ (รวมไว้แล้วรายงานทีเดียว) */
 const problems: string[] = [];
@@ -65,7 +65,7 @@ function snapshots(world: WorldId): Life[] {
       }
       if (!l.alive) break;
       for (const a of ACTIVITIES) if ((s > 30 || !a.id.startsWith("free_")) && !activityLocked(l, a) && nextFloat(r) < 0.3) doActivity(l, a.id);
-      if (l.power && l.job?.careerId !== QJ[world]) applyJob(l, QJ[world]);
+      if (l.power && l.job?.careerId !== QJ[world]) applyJob(l, QJ[world]!);
       if (marks.includes(l.age)) out.push(structuredClone(l));
       ageUp(l);
     }

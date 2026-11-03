@@ -1,4 +1,5 @@
 import { nextFloat, pick } from "./rng";
+import { traitsOf } from "./worldModule";
 import { isRealistic, worldOf } from "../content/worlds";
 import { countryMoney, countryOf, localize } from "../content/countries";
 import { passiveCheck } from "../content/passives";
@@ -38,7 +39,7 @@ export function uid(life: Life): string {
 
 /** ชื่อเต็มตามธรรมเนียมของโลก (ยุทธภพ: แซ่ขึ้นก่อน ไม่เว้นวรรค) */
 export function displayName(life: Pick<Life, "firstName" | "lastName" | "worldId" | "country">) {
-  if (life.worldId === "murim") return `${life.lastName}${life.firstName}`;
+  if (traitsOf(life.worldId).surnameFirst) return `${life.lastName}${life.firstName}`;
   const c = countryIn(life);
   return c && countryOf(c).familyFirst ? `${life.lastName} ${life.firstName}` : `${life.firstName} ${life.lastName}`;
 }
@@ -92,13 +93,11 @@ export function createPerson(
     id: uid(life),
     // ยุทธภพเรียกชื่อเต็มแบบแซ่นำหน้า (shortName จะได้ชื่อเต็ม ซึ่งเข้ากับสำนวนนิยายจีน)
     name:
-      life.worldId === "murim"
+      traitsOf(life.worldId).surnameFirst
         ? `${opts.lastName ?? n.last}${n.first}`
         : familyFirst
           ? `${opts.lastName ?? n.last} ${n.first}` // เกาหลี/ญี่ปุ่น: นามสกุลขึ้นก่อน เรียกด้วยชื่อตัว
-          : life.worldId === "court"
-          ? `${n.first} ${opts.lastName ?? n.last}` // ราชสำนักเรียกด้วยชื่อตัว (shortName = ชื่อตัว)
-          : `${n.first} (${n.nick}) ${opts.lastName ?? n.last}`,
+          : `${n.first} ${opts.lastName ?? n.last}`,
     gender,
     relation,
     age: opts.age,
@@ -135,7 +134,7 @@ function murimLabel(p: Person): string | undefined {
 
 /** ส่ง life มาด้วยเพื่อบอกพี่/น้องตามอายุเทียบกับตัวเรา และใช้คำเรียกตามโลก */
 export function relationLabel(p: Person, life?: { age: number; worldId?: WorldId }): string {
-  const m = life?.worldId === "murim" ? murimLabel(p) : undefined;
+  const m = traitsOf(life?.worldId).classicKinTerms ? murimLabel(p) : undefined;
   if (m) return m;
   switch (p.relation) {
     case "father":

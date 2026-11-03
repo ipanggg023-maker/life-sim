@@ -327,7 +327,7 @@ function CollectionCard({ life, soul }: { life: Life; soul: Soul }) {
       {(Object.keys(SET_BONUS) as WorldId[]).map((w) => (
         <div key={w} className="collect-row">
           <div className="small">
-            {worldOf(w).name} · {done.includes(w) ? <b>ครบชุด ✓ {SET_BONUS[w].label}</b> : <span className="muted">ครบชุดได้ {SET_BONUS[w].label}</span>}
+            {worldOf(w).name} · {done.includes(w) ? <b>ครบชุด ✓ {SET_BONUS[w as "murim"].label}</b> : <span className="muted">ครบชุดได้ {SET_BONUS[w as "murim"].label}</span>}
           </div>
           <div className="collect-items">
             {COLLECTIBLES.filter((c) => c.world === w).map((c) => (

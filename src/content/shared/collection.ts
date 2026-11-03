@@ -1,7 +1,7 @@
 // M23 — ตู้สะสมของวิญญาณ: ของหายากที่เจอระหว่างใช้ชีวิต ติดตัววิญญาณข้ามชาติ ครบชุดได้โบนัสตอนเกิด
 import { yearHooks } from "../../engine/game";
 import { chance, pick } from "../../engine/rng";
-import type { Life, StatKey, WorldId } from "../../engine/types";
+import type { Life, StatKey, WorldId, LegacyWorld } from "../../engine/types";
 import { addStat, log } from "../../engine/util";
 
 export interface Collectible {
@@ -11,16 +11,16 @@ export interface Collectible {
   name: string;
 }
 
-const RAW: Record<WorldId, [string, string][]> = {
+const RAW: Record<LegacyWorld, [string, string][]> = {
   murim: [["📜", "คัมภีร์ครึ่งเล่ม"], ["🍶", "จอกเหล้าของยอดฝีมือ"], ["🪭", "พัดเหล็กไร้เจ้าของ"], ["💊", "โอสถพันปี (ไม่กล้ากิน)"], ["🪨", "หินลับกระบี่จากยอดเขา"], ["🎐", "กระดิ่งลมของสำนักที่ล่มสลาย"], ["🧧", "ป้ายประกาศจับปลอม"], ["🀄", "หมากล้อมหยก"]],
 };
 
 export const COLLECTIBLES: Collectible[] = (Object.keys(RAW) as WorldId[]).flatMap((world) =>
-  RAW[world].map(([emoji, name], i) => ({ id: `${world}_${i}`, world, emoji, name })),
+  RAW[(world) as LegacyWorld].map(([emoji, name], i) => ({ id: `${world}_${i}`, world, emoji, name })),
 );
 
 /** โบนัสเมื่อครบชุดของโลกนั้น — ได้ตอนเกิดทุกชาติ */
-export const SET_BONUS: Record<WorldId, { stat: StatKey; amount: number; label: string }> = {
+export const SET_BONUS: Record<LegacyWorld, { stat: StatKey; amount: number; label: string }> = {
   murim: { stat: "health", amount: 5, label: "สุขภาพ +5" },
 };
 
@@ -42,7 +42,7 @@ export function findCollectible(l: Life, how: string): Collectible | undefined {
   l.flags.found = [...foundThisLife(l), c.id].join(",");
   log(l, `🏺 ของสะสมใหม่: ${c.emoji} ${c.name} — ${how}`, "milestone");
   if (completedSets(owned(l)).includes(l.worldId) && !completedSets(l.ownedItems ?? []).includes(l.worldId)) {
-    log(l, `✨ ตู้สะสมของโลกนี้ครบทั้งชุดแล้ว! ทุกชาติต่อจากนี้จะเกิดมาพร้อม ${SET_BONUS[l.worldId].label}`, "system");
+    log(l, `✨ ตู้สะสมของโลกนี้ครบทั้งชุดแล้ว! ทุกชาติต่อจากนี้จะเกิดมาพร้อม ${SET_BONUS[(l.worldId) as LegacyWorld].label}`, "system");
   }
   return c;
 }
@@ -62,5 +62,5 @@ yearHooks.push((l) => {
 
 /** โบนัสครบชุดตอนเกิด */
 export function applySetBonus(l: Life, items: string[]) {
-  for (const w of completedSets(items)) addStat(l, SET_BONUS[w].stat, SET_BONUS[w].amount);
+  for (const w of completedSets(items)) addStat(l, SET_BONUS[(w) as LegacyWorld].stat, SET_BONUS[(w) as LegacyWorld].amount);
 }

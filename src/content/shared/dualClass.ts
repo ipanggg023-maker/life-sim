@@ -1,10 +1,10 @@
 // คลาสที่สอง (สายรอง): พลังสายใหม่ตื่นขึ้นซ้อนกับสายเดิม — สกิลของสายรองปลดล็อกช้ากว่า 10 เลเวล
 import type { Ctx, GameEvent, Outcome } from "../../engine/events";
-import type { Life, WorldId } from "../../engine/types";
+import type { Life, LegacyWorld } from "../../engine/types";
 import { addFame } from "../../engine/util";
 import { CLASSES, classById, markTurn, offerClasses } from "../core/power";
 
-const TEXT: Record<WorldId, string> = {
+const TEXT: Record<LegacyWorld, string> = {
   murim: "ระหว่างนั่งสมาธิ ลมปราณสองสายในร่างคุณไหลสวนทางกันแต่ไม่ปะทะ — ผู้อาวุโสบอกว่าร่างกายคุณรับวิชาที่สองได้",
 };
 
@@ -23,7 +23,7 @@ export const DUAL_CLASS: GameEvent = {
     const offer = [...new Set(pool)].filter((id) => id !== mine).slice(0, 3);
     return { offer: offer.join(",") };
   },
-  text: (l) => TEXT[l.worldId ?? "hunter"],
+  text: (l) => TEXT[(l.worldId ?? "hunter") as LegacyWorld],
   choices: [
     ...CLASSES.map((cls) => ({
       label: `${cls.emoji} รับสายรอง: ${cls.name} — ${cls.desc}`,

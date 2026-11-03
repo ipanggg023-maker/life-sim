@@ -18,7 +18,6 @@ const big = (text: string): Outcome => ({ text, kind: "milestone" });
 type Tone = "modern" | "ruins" | "murim" | "court";
 export function tone(l: Life): Tone {
   if (l.worldId === "murim") return "murim";
-  if (l.worldId === "court") return "court";
   if (l.flags.doomed && !l.flags.rebuilt) return "ruins";
   return "modern";
 }

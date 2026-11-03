@@ -1,4 +1,4 @@
-import { artById } from "../content/murim/martial/arts";
+import { moduleOf } from "./worldModule";
 import { getEvent } from "./events";
 import type { Life } from "./types";
 
@@ -31,7 +31,7 @@ export function validateLife(l: Life): string[] {
     else if (q.scene && q.scene !== "start" && !e.scenes?.[q.scene]) bad.push(`คิวอ้างฉากที่หายไป: ${q.eventId}/${q.scene}`);
     if (!l.alive) bad.push(`คนตายยังมีเหตุการณ์ค้าง: ${q.eventId}`);
   }
-  for (const a of l.mwArts ?? []) if (!a.own && !artById(a.id)) bad.push(`วิชาที่ไม่มีอยู่จริง: ${a.id}`);
+  for (const a of l.mwArts ?? []) if (!a.own && moduleOf(l.worldId)?.isKnownArt?.(a.id) === false) bad.push(`วิชาที่ไม่มีอยู่จริง: ${a.id}`);
   if (l.power && (!num(l.power.rank) || l.power.rank < 0)) bad.push(`ขั้นพลังผิด: ${l.power.rank}`);
   for (const [k, v] of Object.entries(l.flags)) if (typeof v === "number" && !Number.isFinite(v)) bad.push(`ค่า flag ${k} ไม่ใช่ตัวเลข`);
   return bad;
@@ -60,7 +60,7 @@ export function repairLife(l: Life): number {
   if (!l.alive && l.queue.length) { l.queue = []; n++; }
   if (l.mwArts) {
     const k = l.mwArts.length;
-    l.mwArts = l.mwArts.filter((a) => a.own || artById(a.id));
+    l.mwArts = l.mwArts.filter((a) => a.own || moduleOf(l.worldId)?.isKnownArt?.(a.id) !== false);
     n += k - l.mwArts.length;
   }
   for (const [k, v] of Object.entries(l.flags)) fix(typeof v === "number" && !Number.isFinite(v), () => delete l.flags[k]);

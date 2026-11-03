@@ -169,7 +169,7 @@ function titleOf(life: Life): string {
   if (f.rankRevealed && p) return `แรงก์ต่ำที่จริงๆ แล้วคือ${r}`;
   if (f.towerTop) return "ผู้ยืนบนยอดหอคอย";
   if (f.apocHero) return "ผู้ปิดฉากสุดท้ายของวันสิ้นโลก";
-  if (f.sssAwakened) return life.worldId === "murim" ? "อัจฉริยะเซียนตั้งแต่กำเนิด" : life.worldId === "tower" ? "ผู้ท้าชิงระดับ SSS คนแรกในรอบสิบปี" : life.worldId === "court" ? "ผู้ใช้เวทวงที่ 8 คนแรกในรอบห้าร้อยปี" : "แรงก์ SSS ตั้งแต่วันแรก";
+  if (f.sssAwakened) return "อัจฉริยะเซียนตั้งแต่กำเนิด";
   if (reg >= 1) return `ย้อนเวลามาครั้งที่ ${reg} รอบนี้จะไม่ตายแบบเดิม`;
   if (life.talents.some((t) => t.id === "system_user" && t.revealed)) return "ผู้เล่นคนเดียวที่มีหน้าต่างระบบ";
   if (p && f.lateBloom && p.awakenedAt >= 30) return `ตาลุงวัย ${p.awakenedAt} ที่เพิ่งตื่นพลัง`;
@@ -190,7 +190,7 @@ function titleOf(life: Life): string {
 function tagsOf(life: Life): string[] {
   const f = life.flags;
   const tags = [`#${worldOf(life.worldId).name.replace(/^โลก /, "")}`];
-  if (life.power) tags.push(life.worldId === "murim" ? "#ฝึกยุทธ์" : life.worldId === "court" ? "#เวทมนตร์" : life.worldId === "tower" ? "#ปีนหอคอย" : life.worldId === "apocalypse" ? "#วันสิ้นโลก" : life.worldId === "ordinary" ? "#ระบบชีวิต" : "#ตื่นพลัง");
+  if (life.power) tags.push("#ฝึกยุทธ์");
   else tags.push("#ไร้พลัง");
   if ((life.regressions ?? 0) > 0) tags.push("#ย้อนเวลา");
   if (f.revenge || f.vendetta) tags.push("#ล้างแค้น");

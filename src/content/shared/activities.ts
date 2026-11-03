@@ -1,14 +1,14 @@
 // กิจกรรมที่แทน Focus เดิม: ผู้เล่นกดเองทีละปี
 import { ACTIVITIES } from "../../engine/activities";
 import { randInt } from "../../engine/rng";
-import type { WorldId } from "../../engine/types";
+import type { WorldId, LegacyWorld } from "../../engine/types";
 import { addMoney, addStat, money } from "../../engine/util";
 
-const SIDE_JOB: Record<WorldId, string[]> = {
+const SIDE_JOB: Record<LegacyWorld, string[]> = {
   murim: ["รับจ้างแบกของที่ท่าเรือ", "ช่วยเถ้าแก่โรงเตี๊ยม", "คัดลอกคัมภีร์ขาย", "ขุดสมุนไพรบนเขาไปขาย"],
 };
 
-const REST: Record<WorldId, string> = {
+const REST: Record<LegacyWorld, string> = {
   murim: "คุณไปพักที่วัดบนเขา นั่งฟังเสียงลมผ่านป่าไผ่ทุกเช้า",
 };
 
@@ -22,7 +22,7 @@ for (const world of ["hunter", "murim", "court", "tower", "apocalypse", "ordinar
       minAge: 15,
       world,
       run: (l) => {
-        const job = SIDE_JOB[world][randInt(l, 0, SIDE_JOB[world].length - 1)];
+        const job = SIDE_JOB[(world) as LegacyWorld][randInt(l, 0, SIDE_JOB[(world) as LegacyWorld].length - 1)];
         const pay = Math.round(randInt(l, 15, 40) * 1000 * (1 + l.stats.luck / 100));
         addMoney(l, pay);
         addStat(l, "health", -1);
@@ -40,7 +40,7 @@ for (const world of ["hunter", "murim", "court", "tower", "apocalypse", "ordinar
       run: (l) => {
         addStat(l, "health", randInt(l, 1, 3));
         addStat(l, "happiness", randInt(l, 3, 6));
-        return { text: REST[world], kind: "good" };
+        return { text: REST[(world) as LegacyWorld], kind: "good" };
       },
     },
   );

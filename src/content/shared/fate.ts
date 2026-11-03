@@ -2,7 +2,7 @@ import { woundFrom } from "../../engine/body";
 import type { Ctx, GameEvent, Outcome } from "../../engine/events";
 import { kill, openHiddenSlot } from "../../engine/game";
 import { chance, randInt } from "../../engine/rng";
-import type { Life, WorldId } from "../../engine/types";
+import type { Life, LegacyWorld } from "../../engine/types";
 import { addFame, addMoney, addStat, clamp, log, money } from "../../engine/util";
 import {
   MAX_RANK,
@@ -30,7 +30,7 @@ const sys = (text: string, next?: string): Outcome => ({ text, kind: "system", n
 const big = (text: string, next?: string): Outcome => ({ text, kind: "milestone", next });
 
 /** เลือกข้อความตามโลก */
-const W = <T>(l: Life, t: Record<WorldId, T>): T => t[l.worldId ?? "hunter"];
+const W = <T>(l: Life, t: Record<LegacyWorld, T>): T => t[(l.worldId ?? "murim") as LegacyWorld];
 const rank = (l: Life) => l.power?.rank ?? -1;
 /** โลกวันสิ้นโลกที่ระบบยังไม่มา — ยังไม่มีใครได้พลัง */
 const preDoom = (_l: Life) => false;

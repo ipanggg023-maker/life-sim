@@ -3,7 +3,7 @@
 import { chance, pick, randInt } from "./rng";
 import type { Life } from "./types";
 import { clamp, log } from "./util";
-import { gift } from "../content/murim/life/gifts";
+import { traitsOf, worldGift as gift } from "./worldModule";
 
 export type Part =
   | "eyeL" | "eyeR" | "ears" | "tongue" | "face"
@@ -51,7 +51,7 @@ const KIND_NAME: Record<InjuryKind, string> = {
 
 const SEV_NAME = ["", "เบา", "สาหัส", "ถาวร"];
 
-export const bodyOn = (l: Life) => l.worldId === "murim";
+export const bodyOn = (l: Life) => !!traitsOf(l.worldId).body;
 export function bodyOf(l: Life): Body {
   l.body ??= { injuries: [] };
   return l.body;

@@ -9,9 +9,7 @@ import type { Legacy, Life, Memory, Soul, Wealth } from "./types";
 import { clamp, displayName, log, money, people, shortName } from "./util";
 import { seriesOf } from "../content/manhwa";
 import { awaken, offerClasses, rankLabel, rollAwakening } from "../content/core/power";
-import { ribbonOf } from "../content/murim/life/ribbons";
-import { applyRouteGifts, recordRoutes } from "../content/murim/life/routes";
-import { recordDynasty } from "../content/murim/life/dynasty";
+import { moduleOf, traitsOf } from "./worldModule";
 
 export function newSoul(): Soul {
   return {
@@ -56,7 +54,7 @@ export function claimAward(soul: Soul, life: Life, regress: boolean): number {
   soul.talentBook = [...new Set([...(soul.talentBook ?? []), ...life.talents.map((t) => t.id)])];
   const combos = Object.keys(life.flags).filter((k) => k.startsWith("combo:")).map((k) => k.slice(6));
   if (combos.length) soul.comboBook = [...new Set([...(soul.comboBook ?? []), ...combos])];
-  if (life.worldId === "murim") { soul.ribbons = [...new Set([...(soul.ribbons ?? []), ribbonOf(life).id])]; recordRoutes(soul, life); recordDynasty(soul, life); }
+  moduleOf(life.worldId)?.onSoulRecord?.(soul, life);
   return gained;
 }
 
@@ -64,7 +62,7 @@ export function claimAward(soul: Soul, life: Life, regress: boolean): number {
 export function applySoul(life: Life, soul: Soul, newBirth: boolean) {
   life.pastSeen = soul.seenEver;
   life.ownedItems = soul.collection;
-  if (newBirth) { applySetBonus(life, soul.collection ?? []); applyRouteGifts(life, soul); }
+  if (newBirth) { applySetBonus(life, soul.collection ?? []); moduleOf(life.worldId)?.onNewBirth?.(life, soul); }
 }
 
 /** จำ event เรื่องราวที่ชาตินี้เจอแล้ว เพื่อให้ชาติหน้าได้เจอเรื่องใหม่ */
@@ -165,7 +163,7 @@ export function buildHeir(dead: Life, childId: string): Life {
   const share = Math.round(estate / Math.max(1, heirs.length));
   const [first, ...rest] = child.name.replace(/\s*\(.+?\)\s*/, " ").trim().split(/\s+/);
   const familyFirst = dead.lastName === first; // เกาหลี/ญี่ปุ่น: นามสกุลขึ้นก่อน
-  const firstName = child.short ?? (familyFirst ? rest.join(" ") : dead.worldId === "murim" ? (child.name.startsWith(dead.lastName) ? child.name.slice(dead.lastName.length) : child.name) : first);
+  const firstName = child.short ?? (familyFirst ? rest.join(" ") : traitsOf(dead.worldId).surnameFirst ? (child.name.startsWith(dead.lastName) ? child.name.slice(dead.lastName.length) : child.name) : first);
   const life = createLife({
     seed: (dead.seed ^ hashId(child.id)) >>> 0,
     worldId: dead.worldId,
