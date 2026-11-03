@@ -236,3 +236,26 @@ describe("งานอดิเรก: สัตว์เลี้ยง ดั�
     }
   });
 });
+
+describe("เหตุการณ์ชุดที่สี่", () => {
+  it("ทุกเรื่องแสดงชื่อคนจริงได้ ไม่มีช่องว่างค้าง และทุกทางเลือกเล่นได้", () => {
+    const evs = allEvents().filter((e) => e.id.startsWith("ft.y."));
+    expect(evs.length).toBeGreaterThanOrEqual(85);
+    for (const e of evs) {
+      for (const i of [0, 1]) {
+        const l = fantasy(61);
+        l.age = Math.max(e.minAge, Math.min(e.maxAge, 30));
+        l.money = 50_000;
+        for (const r of ["spouse", "child", "friend", "sibling"] as const) createPerson(l, r, { age: r === "child" ? 8 : 30, bond: 60 });
+        runEvent(l, e.id);
+        const q = l.queue[0];
+        expect(q, e.id).toBeTruthy();
+        const text = getEvent(e.id)!.text(l, q.ctx);
+        expect(text, e.id).not.toMatch(/\{n\}|\{k\}|undefined/);
+        const vis = visibleChoices(l, q);
+        const out = resolveChoice(l, vis[Math.min(i, vis.length - 1)].index);
+        expect(out?.text ?? "", e.id).not.toMatch(/\{n\}|\{k\}|undefined/);
+      }
+    }
+  });
+});
