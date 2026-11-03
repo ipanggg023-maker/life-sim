@@ -195,7 +195,8 @@ export const SAGA_EVENTS: GameEvent[] = [
 const ACT: Activity = {
   id: "ft_saga", emoji: "", name: "ตามรอยตำนาน", desc: "ไปต่อมหากาพย์ที่เริ่มไว้ · ปีละครั้ง", minAge: 12, time: 2, world: "fantasy", group: "ผจญภัย",
   available: (l) => activeSagas(l).length > 0 && Number(l.flags.ftSagaYear ?? -1) !== l.age,
-  run: (l) => { l.flags.ftSagaYear = l.age; runEvent(l, "ft.sg.pick"); return { text: "" }; },
+  // เรื่องเดียวที่ตามอยู่: เข้าบทนั้นเลย ไม่ต้องผ่านหน้าเลือก
+  run: (l) => { l.flags.ftSagaYear = l.age; const a = activeSagas(l); runEvent(l, a.length === 1 ? `ft.sg.${a[0].id}` : "ft.sg.pick"); return { text: "" }; },
 };
 
 export function loadSagas() {

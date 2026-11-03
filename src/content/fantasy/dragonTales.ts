@@ -1,6 +1,6 @@
 // เรื่องของมังกรชุดใหญ่: มังกรจริงในโลก (ชื่อ ฉายา ธาตุ) ลูกมังกรที่เลี้ยง มังกรที่ขี่ และเทศกาลมังกร
 // {d} = ชื่อมังกร {t} = ฉายา {e} = ธาตุ {w} = ชื่อลูกมังกรของคุณ
-import { ACTIVITIES, type Activity } from "../../engine/activities";
+import { ACTIVITIES, activityFilters, type Activity } from "../../engine/activities";
 import type { Ctx, GameEvent } from "../../engine/events";
 import { runEvent } from "../../engine/game";
 import { pick } from "../../engine/rng";
@@ -116,4 +116,14 @@ export const DRAGON_PLEA: GameEvent = E("ft.dt.plea", [16, 900], (l, c) => `${dr
 
 export function loadDragonTales() {
   ACTIVITIES.push(...ACTS);
+  // ปุ่มมังกรที่ยังใช้ไม่ได้ ไม่ต้องรกแท็บทำ: ไม่มีไข่ ไม่มีลูกมังกร ไม่มีมังกรขี่ หรือยังไม่ถึงปีเทศกาล
+  activityFilters.push((l, a) => {
+    if (l.worldId !== "fantasy" || !l.ft) return true;
+    const f = fl(l);
+    if (a.id === "ft_egg") return !!f.egg;
+    if (a.id === "ft_whelp") return !!f.whelp;
+    if (a.id === "ft_fly" || a.id === "ft_drace") return !!f.mount;
+    if (a.id === "ft_dfest") return l.age % 3 === 0;
+    return true;
+  });
 }
