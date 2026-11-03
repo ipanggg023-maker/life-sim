@@ -163,6 +163,10 @@ export const BABY_AGE = 3;
 
 /** ตัวกรองจาก content (เช่น ยุทธภพซ่อนกิจกรรมของโลกอื่น) — คืน false = ไม่แสดง */
 export const activityFilters: Array<(life: Life, a: Activity) => boolean> = [];
+/** หลังทำกิจกรรม: โลกต่างๆ เติมผลตามประวัติ นิสัย และความชำนาญ */
+export const activityHooks: Array<(life: Life, a: Activity, out: Outcome) => void> = [];
+/** บรรทัดเสริมใต้ปุ่มกิจกรรม (เช่น ความชำนาญ) */
+export const activityNotes: Array<(life: Life, a: Activity) => string | undefined> = [];
 export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => inWorld(a, life.worldId) && activityFilters.every((f) => f(life, a)));
 
 /** งบเวลากิจกรรมรองต่อปี (EXPANSION §3.1) — โลกที่ไม่ตั้ง = ไม่จำกัด */
@@ -195,6 +199,7 @@ export function doActivity(life: Life, id: string): Outcome | undefined {
   life.doneThisYear.push(`act:${a.id}`);
   life.flags[`act_${a.id}`] = Number(life.flags[`act_${a.id}`] ?? 0) + 1; // นับไว้ปลดล็อกสกิลติดตัว
   const out = a.run(life);
+  for (const h of activityHooks) h(life, a, out);
   // ปุ่มที่เปิดฉากให้เลือก (runEvent) คืนข้อความว่าง — ผลจะมาตอนเลือก
   if (out.text) log(life, out.text, out.kind ?? "normal");
   return out;

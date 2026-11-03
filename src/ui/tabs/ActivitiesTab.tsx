@@ -1,4 +1,4 @@
-import { BABY_AGE, activitiesFor, activityLocked, doActivity, timeBudget, timeLeft } from "../../engine/activities";
+import { BABY_AGE, activitiesFor, activityLocked, activityNotes, doActivity, timeBudget, timeLeft } from "../../engine/activities";
 import type { Life } from "../../engine/types";
 import { loc, money } from "../../engine/util";
 import type { Act } from "../App";
@@ -50,6 +50,7 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
                     {!locked && odds !== undefined ? ` · ${Math.round(odds * 100)}%` : ""}
                     {!locked && left !== undefined && (a.time ?? 1) > 1 ? ` · ใช้เวลา ${a.time}` : ""}
                   </span>
+                  {activityNotes.map((f) => f(life, a)).filter(Boolean).map((n) => <span className="act-note" key={n}>{n}</span>)}
                 </button>
               );
             })}

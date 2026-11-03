@@ -37,7 +37,8 @@ describe("ป้ายของตัวเลือก", () => {
     expect(Object.keys(TAGS).length).toBeGreaterThanOrEqual(250);
   });
   it("ทุกเมล็ดมีเรื่องที่กลับมา และทุกเรื่องที่กลับมามีที่ปลูก", () => {
-    const planted = new Set([...Object.values(TAGS).map((t) => t.seed).filter(Boolean), "lend_friend", "friend_debt", "goblin_negotiate", "order_refused"]);
+    const fromChoices = allEvents().flatMap((e) => (e.choices ?? []).map((c) => c.seed)).filter(Boolean);
+    const planted = new Set([...Object.values(TAGS).map((t) => t.seed).filter(Boolean), ...fromChoices, "lend_friend", "friend_debt"]);
     for (const s of planted) expect(SEEDS[s!], `seed ${s}`).toBeTruthy();
     const orphan = Object.keys(SEEDS).filter((s) => !planted.has(s));
     expect(orphan).toEqual([]);
