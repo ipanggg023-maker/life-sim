@@ -83,6 +83,8 @@ export interface FLife {
   mount?: string;
   dragonFoe?: string;
   dragonblood?: boolean;
+  /** มหากาพย์ที่กำลังตาม: บทที่อยู่ · 99 = จบแล้ว (sagas.ts) */
+  sagas?: Record<string, number>;
   /** สัตว์เลี้ยง (hobbies.ts) */
   pet?: { kind: "cat" | "owl" | "wolf" | "fox" | "slime" | "golem"; name: string; bond: number; born: number };
   /** ชั้นที่ผ่านแล้วของแต่ละดันเจี้ยน */

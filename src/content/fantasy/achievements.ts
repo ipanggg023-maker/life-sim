@@ -53,6 +53,9 @@ const legend: A[] = [
   { id: "fa_legend", name: "ชื่อในตำนาน", desc: "ชื่อของคุณถูกเล่าเป็นตำนานของโลก", points: 20, check: F((l) => worldOfLife(l).legends.some((g) => g.lifeId === l.id)) },
   { id: "fa_pact", name: "หมึกสีดำ", desc: "ทำพันธสัญญากับเจ้าปีศาจ", points: 10, hidden: true, check: F((l) => (fl(l).pacts ?? 0) >= 1) },
   { id: "fa_dragonform", name: "เกล็ดแทนผิว", desc: "แปลงกายเป็นมังกร", points: 30, hidden: true, check: F((l) => fl(l).race === "dragon" && l.flags.ftBornRace !== "dragon") },
+  { id: "fa_saga1", name: "ผู้ตามรอยตำนาน", desc: "จบมหากาพย์ตำนานหนึ่งเรื่อง", points: 20, check: F((l) => Number(l.flags.ftSagas ?? 0) >= 1) },
+  { id: "fa_saga3", name: "ผู้เขียนตำนานสามบท", desc: "จบมหากาพย์ตำนานสามเรื่องในชีวิตเดียว", points: 45, check: F((l) => Number(l.flags.ftSagas ?? 0) >= 3) },
+  { id: "fa_heroking", name: "ราชันวีรชน", desc: "ชนะการประลองแห่งราชันวีรชน", points: 30, check: F((l) => !!l.flags.heroKing) },
   { id: "fa_god", name: "เทพองค์ใหม่", desc: "ขึ้นสู่สวรรค์เป็นเทพ", points: 60, hidden: true, check: (l) => l.worldId === "fantasy" && (l.causeOfDeath ?? "").startsWith("ขึ้นสู่สวรรค์") },
 ];
 

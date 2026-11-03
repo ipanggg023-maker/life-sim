@@ -21,6 +21,7 @@ import { epithetOf, styleOf, techsOf } from "../../content/fantasy/styles";
 import { KINDS, citiesOf, cityOf } from "../../content/fantasy/cities";
 import { DUNGEONS, PETS } from "../../content/fantasy/hobbies";
 import { sleeping } from "../../content/fantasy/talentEvo";
+import { activeSagas, doneSagas } from "../../content/fantasy/sagas";
 import { RACE_LABEL, folkOf } from "../../content/fantasy/folk";
 import { careerById } from "../../content/core/careers";
 import { PARTY_MAX, partyLabel, partyOf } from "../../content/fantasy/bonds";
@@ -98,6 +99,13 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         <Fold always kind="section" id="ft-party" title={<>ปาร์ตี้ · {partyOf(life).length}/{PARTY_MAX}</>}>
           {partyOf(life).map((p) => <p className="small" key={p.id}><b>{shortName(p)}</b> · {partyLabel(p)} · ผูกพัน {p.bond}</p>)}
           <p className="small muted">คนละ +4 พลังต่อสู้ · ชวนเพื่อนสนิทเข้าปาร์ตี้ได้ที่แท็บผู้คน</p>
+        </Fold>
+      )}
+      {(activeSagas(life).length > 0 || doneSagas(life).length > 0) && (
+        <Fold always kind="section" id="ft-sagas" title={<>มหากาพย์ตำนาน</>}>
+          {activeSagas(life).map((s) => { const at = f.sagas?.[s.id] ?? 0; return <p className="small" key={s.id}><b>{s.name}</b> · บทที่ {at + 1}/{s.chapters.length} {s.chapters[at].title}</p>; })}
+          {doneSagas(life).map((s) => <p className="small muted" key={s.id}>{s.name} · จบแล้ว</p>)}
+          {activeSagas(life).length > 0 && <p className="small muted">ไปต่อได้ที่แท็บทำ · ตามรอยตำนาน</p>}
         </Fold>
       )}
       {Object.keys(f.dungeons ?? {}).length > 0 && (

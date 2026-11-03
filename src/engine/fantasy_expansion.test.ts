@@ -12,10 +12,11 @@ import { visibleChoices } from "./events";
 import { buildHeir } from "./soul";
 import { fantasyPersonActions } from "../content/fantasy/bonds";
 import { SPELLS } from "../content/fantasy/magic";
+import { SAGA_LIST } from "../content/fantasy/sagas";
 import { epithetOf, styleBonus, techsOf } from "../content/fantasy/styles";
 import { allEvents, getEvent } from "./events";
 import { CITIES, citiesOf, cityCost, cityOf } from "../content/fantasy/cities";
-import { dataOf } from "../content/fantasy/state";
+import { dataOf, worldOfLife } from "../content/fantasy/state";
 import { createPerson } from "./util";
 
 loadFantasyWorld();
@@ -290,5 +291,39 @@ describe("พรสวรรค์ตื่น", () => {
     runEvent(m, "ft.te.lucky");
     resolveChoice(m, visibleChoices(m, m.queue[0])[2].index);
     expect(getEvent("ft.te.lucky")!.when!(m)).toBe(false);
+  });
+});
+
+describe("มหากาพย์ตำนาน", () => {
+  it("เริ่มจากเรื่องบังเอิญ ไปต่อทีละบท และจบด้วยรางวัลกับชื่อในตำนาน", () => {
+    for (const s of SAGA_LIST) {
+      const l = fantasy(81);
+      l.age = 30; l.money = 1_000_000; l.ft!.bodyRank = 4; l.ft!.magicRank = 4; l.ft!.body = 9999;
+      for (const k of ["health", "smarts", "looks", "luck"] as const) l.stats[k] = 100;
+      runEvent(l, `ft.sgh.${s.id}`);
+      resolveChoice(l, visibleChoices(l, l.queue[0])[0].index);
+      l.queue = [];
+      expect(l.ft!.sagas?.[s.id], s.id).toBe(0);
+      let guard = 0;
+      while ((l.ft!.sagas?.[s.id] ?? 0) < 99 && guard++ < 60 && l.alive) {
+        l.stats.health = 100;
+        runEvent(l, `ft.sg.${s.id}`);
+        const vis = visibleChoices(l, l.queue[0]);
+        expect(vis.length, `${s.id} บท ${l.ft!.sagas?.[s.id]}`).toBeGreaterThan(1);
+        resolveChoice(l, vis[0].index);
+        l.queue = [];
+      }
+      expect(l.ft!.sagas?.[s.id], s.id).toBe(99);
+      expect(l.ft!.deeds).toContain(s.legend);
+      expect(worldOfLife(l).legends.some((g) => g.deed === s.legend)).toBe(true);
+    }
+  });
+  it("ตามรอยตำนานได้ปีละครั้ง และมีพร้อมกันได้ไม่เกินสามเรื่อง", () => {
+    const l = fantasy(83);
+    l.age = 25;
+    l.ft!.sagas = { blackwyrm: 0, feyqueen: 1, ancestor: 0 };
+    expect(getEvent("ft.sgh.starfall")!.when!(l)).toBe(false);
+    runEvent(l, "ft.sg.pick");
+    expect(visibleChoices(l, l.queue[0]).length).toBe(4);
   });
 });
