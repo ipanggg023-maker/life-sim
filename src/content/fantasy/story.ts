@@ -9,6 +9,7 @@ import { deed, fl, homeKingdom, kingdomsOf, worldOfLife } from "./state";
 import { STORIES2 } from "./stories2";
 import { STORIES3 } from "./stories3";
 import { STORIES4 } from "./stories4";
+import { STORIES5 } from "./stories5";
 
 const age = (a: number, b: number): [number, number] => [a, b];
 const risk = (text: string, threat: number, cause: string): Res => (l, c) => (chance(l, deathOdds(l, threat)) ? B("คราวนี้ไม่มีปาฏิหาริย์", { die: cause })(l, c) : B(text, { hp: -14 })(l, c));
@@ -77,4 +78,4 @@ const BREAK: GameEvent[] = [
   E("ft.break_magic", age(10, 400), (l) => `มานาในตัวคุณเต็มจนล้น จะเป็น${MAGIC_RANKS[fl(l).magicRank + 1]}ต้องเปิดวงเวทใหม่`, [P("เปิดวงเวท", (l) => breakOdds(l, "magic"), BIG((l) => `คุณเป็น${MAGIC_RANKS[fl(l).magicRank + 1]}แล้ว`, { joy: 6, fame: 2 }, (l) => { const f = fl(l); f.magicRank++; f.magic = 0; if (f.magicRank >= 3) deed(l, `ถึงระดับ${MAGIC_RANKS[f.magicRank]}`); if (f.magicRank === 3 && !f.wand) l.flags.wandless = true; }), B("มานาย้อนกลับ เลือดกำเดาไหลทั้งคืน", { hp: -8 }, (l) => { fl(l).magic = Math.round(needXp(fl(l).magicRank) * 0.6); })), C("รอให้พร้อมกว่านี้", N("คุณทบทวนบทสวดอีกรอบ", {}, (l) => { fl(l).magic = Math.round(needXp(fl(l).magicRank) * 0.9); }))], { when: (l) => canBreak(l, "magic") && canCast(l), forced: true, maxTimes: 0, title: "ทะลวงขั้น" }),
 ];
 
-export const STORY_EVENTS: GameEvent[] = [...CHILD, ...TEEN, ...ADULT, ...ELDER, ...RACE, ...WORLD, ...BREAK, ...STORIES2, ...STORIES3, ...STORIES4];
+export const STORY_EVENTS: GameEvent[] = [...CHILD, ...TEEN, ...ADULT, ...ELDER, ...RACE, ...WORLD, ...BREAK, ...STORIES2, ...STORIES3, ...STORIES4, ...STORIES5];

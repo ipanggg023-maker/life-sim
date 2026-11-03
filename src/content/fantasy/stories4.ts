@@ -7,9 +7,9 @@ import { C, E, G, K, N, type Fx } from "./kit";
 import { canCast } from "./power";
 import { fl, homeKingdom } from "./state";
 
-type Opt = [label: string, text: string, fx?: Fx];
-type Need = "spouse" | "child" | "friend" | "parent" | "sibling" | "mage" | "fighter" | "rich" | "poor" | "student" | "guild" | "famous" | "elf" | "dwarf" | "orc" | "beastfolk" | "halfling" | "human" | "dragon" | "demon" | "aldria" | "varn" | "thalos" | "war" | "jobless" | "worker";
-type Row = [id: string, from: number, to: number, title: string, text: string, a: Opt, b: Opt, check?: [StatKey, number, string, Fx?], need?: Need];
+export type Opt = [label: string, text: string, fx?: Fx];
+export type Need = "spouse" | "child" | "friend" | "parent" | "sibling" | "mage" | "fighter" | "rich" | "poor" | "student" | "guild" | "famous" | "elf" | "dwarf" | "orc" | "beastfolk" | "halfling" | "human" | "dragon" | "demon" | "aldria" | "varn" | "thalos" | "war" | "jobless" | "worker";
+export type Row = [id: string, from: number, to: number, title: string, text: string, a: Opt, b: Opt, check?: [StatKey, number, string, Fx?], need?: Need];
 
 const REL: Partial<Record<Need, Relation[]>> = { spouse: ["spouse", "partner"], child: ["child"], friend: ["friend", "ally"], parent: ["father", "mother"], sibling: ["sibling"] };
 const close = (l: Life, n: Need): Person[] => l.people.filter((p) => p.alive && !!REL[n]?.includes(p.relation) && !p.tags?.some((t) => t.startsWith("away:")));
@@ -21,7 +21,7 @@ const NEED: Record<Need, (l: Life) => boolean> = {
 };
 const fill = (t: string) => (l: Life, c: Ctx) => t.replace(/\{n\}/g, String(c.n ?? "เขา")).replace(/\{k\}/g, homeKingdom(l).name);
 
-const pack = (rows: Row[]): GameEvent[] => rows.map(([id, from, to, title, text, a, b, ck, need]) => E(`ft.y.${id}`, [from, to], fill(text), [
+export const pack = (rows: Row[]): GameEvent[] => rows.map(([id, from, to, title, text, a, b, ck, need]) => E(`ft.y.${id}`, [from, to], fill(text), [
   ck ? K(a[0], ck[0], ck[1], G(fill(a[1]), a[2]), N(fill(ck[2]), ck[3])) : C(a[0], G(fill(a[1]), a[2])),
   C(b[0], N(fill(b[1]), b[2])),
 ], {

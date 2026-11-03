@@ -245,7 +245,7 @@ describe("งานอดิเรก: สัตว์เลี้ยง ดั�
 describe("เหตุการณ์ชุดที่สี่", () => {
   it("ทุกเรื่องแสดงชื่อคนจริงได้ ไม่มีช่องว่างค้าง และทุกทางเลือกเล่นได้", () => {
     const evs = allEvents().filter((e) => e.id.startsWith("ft.y."));
-    expect(evs.length).toBeGreaterThanOrEqual(85);
+    expect(evs.length).toBeGreaterThanOrEqual(160);
     for (const e of evs) {
       for (const i of [0, 1]) {
         const l = fantasy(61);
