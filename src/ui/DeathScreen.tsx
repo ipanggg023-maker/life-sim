@@ -5,6 +5,7 @@ import { worldOf } from "../content/worlds";
 import { finaleComments, seriesOf } from "../content/manhwa";
 import { Comments } from "./MainScreen";
 import { SeriesCover } from "./SeriesCover";
+import { LegendSky } from "./Astral";
 import { talentById } from "../content/talents";
 import { passivesOf } from "../content/passives";
 import { assetsValue } from "../content/shared/business";
@@ -70,6 +71,7 @@ export function DeathScreen({
 
   return (
     <div className="death">
+      {life.worldId === "fantasy" && <LegendSky life={life} />}
       <div className="tomb">
         <h2>
           {displayName(life)}

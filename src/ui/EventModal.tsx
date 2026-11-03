@@ -5,6 +5,7 @@ import { choiceChance, choiceFactors } from "../engine/game";
 import type { Life } from "../engine/types";
 import { isRealistic } from "../content/worlds";
 import { Icon, noEmoji } from "./Icon";
+import { FateScene } from "./Astral";
 
 /** พิมพ์ข้อความทีละตัว แตะเพื่อข้าม */
 function useTypewriter(text: string, instant: boolean, speed = 18) {
@@ -56,6 +57,7 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
   return (
     <div className="overlay modal-overlay">
       <div className={`modal ${scene.system && !isRealistic(life.worldId) ? "sys-modal" : ""}`} onClick={skip}>
+        {life.worldId === "fantasy" && <FateScene id={q.eventId} />}
         <div className="modal-head">
           <span className="modal-age">อายุ {life.age} ปี</span>
           {scene.title && <h3>{noEmoji(scene.title)}</h3>}

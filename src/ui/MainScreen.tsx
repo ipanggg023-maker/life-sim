@@ -17,6 +17,7 @@ import { arcLine } from "../content/murim/life/sideStories";
 import { consortLine } from "../content/murim/world/consortLife";
 import { fumaLine } from "../content/murim/world/princeConsort";
 import { Icon, noEmoji, type IconName } from "./Icon";
+import { Astrolabe, LifeConstellation, StatDial } from "./Astral";
 import { disabilities, openInjuries } from "../engine/body";
 import { displayName, loc, money, shortName } from "../engine/util";
 import { courtOf } from "../content/murim/world/court";
@@ -344,6 +345,7 @@ export function MainScreen({
 
   const job = life.job ? careerById(life.job.careerId) : undefined;
   const murim = life.worldId === "murim";
+  const fantasy = life.worldId === "fantasy";
   const rank = murim ? Number(life.flags.courtRank ?? 0) : 0;
   const subtitle = murim && life.flags.emperorSelf && life.mw
     ? `ฮ่องเต้แห่ง${courtOf(life).dynasty}`
@@ -414,6 +416,8 @@ export function MainScreen({
         )}
         {murim ? (
           <AgeSeal age={life.age} />
+        ) : fantasy ? (
+          <Astrolabe age={life.age} />
         ) : (
           <div className="age-badge">
             <span className="age-num">{life.age}</span>
@@ -422,11 +426,20 @@ export function MainScreen({
         )}
       </header>
 
-      <section className="stats">
-        {VISIBLE_STATS.map((k) => (
-          <StatBar key={k} k={k} value={life.stats[k]} />
-        ))}
-      </section>
+      {fantasy ? (
+        <section className="stats dials">
+          {VISIBLE_STATS.map((k) => (
+            <StatDial key={k} k={k} label={STAT_LABEL[k]} value={life.stats[k]} />
+          ))}
+        </section>
+      ) : (
+        <section className="stats">
+          {VISIBLE_STATS.map((k) => (
+            <StatBar key={k} k={k} value={life.stats[k]} />
+          ))}
+        </section>
+      )}
+      {fantasy && life.ft && <LifeConstellation life={life} />}
 
       {murim && <WorldStrip life={life} />}
       {murim && !!life.flags.legacySave && <div className="legacy-strip">เซฟจากเวอร์ชันเก่า — เล่นต่อได้จนจบชีวิตนี้ ระบบใหม่บางอย่างเริ่มนับจากตอนนี้ รุ่นถัดไปจะได้ครบทุกระบบ</div>}

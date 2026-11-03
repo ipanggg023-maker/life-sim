@@ -1479,3 +1479,5 @@ details[open] > .fold-head .fold-chevron { transform: rotate(180deg); }
 :root[data-world="fantasy"] {
   --primary-grad: linear-gradient(135deg, #3b5bb5, #7a4fc9);
 }
+
+.race-desc { margin: -2px 2px 10px; font-family: var(--font-ui, inherit); font-size: 12.5px; line-height: 1.6; color: var(--muted); text-wrap: pretty; }

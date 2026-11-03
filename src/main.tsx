@@ -5,6 +5,7 @@ import { loadFantasyWorld } from "./content/fantasy";
 import { loadSharedEvents } from "./content/shared";
 import { App } from "./ui/App";
 import "./ui/styles.css";
+import "./ui/astral.css";
 import { mountInkDefs } from "./ui/inkDefs";
 
 loadMurimWorld();

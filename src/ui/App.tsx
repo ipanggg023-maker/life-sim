@@ -8,6 +8,7 @@ import { loc } from "../engine/util";
 import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds";
 import { TURNING_POINTS, applyRewind, closeLife, inheritLife, rewindTarget, setRace } from "../content/fantasy/life";
 import { FantasyPowerTab, FantasyWorldTab } from "./tabs/FantasyTabs";
+import { AstralSky } from "./Astral";
 
 const pickWorld = () => OPEN_WORLDS[Math.floor(Math.random() * OPEN_WORLDS.length)];
 import {
@@ -383,6 +384,7 @@ export function App() {
   if (!started) {
     return (
       <div className="app">
+        {life.worldId === "fantasy" && <AstralSky />}
         <BirthScreen onRace={(r) => { setRace(life, r); void commit(life); }} key={life.id} life={life} rerolls={soul.perks.reroll} onReroll={reroll} onStart={() => setStarted(true)} />
       </div>
     );
@@ -391,6 +393,7 @@ export function App() {
   if (!life.alive && !resolved) {
     return (
       <div className="app">
+        {life.worldId === "fantasy" && <AstralSky />}
         <DeathScreen life={life} soul={soul} lifeNumber={graveyard.length} onSoulChange={commitSoul} onRebirth={onRebirth} />
       </div>
     );
@@ -398,6 +401,7 @@ export function App() {
 
   return (
     <div className={`app ${shake ? "shake" : ""}`}>
+      {life.worldId === "fantasy" && <AstralSky />}
       <MainScreen life={life} onAgeUp={onAgeUp} onTab={(t) => { setFocus(null); setTab(t); }} who={who} setWho={setWho} onPerson={(id) => { setFocus(id); setTab("people"); }} />
 
       {tab && !life.queue.length && !resolved && (

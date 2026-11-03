@@ -9,6 +9,7 @@ import { countryOf } from "../content/countries";
 import type { Life, StatKey } from "../engine/types";
 import { displayName, firstPerson, people, relationLabel, shortName } from "../engine/util";
 import { StatBar } from "./MainScreen";
+import { BirthChart } from "./Astral";
 
 const STATS: StatKey[] = ["health", "happiness", "smarts", "looks"];
 
@@ -116,14 +117,16 @@ export function BirthScreen({
 
       {step >= total && (
         <>
+          {life.ft && onRace && <BirthChart race={life.ft.race} name={RACES[life.ft.race].name} />}
           {life.ft && onRace && (
             <label className="plan-pick fade-in">
               <span className="plan-label">เผ่า</span>
               <select value={life.ft.race} onChange={(e) => onRace(e.target.value as RaceId)}>
-                {(Object.keys(RACES) as RaceId[]).filter((r) => !RARE_RACES.includes(r) || r === life.flags.ftBornRace).map((r) => <option key={r} value={r}>{RACES[r].name} · {RACES[r].desc}</option>)}
+                {(Object.keys(RACES) as RaceId[]).filter((r) => !RARE_RACES.includes(r) || r === life.flags.ftBornRace).map((r) => <option key={r} value={r}>{RACES[r].name}</option>)}
               </select>
             </label>
           )}
+          {life.ft && onRace && <p className="race-desc fade-in">{RACES[life.ft.race].desc}</p>}
           <button className="btn primary big fade-in" onClick={onStart}>
             เริ่มต้นชีวิต
           </button>
