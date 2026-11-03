@@ -303,8 +303,9 @@ describe("เล่นจริง", () => {
     }
     expect(seen.size).toBeGreaterThan(90);
   });
-  it("โลกแฟนตาซียังไม่เปิดให้ผู้เล่นทั่วไป และยุทธภพไม่ถูกแตะ", () => {
-    expect(isOpenWorld("fantasy")).toBe(false);
+  it("โลกแฟนตาซีเปิดให้ทุกคน และยุทธภพไม่ถูกแตะ", () => {
+    expect(isOpenWorld("fantasy")).toBe(true);
+    expect(isOpenWorld("murim")).toBe(true);
     expect(moduleOf("fantasy")?.gift).toBeUndefined();
     const m = createLife({ seed: 1, worldId: "murim" });
     expect(m.ft).toBeUndefined();

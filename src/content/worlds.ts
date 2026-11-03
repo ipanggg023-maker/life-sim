@@ -109,9 +109,7 @@ export const WORLDS: Record<WorldId, WorldInfo> = {
 export const worldOf = (id: string | undefined) => WORLDS[id as WorldId] ?? WORLDS.murim;
 
 /** โลกที่เปิดให้เกิดใหม่ได้ตอนนี้ — ทำทีละโลกให้ครบก่อน (MURIM_PLAN §18.10) · เซฟเก่าของโลกที่ปิดยังเล่นต่อจนจบชีวิตได้ */
-/** โลกแฟนตาซีเปิดเฉพาะโหมดทดสอบจนกว่าจะพร้อม */
-const devMode = typeof location !== "undefined" && new URLSearchParams(location.search).has("dev");
-export const OPEN_WORLDS: WorldId[] = devMode ? ["murim", "fantasy"] : ["murim"];
+export const OPEN_WORLDS: WorldId[] = ["murim", "fantasy"];
 export const isOpenWorld = (id: WorldId) => OPEN_WORLDS.includes(id);
 
 /** โลกแบบสมจริง: ไม่มีหน้าต่างระบบ ไม่ย้อนเวลา ไม่ข้ามโลก ไม่มีร้านวิญญาณ ไม่มีคอมเมนต์ผู้อ่าน */

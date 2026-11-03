@@ -346,7 +346,8 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
           </span>
         </button>
       )}
-      {OPEN_WORLDS.filter((w) => w !== "fantasy").map((w) => (
+      {/* แฟนตาซีมีโลกเดียวที่อยู่ต่อเนื่อง จึงไปต่อด้วยปุ่มตัวละครใหม่ในโลกเดิมแทน */}
+      {OPEN_WORLDS.filter((w) => w !== "fantasy" || life.worldId !== "fantasy").map((w) => (
         <button className="cont-btn fresh" key={w} disabled={busy} onClick={() => go(`world:${w}`)}>
           <span className="cont-emoji">{WORLDS[w].emoji}</span>
           <span className="cont-text">
