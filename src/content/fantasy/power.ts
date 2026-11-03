@@ -12,7 +12,7 @@ const NEED = [100, 200, 340, 520, 520];
 export const needXp = (rank: number) => NEED[Math.min(rank, NEED.length - 1)];
 
 /** เพดานเวท: พรสวรรค์คือหลัก คทาช่วยให้คนธรรมดาเข้าถึงได้ถึงขั้นนักเวท */
-export const magicCap = (l: Life) => { const f = fl(l); return Math.min(MAX_RANK, Math.max(f.potential, 0) + (f.wand ? 2 : 0)); };
+export const magicCap = (l: Life) => { const f = fl(l); return Math.min(MAX_RANK, Math.max(f.potential, 0) + (f.wand ? 2 : 0) + (f.relic === "embersoul" ? 1 : 0)); };
 /** ร่ายเวทได้ไหม: มีคทา หรือเก่งจนไม่ต้องใช้ */
 export const canCast = (l: Life) => { const f = fl(l); return !!f.wand || f.magicRank >= 3; };
 
@@ -22,8 +22,10 @@ export function combat(l: Life): number {
   const body = f.bodyRank * 16 + Math.min(f.body, needXp(f.bodyRank)) / needXp(f.bodyRank) * 10;
   const magic = canCast(l) ? f.magicRank * 18 + Math.min(f.magic, needXp(f.magicRank)) / needXp(f.magicRank) * 10 + (f.wand?.quality ?? 0) * 2 : 0;
   const hurt = l.stats.health < 40 ? -8 : 0;
-  return Math.round(Math.max(body, magic) + Math.min(body, magic) * 0.3 + (myRelic(l)?.bonus ?? 0) + (f.rune ?? 0) * 3 + hurt);
+  return Math.round(Math.max(body, magic) + Math.min(body, magic) * 0.3 + (myRelic(l)?.bonus ?? 0) + (f.rune ?? 0) * 3 + companion(l) + hurt);
 }
+/** มังกรที่ขี่ช่วยสู้ ลูกมังกรที่โตแล้วช่วยตามพลังของมัน */
+const companion = (l: Life) => { const f = fl(l); return (f.mount ? 10 : 0) + (f.whelp && f.whelp.age >= 3 ? Math.min(15, Math.round(f.whelp.power / 5)) : 0) + (f.dragonblood ? 5 : 0); };
 /** โอกาสชนะศัตรูระดับนี้ */
 export const fightOdds = (l: Life, threat: number) => clamp(0.5 + (combat(l) - threat) / 60 + (l.stats.luck - 50) / 400, 0.04, 0.96);
 export const breakOdds = (l: Life, track: "body" | "magic") => {

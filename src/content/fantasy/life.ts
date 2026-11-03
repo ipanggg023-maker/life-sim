@@ -4,6 +4,7 @@ import type { Life, Soul } from "../../engine/types";
 import { addStat, displayName, log } from "../../engine/util";
 import { addLegend, recordChronicle } from "../../engine/worldState";
 import { fl, kingdomsOf, worldOfLife, type FLife, type RaceId } from "./state";
+import { release } from "./dragons";
 import { rollElement } from "./magic";
 import { fastForward } from "./world";
 
@@ -61,6 +62,7 @@ export function closeLife(s: Soul, l: Life) {
   recordChronicle(w, `${displayName(l)}จากโลกไปเมื่ออายุ ${l.age} ปี`);
   for (const r of (w.data as { relics: { holder: string; id: string; at: string }[] }).relics) if (r.holder === "player") { r.holder = "lost"; r.at = f.kingdom; }
   for (const x of (w.data as { factions?: { playerLed?: boolean; leader: string }[] }).factions ?? []) if (x.playerLed) { x.playerLed = false; x.leader = ""; }
+  if (f.whelp) { release(w, l, f.whelp, "บินกลับขุนเขาหลังเจ้าของจากไป"); f.whelp = undefined; }
   const top = f.deeds.at(-1);
   if (top && (l.fame >= 30 || f.deeds.length >= 2)) addLegend(w, { name: displayName(l), deed: top, lifeId: l.id });
   s.fantasyWorld = w;
@@ -70,7 +72,7 @@ export function closeLife(s: Soul, l: Life) {
 export function inheritLife(dead: Life, next: Life) {
   const d = fl(dead);
   next.fw = dead.fw;
-  next.ft = { ...rollFlife(next, d.race), element: d.element, kingdom: d.kingdom, standing: Object.fromEntries(Object.entries(d.standing ?? {}).map(([k, v]) => [k, Math.trunc(v / 2)])), potential: Math.max(0, d.potential + randInt(next, -1, 1)) };
+  next.ft = { ...rollFlife(next, d.race), element: d.element, kingdom: d.kingdom, egg: d.egg ? { ...d.egg, lastCare: 0 } : undefined, standing: Object.fromEntries(Object.entries(d.standing ?? {}).map(([k, v]) => [k, Math.trunc(v / 2)])), potential: Math.max(0, d.potential + randInt(next, -1, 1)) };
   if (next.ft.potential > 5) next.ft.potential = 5;
   next.flags.seenRuler = "";
   next.flags.allowance = true;

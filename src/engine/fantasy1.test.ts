@@ -169,7 +169,7 @@ describe("ตำนานและมังกร", () => {
     const l = life(12);
     runEvent(l, "ft.dragon_meet");
     force(l, "ท้าสู้");
-    expect(dataOf(l).dragon.alive).toBe(false);
+    expect(dataOf(l).dragons[0].alive).toBe(false);
     const d = life(13);
     runEvent(d, "ft.dragon_meet");
     force(d, "ท้าสู้", false);
@@ -281,11 +281,11 @@ describe("ย้อนชะตา", () => {
   });
   it("โลกย้อนกลับพร้อมตัวละคร", () => {
     const snap = life(32, 12);
-    const year = dataOf(snap).dragon.age;
+    const year = dataOf(snap).dragons[0].age;
     const dead = structuredClone(snap);
-    dataOf(dead).dragon.age = year + 50;
+    dataOf(dead).dragons[0].age = year + 50;
     dead.age = 14;
-    expect(dataOf(applyRewind(dead, structuredClone(snap))).dragon.age).toBe(year);
+    expect(dataOf(applyRewind(dead, structuredClone(snap))).dragons[0].age).toBe(year);
   });
 });
 

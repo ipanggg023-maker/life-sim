@@ -4,7 +4,7 @@ import type { Choice, Ctx, GameEvent } from "../../engine/events";
 import { runEvent } from "../../engine/game";
 import { pick, weightedPick } from "../../engine/rng";
 import type { Life } from "../../engine/types";
-import { addMoney, checkChance, clamp, createPerson, displayName, log } from "../../engine/util";
+import { addMoney, addStat, checkChance, clamp, createPerson, displayName, log } from "../../engine/util";
 import { addLegend, recordChronicle } from "../../engine/worldState";
 import { B, BIG, C, E, G, GOLD, K, N, P, SCENE, type Res } from "./kit";
 import { learnSpell, SPELLS } from "./magic";
@@ -153,7 +153,7 @@ export const CIVIC_EVENTS: GameEvent[] = [
     C("ท้าชิงตำแหน่งผู้นำ", (l) => { runEvent(l, "ft.f.challenge"); return { text: "คุณเดินเข้าโถงใหญ่" }; }, { show: (l) => fl(l).fRank === 2 && (fl(l).fMerit ?? 0) >= 6 && !myFaction(l)!.playerLed }),
   ]),
   SCENE("ft.f.challenge", "ชิงตำแหน่ง", (l) => `${myFaction(l)!.leader}นั่งอยู่หัวโต๊ะ ทุกคนรอดูว่าคุณจะทำอย่างไร`, [
-    P("ท้าดวลต่อหน้าทุกคน", (l) => fightOdds(l, leaderPower(l) + 15), takeLead, B("คุณถูกปลดอาวุธต่อหน้าทั้งโถง และถูกลดขั้น", { hp: -12, joy: -6 }, demote)),
+    P("ท้าดวลต่อหน้าทุกคน", (l) => fightOdds(l, leaderPower(l) + 15) + (fl(l).relic === "stormcrown" ? 0.2 : 0), takeLead, B("คุณถูกปลดอาวุธต่อหน้าทั้งโถง และถูกลดขั้น", { hp: -12, joy: -6 }, demote)),
     K("รวบรวมเสียงสนับสนุน", "looks", 82, takeLead, N("เสียงไม่พอ และคนของผู้นำจำชื่อคุณไว้แล้ว คุณถูกลดขั้น", {}, demote)),
     C("ถอยก่อน", N("ยังไม่ถึงเวลาของคุณ")),
   ]),
@@ -250,6 +250,8 @@ export function civicYear(l: Life) {
     l.flags.ftAmnesty = k.ruler;
   }
   if (myFaction(l)?.playerLed) addMoney(l, 80 * GOLD);
+  if (fl(l).relic === "stormcrown") addStanding(l, 2);
+  if (fl(l).relic === "grief") addStat(l, "happiness", -4);
   // ใครที่รู้จักตายในโลก ข่าวมาถึงผู้เล่น · ใครตายในชีวิตผู้เล่น โลกก็เสียเขาไปด้วย
   for (const p of l.people) {
     if (p.relation !== "friend" || !p.notable) continue;

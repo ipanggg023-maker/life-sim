@@ -4,7 +4,7 @@ import type { Life } from "../../engine/types";
 import { clamp } from "../../engine/util";
 import { advanceWorld, recordChronicle, type WorldState } from "../../engine/worldState";
 import { reformLaws, seekerOf, tickSociety } from "./society";
-import { ensureSociety, type FData, type Kingdom } from "./state";
+import { ensureSociety, passRelic, type FData, type Kingdom } from "./state";
 
 type Rng = Pick<Life, "rng">;
 const HEIR_M = ["คาเอล", "โรวาน", "กาเรธ", "ลูเซียน", "ดาริอัส", "ฮาเดรียน", "เอลวิน", "ธาเดียส", "ออเรลิอัส", "ซีเดริค"];
@@ -51,21 +51,12 @@ export function tickWorld(w: WorldState, r: Rng) {
   const d = ensureSociety(w);
   for (const k of d.kingdoms) tickKingdom(w, d, k, r);
   tickSociety(w, d, r);
-  const dr = d.dragon;
-  if (dr.alive) {
-    dr.age++;
-    dr.mood = clamp(dr.mood + randInt(r, -2, 2), -100, 100);
-    if (dr.mood < -30 && chance(r, 0.06)) {
-      const k = d.kingdoms.find((x) => x.id === dr.home)!;
-      k.power = clamp(k.power - 5, 15, 95);
-      recordChronicle(w, `มังกร${dr.name}เผาเมืองชายแดนของ${k.name}`);
-    }
-  }
   for (const rl of d.relics) {
     if (rl.holder === "player") continue;
     if (rl.holder === "lost" ? chance(r, 0.006) : chance(r, 0.02)) {
       const by = rl.holder === "lost" ? seekerOf(d, r)?.name ?? pick(r, SEEKERS) : "lost";
       recordChronicle(w, by === "lost" ? `${rl.name}หายไปจากมือ${rl.holder}อีกครั้ง` : `${by}พบ${rl.name}`);
+      passRelic(w, rl, by === "lost" ? "สูญหาย" : by);
       rl.holder = by;
       rl.at = pick(r, d.kingdoms).id;
     }

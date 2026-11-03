@@ -6,6 +6,7 @@ import { schoolOf } from "../../content/fantasy/places";
 import { classStanding, rivalOf } from "../../content/fantasy/schoollife";
 import { shortName } from "../../engine/util";
 import { FACTION_RANKS, myFaction, standingWord } from "../../content/fantasy/civic";
+import { bondOf, moodWord, mountOf } from "../../content/fantasy/dragons";
 import { GOODS, priceOf } from "../../content/fantasy/society";
 import { LAWS, ROLES, dataOf, fl, homeKingdom, myRelic, standingOf, worldOfLife, type Good } from "../../content/fantasy/state";
 import { talentById } from "../../content/talents";
@@ -59,7 +60,10 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         {f.foe && <p className="small">มีคนตามล่า: {d.factions.find((x) => x.id === f.foe)?.name}</p>}
         <p className="small">ชื่อเสียงใน{homeKingdom(life).name}: {standingWord(standingOf(life))} ({standingOf(life)})</p>
         {Number(life.flags.jailUntil ?? -1) > life.age && <p className="small">ติดคุกถึงอายุ {String(life.flags.jailUntil)} ปี</p>}
-        {life.flags.dragonRider && <p className="small">สหายของมังกร{dataOf(life).dragon.name}</p>}
+        {mountOf(life) && <p className="small">ขี่มังกร{mountOf(life)}</p>}
+        {f.egg && <p className="small">ไข่มังกรธาตุ{ELEMENTS[f.egg.element].name} · ความอุ่น {f.egg.warmth}/4</p>}
+        {f.whelp && <p className="small">ลูกมังกร{f.whelp.name} · อายุ {f.whelp.age} · ผูกพัน {f.whelp.bond} · พลัง {f.whelp.power}</p>}
+        {f.dragonblood && <p className="small">เลือดมังกรไหลในตัวคุณ</p>}
       </Fold>
       <Fold always kind="section" id="ft-magic" title={<>เวทมนตร์ · ธาตุ{ELEMENTS[f.element ?? "fire"].name}</>}>
         <p className="small">มานาปีนี้ {manaLeft(life)}/{manaMax(life)} · บทสวด {f.chant ?? 0} · วงเวท {f.circle ?? 0} · อักษรรูน {f.rune ?? 0}</p>
@@ -110,12 +114,13 @@ export function FantasyWorldTab({ life }: { life: Life }) {
       <Fold id="ft-notables" title={<>บุคคลสำคัญ</>}>
         {d.notables.slice().sort((a, b) => b.fame * 5 + b.power - a.fame * 5 - a.power).slice(0, 12).map((n) => <p className="small" key={n.id}>{n.name} · {ROLES[n.role]} · อายุ {n.age} · พลัง {n.power}</p>)}
       </Fold>
-      <Fold always id="ft-dragon" title={<>มังกร</>}>
-        <p className="small">{d.dragon.alive ? `${d.dragon.name} ${d.dragon.title} อายุ ${d.dragon.age} ปี` : `${d.dragon.name} ถูกสังหารโดย${d.dragon.slainBy}`}</p>
+      <Fold always id="ft-dragon" title={<>มังกร ({d.dragons.filter((x) => x.alive).length})</>}>
+        {d.dragons.map((x) => <p className="small" key={x.id}>{x.alive ? `${x.name} ${x.title} · ธาตุ${ELEMENTS[x.element].name} · อายุ ${x.age} · พลัง ${x.power} · ${moodWord(x.mood)}${bondOf(life, x) ? ` · ผูกพัน ${bondOf(life, x)}` : ""}` : `${x.name} ถูกสังหารโดย${x.slainBy ?? "กาลเวลา"}`}</p>)}
+        {d.eggs.length > 0 && <p className="small muted">มีไข่มังกรรอฟักอยู่ {d.eggs.length} ฟอง</p>}
       </Fold>
       <Fold id="ft-relics" title={<>อาวุธตำนาน</>}>
         {d.relics.map((r) => (
-          <p className="small" key={r.id}><b>{r.name}</b> · {r.power} · {r.holder === "player" ? "อยู่กับคุณ" : r.holder === "lost" ? "สูญหาย" : `ข่าวว่าอยู่กับ${r.holder}`}</p>
+          <p className="small" key={r.id}><b>{r.name}</b> · {r.power} · {r.holder === "player" ? "อยู่กับคุณ" : r.holder === "lost" ? "สูญหาย" : `ข่าวว่าอยู่กับ${r.holder}`}{r.history?.length ? ` · ผู้ถือในอดีต: ${r.history.slice(-3).join(", ")}` : ""}</p>
         ))}
       </Fold>
       {w.legends.length > 0 && (

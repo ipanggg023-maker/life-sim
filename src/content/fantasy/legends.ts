@@ -4,17 +4,17 @@ import type { Ctx, GameEvent } from "../../engine/events";
 import { runEvent } from "../../engine/game";
 import { pick } from "../../engine/rng";
 import type { Life } from "../../engine/types";
-import { addFame } from "../../engine/util";
+import { addFame, displayName } from "../../engine/util";
 import { recordChronicle } from "../../engine/worldState";
 import { B, BIG, C, E, G, K, N, P, SCENE } from "./kit";
 import { fightOdds } from "./power";
-import { dataOf, deed, fl, homeKingdom, kingdomsOf, relicOf, worldOfLife, type Relic } from "./state";
+import { dataOf, deed, fl, kingdomsOf, myRelic, passRelic, relicOf, worldOfLife, type Relic } from "./state";
 
 export const NEED_CLUES = 4;
 const TRIAL_THREAT = 58;
 const SEEK_WAIT = 1;
 export const DRAGON_THREAT = 105;
-const dragon = (l: Life) => dataOf(l).dragon;
+const EXAGGERATE = ["ด้วยมือเปล่า", "ในคืนเดียว", "ทั้งที่ตาบอดข้างหนึ่ง", "ตอนอายุเพียงสิบสองปี", "ขณะร้องเพลงไปด้วย", "โดยมีมังกรสามตัวเป็นพยาน"];
 const lost = (l: Life) => dataOf(l).relics.filter((r) => r.holder !== "player");
 /** ตามชิ้นที่มีเบาะแสมากสุด เบาะแสจึงไม่กระจาย */
 const chase = (l: Life) => lost(l).slice().sort((a, b) => (fl(l).clues[b.id] ?? 0) - (fl(l).clues[a.id] ?? 0))[0];
@@ -27,11 +27,19 @@ function takeRelic(l: Life, r: Relic) {
   deed(l, `ครอบครอง${r.name}`);
   addFame(l, 15);
   recordChronicle(worldOfLife(l), `${l.firstName}ได้${r.name}${was === "lost" ? "จากซากปรักหักพัง" : `จาก${was}`}`);
+  passRelic(worldOfLife(l), r, displayName(l));
+  if (r.id === "phoenixring" && !l.flags.ftPhoenix) { l.flags.ftPhoenix = true; fl(l).threads++; }
 }
+function dropRelic(l: Life) {
+  const r = myRelic(l)!;
+  r.holder = "lost"; r.at = fl(l).kingdom; fl(l).relic = undefined;
+  passRelic(worldOfLife(l), r, `${displayName(l)}วางคืนแท่น`);
+}
+const tale = (l: Life, c: Ctx) => worldOfLife(l).legends[Number(c.g)];
 
 const ACTS: Activity[] = [
   { id: "ft_legend", emoji: "", name: "สืบหาอาวุธตำนาน", desc: "ตามร่องรอยในหอสมุดและซากเมือง", minAge: 16, time: 2, world: "fantasy", group: "ผจญภัย", available: (l) => !fl(l).relic && lost(l).length > 0 && l.age >= Number(l.flags.ftSeekNext ?? 0), run: (l) => { l.flags.ftSeekNext = l.age + SEEK_WAIT; runEvent(l, "ft.legend_trail", { relic: chase(l).id }); return { text: "" }; } },
-  { id: "ft_dragon", emoji: "", name: "ขึ้นเขาไปหามังกร", desc: "อันตรายมาก", minAge: 18, time: 2, world: "fantasy", group: "ผจญภัย", available: (l) => dragon(l).alive, run: (l) => { runEvent(l, "ft.dragon_meet"); return { text: "" }; } },
+  { id: "ft_relic_drop", emoji: "", name: "วางอาวุธตำนานคืนแท่น", desc: "ปล่อยให้คนอื่นตามหา แล้วไปตามหาชิ้นใหม่", minAge: 16, time: 0, world: "fantasy", group: "ผจญภัย", available: (l) => !!fl(l).relic, run: (l) => { runEvent(l, "ft.relic_drop"); return { text: "" }; } },
 ];
 
 export const LEGEND_EVENTS: GameEvent[] = [
@@ -47,18 +55,16 @@ export const LEGEND_EVENTS: GameEvent[] = [
     C("ถอยกลับก่อน", N("คุณจำทางมาที่นี่ไว้แล้ว")),
   ]),
 
-  SCENE("ft.dragon_meet", "ยอดเขาเงิน", (l) => `มังกร${dragon(l).name}${dragon(l).title} ลืมตาข้างหนึ่งมองคุณ ลมหายใจของมันทำหิมะละลายไปทั้งลาน`, [
-    P("ท้าสู้เพื่อสังหารมังกร", (l) => fightOdds(l, DRAGON_THREAT) + (fl(l).relic === "wyrmsbane" ? 0.25 : 0), BIG((l) => `คุณยืนอยู่บนซากมังกร${dragon(l).name} ทั่วแผ่นดินจะเล่าเรื่องนี้ไปอีกพันปี`, { fame: 40, joy: 15, body: 20 }, (l) => { const d = dragon(l); d.alive = false; d.slainBy = l.firstName; deed(l, `สังหารมังกร${d.name}`); recordChronicle(worldOfLife(l), `${l.firstName}สังหารมังกร${d.name}`); }), B("ไฟมังกรเผาโลกของคุณจนขาว", { die: "ถูกเผาโดยมังกร" }), { tone: "danger", survival: (l) => fightOdds(l, DRAGON_THREAT) }),
-    K("สนทนาอย่างผู้มีปัญญา", "smarts", 60, G("มังกรหัวเราะจนหินร่วง \"มนุษย์ที่พูดรู้เรื่อง หายากกว่าทองเสียอีก\"", { iq: 2, magic: 8 }, (l) => { fl(l).dragonBond += 25; dragon(l).mood += 5; }), B("มันไม่สนใจ แล้วหางของมันก็ปัดคุณลงจากลาน", { hp: -15 })),
-    C("ถวายของกำนัลแล้วขอพร", G("มังกรรับทองคำไว้โดยไม่พูดอะไร แต่ปล่อยให้คุณเดินกลับไปได้", { gold: -20 }, (l) => { fl(l).dragonBond += 10; }), { req: (l) => (l.money < 2000 ? "ต้องมี 20 เหรียญทอง" : undefined) }),
-    P("ขอเป็นเพื่อนร่วมทาง", (l) => (fl(l).dragonBond - 30) / 60 + (l.stats.luck - 50) / 200, BIG((l) => `${dragon(l).name}ลดคอลงให้คุณปีนขึ้นหลัง เมฆทั้งหมดอยู่ใต้เท้าคุณ`, { fame: 25, joy: 20 }, (l) => { l.flags.dragonRider = true; deed(l, `เป็นสหายของมังกร${dragon(l).name}`); recordChronicle(worldOfLife(l), `${l.firstName}ขี่มังกร${dragon(l).name}เหนือท้องฟ้า`); }), N("มันพ่นควันใส่หน้าคุณเบาๆ \"ยังไม่ถึงเวลา\""), { show: (l) => fl(l).dragonBond >= 30 && !l.flags.dragonRider }),
-    C("หนีลงเขา", N("คุณไม่เคยวิ่งเร็วเท่านี้มาก่อน", { hp: -2 })),
+  SCENE("ft.relic_drop", "แท่นหิน", (l) => `คุณยืน${myRelic(l)?.id === "grief" ? "จับดาบโศกาที่ไม่ยอมหลุดจากมือ" : `ถือ${myRelic(l)?.name}`}อยู่หน้าแท่นหินที่มันเคยหลับใหล`, [
+    C("วางคืนแท่น", N("มันกลับไปเป็นตำนานที่รอคนต่อไป", {}, dropRelic), { show: (l) => myRelic(l)?.id !== "grief" }),
+    K("ฝืนแกะนิ้วออกจากด้ามดาบ", "looks", 70, G("ดาบหลุดจากมือคุณ และความเศร้าที่สะสมมาหลายปีก็หลุดตามไปด้วย", { joy: 15 }, dropRelic), B("ดาบกระชับเข้าหามือคุณแน่นกว่าเดิม", { joy: -5 }), { show: (l) => myRelic(l)?.id === "grief" }),
+    C("เก็บไว้ก่อน", N("ยังไม่ถึงเวลาปล่อยมือ")),
   ]),
-  E("ft.dragon_raid", [10, 400], (l) => `เงาปีกมหึมาผ่านเมือง มังกร${dragon(l).name}บินลงมาเผายุ้งฉางของ${homeKingdom(l).name}`, [
-    P("ขึ้นกำแพงต่อสู้", (l) => fightOdds(l, 70), G("คุณทำให้มันถอยไปจากกำแพง เมืองจารึกชื่อคุณ", { fame: 15, body: 8 }, (l) => deed(l, "ปกป้องเมืองจากมังกร")), B("เปลวไฟเลียแขนคุณจนไหม้", { hp: -20 })),
-    C("พาคนหนีลงใต้ดิน", G("คุณพาเด็กๆ ลงห้องเก็บไวน์ ทุกคนรอด", { fame: 5, joy: 3 })),
-    C("คว้าของมีค่าแล้วหนี", N("คุณรอด ของรอด แต่ไม่มีใครลืมว่าคุณทิ้งเพื่อนบ้าน", { gold: 15, fame: -5 })),
-  ], { when: (l) => dragon(l).alive && dragon(l).home === fl(l).kingdom && dragon(l).mood < 10, weight: 5, maxTimes: 4, title: "มังกรมาเยือน" }),
+  E("ft.legend_tale", [8, 400], (l, c) => { const g = tale(l, c); const tall = g.retold >= 3; return `นักกวีพเนจรขับลำนำเรื่อง${g.name}ผู้${g.deed}${tall ? ` ${EXAGGERATE[(g.retold + g.year) % EXAGGERATE.length]}` : ""} เมื่อปี ${g.year}${tall ? " ทั้งร้านเชื่อทุกคำ แม้เรื่องจะยาวกว่าที่เคยได้ยินทุกครั้ง" : ""}`; }, [
+    C("ฟังจนจบแล้วโยนเหรียญให้", G("คุณเดินกลับบ้านโดยคิดว่าวันหนึ่งคงมีเพลงของคุณบ้าง", { joy: 4 })),
+    C("เถียงว่าเรื่องจริงไม่ได้เป็นแบบนั้น", N("ทั้งร้านโห่ใส่ ไม่มีใครอยากฟังเรื่องจริง", { iq: 1 })),
+    K("ตามรอยตำนานไปดูเอง", "luck", 45, G("ที่ปลายทางมีร่องรอยจริงอยู่ และมันชี้ไปหาอาวุธที่ยังหายสาบสูญ", { magic: 3, body: 3 }, (l) => { const r = lost(l)[0]; if (r) fl(l).clues[r.id] = (fl(l).clues[r.id] ?? 0) + 1; }), N("ปลายทางเหลือแต่ป้ายบอกทางให้นักท่องเที่ยว")),
+  ], { when: (l) => worldOfLife(l).legends.some((g) => g.lifeId !== l.id), weight: 6, maxTimes: 4, title: "ลำนำตำนาน", prepare: (l) => { const all = worldOfLife(l).legends.map((g, i) => [g, i] as const).filter(([g]) => g.lifeId !== l.id); const [g, i] = pick(l, all); g.retold++; return { g: i }; } }),
   E("ft.relic_rumor", [14, 400], (l) => `พ่อค้าเร่กระซิบว่ามีคนเห็น${pick(l, lost(l)).name}ที่${pick(l, kingdomsOf(l)).name}`, [C("จดเก็บไว้", G("อาจเป็นเรื่องโกหก แต่เรื่องโกหกดีๆ ก็มักมีเค้า", { iq: 1 })), C("หัวเราะแล้วดื่มต่อ", N("ทุกคนในร้านเล่าเรื่องนี้มาสิบปีแล้ว"))], { when: (l) => lost(l).length > 0, weight: 5, maxTimes: 3, title: "ข่าวเล่าลือ" }),
 ];
 

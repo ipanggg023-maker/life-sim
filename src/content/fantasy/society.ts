@@ -3,7 +3,7 @@ import { chance, pick, randInt, weightedPick } from "../../engine/rng";
 import type { Life } from "../../engine/types";
 import { clamp } from "../../engine/util";
 import { recordChronicle, type WorldState } from "../../engine/worldState";
-import { LAWS, NOTABLE_CAP, newNotable, ROLES, type FData, type Faction, type Good, type Kingdom, type LawId, type Notable } from "./state";
+import { LAWS, NOTABLE_CAP, newNotable, passRelic, ROLES, type Dragon, type FData, type Faction, type Good, type Kingdom, type LawId, type Notable } from "./state";
 
 type Rng = Pick<Life, "rng">;
 
@@ -52,9 +52,10 @@ function tickCoup(w: WorldState, d: FData, k: Kingdom, r: Rng) {
   reformLaws(w, k, r);
 }
 
+let dropWorld: WorldState | undefined;
 const drop = (d: FData, n: Notable) => {
   d.notables = d.notables.filter((x) => x !== n);
-  for (const rl of d.relics) if (rl.holder === n.name) rl.holder = "lost";
+  for (const rl of d.relics) if (rl.holder === n.name) { rl.holder = "lost"; if (dropWorld) passRelic(dropWorld, rl, `หายไปหลัง${n.name}ตาย`); }
 };
 
 const DEEDS: Record<Notable["role"], [string, (k: Kingdom) => void][]> = {
@@ -122,7 +123,55 @@ function tickFaction(w: WorldState, d: FData, x: Faction, r: Rng) {
   }
 }
 
+const MAX_DRAGONS = 8;
+const HATCH_YEARS = 15;
+const YOUNG = ["ไซรัส", "อิกนิส", "เทอร์รา", "เวเนธ", "โนคทิส", "ออรัม", "คาลิกซ์", "เซฟิรา", "พีรอส", "ไอลา", "ดราวาร์", "เมเรธ"];
+const TITLE: Record<Dragon["element"], string> = { fire: "เปลวไฟหนุ่ม", water: "แห่งคลื่น", earth: "เกล็ดหิน", wind: "ปีกพายุ", light: "เกล็ดแสง", dark: "เงาอ่อน" };
+
+/** มังกรแก่ ต่อสู้กันเอง วางไข่ ไข่ฟัก และวีรบุรุษออกล่า */
+export function tickDragons(w: WorldState, d: FData, r: Rng) {
+  for (const x of d.dragons) {
+    if (!x.alive) continue;
+    x.age++;
+    if (x.age < 200) x.power = Math.min(100, x.power + 1);
+    x.mood = clamp(x.mood + randInt(r, -2, 2) + (x.mood < -60 ? 1 : 0), -100, 100);
+    const k = d.kingdoms.find((y) => y.id === x.home);
+    if (k && x.mood < -30 && chance(r, 0.06)) { k.power = clamp(k.power - 5, 15, 95); recordChronicle(w, `มังกร${x.name}เผาเมืองชายแดนของ${k.name}`); }
+    if (x.age > 2500 && chance(r, 0.02)) { x.alive = false; recordChronicle(w, `มังกร${x.name}หลับใหลครั้งสุดท้ายในวัย ${x.age} ปี`); continue; }
+    const hero = d.notables.find((n) => (n.role === "hero" || n.role === "general") && n.power >= 80 && n.kingdom === x.home);
+    if (hero && chance(r, 0.01)) {
+      if (hero.power + randInt(r, -20, 20) > x.power) { x.alive = false; x.slainBy = hero.name; hero.fame += 6; recordChronicle(w, `${hero.name}สังหารมังกร${x.name}`); for (const o of d.dragons) if (o.alive) o.mood = clamp(o.mood - 10, -100, 100); continue; }
+      recordChronicle(w, `${hero.name}ขึ้นเขาไปล่ามังกร${x.name} และไม่ได้กลับลงมา`);
+      drop(d, hero);
+    }
+    const alive = d.dragons.filter((y) => y.alive).length;
+    if (x.age >= 300 && alive + d.eggs.length < MAX_DRAGONS && chance(r, 0.012)) { d.eggs.push({ mother: x.id, element: x.element, laid: w.year }); recordChronicle(w, `มีข่าวว่ามังกร${x.name}วางไข่ในรัง`); }
+  }
+  for (const e of [...d.eggs]) {
+    if (w.year - e.laid < HATCH_YEARS) continue;
+    d.eggs = d.eggs.filter((y) => y !== e);
+    const mom = d.dragons.find((y) => y.id === e.mother);
+    if (!mom?.alive && chance(r, 0.5)) continue;
+    const name = pick(r, YOUNG.filter((n) => !d.dragons.some((y) => y.name === n))) ?? pick(r, YOUNG);
+    d.dragons.push({ id: `d${w.year}${name}`, name, title: TITLE[e.element], element: e.element, home: mom?.home ?? pick(r, d.kingdoms).id, age: 0, mood: randInt(r, -10, 20), alive: true, power: 40 });
+    recordChronicle(w, `ไข่ของ${mom?.name ?? "มังกรที่ตายไปแล้ว"}ฟักเป็นมังกร${name}`);
+  }
+  const alive = d.dragons.filter((y) => y.alive);
+  if (alive.length >= 2 && chance(r, 0.01)) {
+    const a = pick(r, alive), b = pick(r, alive.filter((y) => y !== a));
+    const [win, lose] = a.power + randInt(r, -25, 25) >= b.power ? [a, b] : [b, a];
+    lose.power -= 15;
+    if (lose.power < 45) { lose.alive = false; lose.slainBy = `มังกร${win.name}`; recordChronicle(w, `มังกร${win.name}ฆ่ามังกร${lose.name}กลางฟ้า`); }
+    else recordChronicle(w, `มังกร${win.name}กับ${lose.name}สู้กันจนฟ้าแดงทั้งคืน`);
+  }
+  // ซากมังกรเก่าไม่ต้องเก็บไว้นาน · เก็บตัวที่ตายไว้ไม่เกินสี่ตัวเพื่อเล่าเรื่อง
+  const dead = d.dragons.filter((y) => !y.alive);
+  if (dead.length > 4) d.dragons = d.dragons.filter((y) => y.alive || dead.slice(-4).includes(y));
+}
+
 export function tickSociety(w: WorldState, d: FData, r: Rng) {
+  dropWorld = w;
+  tickDragons(w, d, r);
   for (const k of d.kingdoms) { tickEconomy(w, k, r); tickCoup(w, d, k, r); }
   tickNotables(w, d, r);
   for (const x of d.factions) tickFaction(w, d, x, r);

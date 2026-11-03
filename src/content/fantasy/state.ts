@@ -58,17 +58,27 @@ export interface FLife {
   crimes?: number;
   trades?: number;
   beatGreat?: boolean;
+  /** ความผูกพันกับมังกรแต่ละตัว · dragonBond คือความชอบมังกรโดยกำเนิด */
+  dBonds?: Record<string, number>;
+  dLearned?: string[];
+  egg?: { element: Element; warmth: number; from: string; lastCare: number };
+  whelp?: { name: string; element: Element; age: number; bond: number; power: number; lastCare: number; from: string };
+  /** มังกรที่ขี่อยู่ · "whelp" = ตัวที่เลี้ยงเอง */
+  mount?: string;
+  dragonFoe?: string;
+  dragonblood?: boolean;
 }
 
 export interface Kingdom { id: string; name: string; ruler: string; rulerAge: number; power: number; stability: number; war?: string; plague?: number; prosperity?: number; famine?: number; laws?: LawId[] }
-export interface Dragon { name: string; title: string; home: string; age: number; mood: number; alive: boolean; slainBy?: string }
-export interface Relic { id: string; name: string; power: string; holder: string; at: string; bonus: number; trial: "combat" | "wit" | "heart" }
+export interface Dragon { id: string; name: string; title: string; element: Element; home: string; age: number; mood: number; alive: boolean; power: number; slainBy?: string; /** นามสกุลของครอบครัวที่เคยเลี้ยงมัน */ kin?: string }
+export interface Egg { mother: string; element: Element; laid: number }
+export interface Relic { id: string; name: string; power: string; holder: string; at: string; bonus: number; trial: "combat" | "wit" | "heart"; history?: string[] }
 export type LawId = "banMagic" | "heavyTax" | "freeTrade" | "harshCourts";
 export type Good = "grain" | "iron" | "herbs";
 export type Role = "hero" | "mage" | "merchant" | "rogue" | "priest" | "general";
 export interface Notable { id: number; name: string; role: Role; age: number; power: number; kingdom: string; faction?: string; fame: number }
 export interface Faction { id: string; name: string; creed: string; power: number; leader: string; feud?: string; playerLed?: boolean }
-export interface FData { kingdoms: Kingdom[]; dragon: Dragon; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number }
+export interface FData { kingdoms: Kingdom[]; dragons: Dragon[]; eggs: Egg[]; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number; /** เซฟเก่าก่อนมีหลายมังกร */ dragon?: Omit<Dragon, "id" | "element" | "power"> }
 
 export const LAWS: Record<LawId, { name: string; desc: string }> = {
   banMagic: { name: "ห้ามเวทในที่สาธารณะ", desc: "ผู้ตรวจการตามล่าคนร่ายเวท" },
@@ -109,13 +119,27 @@ const KINGDOMS: Kingdom[] = [
 
 const newData = () => ({
   kingdoms: KINGDOMS.map((k) => ({ ...k })),
-  dragon: { name: "วาลเกรียส", title: "เพลิงแห่งยอดเขาเงิน", home: "varn", age: 900, mood: 0, alive: true },
-  relics: [
+  dragons: DRAGONS.map((x) => ({ ...x })),
+  eggs: [],
+  relics: RELICS.map((x) => ({ ...x })),
+});
+const RELICS: Relic[] = [
     { id: "veilcutter", name: "เวลคัตเตอร์", power: "ดาบที่ตัดม่านเวทมนตร์ทุกชนิด", holder: "lost", at: "aldria", bonus: 18, trial: "combat" },
     { id: "dawnchoice", name: "อรุณาเลือก", power: "ดาบที่เลือกเจ้าของด้วยตัวเอง", holder: "lost", at: "thalos", bonus: 20, trial: "heart" },
     { id: "wyrmsbane", name: "ไวร์มสเบน", power: "ทวนที่ตีขึ้นเพื่อสังหารมังกรโดยเฉพาะ", holder: "lost", at: "varn", bonus: 15, trial: "wit" },
-  ],
-});
+  { id: "stormcrown", name: "มงกุฎพายุ", power: "ใครสวมแล้วพูด สภาทั้งห้องจะเงียบฟัง", holder: "lost", at: "thalos", bonus: 8, trial: "heart" },
+  { id: "embersoul", name: "คทาวิญญาณถ่าน", power: "ทำให้เพดานเวทของผู้ถือสูงขึ้นหนึ่งขั้น", holder: "lost", at: "aldria", bonus: 12, trial: "wit" },
+  { id: "grief", name: "ดาบโศกา", power: "ดาบที่แรงที่สุดในโลก และดูดความสุขของผู้ถือทุกปี", holder: "lost", at: "varn", bonus: 30, trial: "combat" },
+  { id: "phoenixring", name: "แหวนฟีนิกซ์", power: "ให้ด้ายชะตาเพิ่มหนึ่งเส้นแก่ผู้ที่สวมครั้งแรก", holder: "lost", at: "thalos", bonus: 5, trial: "heart" },
+  { id: "dragonhorn", name: "แตรมังกร", power: "มังกรได้ยินเสียงนี้แล้วผูกพันกับผู้เป่าเร็วขึ้นสองเท่า", holder: "lost", at: "aldria", bonus: 6, trial: "wit" },
+];
+const DRAGONS: Dragon[] = [
+  { id: "valgrias", name: "วาลเกรียส", title: "เพลิงแห่งยอดเขาเงิน", element: "fire", home: "varn", age: 900, mood: 0, alive: true, power: 105 },
+  { id: "nerith", name: "เนริธ", title: "ราชินีใต้สมุทร", element: "water", home: "thalos", age: 640, mood: 15, alive: true, power: 95 },
+  { id: "korvath", name: "คอร์วาธ", title: "เกล็ดหินแห่งหุบเขาลึก", element: "earth", home: "aldria", age: 1200, mood: 5, alive: true, power: 110 },
+  { id: "sylphae", name: "ซิลแฟ", title: "นางพญาพายุ", element: "wind", home: "varn", age: 300, mood: 20, alive: true, power: 80 },
+  { id: "umbra", name: "อัมบรา", title: "เงาที่กลืนดวงจันทร์", element: "dark", home: "aldria", age: 1500, mood: -25, alive: true, power: 120 },
+];
 
 export const newFantasyWorld = (seed: number, year = 1000): WorldState => {
   const w = newWorldState("fantasy", seed, year);
@@ -126,6 +150,13 @@ export const newFantasyWorld = (seed: number, year = 1000): WorldState => {
 /** เติมสังคมให้โลกเก่าที่สร้างก่อนมีระบบนี้ */
 export function ensureSociety(w: WorldState) {
   const d = w.data as unknown as FData;
+  if (!d.dragons) {
+    d.dragons = DRAGONS.map((x) => ({ ...x }));
+    if (d.dragon) Object.assign(d.dragons[0], d.dragon);
+    delete d.dragon;
+    d.eggs = [];
+    for (const r of RELICS) if (!d.relics.some((x) => x.id === r.id)) d.relics.push({ ...r });
+  }
   if (d.factions) return d;
   const r = { rng: (w.seed >>> 0) || 1 };
   d.nextId = 1;
@@ -147,6 +178,8 @@ export const homeKingdom = (l: Life) => kingdomsOf(l).find((k) => k.id === fl(l)
 export const relicOf = (l: Life, id: string) => dataOf(l).relics.find((r) => r.id === id);
 export const myRelic = (l: Life) => (fl(l).relic ? relicOf(l, fl(l).relic!) : undefined);
 export const deed = (l: Life, text: string) => { fl(l).deeds.push(text); };
+/** ประวัติผู้ถืออาวุธตำนาน เก็บล่าสุดแปดคน */
+export const passRelic = (w: WorldState, r: Relic, who: string) => { r.history = [...(r.history ?? []), `ปี ${w.year} · ${who}`].slice(-8); };
 export const standingOf = (l: Life, k = fl(l).kingdom) => fl(l).standing?.[k] ?? 0;
 export function addStanding(l: Life, d: number, k = fl(l).kingdom) {
   const f = fl(l);
