@@ -43,7 +43,7 @@ function tickEconomy(w: WorldState, k: Kingdom, r: Rng) {
 
 /** กองทัพก่อรัฐประหารเมื่อบ้านเมืองปั่นป่วน */
 function tickCoup(w: WorldState, d: FData, k: Kingdom, r: Rng) {
-  if (k.stability >= 20 || !chance(r, 0.06)) return;
+  if (k.playerRuled || k.stability >= 20 || !chance(r, 0.03)) return;
   const n = d.notables.filter((x) => x.kingdom === k.id && (x.role === "general" || x.role === "hero")).sort((a, b) => b.power - a.power)[0];
   if (!n) return;
   recordChronicle(w, `${n.name}ก่อรัฐประหาร โค่น${k.ruler}และยึด${k.name}`);
@@ -73,7 +73,9 @@ const star = (r: Rng, list: Notable[]) => weightedPick(r, list, (n) => 1 + n.fam
 function tickNotables(w: WorldState, d: FData, r: Rng) {
   for (const n of [...d.notables]) {
     n.age++;
-    n.power = clamp(n.power + (n.age < 35 ? randInt(r, 0, 2) : n.age < 60 ? randInt(r, -1, 1) : -1), 5, 99);
+    // โตจนถึงเพดานของตัวเองก่อนอายุสี่สิบห้า แล้วทรง และแก่ลงหลังหกสิบ
+    const peak = n.peak ?? n.power + 10;
+    n.power = clamp(n.power + (n.age < 45 && n.power < peak ? randInt(r, 1, 3) : n.age < 60 ? randInt(r, -1, 1) : -1), 5, 99);
     const k = d.kingdoms.find((x) => x.id === n.kingdom);
     const odds = (n.age < 50 ? 0.006 : 0.02 + (n.age - 50) * 0.006) + (k?.war && (n.role === "hero" || n.role === "general") ? 0.01 : 0);
     if (chance(r, odds)) {
@@ -102,11 +104,15 @@ function tickNotables(w: WorldState, d: FData, r: Rng) {
   }
 }
 
+const ROLE_OF_KIND: Record<string, Notable["role"]> = { silver: "hero", conclave: "mage", league: "merchant", night: "rogue", dawn: "priest" };
+
 function tickFaction(w: WorldState, d: FData, x: Faction, r: Rng) {
   x.power = clamp(Math.round(x.power + randInt(r, -2, 2) + (50 - x.power) * 0.04), 10, 90);
   if (!x.playerLed && !d.notables.some((n) => n.name === x.leader)) {
     const top = d.notables.filter((n) => n.faction === x.id).sort((a, b) => b.power - a.power)[0];
     if (top) { x.leader = top.name; if (top.fame >= 3) recordChronicle(w, `${top.name}ขึ้นเป็นผู้นำ${x.name}`); }
+    // ภาคีที่ผู้เล่นตั้งไว้ไม่ตายตามผู้ก่อตั้ง: รับคนที่ใจตรงกันเข้ามานำต่อ
+    else if (x.kind) { const n = d.notables.filter((y) => ROLE_OF_KIND[x.kind!] === y.role && !d.factions.some((o) => o.leader === y.name)).sort((a, b) => (a.faction ? 1 : 0) - (b.faction ? 1 : 0))[0]; if (n) { n.faction = x.id; x.leader = n.name; recordChronicle(w, `${n.name}รับช่วงนำ${x.name}`); } }
   }
   if (!x.feud && chance(r, 0.02)) {
     const foe = pick(r, d.factions.filter((o) => o !== x && !o.feud));

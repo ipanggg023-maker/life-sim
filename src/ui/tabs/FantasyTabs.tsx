@@ -8,6 +8,8 @@ import { shortName } from "../../engine/util";
 import { FACTION_RANKS, myFaction, standingWord } from "../../content/fantasy/civic";
 import { bondOf, moodWord, mountOf } from "../../content/fantasy/dragons";
 import { MYSTERIES } from "../../content/fantasy/mysteries";
+import { titleOf } from "../../content/fantasy/empire";
+import { throneOf } from "../../content/fantasy/realm";
 import { GOODS, priceOf } from "../../content/fantasy/society";
 import { LAWS, ROLES, dataOf, fl, homeKingdom, myRelic, standingOf, worldOfLife, type Good } from "../../content/fantasy/state";
 import { talentById } from "../../content/talents";
@@ -57,6 +59,8 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         {relic && <p className="small"><b>{relic.name}</b> · {relic.power}</p>}
         {s && <p className="small">{f.graduated ? "ศิษย์เก่า" : "นักเรียน"}{s.name}{f.graduated ? "" : ` · ${classStanding(life)}`}{f.cups ? ` · แชมป์ ${f.cups} สมัย` : ""}</p>}
         {rivalOf(life)?.alive && <p className="small">คู่ปรับ: {shortName(rivalOf(life)!)} · พลัง {f.rivalPower}</p>}
+        {throneOf(life) && <p className="small"><b>ผู้ครอง{throneOf(life)!.name}</b> · มั่นคง {throneOf(life)!.stability} · กำลังทัพ {throneOf(life)!.power}</p>}
+        {f.consort && <p className="small">คู่ครองของผู้ครอง{d.kingdoms.find((k) => k.id === f.consort)?.name}</p>}
         {faction && <p className="small">{FACTION_RANKS[f.fRank]}แห่ง{faction.name}{f.fRank < 3 ? ` · ผลงาน ${f.fMerit ?? 0}` : ""}</p>}
         {f.foe && <p className="small">มีคนตามล่า: {d.factions.find((x) => x.id === f.foe)?.name}</p>}
         <p className="small">ชื่อเสียงใน{homeKingdom(life).name}: {standingWord(standingOf(life))} ({standingOf(life)})</p>
@@ -104,7 +108,7 @@ export function FantasyWorldTab({ life }: { life: Life }) {
       </Fold>
       <Fold always id="ft-kingdoms" title={<>อาณาจักร</>}>
         {d.kingdoms.map((k) => (
-          <p className="small" key={k.id}>{k.name} · {k.ruler} · กำลัง {k.power} · เศรษฐกิจ {k.prosperity ?? 100}{k.war ? " · สงคราม" : ""}{k.famine ? " · ทุพภิกขภัย" : ""}{k.plague ? " · โรคระบาด" : ""}</p>
+          <p className="small" key={k.id}>{titleOf(d, k)}{k.overlord ? ` (เมืองขึ้นของ${d.kingdoms.find((x) => x.id === k.overlord)?.name})` : ""} · {k.ruler}{k.elective ? ` (ผู้นำสภา · เลือกตั้งครั้งหน้าปี ${k.nextElection ?? w.year})` : ""} · กำลัง {k.power} · เศรษฐกิจ {k.prosperity ?? 100}{k.war ? " · สงคราม" : ""}{k.famine ? " · ทุพภิกขภัย" : ""}{k.plague ? " · โรคระบาด" : ""}</p>
         ))}
       </Fold>
       <Fold id="ft-prices" title={<>ราคาสินค้า</>}>

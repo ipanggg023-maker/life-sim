@@ -58,6 +58,10 @@ export interface FLife {
   crimes?: number;
   trades?: number;
   beatGreat?: boolean;
+  /** แผ่นดินที่ครองอยู่ */
+  throne?: string;
+  /** แผ่นดินที่เป็นคู่ครองของผู้ครอง */
+  consort?: string;
   /** ความผูกพันกับมังกรแต่ละตัว · dragonBond คือความชอบมังกรโดยกำเนิด */
   dBonds?: Record<string, number>;
   dLearned?: string[];
@@ -71,7 +75,7 @@ export interface FLife {
   mKnown?: string[];
 }
 
-export interface Kingdom { id: string; name: string; ruler: string; rulerAge: number; power: number; stability: number; war?: string; plague?: number; prosperity?: number; famine?: number; laws?: LawId[] }
+export interface Kingdom { id: string; name: string; ruler: string; rulerAge: number; power: number; stability: number; war?: string; plague?: number; prosperity?: number; famine?: number; laws?: LawId[]; /** เป็นเมืองขึ้นของ */ overlord?: string; playerRuled?: boolean; /** ชื่อผู้เล่นที่เป็นคู่ครองและจะสืบบัลลังก์ */ consortHeir?: string; dynasty?: string; elective?: boolean; nextElection?: number; founded?: number }
 export interface Dragon { id: string; name: string; title: string; element: Element; home: string; age: number; mood: number; alive: boolean; power: number; slainBy?: string; /** นามสกุลของครอบครัวที่เคยเลี้ยงมัน */ kin?: string }
 export interface Mystery { step: number; notes: string[]; solvedBy?: string }
 export interface Egg { mother: string; element: Element; laid: number }
@@ -79,8 +83,8 @@ export interface Relic { id: string; name: string; power: string; holder: string
 export type LawId = "banMagic" | "heavyTax" | "freeTrade" | "harshCourts";
 export type Good = "grain" | "iron" | "herbs";
 export type Role = "hero" | "mage" | "merchant" | "rogue" | "priest" | "general";
-export interface Notable { id: number; name: string; role: Role; age: number; power: number; kingdom: string; faction?: string; fame: number }
-export interface Faction { id: string; name: string; creed: string; power: number; leader: string; feud?: string; playerLed?: boolean }
+export interface Notable { id: number; name: string; role: Role; age: number; power: number; kingdom: string; faction?: string; fame: number; /** เพดานฝีมือของคนนี้ · ส่วนใหญ่ธรรมดา บางคนเป็นตำนาน */ peak?: number }
+export interface Faction { id: string; /** แบบของงานและผลประโยชน์ · ไม่ใส่ = ใช้ id */ kind?: string; name: string; creed: string; power: number; leader: string; feud?: string; playerLed?: boolean }
 export interface FData { kingdoms: Kingdom[]; dragons: Dragon[]; eggs: Egg[]; mysteries: Record<string, Mystery>; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number; /** เซฟเก่าก่อนมีหลายมังกร */ dragon?: Omit<Dragon, "id" | "element" | "power"> }
 
 export const LAWS: Record<LawId, { name: string; desc: string }> = {
@@ -111,13 +115,14 @@ export function newNotable(r: Pick<Life, "rng">, d: Pick<FData, "kingdoms" | "ne
   const roll = () => `${pick(r, FIRST)} ${pick(r, EPITHET)}`;
   let name = roll();
   for (let i = 0; i < 6 && d.notables.some((n) => n.name === name); i++) name = roll();
-  return { id: d.nextId++, name, role, age, power: clamp(randInt(r, 10, 40) + (age - 20), 5, 90), kingdom: pick(r, d.kingdoms).id, faction, fame: 0 };
+  const peak = Math.max(randInt(r, 35, 95), randInt(r, 35, 95));
+  return { id: d.nextId++, name, role, age, power: clamp(randInt(r, 10, 40) + (age - 20), 5, peak), kingdom: pick(r, d.kingdoms).id, faction, fame: 0, peak };
 }
 
 const KINGDOMS: Kingdom[] = [
   { id: "aldria", name: "ราชอาณาจักรอัลเดรีย", ruler: "ราชาเอดริก", rulerAge: 48, power: 60, stability: 65 },
   { id: "varn", name: "จักรวรรดิวาร์น", ruler: "จักรพรรดินีเซราฟีน", rulerAge: 41, power: 70, stability: 55 },
-  { id: "thalos", name: "นครรัฐทาลอส", ruler: "สภาเก้าพ่อค้า", rulerAge: 55, power: 45, stability: 70 },
+  { id: "thalos", name: "นครรัฐทาลอส", ruler: "สภาเก้าพ่อค้า", rulerAge: 55, power: 45, stability: 70, elective: true },
 ];
 
 const newData = () => ({
@@ -155,6 +160,8 @@ export const newFantasyWorld = (seed: number, year = 1000): WorldState => {
 export function ensureSociety(w: WorldState) {
   const d = w.data as unknown as FData;
   d.mysteries ??= {};
+  const thalos = d.kingdoms.find((k) => k.id === "thalos");
+  if (thalos && thalos.elective === undefined) thalos.elective = true;
   if (!d.dragons) {
     d.dragons = DRAGONS.map((x) => ({ ...x }));
     if (d.dragon) Object.assign(d.dragons[0], d.dragon);

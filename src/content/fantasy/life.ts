@@ -5,6 +5,7 @@ import { addStat, displayName, log } from "../../engine/util";
 import { addLegend, recordChronicle } from "../../engine/worldState";
 import { fl, kingdomsOf, worldOfLife, type FLife, type RaceId } from "./state";
 import { release } from "./dragons";
+import { inheritThrone, passThrone } from "./realm";
 import { rollElement } from "./magic";
 import { fastForward } from "./world";
 
@@ -68,6 +69,7 @@ export function closeLife(s: Soul, l: Life) {
   recordChronicle(w, `${displayName(l)}จากโลกไปเมื่ออายุ ${l.age} ปี`);
   for (const r of (w.data as { relics: { holder: string; id: string; at: string }[] }).relics) if (r.holder === "player") { r.holder = "lost"; r.at = f.kingdom; }
   for (const x of (w.data as { factions?: { playerLed?: boolean; leader: string }[] }).factions ?? []) if (x.playerLed) { x.playerLed = false; x.leader = ""; }
+  passThrone(l);
   if (f.whelp) { release(w, l, f.whelp, "บินกลับขุนเขาหลังเจ้าของจากไป"); f.whelp = undefined; }
   const top = f.deeds.at(-1);
   if (top && (l.fame >= 30 || f.deeds.length >= 2)) addLegend(w, { name: displayName(l), deed: top, lifeId: l.id });
@@ -82,6 +84,7 @@ export function inheritLife(dead: Life, next: Life) {
   if (next.ft.potential > 5) next.ft.potential = 5;
   next.flags.seenRuler = "";
   next.flags.allowance = true;
+  inheritThrone(dead, next);
 }
 
 /** ย้อนชะตาได้ไหม · เด็กตายเร็วได้โอกาสหนึ่งครั้ง พรสวรรค์หายากให้เพิ่ม */
