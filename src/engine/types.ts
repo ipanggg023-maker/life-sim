@@ -168,6 +168,10 @@ export interface Life {
   sv?: number;
   id: string;
   worldId: WorldId;
+  /** สถานะตัวละครในโลกแฟนตาซี */
+  ft?: import("../content/fantasy/state").FLife;
+  /** โลกแฟนตาซีที่อยู่ต่อหลังตัวละครตาย */
+  fw?: import("./worldState").WorldState;
   /** ประเทศที่เกิด — ไม่มี = ไทย (เซฟเก่า และโลกแฟนตาซี) */
   country?: Country;
   seed: number;
@@ -302,6 +306,8 @@ export interface Soul {
   routes?: Record<string, number>;
   /** ตอนจบของเรื่องต่อเนื่องที่เคยเห็น "เรื่อง:ตอนจบ" */
   arcEnds?: string[];
+  /** โลกแฟนตาซีระหว่างตัวละคร */
+  fantasyWorld?: import("./worldState").WorldState;
   /** เป้าหมายของสายตระกูลที่เคยทำสำเร็จ */
   dynGoals?: string[];
   /** บันทึกยุทธภพ: ชีวิตทุกชีวิตและเหตุการณ์โลกที่ผ่านมา (MURIM_PLAN §9) */

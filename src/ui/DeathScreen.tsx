@@ -12,6 +12,7 @@ import { COLLECTIBLES, foundThisLife } from "../content/shared/collection";
 import { SHOP, heirsOf, previewAward, regressTarget } from "../engine/soul";
 import type { Life, Soul, WorldId } from "../engine/types";
 import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds";
+import { canMercy, canRewind, rewindTarget } from "../content/fantasy/life";
 import { displayName, loc, money, people } from "../engine/util";
 import { disciplesOf, lifeSummary } from "../content/murim/life/generations";
 import { RIBBON_COUNT, ribbonOf } from "../content/murim/life/ribbons";
@@ -19,7 +20,7 @@ import { routeGains, } from "../content/murim/life/routes";
 import { dynReached, nextTries } from "../content/murim/life/dynasty";
 import { catInWorld } from "../content/achievements";
 
-export type RebirthChoice = "regress" | "nextEra" | `world:${WorldId}` | `heir:${string}` | `disciple:${string}`;
+export type RebirthChoice = "regress" | "nextEra" | "rewind" | "stranger" | `world:${WorldId}` | `heir:${string}` | `disciple:${string}`;
 
 export function DeathScreen({
   life,
@@ -305,6 +306,14 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
   return (
     <div className="continue">
       <div className="continue-head">เล่นต่ออย่างไร?</div>
+      {life.worldId === "fantasy" && canRewind(life) && (
+        <button className="cont-btn heir" disabled={busy} onClick={() => go("rewind")}>
+          <span className="cont-text">
+            <span className="cont-title">ย้อนชะตากลับไปอายุ {rewindTarget(life)} ปี</span>
+            <span className="cont-desc">ความจำอยู่กับคุณ แต่ชะตาจะทิ้งแผลไว้{canMercy(life) ? " · ใช้ได้ครั้งเดียวในชีวิตนี้" : ` · ด้ายชะตาเหลือ ${life.ft!.threads}`}</span>
+          </span>
+        </button>
+      )}
       {heirs.map((c) => (
         <button className="cont-btn heir" key={c.id} disabled={busy} onClick={() => go(`heir:${c.id}`)}>
           <span className="cont-text">
@@ -321,7 +330,15 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
           </span>
         </button>
       ))}
-      {open && (
+      {life.worldId === "fantasy" && (
+        <button className="cont-btn era" disabled={busy} onClick={() => go("stranger")}>
+          <span className="cont-text">
+            <span className="cont-title">ตัวละครใหม่ในโลกเดิม</span>
+            <span className="cont-desc">เกิดเป็นคนอื่นหลายสิบปีให้หลัง เรื่องของ{displayName(life)}จะกลายเป็นคำเล่าขาน</span>
+          </span>
+        </button>
+      )}
+      {open && life.worldId !== "fantasy" && (
         <button className="cont-btn era" disabled={busy} onClick={() => go("nextEra")}>
           <span className="cont-text">
             <span className="cont-title">ตัวละครใหม่ · ยุคถัดไป</span>
@@ -329,7 +346,7 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
           </span>
         </button>
       )}
-      {OPEN_WORLDS.map((w) => (
+      {OPEN_WORLDS.filter((w) => w !== "fantasy").map((w) => (
         <button className="cont-btn fresh" key={w} disabled={busy} onClick={() => go(`world:${w}`)}>
           <span className="cont-emoji">{WORLDS[w].emoji}</span>
           <span className="cont-text">

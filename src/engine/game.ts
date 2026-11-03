@@ -89,8 +89,8 @@ function rollTalent(life: Life, odds: Record<Rarity, number>, exclude: string[],
   const rarity = rollRarity(life, odds);
   // ยุทธภพสุ่มเฉพาะพรสวรรค์ของยุทธภพ (+ชุดทั่วไปที่เข้ากับโลก) · โลกอื่นไม่ได้พรสวรรค์ยุทธภพ
   // ยุทธภพสุ่มเฉพาะพรสวรรค์ยุทธภพที่มีเรื่องราวของตัวเอง (ร่างที่วิวัฒน์แล้วไม่สุ่ม) · ชุดทั่วไปเดิมยังใช้ได้ในเซฟเก่า
-  const fits = (t: (typeof TALENTS)[number]) => (life.worldId === "murim" ? t.world === "murim" && !t.noRoll : t.world !== "murim");
-  const ok = (t: (typeof TALENTS)[number]) => fits(t) && !exclude.includes(t.id) && (allowPower || !t.power || life.worldId === "murim");
+  const fits = (t: (typeof TALENTS)[number]) => t.world === life.worldId && !t.noRoll;
+  const ok = (t: (typeof TALENTS)[number]) => fits(t) && !exclude.includes(t.id) && (allowPower || !t.power || !!t.world);
   const pool = TALENTS.filter((t) => t.rarity === rarity && ok(t));
   const fallback = TALENTS.filter(ok);
   return pick(life, pool.length ? pool : fallback).id;
@@ -187,6 +187,8 @@ export function createLife(opts: BirthOptions = {}): Life {
   life.talents.push({ id: rollTalent(life, opts.blessed ? BLESSED_HIDDEN : HIDDEN_RARITY_ODDS, ids, true), revealed: false });
   rollAwakenTrack(life);
 
+  moduleOf(life.worldId)?.onCreate?.(life);
+
   // ครอบครัว
   const dadAge = randInt(life, 24, 42);
   const momAge = clamp(dadAge + randInt(life, -6, 3), 20, 42);
@@ -241,7 +243,7 @@ function mortality(age: number, health: number) {
 }
 
 function ageHealth(life: Life) {
-  const a = life.age;
+  const a = life.age - (moduleOf(life.worldId)?.bodyYounger?.(life) ?? 0);
   let d = 0;
   if (a < 30) d = randInt(life, -1, 2);
   else if (a < 50) d = -randInt(life, 0, 2);
@@ -393,7 +395,8 @@ function progressPeople(life: Life) {
     if ((p.relation === "friend" || p.relation === "partner") && !p.tags?.includes("sworn")) p.bond = clamp(p.bond - randInt(life, 1, 4), 0, 100);
     if (p.relation === "spouse") p.bond = clamp(p.bond - randInt(life, 0, 2), 0, 100);
     if (p.tags?.includes("sovereign")) continue; // ฮ่องเต้ตามความเป็นจริงของราชสำนัก ไม่ใช่สุ่มตายแบบคนรู้จัก
-    if (p.age >= 115 || chance(life, mortality(p.age, 70) * (p.age > 60 ? 1.2 : 0.5))) {
+    const npcAge = p.age - (moduleOf(life.worldId)?.npcYounger?.(life, p) ?? 0);
+    if (npcAge >= 115 || chance(life, mortality(npcAge, 70) * (npcAge > 60 ? 1.2 : 0.5))) {
       p.alive = false;
       for (const h of kinDeathHooks) h(life, p, false);
       if (["father", "mother", "spouse", "child", "sibling"].includes(p.relation)) {

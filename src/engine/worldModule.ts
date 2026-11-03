@@ -30,6 +30,12 @@ export interface WorldModule {
   migrate?: (l: Life) => void;
   /** บันทึกของชีวิตนี้ลงวิญญาณตอนจบชีวิต */
   onSoulRecord?: (s: Soul, l: Life) => void;
+  /** ตั้งข้อมูลของโลกตอนสร้างตัวละคร */
+  onCreate?: (l: Life) => void;
+  /** ร่างกายแก่ช้ากว่าปกติกี่ปี */
+  bodyYounger?: (l: Life) => number;
+  /** คนในครอบครัวแก่ช้ากว่าปกติกี่ปี */
+  npcYounger?: (l: Life, p: Person) => number;
   /** พรที่ติดตัวตอนเกิด */
   onNewBirth?: (l: Life, s: Soul) => void;
   /** วิชานี้ยังมีอยู่ในเกมไหม */

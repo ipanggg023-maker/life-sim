@@ -475,11 +475,14 @@ export function MainScreen({
         <button className="age-btn" onClick={() => onAgeUp(1)} disabled={life.queue.length > 0}>
           อายุ +1 ปี
         </button>
+        {life.ft && life.ft.race !== "human" && (
+          <button className="btn small ghost" onClick={() => onAgeUp(10)} disabled={life.queue.length > 0}>ข้ามไป 10 ปี</button>
+        )}
         <nav className="tabs">
-          {TABS.filter((t) => (t.id !== "phone" || hasPhone(life)) && (t.id !== "jianghu" || life.worldId === "murim")).map((t) => (
+          {TABS.filter((t) => (t.id !== "phone" || hasPhone(life)) && (t.id !== "jianghu" || isRealistic(life.worldId))).map((t) => (
             <button key={t.id} className="tab" onClick={() => onTab(t.id)}>
               <Icon name={t.id} size={22} className="tab-icon" />
-              <span>{isRealistic(life.worldId) ? (t.id === "soul" ? "บันทึก" : t.id === "power" ? "วิชา" : t.label) : t.label}</span>
+              <span>{life.worldId === "fantasy" ? (t.id === "soul" ? "บันทึก" : t.id === "jianghu" ? "โลก" : t.label) : isRealistic(life.worldId) ? (t.id === "soul" ? "บันทึก" : t.id === "power" ? "วิชา" : t.label) : t.label}</span>
             </button>
           ))}
         </nav>

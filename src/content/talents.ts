@@ -14,7 +14,7 @@ export interface Talent extends TalentFx {
   /** สายพลัง: สุ่มได้เฉพาะช่องลับ ??? และออกฤทธิ์ตอนตื่นพลัง */
   power?: boolean;
   /** พรสวรรค์ของยุทธภพ (สุ่มได้เฉพาะในยุทธภพ) */
-  world?: "murim";
+  world?: "murim" | "fantasy";
   /** ผลต่อระบบยุทธภพ (murim/life/gifts.ts) เช่น qi 0.25 = ลมปราณสะสมเร็วขึ้น 25% */
   mx?: Partial<Record<string, number>>;
   /** ไม่สุ่มตอนเกิด (ร่างที่วิวัฒน์แล้วของพรสวรรค์ยุทธภพ) */

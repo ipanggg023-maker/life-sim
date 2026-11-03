@@ -1,3 +1,5 @@
+import { RACES } from "../content/fantasy/life";
+import type { RaceId } from "../content/fantasy/state";
 import { useEffect, useState } from "react";
 import { RARITY_LABEL, talentById, talentFlavor } from "../content/talents";
 import { wealthLabel } from "../engine/game";
@@ -15,11 +17,13 @@ export function BirthScreen({
   rerolls,
   onReroll,
   onStart,
+  onRace,
 }: {
   life: Life;
   rerolls: number;
   onReroll: () => void;
   onStart: () => void;
+  onRace?: (r: RaceId) => void;
 }) {
   const [step, setStep] = useState(0);
   const talents = life.talents;
@@ -112,6 +116,14 @@ export function BirthScreen({
 
       {step >= total && (
         <>
+          {life.ft && onRace && (
+            <label className="plan-pick fade-in">
+              <span className="plan-label">เผ่า</span>
+              <select value={life.ft.race} onChange={(e) => onRace(e.target.value as RaceId)}>
+                {(Object.keys(RACES) as RaceId[]).map((r) => <option key={r} value={r}>{RACES[r].name} · {RACES[r].desc}</option>)}
+              </select>
+            </label>
+          )}
           <button className="btn primary big fade-in" onClick={onStart}>
             เริ่มต้นชีวิต
           </button>

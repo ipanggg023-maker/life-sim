@@ -6,6 +6,8 @@ import { applySoul, buildHeir, buildRegression, claimAward, nextEraOptions, regr
 import type { Life, PastLife, Soul, WorldId } from "../engine/types";
 import { loc } from "../engine/util";
 import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds";
+import { TURNING_POINTS, applyRewind, closeLife, inheritLife, rewindTarget, setRace } from "../content/fantasy/life";
+import { FantasyPowerTab, FantasyWorldTab } from "./tabs/FantasyTabs";
 
 const pickWorld = () => OPEN_WORLDS[Math.floor(Math.random() * OPEN_WORLDS.length)];
 import {
@@ -130,7 +132,7 @@ export function App() {
 
   // ธีมเปลี่ยนตามโลก (หน้าต่างระบบสีฟ้าเหมือนเดิมทุกโลก)
   useEffect(() => {
-    document.documentElement.dataset.world = life?.worldId ?? "hunter";
+    document.documentElement.dataset.world = life?.worldId ?? "murim";
   }, [life?.worldId]);
 
   const flash = useCallback(() => {
@@ -216,7 +218,7 @@ export function App() {
       if (!life) return;
       const before = snapshot(life);
       for (let i = 0; i < years; i++) {
-        if (!isRealistic(life.worldId)) void saveSnapshot(life); // จุดที่ย้อนเวลากลับมาได้ (โลกที่มีการย้อนเวลา)
+        if (life.worldId === "fantasy" && (TURNING_POINTS.includes(life.age) || life.flags.ftMark)) { delete life.flags.ftMark; void saveSnapshot(life); } // จุดที่ย้อนชะตากลับมาได้
         ageUp(life);
         if (!life.alive || life.queue.length) break;
       }
@@ -248,6 +250,14 @@ export function App() {
   const onRebirth = useCallback(
     async (choice: RebirthChoice) => {
       if (!life || !soul) return;
+      if (choice === "rewind") {
+        const next = applyRewind(life, (await loadSnapshot(life.id, rewindTarget(life))) ?? life);
+        setTab(null);
+        setStarted(true);
+        await commit(next);
+        return;
+      }
+      if (life.worldId === "fantasy") closeLife(soul, life);
       recordChronicle(soul, life);
       const gained = claimAward(soul, life, choice === "regress");
       await commitSoul(soul);
@@ -270,7 +280,8 @@ export function App() {
         if (choice.startsWith("disciple:")) next = buildDisciple(life, pid);
         else {
           next = buildHeir(life, pid);
-          inheritMurim(life, next, "heir", pid);
+          if (life.worldId === "fantasy") inheritLife(life, next);
+          else inheritMurim(life, next, "heir", pid);
         }
         applySoul(next, soul, true);
         await clearCurrent();
@@ -279,6 +290,10 @@ export function App() {
         setTab(null);
         setStarted(true);
         await commit(next);
+        return;
+      }
+      if (choice === "stranger") {
+        await birth({ worldId: "fantasy" });
         return;
       }
       if (choice === "nextEra") {
@@ -368,7 +383,7 @@ export function App() {
   if (!started) {
     return (
       <div className="app">
-        <BirthScreen key={life.id} life={life} rerolls={soul.perks.reroll} onReroll={reroll} onStart={() => setStarted(true)} />
+        <BirthScreen onRace={(r) => { setRace(life, r); void commit(life); }} key={life.id} life={life} rerolls={soul.perks.reroll} onReroll={reroll} onStart={() => setStarted(true)} />
       </div>
     );
   }
@@ -389,8 +404,8 @@ export function App() {
         <Sheet title={isRealistic(life.worldId) && tab === "soul" ? "บันทึก" : isRealistic(life.worldId) && tab === "power" ? "วิชายุทธ์" : TAB_TITLES[tab]} onClose={() => setTab(null)}>
           {tab === "career" && <CareerTab life={life} act={act} />}
           {tab === "people" && <PeopleTab life={life} act={act} focus={focus} onShowLog={(id) => { setWho(id); setTab(null); }} />}
-          {tab === "power" && <PowerTab life={life} act={act} />}
-          {tab === "jianghu" && <JianghuTab life={life} act={act} />}
+          {tab === "power" && (life.ft ? <FantasyPowerTab life={life} /> : <PowerTab life={life} act={act} />)}
+          {tab === "jianghu" && (life.ft ? <FantasyWorldTab life={life} /> : <JianghuTab life={life} act={act} />)}
           {tab === "activities" && <ActivitiesTab life={life} act={act} />}
           {tab === "phone" && <PhoneTab life={life} act={act} />}
           {tab === "soul" && (

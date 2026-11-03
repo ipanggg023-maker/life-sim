@@ -77,7 +77,7 @@ Reused almost as is: event and scene engine, activities and time budget, year ho
 Three changes are needed:
 
 1. **Extract a world-neutral core.** The engine imports murim directly in about 8 places, and 38 places check for murim. Replace those with a small `WorldModule` interface that each world registers. This protects murim and every future world.
-2. **Split the save.** The world lives inside each character's save today, so it dies with them. Fantasy needs a separate `WorldState` save that outlives characters.
+2. **A world that outlives characters.** The world travels with the current character, so a rewind restores both, and is stored with the Soul between lives, so cloud and QR sync carry it. (Built this way instead of a separate save slot.)
 3. **Tiered NPCs.** The world cannot simulate everyone in detail:
 
 | Tier | Who | Detail | Count |
@@ -145,7 +145,7 @@ Proves one thing: a character's life changes the world, and the next character f
 | # | Milestone | Result |
 |---|---|---|
 | 0 | Core extraction and split saves | Murim still passes; fantasy starts empty |
-| 1 | Smallest version | Full life plus legacy loop on a phone |
+| 1 | Smallest version (built, closed behind `?dev=1`) | Full life plus legacy loop on a phone |
 | 2 | Schools and magic depth | Circles, runes, Innate, tournaments, rival students |
 | 3 | Living world | Notable NPCs, factions, economy, law |
 | 4 | Legends and dragons | More artifacts, dragon society, riding and eggs |

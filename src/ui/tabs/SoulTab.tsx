@@ -85,6 +85,8 @@ export function SoulTab({
               </p>
             ))}
           />
+          {life.worldId === "murim" && (
+          <>
           <FoldList
             title="ชีวิตนี้หรือชีวิตหน้าลองอะไรดี"
             items={nextTries(soul, life).map((t) => (
@@ -132,6 +134,8 @@ export function SoulTab({
               ];
             })}
           />
+          </>
+          )}
           <FoldList
             title="บันทึกยุทธภพ"
             closed
