@@ -11,6 +11,7 @@ import { C, E, G, GOLD, K, N, type Fx } from "./kit";
 import { SPELLS, learnSpell } from "./magic";
 import { MYSTERIES } from "./mysteries";
 import { canCast, deathOdds, fightOdds } from "./power";
+import { weaponNoun } from "./styles";
 import { addStanding, dataOf, deed, fl, homeKingdom, standingOf } from "./state";
 import { mysteryState } from "./mysteries";
 import type { GameEvent } from "../../engine/events";
@@ -87,7 +88,7 @@ export const FT_JOB_ACTIONS: JobAction[] = [
   A({ id: "fj_market", jobs: ["ft_farmer"], name: "ขนผลผลิตไปขายในเมือง", desc: "ต่อราคากับพ่อค้า", odds: by("smarts", 0.5), run: (l, s) => (s ? ok(`พ่อค้าในเมืองให้ราคาดีกว่าที่หมู่บ้านเท่าตัว ได้ ${pay(l, 10)} เหรียญทอง`) : meh("ถนนเป็นโคลน ผักเหี่ยวไปครึ่งเกวียน")) }),
   // ช่างตีเหล็ก
   A({ id: "fj_order", jobs: ["ft_smith"], name: "รับงานตีอาวุธให้กองทัพ", desc: "งานหนักแต่ค่าจ้างดี", odds: by("health", 0.5), run: (l, s) => { perf(l, s ? 8 : 3); return s ? ok(`ดาบสามสิบเล่มเรียงอยู่บนชั้น ได้ ${pay(l, 16)} เหรียญทอง`) : meh("เหล็กล็อตนี้เปราะ คุณต้องหลอมใหม่ทั้งหมด"); } }),
-  A({ id: "fj_forge", jobs: ["ft_smith"], name: "ตีอาวุธให้ตัวเอง", desc: "อาวุธดีขึ้นตามฝีมือ · พลังต่อสู้ +", cost: 20, odds: by("health", 0.5), run: (l, s) => { if (!s) return meh("ใบดาบบิดตอนชุบน้ำ คุณได้แต่เศษเหล็ก"); forge(l, "weapon", `ดาบฝีมือ${l.lastName}`, Math.min(5, lv(l) + 1)); return ok(`คุณตีดาบเล่มใหม่จนคมพอผ่าใบไม้กลางอากาศ (คุณภาพ ${fl(l).weapon!.quality})`); } }),
+  A({ id: "fj_forge", jobs: ["ft_smith"], name: "ตีอาวุธให้ตัวเอง", desc: "อาวุธดีขึ้นตามฝีมือ · พลังต่อสู้ +", cost: 20, odds: by("health", 0.5), run: (l, s) => { if (!s) return meh("ใบดาบบิดตอนชุบน้ำ คุณได้แต่เศษเหล็ก"); forge(l, "weapon", `${weaponNoun(l)}ฝีมือ${l.lastName}`, Math.min(5, lv(l) + 1)); return ok(`คุณตี${weaponNoun(l)}ชิ้นใหม่จนคมพอผ่าใบไม้กลางอากาศ (คุณภาพ ${fl(l).weapon!.quality})`); } }),
   A({ id: "fj_armor", jobs: ["ft_smith"], name: "ตีเกราะชั้นดี", desc: "เกราะช่วยให้รอดในงานอันตราย", minLevel: 3, cost: 40, odds: by("health", 0.45), run: (l, s) => { if (!s) return meh("แผ่นเกราะไม่เข้ารูป ต้องเริ่มใหม่ปีหน้า"); forge(l, "armor", `เกราะฝีมือ${l.lastName}`, Math.min(5, lv(l))); return ok(`เกราะชุดใหม่พอดีตัวจนลืมว่าใส่อยู่ (คุณภาพ ${fl(l).armor!.quality})`); } }),
   // พ่อค้า
   A({ id: "fj_caravan", jobs: ["ft_merchant"], name: "ส่งกองคาราวานข้ามแดน", desc: "ลงทุนแล้วลุ้นกำไร", cost: 30, odds: by("smarts", 0.5), run: (l, s) => { perf(l, s ? 10 : 0); return s ? ok(`กองคาราวานกลับมาพร้อมผ้าไหมและเครื่องเทศ กำไร ${pay(l, 60)} เหรียญทอง`) : bad("โจรดักปล้นกลางทาง ทุนหายหมด"); } }),

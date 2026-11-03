@@ -83,6 +83,8 @@ export interface FLife {
   mount?: string;
   dragonFoe?: string;
   dragonblood?: boolean;
+  /** สายอาวุธ (styles.ts) */
+  style?: string;
   /** อาวุธและเกราะ · ช่างตีเองหรือซื้อมา · คุณภาพ 1–5 */
   weapon?: Gear;
   armor?: Gear;

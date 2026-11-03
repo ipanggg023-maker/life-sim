@@ -17,6 +17,8 @@ import { talentById } from "../../content/talents";
 import type { Life } from "../../engine/types";
 import { Fold } from "../Fold";
 import { ASSETS, assetIncome } from "../../content/fantasy/careers";
+import { epithetOf, styleOf, techsOf } from "../../content/fantasy/styles";
+import { PARTY_MAX, partyLabel, partyOf } from "../../content/fantasy/bonds";
 
 const Bar = ({ label, value, need }: { label: string; value: number; need: number }) => (
   <div className="mini-bar">
@@ -36,7 +38,7 @@ export function FantasyPowerTab({ life }: { life: Life }) {
   const faction = myFaction(life);
   return (
     <div className="tab-content">
-      <Fold always id="ft-power" title={<>ตัวคุณ</>}>
+      <Fold always id="ft-power" title={<>ตัวคุณ{epithetOf(life) ? <span className="muted small"> · {epithetOf(life)}</span> : null}</>}>
         <div className="status-grid">
           <span>เผ่า</span>
           <b>{RACES[f.race].name}</b>
@@ -48,6 +50,8 @@ export function FantasyPowerTab({ life }: { life: Life }) {
           <b>{MAGIC_RANKS[f.magicRank]}</b>
           <span>พรสวรรค์เวท</span>
           <b>{"★".repeat(f.potential) || "ไม่มี"}</b>
+          <span>สายอาวุธ</span>
+          <b>{styleOf(life)?.name ?? (f.bodyRank >= 1 ? "ยังไม่เลือก" : "—")}</b>
           <span>กิลด์</span>
           <b>{f.guild ? `ขั้น${GUILD_RANKS[f.guild]}` : "ยังไม่สมัคร"}</b>
         </div>
@@ -78,6 +82,18 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         {(f.divine ?? 0) > 0 && <p className="small">ผ่านบททดสอบแห่งสวรรค์ {f.divine}/3</p>}
         {f.realmVisits && <p className="small">เคยไป: {(Object.keys(f.realmVisits) as (keyof typeof REALMS)[]).map((r) => REALMS[r].name).join(", ")}</p>}
       </Fold>
+      {styleOf(life) && (
+        <Fold always kind="section" id="ft-style" title={<>{styleOf(life)!.name} · ท่าไม้ตาย</>}>
+          {styleOf(life)!.techs.map((t, i) => <p className={`small ${i < techsOf(life).length ? "" : "muted"}`} key={t}>{i < techsOf(life).length ? <b>{t}</b> : `${t} · เปิดเมื่อเป็น${BODY_RANKS[i + 1]}`}</p>)}
+          <p className="small muted">ใช้ท่าไม้ตายได้ปีละครั้งในการต่อสู้{life.flags.ftTechUsed === life.age ? " · ปีนี้ใช้ไปแล้ว" : ""}</p>
+        </Fold>
+      )}
+      {partyOf(life).length > 0 && (
+        <Fold always kind="section" id="ft-party" title={<>ปาร์ตี้ · {partyOf(life).length}/{PARTY_MAX}</>}>
+          {partyOf(life).map((p) => <p className="small" key={p.id}><b>{shortName(p)}</b> · {partyLabel(p)} · ผูกพัน {p.bond}</p>)}
+          <p className="small muted">คนละ +4 พลังต่อสู้ · ชวนเพื่อนสนิทเข้าปาร์ตี้ได้ที่แท็บผู้คน</p>
+        </Fold>
+      )}
       <Fold always kind="section" id="ft-magic" title={<>เวทมนตร์ · ธาตุ{ELEMENTS[f.element ?? "fire"].name}</>}>
         <p className="small">มานาปีนี้ {manaLeft(life)}/{manaMax(life)} · บทสวด {f.chant ?? 0} · วงเวท {f.circle ?? 0} · อักษรรูน {f.rune ?? 0}</p>
         {spellsOf(life).length ? spellsOf(life).map((x) => <p className="small" key={x.id}>{x.name} · ธาตุ{ELEMENTS[x.element].name} ขั้น {x.tier}</p>) : <p className="small muted">ยังไม่รู้จักเวทบทไหน</p>}

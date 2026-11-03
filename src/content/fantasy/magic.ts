@@ -19,16 +19,18 @@ export const ELEMENTS: Record<Element, { name: string; beats: Element }> = {
 };
 const IDS = Object.keys(ELEMENTS) as Element[];
 
-export interface Spell { id: string; name: string; element: Element; tier: 1 | 2 | 3 }
-const NAMES: Record<Element, [string, string, string]> = {
-  fire: ["ลูกไฟ", "กำแพงเพลิง", "พายุเพลิงสุริยะ"],
-  water: ["หอกน้ำแข็ง", "คลื่นยักษ์", "ธารน้ำแข็งนิรันดร์"],
-  earth: ["หนามศิลา", "ปราการดิน", "แผ่นดินแยก"],
-  wind: ["ใบมีดลม", "เกราะพายุ", "มังกรลมกรด"],
-  light: ["ศรแสง", "โล่ศักดิ์สิทธิ์", "รุ่งอรุณพิพากษา"],
-  dark: ["เงาตรึงร่าง", "คำสาปอ่อนแรง", "เหวไร้แสง"],
+export type Tier = 1 | 2 | 3 | 4;
+export interface Spell { id: string; name: string; element: Element; tier: Tier }
+/** เวทของแต่ละธาตุ · สามบทแรกคือชุดเดิม (id เดิมในเซฟ) · ขั้น 4 เปิดเมื่อเป็นอัครจอมเวท */
+const BOOK: Record<Element, [string, Tier][]> = {
+  fire: [["ลูกไฟ", 1], ["กำแพงเพลิง", 2], ["พายุเพลิงสุริยะ", 3], ["ดาวตกเพลิงกัลป์", 4], ["ประกายปลายนิ้ว", 1], ["แส้เพลิง", 2], ["ปีกฟีนิกซ์", 3]],
+  water: [["หอกน้ำแข็ง", 1], ["คลื่นยักษ์", 2], ["ธารน้ำแข็งนิรันดร์", 3], ["ทะเลหยุดนิ่ง", 4], ["หมอกพราง", 1], ["คุกน้ำวน", 2], ["วาฬวิญญาณ", 3]],
+  earth: [["หนามศิลา", 1], ["ปราการดิน", 2], ["แผ่นดินแยก", 3], ["ภูเขาเดินได้", 4], ["ผิวหิน", 1], ["ยักษ์ดินเหนียว", 2], ["แผ่นดินไหวใหญ่", 3]],
+  wind: [["ใบมีดลม", 1], ["เกราะพายุ", 2], ["มังกรลมกรด", 3], ["ฟ้าผ่าเก้าสวรรค์", 4], ["ก้าวลม", 1], ["พายุหมุน", 2], ["สายฟ้าฟาด", 3]],
+  light: [["ศรแสง", 1], ["โล่ศักดิ์สิทธิ์", 2], ["รุ่งอรุณพิพากษา", 3], ["ตะวันดวงที่สอง", 4], ["แสงเยียวยา", 1], ["โซ่แสง", 2], ["ปีกเทวทูต", 3]],
+  dark: [["เงาตรึงร่าง", 1], ["คำสาปอ่อนแรง", 2], ["เหวไร้แสง", 3], ["สุริยุปราคานิรันดร์", 4], ["เสียงกระซิบเงา", 1], ["ฝูงค้างคาวเงา", 2], ["ปลุกศพ", 3]],
 };
-export const SPELLS: Spell[] = IDS.flatMap((e) => NAMES[e].map((name, i) => ({ id: `${e}${i + 1}`, name, element: e, tier: (i + 1) as 1 | 2 | 3 })));
+export const SPELLS: Spell[] = IDS.flatMap((e) => BOOK[e].map(([name, tier], i) => ({ id: `${e}${i + 1}`, name, element: e, tier })));
 export const spellById = (id: string) => SPELLS.find((s) => s.id === id)!;
 
 export const rollElement = (l: Life): Element => pick(l, IDS);

@@ -10,6 +10,9 @@ import { ageUp, createLife, resolveChoice } from "./game";
 import { visibleChoices } from "./events";
 import { buildHeir } from "./soul";
 import { fantasyPersonActions } from "../content/fantasy/bonds";
+import { SPELLS } from "../content/fantasy/magic";
+import { epithetOf, styleBonus, techsOf } from "../content/fantasy/styles";
+import { getEvent } from "./events";
 import { createPerson } from "./util";
 
 loadFantasyWorld();
@@ -120,5 +123,37 @@ describe("ความสัมพันธ์รายคนและปาร�
     const kid = createPerson(l, "child", { age: 30, bond: 80, lastName: l.lastName });
     const next = buildHeir(l, kid.id);
     expect(`${next.firstName} ${next.lastName}`).toBe(kid.name);
+  });
+});
+
+describe("พลัง: เวท สายอาวุธ และฉายา", () => {
+  it("เวทมีครบสี่ขั้นทุกธาตุ และ id เดิมยังเป็นบทเดิม", () => {
+    expect(SPELLS.length).toBe(42);
+    for (const e of ["fire", "water", "earth", "wind", "light", "dark"]) {
+      for (const t of [1, 2, 3, 4]) expect(SPELLS.some((s) => s.element === e && s.tier === t), `${e}${t}`).toBe(true);
+      expect(SPELLS.find((s) => s.id === `${e}3`)!.tier).toBe(3);
+    }
+  });
+  it("เป็นนักสู้แล้วต้องเลือกสายอาวุธ ท่าไม้ตายเปิดตามขั้น และเผ่าที่ถนัดได้มากกว่า", () => {
+    const l = fantasy(17);
+    l.age = 16;
+    l.ft!.bodyRank = 1;
+    expect(getEvent("ft.style_pick")!.when!(l)).toBe(true);
+    l.ft!.style = "axe";
+    expect(techsOf(l).length).toBe(1);
+    l.ft!.bodyRank = 3;
+    expect(techsOf(l).length).toBe(3);
+    l.ft!.race = "human";
+    const human = styleBonus(l);
+    l.ft!.race = "orc";
+    expect(styleBonus(l)).toBe(human + 3);
+  });
+  it("ฉายาตามเรื่องที่ทำ", () => {
+    const l = fantasy(19);
+    expect(epithetOf(l)).toBeUndefined();
+    l.ft!.guild = 5;
+    expect(epithetOf(l)).toBe("นักผจญภัยขั้นมิธริล");
+    l.ft!.magicRank = 4;
+    expect(epithetOf(l)).toBe("อัครจอมเวท");
   });
 });

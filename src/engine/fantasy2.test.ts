@@ -38,9 +38,9 @@ const enroll = (seed: number) => {
 };
 
 describe("เวทมนตร์", () => {
-  it("มีหกธาตุ ธาตุละสามขั้น และธาตุของตัวเองถูกกว่า", () => {
+  it("มีหกธาตุ ธาตุละเจ็ดบทครบสี่ขั้น และธาตุของตัวเองถูกกว่า", () => {
     expect(Object.keys(ELEMENTS).length).toBe(6);
-    expect(SPELLS.length).toBe(18);
+    expect(SPELLS.length).toBe(42);
     const l = life(1);
     expect(spellPrice(l, spellById("fire1"))).toBeLessThan(spellPrice(l, spellById("water1")));
   });

@@ -10,6 +10,7 @@ import { B, BIG, C, E, G, GOLD, K, N, P, PAY, SCENE, type Res } from "./kit";
 import { GUILD_RANKS, canCast, deathOdds, fightOdds } from "./power";
 import { ELEMENTS, learnSpell, spellChoices } from "./magic";
 import { addStanding, fl, kingdomsOf, deed, type Element } from "./state";
+import { techChoice } from "./styles";
 
 export interface School { id: string; name: string; focus: string; odds: (l: Life) => number; fee: number; body: number; magic: number }
 export const SCHOOLS: School[] = [
@@ -58,6 +59,7 @@ const hurt = (text: string, extra: number): Res => (l, c) => (chance(l, deathOdd
 const ACTS: Activity[] = [
   M({ group: "ฝึกฝน", id: "ft_train", emoji: "", name: "ฝึกดาบและร่างกาย", desc: "พลังกาย +", minAge: 6, run: (l) => { const d = randInt(l, 6, 12) + (fl(l).race === "orc" ? 3 : 0); fl(l).body += d; addStat(l, "health", 1); return { text: "คุณซ้อมจนฝ่ามือด้าน", kind: "good" }; } }),
   M({ group: "ฝึกฝน", id: "ft_study", emoji: "", name: "ฝึกเวทมนตร์", desc: "พลังเวท + · ต้องร่ายได้", minAge: 6, available: canCast, run: (l) => { fl(l).magic += randInt(l, 5, 9) + fl(l).potential * 2 + (fl(l).race === "elf" ? 2 : 0); return { text: "ปลายคทาสว่างนานขึ้นอีกหนึ่งลมหายใจ", kind: "good" }; } }),
+  M({ group: "ฝึกฝน", id: "ft_style", emoji: "", name: "เปลี่ยนสายอาวุธ", desc: "เรียนกับครูฝึกในเมือง · พลังกายที่สะสมหายครึ่ง", minAge: 12, available: (l) => !!fl(l).style, run: (l) => { runEvent(l, "ft.style_change"); return { text: "" }; } }),
   M({ group: "ฝึกฝน", id: "ft_wand", emoji: "", name: "ซื้อคทา", desc: "ใครก็ร่ายเวทได้ถ้ามีคทา", minAge: 10, available: (l) => (fl(l).wand?.quality ?? 0) < 3, run: (l) => { runEvent(l, "ft.wandshop"); return { text: "" }; } }),
   M({ group: "ชีวิต", id: "ft_rest", emoji: "", name: "พักผ่อน", desc: "ความสุข + สุขภาพเล็กน้อย", minAge: 3, run: (l) => { addStat(l, "happiness", randInt(l, 3, 6)); addStat(l, "health", 1); return { text: "คุณนอนกลางวันใต้ต้นโอ๊กทั้งบ่าย", kind: "good" }; } }),
   M({ group: "ชีวิต", id: "ft_healer", emoji: "", name: "หาหมอรักษา", desc: "สุขภาพ +", minAge: 0, cost: 5 * GOLD, run: (l) => { addMoney(l, -5 * GOLD); addStat(l, "health", randInt(l, 8, 15)); return { text: "น้ำยาขมจนหน้าเบ้ แต่คุณลุกเดินได้", kind: "good" }; } }),
@@ -88,6 +90,7 @@ export const PLACE_EVENTS: GameEvent[] = [
 
   SCENE("ft.contract", "งานจากกิลด์", (l, c) => `กระดานประกาศของกิลด์ขั้น${GUILD_RANKS[fl(l).guild]}: ${monster(c).name}${l.stats.smarts >= 50 ? ` · จุดอ่อนธาตุ${ELEMENTS[monster(c).weak].name}` : " · ไม่รู้จุดอ่อน"}`, [
     P("กำจัดสัตว์อสูรด้วยอาวุธ", (l) => fightOdds(l, threatOf(l)), G("คุณนำเขี้ยวของมันกลับมาขึ้นเงินรางวัล", { fame: 1 }, (l) => reward(l, 1)), hurt("มันแข็งแกร่งกว่าที่ประกาศบอก คุณหนีกลับมาพร้อมแผล", 0)),
+    techChoice((l) => threatOf(l), (t) => G(`「${t}」ของคุณจบศึกในพริบตาเดียว`, { fame: 2, body: 4 }, (l) => reward(l, 1.15)), hurt("ท่าไม้ตายพลาดเป้า มันสวนกลับทันที", 0)),
     ...spellChoices(threatOf, (_l, c) => monster(c).weak, (_l, c) => monster(c).strong, (sp) => G(`${sp.name}ของคุณจัดการมันได้เรียบร้อย`, { fame: 1, magic: 3 }, (l) => reward(l, 1.1)), hurt("เวทของคุณทำอะไรมันแทบไม่ได้", 0)),
     P("คุ้มกันกองคาราวาน", (l) => fightOdds(l, CONTRACT_THREAT[fl(l).guild] - 6), G("กองคาราวานถึงปลายทางครบทุกเล่ม", {}, (l) => reward(l, 0.8)), hurt("โจรมามากกว่าที่คิด สินค้าหายไปครึ่งหนึ่ง", -6)),
     K("สำรวจดันเจี้ยนเก่า", "luck", 50, G("คุณเจอห้องที่ยังไม่มีใครแตะ", { magic: 4, body: 4 }, (l) => reward(l, 1.4)), hurt("กับดักหลังประตูยังทำงานได้ดีเกินไป", 8)),

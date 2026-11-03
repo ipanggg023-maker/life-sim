@@ -38,7 +38,8 @@ const drain = (l: Life, r: { rng: number }) => {
 };
 const play = (l: Life, acts = true) => {
   const r = { rng: l.seed + 3 };
-  for (let i = 0; i < 520 && l.alive; i++) {
+  // มังกรในร่างมนุษย์อยู่ได้ราวห้าร้อยปี บวกอายุขัยจากพรสวรรค์
+  for (let i = 0; i < 900 && l.alive; i++) {
     if (acts) for (const a of activitiesFor(l)) if (!activityLocked(l, a) && nextFloat(r) < 0.4) { doActivity(l, a.id); drain(l, r); if (!l.alive) break; }
     if (!l.alive) break;
     l.queue.length || ageUp(l);
