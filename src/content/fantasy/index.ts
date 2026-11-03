@@ -21,8 +21,9 @@ import { fl, homeKingdom, worldOfLife } from "./state";
 import { STORY_EVENTS } from "./story";
 import { FANTASY_TALENTS } from "./talents";
 import "./achievements";
-import { loadFolk, raceOf } from "./folk";
+import { ageElders, loadFolk, raceOf } from "./folk";
 import { CAREER_EVENTS, loadCareers } from "./careers";
+import { BOND_EVENTS, loadBonds } from "./bonds";
 import { tickWorld } from "./world";
 import { TALENTS } from "../talents";
 
@@ -42,6 +43,7 @@ export function loadFantasyWorld() {
   loadFolk();
   loadPlaces();
   loadCareers();
+  loadBonds();
   loadLegends();
   loadMagic();
   loadCivic();
@@ -50,12 +52,13 @@ export function loadFantasyWorld() {
   loadRealm();
   loadRealms();
   transform.fn = setRace;
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS], "fantasy");
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS], "fantasy");
   const before = timeBudget.fn;
   timeBudget.fn = (l) => (l.worldId === "fantasy" ? (l.age < 10 ? 2 : l.age < 16 ? 3 : 5) : before?.(l));
   lifespanHooks.push((l) => (on(l) ? younger(l) + (fl(l).dragonblood ? 30 : 0) + (fl(l).lifeBonus ?? 0) - (fl(l).pacts ?? 0) * 10 : 0));
   yearHooks.push((l) => {
     if (!on(l) || !l.alive) return;
+    ageElders(l);
     const w = worldOfLife(l);
     w.year = l.birthYear + l.age;
     tickWorld(w, l);

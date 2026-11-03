@@ -27,7 +27,9 @@ export function combat(l: Life): number {
 /** อาวุธช่วยมากกว่าเกราะ · อาวุธลงอาคมแรงขึ้นอีกขั้น */
 export const gearBonus = (l: Life) => { const f = fl(l); return (f.weapon ? f.weapon.quality * 3 + (f.weapon.enchant ? 4 : 0) : 0) + (f.armor ? f.armor.quality * 2 : 0); };
 /** มังกรที่ขี่ช่วยสู้ ลูกมังกรที่โตแล้วช่วยตามพลังของมัน */
-const companion = (l: Life) => { const f = fl(l); return (f.mount ? 10 : 0) + (f.race === "dragon" ? Math.min(60, Math.floor(l.age / 6)) : 0) + (f.demonHorn ? 10 : 0) + (f.whelp && f.whelp.age >= 3 ? Math.min(15, Math.round(f.whelp.power / 5)) : 0) + (f.dragonblood ? 5 : 0); };
+/** ปาร์ตี้นักผจญภัยช่วยสู้ คนละ 4 สูงสุดสามคน (bonds.ts) */
+export const partyBonus = (l: Life) => Math.min(3, l.people.filter((p) => p.alive && p.tags?.some((t) => t.startsWith("party:"))).length) * 4;
+const companion = (l: Life) => { const f = fl(l); return partyBonus(l) + (f.mount ? 10 : 0) + (f.race === "dragon" ? Math.min(60, Math.floor(l.age / 6)) : 0) + (f.demonHorn ? 10 : 0) + (f.whelp && f.whelp.age >= 3 ? Math.min(15, Math.round(f.whelp.power / 5)) : 0) + (f.dragonblood ? 5 : 0); };
 /** โอกาสชนะศัตรูระดับนี้ */
 export const fightOdds = (l: Life, threat: number) => clamp(0.5 + (combat(l) - threat) / 60 + (l.stats.luck - 50) / 400, 0.04, 0.96);
 export const breakOdds = (l: Life, track: "body" | "magic") => {

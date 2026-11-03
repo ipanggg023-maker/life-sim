@@ -9,7 +9,7 @@ import { inheritThrone, passThrone } from "./realm";
 import { rollElement } from "./magic";
 import { applyFtTalents } from "./talents";
 import { fastForward } from "./world";
-import { RACE_YOUNGER, renameFamily, renameHeir } from "./folk";
+import { RACE_YOUNGER, renameFamily } from "./folk";
 
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
   human: { name: "มนุษย์", younger: RACE_YOUNGER.human, desc: "ชีวิตสั้นแต่ไปได้ทุกทาง" },
@@ -97,7 +97,7 @@ export function inheritLife(dead: Life, next: Life) {
   if (next.ft.potential > 5) next.ft.potential = 5;
   next.flags.seenRuler = "";
   next.flags.allowance = true;
-  renameHeir(next, d.race);
+  next.flags.ftEldersAged = true;
   inheritThrone(dead, next);
   applyFtTalents(next);
 }

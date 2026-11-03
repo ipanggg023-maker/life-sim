@@ -187,7 +187,12 @@ export function createLife(opts: BirthOptions = {}): Life {
   life.talents.push({ id: rollTalent(life, opts.blessed ? BLESSED_HIDDEN : HIDDEN_RARITY_ODDS, ids, true), revealed: false });
   rollAwakenTrack(life);
 
+  // ชื่อที่กำหนดมาแล้ว (เช่น ทายาท) โลกจะไม่ตั้งให้ใหม่
+  if (opts.firstName) life.flags.givenName = true;
+  if (opts.lastName) life.flags.givenLast = true;
   moduleOf(life.worldId)?.onCreate?.(life);
+  delete life.flags.givenName;
+  delete life.flags.givenLast;
 
   // ครอบครัว
   const dadAge = randInt(life, 24, 42);

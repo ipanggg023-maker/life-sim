@@ -44,7 +44,16 @@ const MONSTERS: { name: string; weak: Element; strong: Element }[] = [
 ];
 const monster = (c: Ctx) => MONSTERS[Number(c.mon ?? 0)];
 const threatOf = (l: Life) => CONTRACT_THREAT[fl(l).guild];
-const hurt = (text: string, extra: number): Res => (l, c) => (chance(l, deathOdds(l, CONTRACT_THREAT[fl(l).guild] + extra)) ? B("ป้ายกิลด์ของคุณถูกส่งกลับบ้าน", { die: "ตายระหว่างรับงานกิลด์" })(l, c) : B(text, { hp: -12 })(l, c));
+/** พลาดงานกิลด์: เจ็บหรือตาย · คนในปาร์ตี้รับดาบแทนได้ บางครั้งไม่รอด */
+const partyCost = (l: Life): string => {
+  const party = l.people.filter((p) => p.alive && p.tags?.some((t) => t.startsWith("party:")));
+  if (!party.length || !chance(l, 0.25)) return "";
+  const p = pick(l, party);
+  if (chance(l, 0.18)) { p.alive = false; addStat(l, "happiness", -15); return ` ${shortName(p)}ยืนบังคุณจนวินาทีสุดท้าย และไม่ได้กลับมาด้วยกัน`; }
+  p.bond = Math.min(100, p.bond + 8);
+  return ` ${shortName(p)}ลากคุณออกมาทั้งที่ตัวเองก็เลือดโชก`;
+};
+const hurt = (text: string, extra: number): Res => (l, c) => (chance(l, deathOdds(l, CONTRACT_THREAT[fl(l).guild] + extra)) ? B("ป้ายกิลด์ของคุณถูกส่งกลับบ้าน", { die: "ตายระหว่างรับงานกิลด์" })(l, c) : B(text + partyCost(l), { hp: -12 })(l, c));
 
 const ACTS: Activity[] = [
   M({ group: "ฝึกฝน", id: "ft_train", emoji: "", name: "ฝึกดาบและร่างกาย", desc: "พลังกาย +", minAge: 6, run: (l) => { const d = randInt(l, 6, 12) + (fl(l).race === "orc" ? 3 : 0); fl(l).body += d; addStat(l, "health", 1); return { text: "คุณซ้อมจนฝ่ามือด้าน", kind: "good" }; } }),

@@ -6,7 +6,10 @@ import { NAMES } from "../content/fantasy/names";
 import { combat } from "../content/fantasy/power";
 import { CAREERS } from "../content/core/careers";
 import { doJobAction, jobActionLocked } from "../content/murim/life/jobActions";
-import { ageUp, createLife } from "./game";
+import { ageUp, createLife, resolveChoice } from "./game";
+import { visibleChoices } from "./events";
+import { buildHeir } from "./soul";
+import { fantasyPersonActions } from "../content/fantasy/bonds";
 import { createPerson } from "./util";
 
 loadFantasyWorld();
@@ -75,5 +78,47 @@ describe("อาชีพของโลกแฟนตาซี", () => {
     const base = combat(l);
     l.ft!.weapon = { name: "ดาบ", quality: 4, enchant: true };
     expect(combat(l)).toBe(base + 16);
+  });
+});
+
+describe("ความสัมพันธ์รายคนและปาร์ตี้", () => {
+  it("ทุกปุ่มรายคนเปิดฉากได้ และทุกทางเลือกเล่นได้ไม่พัง", () => {
+    for (let pick = 0; pick < 4; pick++) {
+      const l = fantasy(21 + pick);
+      l.age = 35; l.money = 100_000; l.ft!.bodyRank = 2; l.ft!.magicRank = 2; l.ft!.wand = { name: "ค", quality: 1, material: "ไม้" };
+      const kids = [4, 8, 12].map((a) => createPerson(l, "child", { age: a, bond: 70, lastName: l.lastName }));
+      const friend = createPerson(l, "friend", { age: 30, bond: 80 });
+      const rival = createPerson(l, "rival", { age: 33, bond: 30 });
+      const spouse = createPerson(l, "spouse", { age: 34, bond: 70 });
+      for (const p of [...kids, friend, rival, spouse, ...l.people.filter((x) => x.relation === "father")]) {
+        for (const a of fantasyPersonActions(l, p)) {
+          if (a.locked) continue;
+          a.run(l);
+          const q = l.queue[0];
+          if (!q) continue;
+          const vis = visibleChoices(l, q);
+          const i = Math.min(pick, vis.length - 1);
+          expect(() => resolveChoice(l, vis[i].index), `${a.id}`).not.toThrow();
+          l.queue = [];
+          l.alive = true;
+        }
+      }
+    }
+  });
+  it("ปาร์ตี้ช่วยสู้ และเต็มที่สามคน", () => {
+    const l = fantasy(5);
+    l.age = 25;
+    const base = combat(l);
+    for (let i = 0; i < 4; i++) { const p = createPerson(l, "ally", { age: 25, bond: 70 }); p.tags = [...(p.tags ?? []), "party:warrior"]; }
+    expect(combat(l)).toBe(base + 12);
+    const f = createPerson(l, "friend", { age: 25, bond: 90 });
+    expect(fantasyPersonActions(l, f).find((a) => a.id === "party")?.locked).toBeTruthy();
+  });
+  it("ทายาทเก็บชื่อของลูกที่สืบต่อไว้", () => {
+    const l = fantasy(9);
+    l.age = 60;
+    const kid = createPerson(l, "child", { age: 30, bond: 80, lastName: l.lastName });
+    const next = buildHeir(l, kid.id);
+    expect(`${next.firstName} ${next.lastName}`).toBe(kid.name);
   });
 });

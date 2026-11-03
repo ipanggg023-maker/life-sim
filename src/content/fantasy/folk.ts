@@ -52,28 +52,22 @@ export function fantasyName(l: Life, gender: Gender, relation?: Relation) {
   return { ...nameFor(l, race as NameRace, gender), tags: [`race:${race}`] };
 }
 
-/** ตอนเกิดเผ่าเพิ่งถูกสุ่ม: ตั้งชื่อตัวละครและครอบครัวใหม่ให้เข้ากับเผ่า */
+/** ตอนเกิดเผ่าเพิ่งถูกสุ่ม: ตั้งชื่อตัวละครใหม่ให้เข้ากับเผ่า · ครอบครัวสร้างทีหลังจึงได้ชื่อตามเผ่าเอง
+ *  ชื่อที่กำหนดมาแล้ว (ทายาท) เก็บไว้ตามเดิม */
 export function renameFamily(l: Life, race: RaceId) {
   const own = nameFor(l, race as NameRace, l.gender);
-  const keepLast = !!l.flags.descendant || raceOfLast(l.lastName) === race;
-  l.firstName = own.first;
-  l.nickname = own.first;
+  const keepLast = !!l.flags.givenLast || !!l.flags.descendant || raceOfLast(l.lastName) === race;
+  if (!l.flags.givenName) { l.firstName = own.first; l.nickname = own.first; }
   if (!keepLast) l.lastName = own.last;
-  for (const p of l.people) {
-    if (!FAMILY.includes(p.relation)) continue;
-    const n = nameFor(l, race as NameRace, p.gender);
-    p.name = `${n.first} ${l.lastName}`;
-    setPersonRace(p, race);
-    // เผ่าอายุยืนมีพ่อแม่ที่อายุมากกว่ามนุษย์
-    if (p.relation !== "sibling" && RACE_YOUNGER[race] > 50) p.age += randInt(l, 0, Math.round(RACE_YOUNGER[race] / 3));
-  }
 }
 
-/** ทายาทได้ชื่อตามเผ่าของบ้าน */
-export function renameHeir(l: Life, race: RaceId) {
-  const n = nameFor(l, race as NameRace, l.gender);
-  l.firstName = n.first;
-  l.nickname = n.first;
+/** เผ่าอายุยืนมีพ่อแม่ที่อายุมากกว่ามนุษย์ · ทำครั้งเดียวหลังสร้างครอบครัว */
+export function ageElders(l: Life) {
+  if (l.flags.ftEldersAged || !l.ft) return;
+  l.flags.ftEldersAged = true;
+  const y = RACE_YOUNGER[l.ft.race];
+  if (y <= 50) return;
+  for (const p of l.people) if ((p.relation === "father" || p.relation === "mother") && raceOf(p) === l.ft.race) p.age += randInt(l, 0, Math.round(y / 3));
 }
 
 export function loadFolk() {

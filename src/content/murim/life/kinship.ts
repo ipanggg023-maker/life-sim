@@ -28,9 +28,13 @@ export interface PersonAction { id: string; label: string; locked?: string; run:
 const yearly = (l: Life, p: Person, id: string) => (l.doneThisYear.includes(`pa:${id}:${p.id}`) ? "ปีนี้ทำไปแล้ว" : undefined);
 const open = (id: string, eventId: string) => (p: Person) => (l: Life) => { l.doneThisYear.push(`pa:${id}:${p.id}`); runEvent(l, eventId, { pid: p.id }); };
 
+/** โลกอื่นใส่ปุ่มรายคนของตัวเองได้ */
+export const personActionHooks: Partial<Record<string, (l: Life, p: Person) => PersonAction[]>> = {};
+
 /** ปุ่มพิเศษของคนคนนี้ตามความสัมพันธ์ */
 export function personActions(l: Life, p: Person): PersonAction[] {
-  if (l.worldId !== "murim" || !p.alive || l.age < 16) return [];
+  if (l.worldId !== "murim") return p.alive ? personActionHooks[l.worldId]?.(l, p) ?? [] : [];
+  if (!p.alive || l.age < 16) return [];
   const out: PersonAction[] = [];
   const add = (id: string, label: string, eventId: string, locked?: string) => out.push({ id, label, locked: locked ?? yearly(l, p, id), run: (x) => open(id, eventId)(p)(x) });
   if (isSovereign(p)) add("audience", "เข้าเฝ้า", "qn.audience");
