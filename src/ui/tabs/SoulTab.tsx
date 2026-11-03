@@ -24,6 +24,7 @@ import { ARCS, activeArcs, arcEndings } from "../../content/murim/life/sideStori
 import { injuryLabel } from "../../engine/body";
 import { SeriesCover } from "../SeriesCover";
 import { Fold } from "../Fold";
+import { FateLedger } from "./FantasyFate";
 
 export function SoulTab({
   life,
@@ -49,6 +50,7 @@ export function SoulTab({
   const thisLife = String(life.flags.achShown ?? "").split(",").filter((id) => id && !soul.achievements.includes(id));
   return (
     <div className="tab-content">
+      {life.worldId === "fantasy" && <FateLedger life={life} />}
       {real ? (
         <Fold always id="soul-0" title={<>บันทึกชีวิต</>}>
           <p>

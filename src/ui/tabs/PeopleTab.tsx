@@ -9,6 +9,8 @@ import { RACE_LABEL, raceOf } from "../../content/fantasy/folk";
 import { lineageOf } from "../../content/murim/life/generations";
 import { martialLabel } from "../../content/murim/life/npcMartial";
 import { npcStarText } from "../../content/fantasy/stars";
+import { FantasyMind, PersonaCard } from "./FantasyFate";
+import { feelingWords } from "../../content/fantasy/people2";
 import { isPrincess, isSovereign, personActions } from "../../content/murim/life/kinship";
 import { Fold } from "../Fold";
 
@@ -38,6 +40,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
     <div className="tab-content">
       {life.worldId === "murim" && <LineageCard life={life} pick={(id) => { setOpen(id); document.getElementById(`person-${id}`)?.scrollIntoView({ block: "center" }); }} />}
       {life.worldId === "murim" && life.age >= 3 && <KinCare life={life} act={act} />}
+      {life.worldId === "fantasy" && <PersonaCard life={life} />}
       {PEOPLE_GROUPS.map((grp) => {
         const members = list.filter((p) => grp.of(p));
         if (!members.length) return null;
@@ -60,6 +63,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
                 {p.alive && drifting(p) ? " · เริ่มห่างเหิน" : ""}
                 {p.martial ? ` · ${martialLabel(life, p)}` : ""}
                 {life.worldId === "fantasy" && p.stars ? ` · ${npcStarText(p)}` : ""}
+                {life.worldId === "fantasy" && p.alive && feelingWords(p)[0] ? ` · ${feelingWords(p)[0]}` : ""}
               </div>
             </div>
             {p.alive && (
@@ -70,7 +74,8 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
               </div>
             )}
           </button>
-          {open === p.id && p.alive && isRealistic(life.worldId) && <PersonMind p={p} />}
+          {open === p.id && p.alive && isRealistic(life.worldId) && life.worldId !== "fantasy" && <PersonMind p={p} />}
+          {open === p.id && p.alive && life.worldId === "fantasy" && <FantasyMind p={p} />}
           {open === p.id && !p.alive && <div className="person-mind small muted">จากไปแล้ว — เหลือไว้เพียงความทรงจำ</div>}
           {open === p.id && p.alive && p.tags?.some((t) => t.startsWith("away:")) && <div className="person-mind small muted">ย้ายไปตั้งตัวที่อื่นแล้ว — ติดต่อได้แค่จดหมาย รอวันเขากลับมา</div>}
           {open === p.id && p.alive && !p.tags?.some((t) => t.startsWith("away:")) && <PersonActions life={life} p={p} act={act} />}
@@ -202,7 +207,7 @@ function PersonActions({ life, p, act }: { life: Life; p: Person; act: Act }) {
           {p.relation === "spouse" ? "หย่า" : "เลิก"}
         </button>
       )}
-      {!royal && life.age >= 6 && (
+      {!royal && life.age >= 6 && !(life.worldId === "fantasy" && life.age >= 14 && p.age >= 12) && (
         <button className="btn small" disabled={life.doneThisYear.includes(`gift:${p.id}`)} onClick={() => act((l) => giveGift(l, p))}>
           ให้ของขวัญ
         </button>

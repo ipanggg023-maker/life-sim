@@ -28,6 +28,7 @@ import { BEASTS, homeOf, omenOf } from "../../content/fantasy/world2";
 import { RACE_LABEL, folkOf } from "../../content/fantasy/folk";
 import { careerById } from "../../content/core/careers";
 import { PARTY_MAX, partyLabel, partyOf } from "../../content/fantasy/bonds";
+import { RumorFold } from "./FantasyFate";
 
 const StarLine = ({ label, n, open }: { label: string; n: number; open: boolean }) => (
   <>
@@ -185,6 +186,7 @@ export function FantasyWorldTab({ life }: { life: Life }) {
         {(here.laws ?? []).length === 0 && <p className="small muted">ไม่มีกฎหมายพิเศษ</p>}
       </Fold>
       {omenOf(life) && <Fold always id="ft-omen" title={<>ลางแห่งยุค</>}><p className="small"><b>{omenOf(life)!.name}</b> · {omenOf(life)!.desc} · ถึงปี {omenOf(life)!.until}</p></Fold>}
+      <RumorFold life={life} />
       <Fold id="ft-beasts" title={<>สัตว์ในตำนาน</>}>
         {BEASTS.map((b) => { const by = (d as unknown as { beasts?: Record<string, string> }).beasts?.[b.id]; return <p className={`small ${by ? "muted" : ""}`} key={b.id}><b>{b.name}</b> · {by ? `ถูกล่าโดย${by}` : b.desc}</p>; })}
       </Fold>

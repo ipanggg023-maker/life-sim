@@ -417,11 +417,14 @@ describe("เส้นเรื่องยาว: งานชิ้นเอ�
 
 describe("ลาง ภารกิจเมือง สัตว์ในตำนาน และบ้าน", () => {
   it("ลางเกิดขึ้นในโลก และผู้เล่นเห็นครั้งเดียวต่อลาง", () => {
-    const l = fantasy(121);
+    // ลางเกิดแบบสุ่ม · ลองหลายชีวิตจนเจอ
     let seen = 0;
-    for (let y = 0; y < 80 && l.alive; y++) {
-      ageUp(l);
-      while (l.queue.length && l.alive) { if (l.queue[0].eventId === "ft.om.seen") seen++; resolveChoice(l, visibleChoices(l, l.queue[0])[0].index); }
+    for (let s = 121; s < 131 && !seen; s++) {
+      const l = fantasy(s);
+      for (let y = 0; y < 80 && l.alive; y++) {
+        ageUp(l);
+        while (l.queue.length && l.alive) { if (l.queue[0].eventId === "ft.om.seen") seen++; resolveChoice(l, visibleChoices(l, l.queue[0])[0].index); }
+      }
     }
     expect(seen).toBeGreaterThan(0);
   });

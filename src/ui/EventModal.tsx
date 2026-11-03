@@ -95,6 +95,7 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
                 >
                   <span className="choice-main">
                     <span className="choice-label">{noEmoji(loc(life, labelOf(c, life, q.ctx)))}</span>
+                  {c.mark && <span className="choice-mark">{c.mark}</span>}
                     {missing && <span className="cons"><Icon name="lock" size={13} /> {missing}</span>}
                     {survive !== undefined && survive < 0.95 && (
                       <span className="warn">โอกาสรอดชีวิต {vague ? vagueLabel(survive) : `${Math.round(survive * 100)}%`}</span>

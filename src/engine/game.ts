@@ -487,6 +487,10 @@ export const lifespanHooks: Array<(life: Life) => number> = [];
 export const deathCauseHooks: Array<(life: Life) => string | undefined> = [];
 /** เมื่อมีคนรู้จักเสียชีวิต (violent = ถูกฆ่า) — ให้ content ใช้กระตุ้นเรื่องราว เช่น เปลี่ยนเป้าหมายชีวิต */
 /** ผลเสริมตามระดับผลลัพธ์ (งดงาม/พลาดหนัก) — คืนข้อความต่อท้าย */
+/** หลังเลือกทุกครั้ง: โลกต่างๆ ใช้จดนิสัย เมล็ดชะตา และความทรงจำ */
+export const choiceHooks: Array<(life: Life, c: Choice, ctx: Ctx, success: boolean, eventId: string) => void> = [];
+/** ปรับโอกาสสำเร็จของตัวเลือก (เช่น ทำตามนิสัยตัวเองได้ดีกว่า) */
+export const oddsHooks: Array<(life: Life, c: Choice, ctx: Ctx, p: number) => number> = [];
 export const rollTierHooks: Array<(life: Life, tier: "great" | "ok" | "fail" | "disaster") => string> = [];
 export const kinDeathHooks: Array<(life: Life, p: Person, violent: boolean, killer?: string) => void> = [];
 
@@ -540,9 +544,9 @@ export function ageUp(life: Life) {
 }
 
 function oddsOf(life: Life, c: Choice, ctx: Ctx): number | undefined {
-  if (c.odds) return clamp(c.odds(life, ctx), 0.01, 0.99);
-  if (c.check) return checkChance(life, c.check.stat, c.check.dc, c.check.bonus?.(life, ctx) ?? 0);
-  return;
+  const base = c.odds ? clamp(c.odds(life, ctx), 0.01, 0.99) : c.check ? checkChance(life, c.check.stat, c.check.dc, c.check.bonus?.(life, ctx) ?? 0) : undefined;
+  if (base === undefined || !oddsHooks.length) return base;
+  return clamp(oddsHooks.reduce((p, h) => h(life, c, ctx, p), base), 0.01, 0.99);
 }
 
 /** เซฟเก่า: ทิ้ง event ที่ถูกลบออกจากเกมไปแล้ว (เช่น เนื้อเรื่องยุทธภพชุดเก่า) — กันจอค้าง */
@@ -582,6 +586,7 @@ export function resolveChoice(life: Life, choiceIndex: number): Outcome | undefi
   const r = p === undefined ? undefined : nextFloat(life);
   const success = r === undefined ? true : r < p!;
   const out = c.run(life, q.ctx, success);
+  for (const h of choiceHooks) h(life, c, q.ctx, success, q.eventId);
   if (r !== undefined) {
     // 4 ระดับ: ทอยได้ดีมาก = งดงาม · พลาดแบบห่างมาก = พลาดหนัก (MURIM_PLAN §14)
     const tier = success ? (r < p! * 0.3 ? "great" : "ok") : r > p! + (1 - p!) * 0.7 ? "disaster" : "fail";

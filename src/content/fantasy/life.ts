@@ -12,6 +12,8 @@ import { fastForward } from "./world";
 import { RACE_YOUNGER, renameFamily } from "./folk";
 import { citiesOf } from "./cities";
 import { applyStarStart, childStars, rollStars } from "./stars";
+import { inheritFeuds } from "./people2";
+import { verdict } from "./persona";
 
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
   human: { name: "มนุษย์", younger: RACE_YOUNGER.human, desc: "ชีวิตสั้นแต่ไปได้ทุกทาง" },
@@ -82,7 +84,7 @@ export function attachWorld(l: Life, s: Soul) {
 export function closeLife(s: Soul, l: Life) {
   const w = worldOfLife(l), f = fl(l);
   w.year = l.birthYear + l.age;
-  recordChronicle(w, `${displayName(l)}จากโลกไปเมื่ออายุ ${l.age} ปี`);
+  recordChronicle(w, `${displayName(l)}จากโลกไปเมื่ออายุ ${l.age} ปี · ${verdict(l)}`);
   for (const r of (w.data as { relics: { holder: string; id: string; at: string }[] }).relics) if (r.holder === "player") { r.holder = "lost"; r.at = f.kingdom; }
   for (const x of (w.data as { factions?: { playerLed?: boolean; leader: string }[] }).factions ?? []) if (x.playerLed) { x.playerLed = false; x.leader = ""; }
   passThrone(l);
@@ -103,6 +105,7 @@ export function inheritLife(dead: Life, next: Life, heirId?: string) {
   next.flags.allowance = true;
   next.flags.ftEldersAged = true;
   inheritThrone(dead, next);
+  inheritFeuds(dead, next);
   applyFtTalents(next);
   applyStarStart(next);
   // ลูกที่โตพอแล้วเคยอ่านดาวมาแล้ว

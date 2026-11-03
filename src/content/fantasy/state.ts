@@ -20,6 +20,10 @@ export interface FLife {
   potential: number;
   /** ดาวกายแต่กำเนิด 0–10 (stars.ts) · เซฟเก่าไม่มี */
   bstars?: number;
+  /** นิสัยจากทางเลือก -100..100 (persona.ts) */
+  persona?: { m: number; h: number; c: number; f: number };
+  /** เมล็ดชะตาที่ปลูกไว้ (echoes.ts) */
+  seeds?: { id: string; age: number; note: string; who?: string; done?: number }[];
   body: number;
   magic: number;
   bodyRank: number;
@@ -226,7 +230,9 @@ export const kingdomsOf = (l: Life) => dataOf(l).kingdoms;
 export const homeKingdom = (l: Life) => kingdomsOf(l).find((k) => k.id === fl(l).kingdom) ?? kingdomsOf(l)[0];
 export const relicOf = (l: Life, id: string) => dataOf(l).relics.find((r) => r.id === id);
 export const myRelic = (l: Life) => (fl(l).relic ? relicOf(l, fl(l).relic!) : undefined);
-export const deed = (l: Life, text: string) => { fl(l).deeds.push(text); };
+/** ผลงานกลายเป็นข่าวลือ (rumors.ts ลงทะเบียน) */
+export const deedHooks: ((l: Life, text: string) => void)[] = [];
+export const deed = (l: Life, text: string) => { fl(l).deeds.push(text); for (const h of deedHooks) h(l, text); };
 /** ประวัติผู้ถืออาวุธตำนาน เก็บล่าสุดแปดคน */
 export const passRelic = (w: WorldState, r: Relic, who: string) => { r.history = [...(r.history ?? []), `ปี ${w.year} · ${who}`].slice(-8); };
 /** อคติที่บางเผ่าเจอตั้งแต่เกิด จนกว่าจะสร้างชื่อเสียงเอง */

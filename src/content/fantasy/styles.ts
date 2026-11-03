@@ -6,6 +6,7 @@ import { clamp } from "../../engine/util";
 import { C, E, G, N, P, PAY, SCENE, type Res } from "./kit";
 import { BODY_RANKS, MAGIC_RANKS, MASTER, fightOdds } from "./power";
 import { twinStar } from "./stars";
+import { personaEpithet } from "./persona";
 import { dataOf, fl, homeKingdom, myRelic, type RaceId } from "./state";
 
 export type StyleId = "sword" | "spear" | "axe" | "bow" | "daggers" | "hammer" | "fist" | "shield";
@@ -69,5 +70,5 @@ export function epithetOf(l: Life): string | undefined {
   if ((f.crimes ?? 0) >= 5) return "จอมโจรแห่ง" + homeKingdom(l).name;
   if (l.fame >= 50) return `วีรชนแห่ง${homeKingdom(l).name}`;
   if ((f.cups ?? 0) >= 2) return "แชมป์งานประลอง";
-  return undefined;
+  return personaEpithet(l);
 }

@@ -35,6 +35,14 @@ import { ARC_EVENTS } from "./arcs";
 import { WORLD2_EVENTS, loadWorld2 } from "./world2";
 import { tickWorld } from "./world";
 import { STAR_EVENTS, migrateStars, starLife, starYear } from "./stars";
+import { applyTags, loadConseq } from "./conseq";
+import "./tags";
+import { ECHOES_1 } from "./echoes";
+import { ECHOES_2 } from "./echoes2";
+import { PERSONA_EVENTS, personaYear } from "./persona";
+import { RUMOR_EVENTS, loadRumors, rumorYear } from "./rumors";
+import { PEOPLE2_EVENTS, loadPeople2 } from "./people2";
+import { addExclusive } from "./exclusive";
 import { TALENTS } from "../talents";
 
 export { newFantasyWorld } from "./state";
@@ -55,6 +63,9 @@ export function loadFantasyWorld() {
   loadPlaces();
   loadCareers();
   loadBonds();
+  loadPeople2();
+  loadRumors();
+  loadConseq();
   loadCities();
   loadHobbies();
   loadSagas();
@@ -69,7 +80,9 @@ export function loadFantasyWorld() {
   loadRealm();
   loadRealms();
   transform.fn = setRace;
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS], "fantasy");
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS, ...ECHOES_1, ...ECHOES_2, ...PERSONA_EVENTS, ...RUMOR_EVENTS, ...PEOPLE2_EVENTS], "fantasy");
+  addExclusive();
+  applyTags();
   const before = timeBudget.fn;
   timeBudget.fn = (l) => (l.worldId === "fantasy" ? (l.age < 10 ? 2 : l.age < 16 ? 3 : 5) : before?.(l));
   lifespanHooks.push((l) => (on(l) ? younger(l) + (fl(l).dragonblood ? 30 : 0) + (fl(l).lifeBonus ?? 0) + starLife(l) - (fl(l).pacts ?? 0) * 10 : 0));
@@ -83,6 +96,8 @@ export function loadFantasyWorld() {
     dragonYear(l);
     realmYear(l);
     starYear(l);
+    personaYear(l);
+    rumorYear(l);
     if (!l.flags.seenRuler) l.flags.seenRuler = homeKingdom(l).ruler;
   });
   registerWorld({

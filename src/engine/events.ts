@@ -36,6 +36,12 @@ export interface Choice {
   unknown?: (life: Life, ctx: Ctx) => boolean;
   /** เงื่อนไขที่ยังขาด → แสดงตัวเลือกแต่กดไม่ได้ พร้อมเหตุผล */
   req?: (life: Life, ctx: Ctx) => string | undefined;
+  /** นิสัยที่ตัวเลือกนี้หล่อหลอม (โลกแฟนตาซี: m เมตตา h ซื่อตรง c กล้า f ศรัทธา · บวก/ลบ) */
+  lean?: Record<string, number>;
+  /** เมล็ดชะตาที่ตัวเลือกนี้ปลูกไว้ จะกลับมาในอีกหลายปี */
+  seed?: string;
+  /** ป้ายเล็กๆ บอกว่าเรื่องนี้จะถูกจดจำ */
+  mark?: string;
   run: (life: Life, ctx: Ctx, success: boolean) => Outcome;
 }
 
