@@ -332,6 +332,15 @@ export function isStudent(life: Life) {
   return s !== "none" && s !== "done";
 }
 
+/** ขั้นถัดไปยังเลื่อนไม่ได้เพราะอะไร (คืนข้อความ = ยังไม่ผ่าน) · โลกต่างๆ ตั้งเงื่อนไขเอง */
+export const promoteGates: Array<(life: Life, career: Career, next: number) => string | undefined> = [];
+/** อายุเกษียณ (ไม่ตั้ง = 60) */
+export const retireAgeHooks: Array<(life: Life) => number | undefined> = [];
+/** บำนาญต่อปีเมื่อเกษียณ (ไม่ตั้ง = ตามอาชีพเดิม) */
+export const pensionHooks: Array<(life: Life, career: Career, pay: number) => number | undefined> = [];
+/** หลังได้งานใหม่ (เช่น กลับมาทำงานเดิมเริ่มที่ขั้นสูงกว่า) */
+export const jobStartHooks: Array<(life: Life) => void> = [];
+
 function progressJob(life: Life) {
   const job = life.job;
   if (!job) return;
@@ -348,7 +357,7 @@ function progressJob(life: Life) {
   if (career.id === "streamer" || career.id === "seller") {
     if (chance(life, 0.3)) addFame(life, randInt(life, 1, 5));
   }
-  if (job.performance >= 80 && job.level < 5 && chance(life, 0.6)) {
+  if (job.performance >= 80 && job.level < 5 && !promoteGates.some((g) => g(life, career, job.level + 1)) && chance(life, 0.6)) {
     job.level++;
     job.performance = 50;
     log(life, `🎉 คุณได้เลื่อนตำแหน่งเป็น "${career.titles[job.level - 1]}"`, "good");
@@ -358,8 +367,9 @@ function progressJob(life: Life) {
     life.job = undefined;
     addStat(life, "happiness", -15);
   }
-  if (life.job && life.age >= 60 && !["seller", "streamer"].includes(career.id)) {
-    const pension = ["police", "teacher"].includes(career.id) ? Math.round(pay * 0.4) : 0;
+  const retireAt = retireAgeHooks.map((h) => h(life)).find((x) => x !== undefined) ?? 60;
+  if (life.job && life.age >= retireAt && !["seller", "streamer"].includes(career.id)) {
+    const pension = pensionHooks.map((h) => h(life, career, pay)).find((x) => x !== undefined) ?? (["police", "teacher"].includes(career.id) ? Math.round(pay * 0.4) : 0);
     life.flags.pension = pension;
     life.job = undefined;
     log(life, `คุณเกษียณจากงาน${career.name}${pension ? ` ได้บำนาญปีละ ${money(life, pension)}` : ""}`, "milestone");
@@ -692,7 +702,8 @@ export function applyJob(life: Life, careerId: string): Outcome {
   if (missing) return { text: `สมัครไม่ได้ (${missing})`, kind: "bad" };
   if (chance(life, jobChance(life, c))) {
     life.job = { careerId, level: 1, performance: 50, years: 0 };
-    const out = { text: `คุณได้งานเป็น${c.titles[0]} (${c.name}) เงินเดือนปีละ ${money(life, salaryOf(life, c, 1))}`, kind: "good" as const };
+    for (const h of jobStartHooks) h(life);
+    const out = { text: `คุณได้งานเป็น${c.titles[life.job.level - 1]} (${c.name}) เงินเดือนปีละ ${money(life, salaryOf(life, c, life.job.level))}`, kind: "good" as const };
     log(life, out.text, out.kind);
     return out;
   }

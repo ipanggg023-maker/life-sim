@@ -65,7 +65,8 @@ describe("ที่ทำงาน", () => {
     let won = 0, lost = 0;
     for (let s = 0; s < 30; s++) {
       const l = life(100 + s); ageUp(l); drain(l);
-      l.job!.performance = 75; const before = l.job!.level;
+      // ขั้นสามของอัศวินต้องมีสายกายขั้นหนึ่ง (เส้นทางอาชีพ)
+      l.job!.performance = 75; fl(l).bodyRank = Math.max(1, fl(l).bodyRank); const before = l.job!.level;
       runEvent(l, "ft.wk.promo");
       resolveChoice(l, 0); drain(l);
       if (l.job!.level > before) won++; else lost++;

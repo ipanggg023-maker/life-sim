@@ -44,7 +44,14 @@ Decided: rework all four weak systems, one release each, pushing after each one.
    - Idle player: debt hurts but is recoverable.
    - Careful and random lifespans stay as they are.
 
-## Release 2 — Careers and work (outline)
+## Release 2 — Careers and work (built)
+Measured first: when a player keeps one job, 93% reached level 5 in ~13 years, so the problem was a flat automatic climb, not a slow one.
+Built: skill gates for levels 3 and 4 (body rank for fighting jobs, magic rank for magic jobs, the key stat for the rest), a master exam for level 5,
+a once-per-life legacy choice (apprentice, own hall, write the manual), retirement age by race with a work-five-more-years option,
+pensions of 10/25/40/50% by level, and returning to an old job starts one level below your best.
+Result (bots who work hard): 57% reach level 5 and 68% level 4 or higher.
+
+### Original outline
 - Clear ladders: real promotion goals per level instead of just performance ≥ 80.
 - Career milestones and signature events at levels 3 and 5.
 - Retirement and pensions for fantasy jobs.

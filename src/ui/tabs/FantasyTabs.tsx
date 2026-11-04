@@ -20,6 +20,7 @@ import { Fold } from "../Fold";
 import { ASSETS, assetIncome } from "../../content/fantasy/careers";
 import { CREDITOR_AT, DEBT_RATE, ESTATES, HOME_UPKEEP, PRISON_AT, nextYearGold, ownedEstates, upkeepOf } from "../../content/fantasy/economy";
 import { GOLD } from "../../content/fantasy/kit";
+import { mastered, retireAge, stepsFor } from "../../content/fantasy/careerpath";
 import { epithetOf, styleOf, techsOf } from "../../content/fantasy/styles";
 import { KINDS, citiesOf, cityOf } from "../../content/fantasy/cities";
 import { DUNGEONS, PETS } from "../../content/fantasy/hobbies";
@@ -250,8 +251,24 @@ export function FantasyCareerCard({ life }: { life: Life }) {
   const debt = Math.ceil(life.debt / GOLD);
   const big = ownedEstates(life);
   const hu = HOME_UPKEEP[Number(life.flags.ftHome ?? 0)];
+  const job = life.job, career = job ? careerById(job.careerId) : undefined;
   return (
     <>
+    {job && career && (
+      <Fold always id="ft-path" title={<>เส้นทางอาชีพ · {career.titles[job.level - 1]}</>}>
+        <p className="small">{career.titles.map((t, i) => (i < job.level ? <b key={t}>{t}</b> : <span key={t} className="muted">{t}</span>)).reduce<React.ReactNode[]>((a, x, i) => (i ? [...a, " → ", x] : [x]), [])}</p>
+        {job.level < 5 ? (
+          <>
+            <p className="small muted">ขึ้นเป็น{career.titles[job.level]}ต้องมี:</p>
+            {stepsFor(life, career, job.level + 1).map((s) => <p className="small" key={s.label}>{s.ok ? "✓" : "✗"} {s.label}</p>)}
+            {job.level === 4 && <p className="small muted">ผ่านเงื่อนไขครบแล้ว สมาคมจะเรียกไปสอบเอง สอบตกรอสองปี</p>}
+          </>
+        ) : (
+          <p className="small">{mastered(life, career.id) ? "คุณเป็นนายใหญ่ที่สอบผ่านของสมาคม" : "คุณอยู่ขั้นสูงสุดของอาชีพนี้"}{life.flags.ftLegacyDone ? " · ทิ้งตำนานไว้ให้อาชีพนี้แล้ว" : " · เป็นนายใหญ่สักพัก จะได้เลือกสิ่งที่ทิ้งไว้ให้อาชีพนี้"}</p>
+        )}
+        <p className="small muted">เกษียณตอนอายุ {retireAge(life)} · บำนาญ {job.level >= 5 ? (mastered(life, career.id) ? "50" : "40") : job.level >= 3 ? "25" : "10"}% ของค่าจ้าง</p>
+      </Fold>
+    )}
     {g && (
       <Fold always id="ft-ledger" title={<>บัญชีปีนี้ · อายุ {g.age}</>}>
         <div className="status-grid">

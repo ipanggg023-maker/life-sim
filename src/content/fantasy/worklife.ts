@@ -11,6 +11,7 @@ import { ECHO, seedsOf, tagged } from "./conseq";
 import { B, BIG, C, E, G, K, N, P, PAY } from "./kit";
 import { lean, personaOf, type Persona } from "./persona";
 import { spread, talkHere } from "./rumors";
+import { canRise } from "./careerpath";
 
 /** นิสัยที่แต่ละงานต้องการ · บวก = ต้องการฝั่งบวกของแกนนั้น */
 export const CAREER_FIT: Record<string, Partial<Persona>> = {
@@ -154,7 +155,7 @@ export const WORK_EVENTS: GameEvent[] = [
     tagged(K("หาเสียงสนับสนุนในที่ทำงาน", "looks", 50, (l, c) => promoRace(l, c, 0.15), (l, c) => promoRace(l, c, -0.05)), { c: 2 }),
     tagged(C("แอบปล่อยข่าวเสียหายของคู่แข่ง", (l, c) => { const p = who(l, c); if (p) remember(l, p, "smeared", "คุณปล่อยข่าวเสียหายเพื่อชิงตำแหน่ง", 3, { grudge: 40 }); lean(l, { h: -3 }); return promoRace(l, c, 0.2); }), { h: -6, m: -4 }),
     tagged(C("ถอนตัวให้เขา", G((l, c) => `${nm(l, c)}ได้ตำแหน่ง และไม่ลืมว่าคุณยอมให้`, {}, mem("yielded", "คุณถอนตัวให้เขาได้ตำแหน่ง", 3, { debt: 40, loyalty: 15, jealousy: -30 }))), { m: 6, c: -2 }),
-  ], { ...withMate, when: (l) => !!l.job && l.job.level < 5 && l.job.performance >= 60 && matesOf(l).length > 0, maxTimes: 4, weight: 20 }),
+  ], { ...withMate, when: (l) => !!l.job && l.job.level < 4 && l.job.performance >= 60 && matesOf(l).length > 0 && canRise(l), maxTimes: 4, weight: 20 }),
 ];
 /** เมล็ดที่เป็นเรื่องฉาวได้ถ้าโผล่ขึ้นมา */
 const SCANDAL = ["tax_hide", "votes_bought", "took_bribe", "dirty_order", "faction_sold", "assassin_hire", "treasure_pocket", "ring_sold", "purse_keep", "spy_taken", "signet_kept"];
@@ -162,7 +163,7 @@ const SCANDAL = ["tax_hide", "votes_bought", "took_bribe", "dirty_order", "facti
 /** การชิงตำแหน่ง: ผลงาน เจ้านาย นิสัยที่เหมาะ และสิ่งที่คุณทำมาตลอด ตัดสิน */
 function promoRace(l: Life, c: Ctx, bonus: number) {
   const job = l.job;
-  if (!job) return { text: "ตำแหน่งนั้นถูกยุบไปแล้ว" };
+  if (!job || job.level >= 4 || !canRise(l)) return { text: "ตำแหน่งนั้นถูกยุบไปก่อนประกาศผล" };
   const f = workFactors(l).reduce((s, x) => s + x.value, 0);
   const p = clamp(0.45 + (job.performance - 60) / 100 + f / 40 + bonus, 0.08, 0.92);
   const rival = who(l, c);

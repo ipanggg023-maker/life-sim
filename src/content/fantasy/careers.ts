@@ -74,6 +74,7 @@ export const ASSETS: Record<string, { name: string; gold: number; max: number }>
   ftInn: { name: "ห้องพัก", gold: 10, max: 4 },
   ftShip: { name: "เรือสินค้า", gold: 20, max: 3 },
   ftMine: { name: "สายแร่", gold: 14, max: 3 },
+  ftHall: { name: "สำนักของคุณ", gold: 15, max: 1 },
 };
 export const assetIncome = (l: Life) => Object.entries(ASSETS).reduce((s, [k, a]) => s + Math.min(n(l, k), a.max) * a.gold, 0);
 const buy = (k: string): Need => (l) => (n(l, k) >= ASSETS[k].max ? `มี${ASSETS[k].name}ครบ ${ASSETS[k].max} แล้ว` : undefined);
