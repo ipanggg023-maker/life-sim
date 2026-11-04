@@ -28,7 +28,7 @@ import { BEASTS, homeOf, omenOf } from "../../content/fantasy/world2";
 import { RACE_LABEL, folkOf } from "../../content/fantasy/folk";
 import { careerById } from "../../content/core/careers";
 import { PARTY_MAX, partyLabel, partyOf } from "../../content/fantasy/bonds";
-import { RumorFold, WorldMarkFolds } from "./FantasyFate";
+import { PowerSourceFolds, RumorFold, WorldMarkFolds } from "./FantasyFate";
 
 const StarLine = ({ label, n, open }: { label: string; n: number; open: boolean }) => (
   <>
@@ -79,6 +79,7 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         {seen(life) && <p className="small muted">เพดานสายกาย: {BODY_RANKS[Math.max(bodyCap(life), f.bodyRank)]}{dual(life) ? " · ดาวสองสายสูง เดินทางดาบเวทได้" : ""}</p>}
         <p className="small muted">{canCast(life) ? `ร่ายเวทได้ เพดานตอนนี้: ${MAGIC_RANKS[magicCap(life)]}` : "ยังร่ายเวทไม่ได้ ซื้อคทาได้ที่แท็บทำ"}</p>
       </Fold>
+      <PowerSourceFolds life={life} />
       {seen(life) && (
         <Fold kind="section" id="ft-star-arts" title={<>วิชาประจำดาว</>}>
           <p className="small muted">ได้เองเมื่อดาวถึง ไม่ต้องฝึก</p>

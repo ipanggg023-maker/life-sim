@@ -7,6 +7,8 @@ import { heatWord, kingdomName, oldTales, talkIn } from "../../content/fantasy/r
 import { feelingWords, topMemories } from "../../content/fantasy/people2";
 import { goalOf, traitName, traitsOf } from "../../engine/npc";
 import { dataOf, homeKingdom, kingdomsOf } from "../../content/fantasy/state";
+import { powerParts } from "../../content/fantasy/power";
+import { ASPECTS, VOWS, aspectsOf, vowOf } from "../../content/fantasy/powerplus";
 import { TEMPERS, marksOf, regard, regardWord, rulerView, temperOf, viewWord } from "../../content/fantasy/worldmark";
 import { bossOf, matesOf, workFactors } from "../../content/fantasy/worklife";
 
@@ -126,6 +128,32 @@ export function WorldMarkFolds({ life }: { life: Life }) {
       </Fold>
       <Fold kind="section" id="ft-regard" title={<>ฝ่ายอำนาจมองคุณ</>}>
         {facs.map((x) => <p className="small" key={x.id}><b>{x.name}</b> · {regardWord(regard(life, x))}</p>)}
+      </Fold>
+    </>
+  );
+}
+
+/** แท็บพลัง: พลังต่อสู้มาจากไหน · แง่มุมจากนิสัย · ปณิธาน · ท่าประจำตัว */
+export function PowerSourceFolds({ life }: { life: Life }) {
+  if (!life.ft) return null;
+  const parts = powerParts(life).sort((a, b) => b[1] - a[1]);
+  const on = aspectsOf(life);
+  const v = vowOf(life);
+  const f = life.ft;
+  return (
+    <>
+      <Fold kind="section" id="ft-power-parts" title={<>พลังต่อสู้มาจาก</>}>
+        {parts.map(([k, n]) => <p className={`small ${n < 0 ? "danger-text" : ""}`} key={k}>{k} · {n > 0 ? "+" : ""}{Math.round(n)}</p>)}
+        {f.signature && <p className="small muted">ท่าประจำตัว "{f.signature.name}"{f.signature.tier >= 2 ? " · ขั้นตำนาน" : ""}</p>}
+      </Fold>
+      <Fold kind="section" id="ft-aspects" title={<>พลังจากนิสัย <span className="fold-count">{on.length}</span></>}>
+        {ASPECTS.map((a) => { const has = on.includes(a); return <p className={`small ${has ? "" : "muted"}`} key={a.name}>{has ? <b>{a.name}</b> : a.name} · {PERSONA[a.axis][a.dir > 0 ? "pos" : "neg"]} · {a.desc}</p>; })}
+        <p className="small muted">นิสัยที่เด่นมากพอจะปลุกพลังนั้นขึ้นมาเอง และหายไปถ้านิสัยเปลี่ยน</p>
+      </Fold>
+      <Fold kind="section" id="ft-vow" title={<>ปณิธาน</>}>
+        {v ? <p className="small"><b>{v.name}</b> · ถือมาตั้งแต่อายุ {f.vow!.age} · {v.desc}</p> : <p className="small muted">ยังไม่ได้ตั้งปณิธาน · ตั้งได้ที่แท็บทำ</p>}
+        {v && <p className="small muted">ทางเลือกที่ไป{PERSONA[v.axis][v.dir > 0 ? "neg" : "pos"]}อย่างชัดเจนจะทำลายปณิธานนี้ทันที</p>}
+        {f.vowBroke && <p className="small danger-text">เคยผิด{VOWS.find((x) => x.id === f.vowBroke!.id)?.name}ตอนอายุ {f.vowBroke.age}</p>}
       </Fold>
     </>
   );

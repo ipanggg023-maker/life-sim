@@ -26,6 +26,11 @@ export interface FLife {
   seeds?: { id: string; age: number; note: string; who?: string; done?: number }[];
   /** สิ่งที่คุณเปลี่ยนแผ่นดิน (worldmark.ts) */
   marks?: { text: string; k: string; age: number }[];
+  /** ปณิธานที่ถืออยู่ และครั้งล่าสุดที่ผิดปณิธาน (powerplus.ts) */
+  vow?: { id: string; age: number };
+  vowBroke?: { id: string; age: number };
+  /** ท่าประจำตัว · ขั้น 2 = ขั้นตำนาน */
+  signature?: { name: string; tier: number };
   body: number;
   magic: number;
   bodyRank: number;
