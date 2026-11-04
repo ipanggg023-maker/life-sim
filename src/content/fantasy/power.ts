@@ -1,6 +1,7 @@
 // พลังสองสาย: ร่างกายกับเวทมนตร์ · ไม่มีพลังแต่กำเนิดก็ใช้คทาได้ แต่ไปได้ไม่ไกลเท่าคนมีพรสวรรค์
 import type { Life } from "../../engine/types";
-import { clamp } from "../../engine/util";
+import { chance } from "../../engine/rng";
+import { addMoney, addStat, clamp } from "../../engine/util";
 import { fl, myRelic } from "./state";
 import { styleBonus } from "./styles";
 import { mschoolFight, mschoolSafety } from "./mschools";
@@ -50,7 +51,28 @@ export function powerParts(l: Life): [string, number][] {
     ["บาดเจ็บ", l.stats.health < 40 ? -8 : 0],
     ...combatHooks.flatMap((h) => h(l)),
   ];
-  return parts.filter(([, v]) => Math.round(v) !== 0);
+  return skipPart.all ? [] : parts.filter(([label, v]) => Math.round(v) !== 0 && label !== skipPart.label);
+}
+/** ตัดที่มาของพลังออกชั่วคราว เพื่อดูว่ามันขยับโอกาสไปเท่าไร (หน้าต่าง "อะไรขยับโอกาสนี้") */
+export const skipPart: { label?: string; all?: boolean } = {};
+/** การฝึก: สมดุล · ฝึกหนัก (ได้มากกว่าแต่เจ็บได้) · ฝึกกับครู (เสียเงิน ทะลวงขั้นง่ายขึ้น) */
+export type TrainFocus = "steady" | "hard" | "master";
+export const trainFocus = (l: Life): TrainFocus => (l.flags.ftTrainFocus as TrainFocus | undefined) ?? "steady";
+export const FOCUS: Record<TrainFocus, { name: string; desc: string }> = {
+  steady: { name: "ฝึกสม่ำเสมอ", desc: "ได้ตามปกติ ไม่มีความเสี่ยง" },
+  hard: { name: "ฝึกหนัก", desc: "ได้แต้มฝึกเพิ่ม 40% · มีโอกาสบาดเจ็บ และความสุขลดเล็กน้อย" },
+  master: { name: "ฝึกกับครู", desc: "ครั้งละ 3 เหรียญทอง · ได้เพิ่ม 25% และทะลวงขั้นง่ายขึ้น" },
+};
+/** ปรับแต้มฝึกตามแนวทางที่เลือก · คืนแต้มใหม่และข้อความเสริม */
+export function focusTrain(l: Life, d: number): [number, string] {
+  const f = trainFocus(l);
+  if (f === "hard") {
+    addStat(l, "happiness", -1);
+    if (chance(l, 0.2)) { addStat(l, "health", -5); return [Math.round(d * 1.4), " แต่ฝึกหนักจนกล้ามเนื้อฉีก"]; }
+    return [Math.round(d * 1.4), " ฝึกหนักกว่าทุกคนในลาน"];
+  }
+  if (f === "master" && l.money >= 3 * 100) { addMoney(l, -3 * 100); return [Math.round(d * 1.25), " ครูฝึกแก้ท่าให้ทีละจุด"]; }
+  return [d, ""];
 }
 export function combat(l: Life): number {
   return Math.round(powerParts(l).reduce((s, [, v]) => s + v, 0));
@@ -67,7 +89,7 @@ export const breakOdds = (l: Life, track: "body" | "magic") => {
   const f = fl(l);
   const rank = track === "body" ? f.bodyRank : f.magicRank;
   const base = track === "body" ? (l.stats.health - 50) / 150 + (f.bstars ?? 0) * 0.025 : (l.stats.smarts - 50) / 150 + f.potential * 0.025;
-  return clamp(0.7 - Math.min(rank, MASTER) * 0.14 - Math.max(0, rank - MASTER) * 0.06 + base, 0.08, 0.9);
+  return clamp(0.7 - Math.min(rank, MASTER) * 0.14 - Math.max(0, rank - MASTER) * 0.06 + base + (trainFocus(l) === "master" ? 0.06 : 0), 0.08, 0.9);
 };
 export const canBreak = (l: Life, track: "body" | "magic") => {
   const f = fl(l);

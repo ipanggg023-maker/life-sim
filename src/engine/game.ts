@@ -636,6 +636,9 @@ export function choiceChance(life: Life, q: QueuedEvent, index: number): number 
  * แตกโอกาสของตัวเลือกเป็นปัจจัย: ลองคำนวณใหม่โดยตัดทีละปัจจัยให้เป็นค่ากลาง แล้วดูว่าโอกาสขยับเท่าไร
  * ใช้ได้กับทุกตัวเลือกโดยไม่ต้องรู้สูตรข้างใน · คืนค่าเดิมให้ life เสมอ
  */
+/** แยกปัจจัยเพิ่มเติมของโอกาส: odds() คำนวณโอกาสใหม่ตามสภาพตอนนี้ */
+export const factorHooks: Array<{ rows: (life: Life, odds: () => number) => { label: string; delta: number }[]; /** ตัดปัจจัยเหล่านี้ออกตอนคำนวณความยากพื้นฐาน · คืนฟังก์ชันคืนค่า */ neutral: (life: Life) => () => void }> = [];
+
 export function choiceFactors(life: Life, q: QueuedEvent, index: number): { label: string; delta: number }[] | undefined {
   const c = currentScene(q, life)?.choices[index];
   const total = c && oddsOf(life, c, q.ctx);
@@ -653,9 +656,14 @@ export function choiceFactors(life: Life, q: QueuedEvent, index: number): { labe
     if (life.power) {
       life.power.rank = 0;
       rows.push({ label: "ขั้นฝีมือ", delta: total - oddsOf(life, c, q.ctx)! });
+      life.power.rank = rank!;
     }
+    // โลกต่างๆ แยกปัจจัยของตัวเอง (เช่น อาวุธ สายอาวุธ บาดเจ็บ) ออกจาก "ปัจจัยอื่น"
+    for (const h of factorHooks) rows.push(...h.rows(life, () => oddsOf(life, c, q.ctx)!));
     for (const k of keys) life.stats[k] = 50;
+    const restore = factorHooks.map((h) => h.neutral(life));
     const base = oddsOf(life, c, q.ctx)!;
+    for (const undo of restore) undo();
     const known = rows.reduce((s, r) => s + r.delta, base);
     const rest = total - known;
     return [{ label: "ความยากของเรื่องนี้", delta: base }, ...rows, { label: "ปัจจัยอื่น", delta: rest }].filter((r, i) => i === 0 || Math.abs(r.delta) >= 0.01);

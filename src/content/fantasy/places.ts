@@ -7,7 +7,7 @@ import type { Life } from "../../engine/types";
 import { addMoney, addStat, checkChance, createPerson, shortName } from "../../engine/util";
 import { CAREERS } from "../core/careers";
 import { B, BIG, C, E, G, GOLD, K, N, P, PAY, SCENE, type Res } from "./kit";
-import { GUILD_RANKS, canCast, deathOdds, fightOdds } from "./power";
+import { GUILD_RANKS, canCast, deathOdds, fightOdds, focusTrain } from "./power";
 import { ELEMENTS, learnSpell, spellChoices } from "./magic";
 import { addStanding, fl, kingdomsOf, deed, type Element } from "./state";
 import { rollOne, starTrain } from "./stars";
@@ -59,8 +59,8 @@ const partyCost = (l: Life): string => {
 const hurt = (text: string, extra: number): Res => (l, c) => (chance(l, deathOdds(l, CONTRACT_THREAT[fl(l).guild] + extra)) ? B("ป้ายกิลด์ของคุณถูกส่งกลับบ้าน", { die: "ตายระหว่างรับงานกิลด์" })(l, c) : B(text + partyCost(l), { hp: -12 })(l, c));
 
 const ACTS: Activity[] = [
-  M({ group: "ฝึกฝน", id: "ft_train", emoji: "", name: "ฝึกดาบและร่างกาย", desc: "พลังกาย +", minAge: 6, run: (l) => { const d = Math.round(randInt(l, 6, 12) * starTrain(l, "body")) + (fl(l).race === "orc" ? 3 : 0) + ((fl(l).bstars ?? 0) >= 5 ? 3 : 0); fl(l).body += d; l.flags.ftTrainedAge = l.age; addStat(l, "health", 1); return { text: "คุณซ้อมจนฝ่ามือด้าน", kind: "good" }; } }),
-  M({ group: "ฝึกฝน", id: "ft_study", emoji: "", name: "ฝึกเวทมนตร์", desc: "พลังเวท + · ต้องร่ายได้", minAge: 6, available: canCast, run: (l) => { fl(l).magic += Math.round(randInt(l, 5, 9) * starTrain(l, "magic")) + (fl(l).race === "elf" ? 2 : 0); l.flags.ftTrainedAge = l.age; return { text: "ปลายคทาสว่างนานขึ้นอีกหนึ่งลมหายใจ", kind: "good" }; } }),
+  M({ group: "ฝึกฝน", id: "ft_train", emoji: "", name: "ฝึกดาบและร่างกาย", desc: "พลังกาย +", minAge: 6, run: (l) => { const [d, note] = focusTrain(l, Math.round(randInt(l, 6, 12) * starTrain(l, "body")) + (fl(l).race === "orc" ? 3 : 0) + ((fl(l).bstars ?? 0) >= 5 ? 3 : 0)); fl(l).body += d; l.flags.ftTrainedAge = l.age; addStat(l, "health", 1); return { text: `คุณซ้อมจนฝ่ามือด้าน${note}`, kind: "good" }; } }),
+  M({ group: "ฝึกฝน", id: "ft_study", emoji: "", name: "ฝึกเวทมนตร์", desc: "พลังเวท + · ต้องร่ายได้", minAge: 6, available: canCast, run: (l) => { const [d, note] = focusTrain(l, Math.round(randInt(l, 5, 9) * starTrain(l, "magic")) + (fl(l).race === "elf" ? 2 : 0)); fl(l).magic += d; l.flags.ftTrainedAge = l.age; return { text: `ปลายคทาสว่างนานขึ้นอีกหนึ่งลมหายใจ${note}`, kind: "good" }; } }),
   M({ group: "ฝึกฝน", id: "ft_style", emoji: "", name: "เปลี่ยนสายอาวุธ", desc: "เรียนกับครูฝึกในเมือง · พลังกายที่สะสมหายครึ่ง · ทุก 5 ปี", minAge: 12, available: (l) => !!fl(l).style && l.age >= Number(l.flags.ftStyleNext ?? 0), run: (l) => { runEvent(l, "ft.style_change"); return { text: "" }; } }),
   M({ group: "ฝึกฝน", id: "ft_wand", emoji: "", name: "ซื้อคทา", desc: "ใครก็ร่ายเวทได้ถ้ามีคทา", minAge: 10, available: (l) => (fl(l).wand?.quality ?? 0) < 3, run: (l) => { runEvent(l, "ft.wandshop"); return { text: "" }; } }),
   M({ group: "ชีวิต", id: "ft_rest", emoji: "", name: "พักผ่อน", desc: "ความสุข + สุขภาพเล็กน้อย", minAge: 3, run: (l) => { addStat(l, "happiness", randInt(l, 3, 6)); addStat(l, "health", 1); return { text: "คุณนอนกลางวันใต้ต้นโอ๊กทั้งบ่าย", kind: "good" }; } }),

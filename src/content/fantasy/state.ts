@@ -88,6 +88,8 @@ export interface FLife {
   /** บัญชีปีล่าสุด และทรัพย์สุทธิเมื่อปลายปีก่อน */
   ledger?: import("./economy").Ledger;
   lastWorth?: number;
+  /** อันดับในสังเวียนของแผ่นดินที่ขึ้นสู้ (arena.ts) · 1 = แชมป์ */
+  arena?: { kingdom: string; rank: number };
   beatGreat?: boolean;
   /** แผ่นดินที่ครองอยู่ */
   throne?: string;

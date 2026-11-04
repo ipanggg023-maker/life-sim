@@ -53,6 +53,8 @@ const force = (l: Life, start: string, ok = true) => {
   const o = visibleChoices(l, q).find((x) => labelOf(x.c, l, q.ctx).startsWith(start));
   expect(o, `ไม่มี "${start}" ใน ${q.eventId}`).toBeTruthy();
   const out = o!.c.run(l, q.ctx, ok);
+  // ฉากที่มีจังหวะต่อ (เช่น คำเตือนก่อนสู้มังกร) ไปต่อด้วยทางเลือกชื่อเดิม
+  if (out.next) { q.scene = out.next; return force(l, start, ok); }
   l.queue.shift();
   return out;
 };

@@ -1,6 +1,8 @@
 // แท็บเฉพาะโลกแฟนตาซี: พลังของตัวละคร และสภาพโลก
 import { RACES } from "../../content/fantasy/life";
-import { BODY_RANKS, GUILD_RANKS, MAGIC_RANKS, bodyCap, canCast, combat, magicCap, needXp } from "../../content/fantasy/power";
+import { BODY_RANKS, FOCUS, GUILD_RANKS, MAGIC_RANKS, bodyCap, canCast, combat, magicCap, needXp, trainFocus, type TrainFocus } from "../../content/fantasy/power";
+import { LADDER, arenaRank, ladderOf, nextFoe } from "../../content/fantasy/arena";
+import { useState } from "react";
 import { AWAKEN_AGE, BLADE_ARTS, BODY_ARTS, MAGIC_ARTS, bladeArts, dual, seen, starsOff, starsOn, tierOf, type StarArt } from "../../content/fantasy/stars";
 import { ELEMENTS, SPELLS, manaLeft, manaMax, spellsOf } from "../../content/fantasy/magic";
 import { schoolOf } from "../../content/fantasy/places";
@@ -50,6 +52,28 @@ const Bar = ({ label, value, need }: { label: string; value: number; need: numbe
   </div>
 );
 
+/** แนวทางการฝึก และอันดับในสังเวียน */
+function TrainingFold({ life }: { life: Life }) {
+  const [, force] = useState(0);
+  const focus = trainFocus(life);
+  const rank = arenaRank(life);
+  const foe = nextFoe(life);
+  const lad = ladderOf(life);
+  return (
+    <Fold always kind="section" id="ft-training" title={<>การฝึกและสังเวียน</>}>
+      <div className="row">
+        {(Object.keys(FOCUS) as TrainFocus[]).map((k) => (
+          <button key={k} className={`chip ${focus === k ? "on" : ""}`} onClick={() => { life.flags.ftTrainFocus = k; force((n) => n + 1); }}>{FOCUS[k].name}</button>
+        ))}
+      </div>
+      <p className="small muted">{FOCUS[focus].desc} · ใช้กับการฝึกดาบและฝึกเวททุกครั้ง</p>
+      <p className="small">สังเวียนแห่ง{homeKingdom(life).name}: {rank ? (rank === 1 ? <b>คุณคือแชมป์</b> : <>อันดับ <b>{rank}</b> จาก {LADDER}</>) : "ยังไม่มีอันดับ"}{foe ? <> · คู่ต่อไป {foe.name} พลัง {foe.power} (คุณ {combat(life)})</> : null}</p>
+      {lad.slice(0, 3).map((n, i) => <p className="small muted" key={n.id}>{i + 1}. {n.name} · อายุ {n.age} · พลัง {n.power}</p>)}
+      <p className="small muted">ขึ้นสังเวียนได้ที่แท็บทำ · แพ้แค่บาดเจ็บ ไม่ตาย</p>
+    </Fold>
+  );
+}
+
 export function FantasyPowerTab({ life }: { life: Life }) {
   const f = fl(life);
   const s = schoolOf(life);
@@ -82,6 +106,7 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         {seen(life) && <p className="small muted">เพดานสายกาย: {BODY_RANKS[Math.max(bodyCap(life), f.bodyRank)]}{dual(life) ? " · ดาวสองสายสูง เดินทางดาบเวทได้" : ""}</p>}
         <p className="small muted">{canCast(life) ? `ร่ายเวทได้ เพดานตอนนี้: ${MAGIC_RANKS[magicCap(life)]}` : "ยังร่ายเวทไม่ได้ ซื้อคทาได้ที่แท็บทำ"}</p>
       </Fold>
+      <TrainingFold life={life} />
       <PowerSourceFolds life={life} />
       {seen(life) && (
         <Fold kind="section" id="ft-star-arts" title={<>วิชาประจำดาว</>}>

@@ -116,7 +116,7 @@ export function economyYear(l: Life) {
   const pay = l.job ? Number(l.flags.income ?? 0) : 0;
   f.ledger = {
     age: l.age, pay: Math.round(pay / GOLD), assets: assetIncome(l), living: Math.round(ftLiving(l, kids, pay) / GOLD),
-    upkeep, interest: Math.round(interest / GOLD), net: f.lastWorth === undefined ? undefined : Math.round((l.money - l.debt - f.lastWorth) / GOLD),
+    upkeep, interest: Math.round(interest / GOLD), ...(f.lastWorth === undefined ? {} : { net: Math.round((l.money - l.debt - f.lastWorth) / GOLD) || 0 }),
   };
   f.lastWorth = l.money - l.debt;
   // เจ้าหนี้มาทวง · หนีไปแล้วได้พักสามปี

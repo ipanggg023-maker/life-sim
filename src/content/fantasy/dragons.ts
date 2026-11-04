@@ -72,20 +72,39 @@ const careEgg = (n: number, text: string): Res => G(text, {}, (l) => {
   log(l, `เปลือกไข่แตก ลูกมังกรธาตุ${ELEMENTS[e.element].name}ชื่อ${fl(l).whelp!.name}มองคุณเป็นคนแรก`, "milestone");
 });
 const careWhelp = (bond: number, power: number): Res => (l) => { const w = fl(l).whelp!; w.bond = clamp(w.bond + bond, 0, 100); w.power = Math.min(80, w.power + power); w.lastCare = l.age; return { text: "" }; };
+const withScenes = (e: GameEvent, scenes: GameEvent["scenes"]): GameEvent => ({ ...e, scenes });
 const then = (a: Res, b: Res): Res => (l, c) => { a(l, c); return b(l, c); };
+
+/** สู้หรือขโมยจากมังกรตอนโอกาสรอดต่ำ: ถามย้ำก่อนหนึ่งจังหวะ (ผู้เล่นใจร้อนตายกับมังกรมากเกินไป) */
+const WARN_BELOW = 0.7;
+const SLAY: Choice = P("ท้าสู้เพื่อสังหารมังกร", (l, c) => slayOdds(l, D(l, c)), (l, c) => { const d = D(l, c); const out = BIG(`คุณยืนอยู่บนซากมังกร${d.name} ทั่วแผ่นดินจะเล่าเรื่องนี้ไปอีกพันปี`, { fame: 40, joy: 15, body: 20, gold: d.power * 3 })(l, c); slay(l, d); return out; }, (l, c) => (chance(l, SLAY_DEATH) ? B("ไฟมังกรเผาโลกของคุณจนขาว", { die: "ถูกเผาโดยมังกร" })(l, c) : B("คุณคลานหนีลงเขามาได้ ครึ่งตัวยังมีรอยไหม้", { hp: -35, joy: -8 })(l, c)), { tone: "danger", survival: (l, c) => 1 - (1 - slayOdds(l, D(l, c))) * SLAY_DEATH });
+const STEAL: Choice = P("ลักไข่ตอนมันหลับ", (l, c) => stealOdds(l, D(l, c)), G("คุณวิ่งลงเขาพร้อมไข่ที่ยังอุ่น เสียงคำรามดังตามหลังมา", { joy: 4 }, (l, c) => { const d = D(l, c); takeEgg(l, d); d.mood = clamp(d.mood - 40, -100, 100); addBond(l, d, -60); fl(l).dragonFoe = d.id; }), (l, c) => (chance(l, STEAL_DEATH) ? B("มันตื่นก่อนที่คุณจะถึงปากถ้ำ", { die: "ถูกมังกรขย้ำขณะขโมยไข่" })(l, c) : B("กรงเล็บเฉียดหลังคุณไปครึ่งนิ้ว", { hp: -25 }, (x) => addBond(x, D(x, c), -30))(l, c)), { tone: "danger", survival: (l, c) => 1 - (1 - stealOdds(l, D(l, c))) * STEAL_DEATH, show: (l, c) => eggsOf(l, D(l, c)).length > 0 && !fl(l).egg && !fl(l).whelp });
+const survivalOf = (c: Choice) => (l: Life, x: Ctx) => c.survival?.(l, x) ?? 1;
+function guarded(id: string, c: Choice): Choice[] {
+  const sv = survivalOf(c);
+  return [
+    { ...c, show: (l, x) => (c.show ? c.show(l, x) : true) && sv(l, x) >= WARN_BELOW },
+    { ...c, show: (l, x) => (c.show ? c.show(l, x) : true) && sv(l, x) < WARN_BELOW, odds: undefined, run: () => ({ text: "คุณก้าวเข้าไปใกล้ ไอร้อนจากลำคอของมันแผดเผาผิวหน้า และคุณรู้ทันทีว่าตัวเองยังไม่พร้อม", next: `sure_${id}` }) },
+  ];
+}
+const sure = (c: Choice, what: string) => ({
+  title: "ไฟในลำคอของมัน",
+  text: (l: Life, x: Ctx) => `มังกร${D(l, x).name}ได้กลิ่นคุณแล้ว ไฟในลำคอของมันเริ่มสว่าง ถ้า${what}ตอนนี้ โอกาสรอดของคุณแค่ราว ${Math.round(survivalOf(c)(l, x) * 100)}% คนที่รอดมาเล่าบอกว่าควรกลับไปฝึกก่อน`,
+  choices: [{ ...c, show: undefined }, C("ถอยออกมาก่อน แล้วค่อยกลับมาเมื่อพร้อม", N("คุณถอยลงเขาทีละก้าว ดวงตาสีทองมองตามจนลับสายตา"))],
+});
 
 export const DRAGON_EVENTS: GameEvent[] = [
   SCENE("ft.d.choose", "รังมังกร", "มังกรแต่ละตัวมีอาณาเขตและอารมณ์ของตัวเอง คุณจะไปหาตัวไหน", [...Array.from({ length: MAX_SHOWN }, (_, i) => pickDragon(i)), C("เปลี่ยนใจ", N("คุณมองยอดเขาจากไกลๆ ก็พอแล้ว"))]),
-  SCENE("ft.dragon_meet", "รังมังกร", (l, c) => { const d = D(l, c); return `มังกร${d.name}${d.title} อายุ ${d.age} ปี ลืมตาข้างหนึ่งมองคุณ${eggsOf(l, d).length ? " ข้างหลังมันมีไข่วางอยู่" : ""}`; }, [
-    P("ท้าสู้เพื่อสังหารมังกร", (l, c) => slayOdds(l, D(l, c)), (l, c) => { const d = D(l, c); const out = BIG(`คุณยืนอยู่บนซากมังกร${d.name} ทั่วแผ่นดินจะเล่าเรื่องนี้ไปอีกพันปี`, { fame: 40, joy: 15, body: 20, gold: d.power * 3 })(l, c); slay(l, d); return out; }, (l, c) => (chance(l, SLAY_DEATH) ? B("ไฟมังกรเผาโลกของคุณจนขาว", { die: "ถูกเผาโดยมังกร" })(l, c) : B("คุณคลานหนีลงเขามาได้ ครึ่งตัวยังมีรอยไหม้", { hp: -35, joy: -8 })(l, c)), { tone: "danger", survival: (l, c) => 1 - (1 - slayOdds(l, D(l, c))) * SLAY_DEATH }),
+  withScenes(SCENE("ft.dragon_meet", "รังมังกร", (l, c) => { const d = D(l, c); return `มังกร${d.name}${d.title} อายุ ${d.age} ปี ลืมตาข้างหนึ่งมองคุณ${eggsOf(l, d).length ? " ข้างหลังมันมีไข่วางอยู่" : ""}`; }, [
+    ...guarded("slay", SLAY),
     K("สนทนาอย่างผู้มีปัญญา", "smarts", 60, G("มังกรหัวเราะจนหินร่วง \"มนุษย์ที่พูดรู้เรื่อง หายากกว่าทองเสียอีก\"", { iq: 2, magic: 8 }, (l, c) => { const d = D(l, c); addBond(l, d, 25); d.mood = clamp(d.mood + 5, -100, 100); }), B("มันไม่สนใจ แล้วหางของมันก็ปัดคุณลงจากลาน", { hp: -15 })),
     C("ถวายของกำนัลแล้วขอพร", G("มังกรรับทองคำไว้โดยไม่พูดอะไร แต่ปล่อยให้คุณเดินกลับไปได้", { gold: -20 }, (l, c) => addBond(l, D(l, c), 10)), { req: (l) => (l.money < 2000 ? "ต้องมี 20 เหรียญทอง" : undefined) }),
     C("ขอเรียนภาษามังกร", BIG((l, c) => `${D(l, c).name}สอนคำหนึ่งคำ ซึ่งคุณใช้เวลาทั้งปีกว่าจะออกเสียงได้`, { magic: 15, iq: 2 }, (l, c) => { const d = D(l, c), f = fl(l); f.dLearned = [...(f.dLearned ?? []), d.id]; const s = SPELLS.find((x) => x.element === d.element && x.tier === 3); if (s && !f.spells?.includes(s.id)) learnSpell(l, s.id); deed(l, `ศิษย์ของมังกร${d.name}`); }), { show: (l, c) => canCast(l) && bondOf(l, D(l, c)) >= 50 && !fl(l).dLearned?.includes(D(l, c).id) }),
     C("ขอไข่ไปเลี้ยง", BIG((l, c) => `${D(l, c).name}ผลักไข่ฟองหนึ่งมาหาคุณด้วยจมูก "ทำให้ดีกว่าที่พวกเจ้าทำกับเรา"`, { joy: 12 }, (l, c) => takeEgg(l, D(l, c))), { show: (l, c) => bondOf(l, D(l, c)) >= 80 && eggsOf(l, D(l, c)).length > 0 && !fl(l).egg && !fl(l).whelp }),
-    P("ลักไข่ตอนมันหลับ", (l, c) => stealOdds(l, D(l, c)), G("คุณวิ่งลงเขาพร้อมไข่ที่ยังอุ่น เสียงคำรามดังตามหลังมา", { joy: 4 }, (l, c) => { const d = D(l, c); takeEgg(l, d); d.mood = clamp(d.mood - 40, -100, 100); addBond(l, d, -60); fl(l).dragonFoe = d.id; }), (l, c) => (chance(l, STEAL_DEATH) ? B("มันตื่นก่อนที่คุณจะถึงปากถ้ำ", { die: "ถูกมังกรขย้ำขณะขโมยไข่" })(l, c) : B("กรงเล็บเฉียดหลังคุณไปครึ่งนิ้ว", { hp: -25 }, (x) => addBond(x, D(x, c), -30))(l, c)), { tone: "danger", survival: (l, c) => 1 - (1 - stealOdds(l, D(l, c))) * STEAL_DEATH, show: (l, c) => eggsOf(l, D(l, c)).length > 0 && !fl(l).egg && !fl(l).whelp }),
+    ...guarded("steal", STEAL),
     P("ขอเป็นเพื่อนร่วมทาง", (l, c) => rideOdds(l, D(l, c)), BIG((l, c) => `${D(l, c).name}ลดคอลงให้คุณปีนขึ้นหลัง เมฆทั้งหมดอยู่ใต้เท้าคุณ`, { fame: 25, joy: 20 }, (l, c) => { const d = D(l, c); l.flags.dragonRider = true; fl(l).mount = d.id; deed(l, `เป็นสหายของมังกร${d.name}`); recordChronicle(worldOfLife(l), `${displayName(l)}ขี่มังกร${d.name}เหนือท้องฟ้า`); }), N("มันพ่นควันใส่หน้าคุณเบาๆ \"ยังไม่ถึงเวลา\""), { show: (l, c) => bondOf(l, D(l, c)) >= 30 && !fl(l).mount }),
     C("หนีลงเขา", N("คุณไม่เคยวิ่งเร็วเท่านี้มาก่อน", { hp: -2 })),
-  ]),
+  ]), { sure_slay: sure(SLAY, "สู้"), sure_steal: sure(STEAL, "ขโมยไข่") }),
   SCENE("ft.d.blood", "เลือดมังกร", (l, c) => `เลือดของ${D(l, c).name}ยังร้อนจนไอระเหย คนเฒ่าเล่าว่าใครอาบเลือดนี้จะไม่มีวันเหมือนเดิม`, [
     K("อาบเลือดมังกร", "health", 55, BIG("ผิวคุณแข็งขึ้นเหมือนเกล็ด และหัวใจเต้นช้าลงอย่างประหลาด", { body: 25, hp: 10 }, (l) => { fl(l).dragonblood = true; deed(l, "อาบเลือดมังกร"); }), B("เลือดร้อนเกินร่างมนุษย์ คุณนอนซมเป็นเดือน", { hp: -25 })),
     C("ขายซากให้พ่อค้า", G("เกล็ด เขา และกระดูก ขายได้ราคาเกินฝัน", { gold: 150 })),

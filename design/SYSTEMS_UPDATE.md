@@ -58,7 +58,17 @@ Result (bots who work hard): 57% reach level 5 and 68% level 4 or higher.
 - Switching jobs keeps some experience.
 - Target: an active player regularly reaches level 4–5 in one career.
 
-## Release 3 — Power and fights (outline)
+## Release 3 — Power and fights (built)
+Measured first: a reckless power seeker died at a median age of 34 (26/60 burned by dragons); a careful one lived to 76 with 5/60 fight deaths.
+Built:
+- a training focus (steady / hard +40% with injury risk / with a teacher +25% and easier breakthroughs)
+- a non-lethal arena ladder against the kingdom's ten best living fighters, with a champion title and challengers
+- a warning step before any dragon fight or egg theft with survival under 70%
+- the odds breakdown now shows each source of fighting power (skill, gear, style, spells, injuries)
+
+Result: reckless fight deaths 40 → 22 of 60 (dragons 26 → 12); careful median lifespan 76 → 79.
+
+### Original outline
 - Training with diminishing returns per year and a choice of focus.
 - Rival and duel ladders.
 - Fight outcomes that use gear, styles and spells visibly.
