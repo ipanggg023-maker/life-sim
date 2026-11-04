@@ -80,6 +80,14 @@ export interface FLife {
   standing?: Record<string, number>;
   crimes?: number;
   trades?: number;
+  /** ปีล่าสุดที่ส่งคาราวาน และจำนวนปีติดกัน · ตลาดอิ่มตัวเมื่อส่งทุกปี */
+  tradeLast?: number;
+  tradeStreak?: number;
+  /** ของใหญ่ที่ซื้อไว้ (economy.ts) · ค่าคือจำนวนปีที่ค้างค่าดูแล */
+  estates?: Partial<Record<import("./economy").EstateId, number>>;
+  /** บัญชีปีล่าสุด และทรัพย์สุทธิเมื่อปลายปีก่อน */
+  ledger?: import("./economy").Ledger;
+  lastWorth?: number;
   beatGreat?: boolean;
   /** แผ่นดินที่ครองอยู่ */
   throne?: string;

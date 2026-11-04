@@ -18,6 +18,8 @@ import { talentById } from "../../content/talents";
 import type { Life } from "../../engine/types";
 import { Fold } from "../Fold";
 import { ASSETS, assetIncome } from "../../content/fantasy/careers";
+import { CREDITOR_AT, DEBT_RATE, ESTATES, HOME_UPKEEP, PRISON_AT, nextYearGold, ownedEstates, upkeepOf } from "../../content/fantasy/economy";
+import { GOLD } from "../../content/fantasy/kit";
 import { epithetOf, styleOf, techsOf } from "../../content/fantasy/styles";
 import { KINDS, citiesOf, cityOf } from "../../content/fantasy/cities";
 import { DUNGEONS, PETS } from "../../content/fantasy/hobbies";
@@ -243,13 +245,43 @@ export function FantasyWorldTab({ life }: { life: Life }) {
 export function FantasyCareerCard({ life }: { life: Life }) {
   const f = fl(life);
   const owned = Object.entries(ASSETS).filter(([k]) => Number(life.flags[k] ?? 0) > 0);
-  if (!f.weapon && !f.armor && !owned.length) return null;
+  const g = f.ledger;
+  const next = nextYearGold(life);
+  const debt = Math.ceil(life.debt / GOLD);
+  const big = ownedEstates(life);
+  const hu = HOME_UPKEEP[Number(life.flags.ftHome ?? 0)];
   return (
+    <>
+    {g && (
+      <Fold always id="ft-ledger" title={<>บัญชีปีนี้ · อายุ {g.age}</>}>
+        <div className="status-grid">
+          <span>ค่าจ้าง</span><b>+{g.pay}</b>
+          {g.assets > 0 && <><span>ทรัพย์สินให้รายได้</span><b>+{g.assets}</b></>}
+          <span>ค่าครองชีพ</span><b>−{g.living}</b>
+          {g.upkeep > 0 && <><span>ค่าดูแลของใหญ่และบ้าน</span><b>−{g.upkeep}</b></>}
+          {g.interest > 0 && <><span>ดอกเบี้ยหนี้</span><b>−{g.interest}</b></>}
+          {g.net !== undefined && <><span>ทรัพย์สุทธิเปลี่ยนไปจากปีก่อน</span><b>{g.net >= 0 ? "+" : ""}{g.net}</b></>}
+        </div>
+        {debt > 0 && <p className="small">หนี้ {debt} เหรียญทอง · ดอกเบี้ยปีละ {Math.round(DEBT_RATE * 100)}%{debt >= CREDITOR_AT ? " · เจ้าหนี้อาจมาทวงปีหน้า" : ""}{debt >= PRISON_AT ? " · ถ้าไล่เจ้าหนี้อาจติดคุกลูกหนี้" : ""}</p>}
+        {next !== undefined && next < 0 && <p className="small" style={{ color: "var(--bad)" }}>ถ้าปีหน้าไม่มีรายได้เพิ่ม เงินจะติดลบราว {-next} เหรียญทองและกลายเป็นหนี้</p>}
+        <p className="small muted">หน่วยเป็นเหรียญทอง · เงินจากเรื่องราวและกิจกรรมรวมอยู่ในทรัพย์สุทธิ</p>
+      </Fold>
+    )}
+    {(big.length > 0 || hu > 0) && (
+      <Fold always id="ft-estates" title={<>ของใหญ่ที่เป็นของคุณ</>}>
+        {big.map((id) => <p className="small" key={id}><b>{ESTATES[id].name}</b> · {ESTATES[id].perk} · ดูแลปีละ {ESTATES[id].upkeep}{f.estates?.[id] ? " · ค้างค่าดูแล ปีหน้าต้องขาย" : ""}</p>)}
+        {hu > 0 && <p className="small"><b>{homeOf(life).name}</b> · ดูแลปีละ {hu}{Number(life.flags.ftHomeUnpaid ?? 0) > 0 ? " · ค้างค่าดูแล ปีหน้าต้องขาย" : ""}</p>}
+        <p className="small muted">รวมค่าดูแลปีละ {upkeepOf(life)} เหรียญทอง · ซื้อเพิ่มได้ที่แท็บทำ · ซื้อของใหญ่</p>
+      </Fold>
+    )}
+    {(f.weapon || f.armor || owned.length > 0) && (
     <Fold always id="ft-assets" title={<>ทรัพย์สินและของติดตัว</>}>
       {f.weapon && <p className="small"><b>{f.weapon.name}</b> · คุณภาพ {f.weapon.quality}{f.weapon.enchant ? " · ลงอาคมแล้ว" : ""}</p>}
       {f.armor && <p className="small"><b>{f.armor.name}</b> · คุณภาพ {f.armor.quality}</p>}
       {owned.map(([k, a]) => <p className="small" key={k}>{a.name} {Math.min(Number(life.flags[k]), a.max)}/{a.max} · ปีละ {Math.min(Number(life.flags[k]), a.max) * a.gold} เหรียญทอง</p>)}
       {owned.length > 0 && <p className="small muted">รายได้จากทรัพย์สินรวมปีละ {assetIncome(life)} เหรียญทอง</p>}
     </Fold>
+    )}
+    </>
   );
 }

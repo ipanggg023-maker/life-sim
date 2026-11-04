@@ -3,7 +3,6 @@ import { activityFilters, timeBudget } from "../../engine/activities";
 import { eligibilityFilters, registerEvents } from "../../engine/events";
 import { lifespanHooks, yearHooks } from "../../engine/game";
 import type { Life } from "../../engine/types";
-import { clamp } from "../../engine/util";
 import { registerWorld } from "../../engine/worldModule";
 import { CIVIC_EVENTS, civicYear, loadCivic } from "./civic";
 import { DRAGON_EVENTS, dragonYear, loadDragons } from "./dragons";
@@ -25,7 +24,7 @@ import { ageElders, loadFolk, raceOf } from "./folk";
 import { CAREER_EVENTS, loadCareers } from "./careers";
 import { BOND_EVENTS, loadBonds } from "./bonds";
 import { STYLE_EVENTS } from "./styles";
-import { CITY_SCENES, cityCost, cityOf, loadCities } from "./cities";
+import { CITY_SCENES, cityOf, loadCities } from "./cities";
 import { HOBBY_EVENTS, loadHobbies } from "./hobbies";
 import { TALENT_EVO_EVENTS, loadTalentEvo } from "./talentEvo";
 import { SAGA_EVENTS, loadSagas } from "./sagas";
@@ -51,6 +50,7 @@ import { POWER_EVENTS, loadPowerplus } from "./powerplus";
 import { loadLifestory } from "./lifestory";
 import { loadYear } from "./year";
 import { HEADLINE_EVENTS } from "./headlines";
+import { ECONOMY_EVENTS, ftLiving, loadEconomy } from "./economy";
 import { verdict } from "./persona";
 import { verdictHook } from "../../engine/game";
 import { TALENTS } from "../talents";
@@ -80,6 +80,7 @@ export function loadFantasyWorld() {
   loadWorklife();
   loadWorldmark();
   loadCities();
+  loadEconomy();
   loadHobbies();
   loadSagas();
   loadDragonTales();
@@ -93,7 +94,7 @@ export function loadFantasyWorld() {
   loadRealm();
   loadRealms();
   transform.fn = setRace;
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS, ...ECHOES_1, ...ECHOES_2, ...PERSONA_EVENTS, ...RUMOR_EVENTS, ...PEOPLE2_EVENTS, ...MOMENT_EVENTS, ...WORK_EVENTS, ...WORK_ECHOES, ...COURT_EVENTS, ...WAR_EVENTS, AFTERMATH, ...WORLD_ECHOES, ...POWER_EVENTS, ...HEADLINE_EVENTS], "fantasy");
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS, ...ECHOES_1, ...ECHOES_2, ...PERSONA_EVENTS, ...RUMOR_EVENTS, ...PEOPLE2_EVENTS, ...MOMENT_EVENTS, ...WORK_EVENTS, ...WORK_ECHOES, ...COURT_EVENTS, ...WAR_EVENTS, AFTERMATH, ...WORLD_ECHOES, ...POWER_EVENTS, ...HEADLINE_EVENTS, ...ECONOMY_EVENTS], "fantasy");
   addExclusive();
   loadPowerplus();
   loadLifestory();
@@ -121,12 +122,7 @@ export function loadFantasyWorld() {
     id: "fantasy",
     traits: { body: true, npcLife: true, hiddenTalents: true, repeatActs: true, surnameFirst: false, classicKinTerms: true },
     birthplace: (l, fallback) => (l.ft ? `${cityOf(l).name}แห่ง${homeKingdom(l).name}` : fallback),
-    livingCost: (l, kids, income) => {
-      const k = homeKingdom(l), rich = (k.prosperity ?? 100) / 100;
-      // เมืองรุ่งเรืองของแพงแต่คนเหลือเงินมากกว่า · ภาษีสงครามเพิ่มทั้งก้อน
-      const tax = k.laws?.includes("heavyTax") ? 1.25 : 1;
-      return Math.round(((3_000 + kids * 700) * rich * tax + Math.max(0, income) * clamp(0.25 - (rich - 1) / 4, 0.1, 0.4) * tax) * cityCost(l));
-    },
+    livingCost: ftLiving,
     inheritance: (l) => ({ poor: 15, middle: 120, rich: 900, elite: 5_000 })[l.wealth] * GOLD,
     onCreate: setupLife,
     migrate: migrateStars,

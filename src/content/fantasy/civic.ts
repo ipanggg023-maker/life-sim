@@ -102,14 +102,20 @@ const jail = (l: Life, c: Ctx) => { const y = Number(c.sev) + (hereHas(l, "harsh
 
 // ---------- การค้า ----------
 const destOf = (l: Life, g: Good): Kingdom => away(l).sort((a, b) => priceOf(b, g) - priceOf(a, g))[0];
-export const capitalOf = (l: Life) => Math.min(Math.floor(l.money / GOLD), 120 + (fl(l).trades ?? 0) * 15 + (inFaction(l, "league") ? fl(l).fRank * 40 : 0));
-const tradeOdds = (l: Life, g: Good) => 0.8 - (destOf(l, g).war ? 0.15 : 0) + (inFaction(l, "league") ? 0.08 : 0) + (fl(l).race === "halfling" ? 0.05 : 0) + (l.stats.luck - 50) / 400;
+// ทุนต่อเที่ยวโตตามประสบการณ์แต่มีเพดาน · ส่งทุกปีติดกันตลาดปลายทางอิ่มตัว กำไรบางลง (พักหนึ่งปีแล้วกลับมาเต็ม)
+const airship = (l: Life) => fl(l).estates?.airship !== undefined;
+export const capitalOf = (l: Life) => Math.min(Math.floor(l.money / GOLD), Math.min(250, 80 + (fl(l).trades ?? 0) * 6) + (inFaction(l, "league") ? fl(l).fRank * 40 : 0));
+const tradeOdds = (l: Life, g: Good) => 0.8 - (destOf(l, g).war ? 0.15 : 0) + (inFaction(l, "league") ? 0.08 : 0) + (fl(l).race === "halfling" ? 0.05 : 0) + (airship(l) ? 0.08 : 0) + (l.stats.luck - 50) / 400;
+const streakOf = (l: Life) => (fl(l).tradeLast === l.age - 1 ? (fl(l).tradeStreak ?? 0) + 1 : 0);
+export const tradeSaturation = (l: Life) => streakOf(l) * 0.03;
 export function tradeProfit(l: Life, g: Good) {
   const here = priceOf(homeKingdom(l), g), there = priceOf(destOf(l, g), g);
-  return Math.round(capitalOf(l) * Math.max(0.15, there / here - 1) * (hereHas(l, "freeTrade") ? 1.25 : 1));
+  return Math.round(capitalOf(l) * Math.max(0.1, there / here - 1 - tradeSaturation(l)) * (hereHas(l, "freeTrade") ? 1.25 : 1) * (airship(l) ? 1.1 : 1));
 }
 const tradeChoice = (g: Good): Choice => P((l) => `ขน${GOODS[g].name}ไป${destOf(l, g).name} · ลงทุน ${capitalOf(l)} เหรียญทอง`, (l) => tradeOdds(l, g), (l, c) => {
   const gain = tradeProfit(l, g);
+  const f = fl(l);
+  f.tradeStreak = streakOf(l); f.tradeLast = l.age;
   fl(l).trades = (fl(l).trades ?? 0) + 1;
   if (fl(l).trades === 15) deed(l, "เจ้าของเส้นทางการค้า");
   return G(`สินค้าถึงปลายทางครบ กำไร ${gain} เหรียญทอง`, { gold: gain })(l, c);
@@ -205,7 +211,7 @@ export const CIVIC_EVENTS: GameEvent[] = [
     C("ถอนคำร้อง", N("คุณเก็บเอกสารกลับบ้าน")),
   ]),
 
-  SCENE("ft.e.trade", "กองคาราวาน", (l) => { const h = homeKingdom(l); return `ราคาที่${h.name}: ${(Object.keys(GOODS) as Good[]).map((g) => `${GOODS[g].name} ${priceOf(h, g)}`).join(" · ")}`; }, [
+  SCENE("ft.e.trade", "กองคาราวาน", (l) => { const h = homeKingdom(l); const sat = Math.round(tradeSaturation(l) * 100); return `ราคาที่${h.name}: ${(Object.keys(GOODS) as Good[]).map((g) => `${GOODS[g].name} ${priceOf(h, g)}`).join(" · ")}${sat ? `\nส่งติดกันหลายปี ตลาดปลายทางเริ่มอิ่ม กำไรลดลง ${sat}% · พักหนึ่งปีแล้วจะกลับมาเต็ม` : ""}`; }, [
     tradeChoice("grain"), tradeChoice("iron"), tradeChoice("herbs"),
     C("ปีนี้ไม่ส่ง", N("คุณเก็บเงินไว้ก่อน")),
   ]),

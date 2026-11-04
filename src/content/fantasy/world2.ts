@@ -100,7 +100,7 @@ export const HOMES: { name: string; cost: number; joy: number; desc: string }[] 
   { name: "กระท่อมของตัวเอง", cost: 40, joy: 1, desc: "มีสวนผักเล็กๆ หลังบ้าน" },
   { name: "บ้านไม้สองชั้น", cost: 150, joy: 2, desc: "มีห้องให้ทุกคนในครอบครัว" },
   { name: "คฤหาสน์หิน", cost: 500, joy: 3, desc: "มีห้องสมุดและคอกม้า" },
-  { name: "ปราสาทเล็กบนเนินเขา", cost: 1500, joy: 4, desc: "มีหอคอยดูดาวและกำแพงของตัวเอง" },
+  { name: "ปราสาทเล็กบนเนินเขา", cost: 2200, joy: 4, desc: "มีหอคอยดูดาวและกำแพงของตัวเอง" },
 ];
 export const homeOf = (l: Life) => HOMES[Number(l.flags.ftHome ?? 0)];
 
