@@ -23,6 +23,7 @@ import { ASSETS, assetIncome } from "../../content/fantasy/careers";
 import { CREDITOR_AT, DEBT_RATE, ESTATES, HOME_UPKEEP, PRISON_AT, nextYearGold, ownedEstates, upkeepOf } from "../../content/fantasy/economy";
 import { GOLD } from "../../content/fantasy/kit";
 import { mastered, retireAge, stepsFor } from "../../content/fantasy/careerpath";
+import { CALLINGS, CALLING_AGE, TRADE_LESSONS, callingOf, callingProg, headStart, heirlooms, legacyHeir, upbringing } from "../../content/fantasy/family";
 import { epithetOf, styleOf, techsOf } from "../../content/fantasy/styles";
 import { KINDS, citiesOf, cityOf } from "../../content/fantasy/cities";
 import { DUNGEONS, PETS } from "../../content/fantasy/hobbies";
@@ -268,6 +269,36 @@ export function FantasyWorldTab({ life }: { life: Life }) {
 }
 
 /** แท็บอาชีพของโลกแฟนตาซี: ของติดตัวที่ทำหรือซื้อ และทรัพย์สินที่ให้รายได้ทุกปี */
+/** ครอบครัวและมรดก: ใครได้ของใหญ่ ลูกแต่ละคนได้เรียนอะไร งานของบั้นปลาย */
+function LegacyFold({ life }: { life: Life }) {
+  const kids = life.people.filter((p) => p.alive && p.relation === "child");
+  const calling = callingOf(life);
+  if (!kids.length && !calling && life.age < CALLING_AGE - 5) return null;
+  const heir = legacyHeir(life), items = heirlooms(life);
+  const c = calling ? CALLINGS[calling] : undefined;
+  return (
+    <Fold always id="ft-legacy" title={<>ครอบครัวและมรดก</>}>
+      {kids.length > 0 && (
+        <>
+          <p className="small">ทายาทที่ได้ของใหญ่: <b>{heir ? shortName(heir) : "-"}</b>{life.flags.ftWill ? " · ตามพินัยกรรม" : " · ยังไม่มีพินัยกรรม จะตกกับลูกที่โตแล้วและใกล้ชิดที่สุด"}</p>
+          <p className="small muted">{items.length ? `ส่งต่อ: ${items.join(" · ")}` : "ยังไม่มีของใหญ่ให้ส่งต่อ นอกจากเงินและชื่อตระกูล"}</p>
+          {kids.map((k) => {
+            const u = upbringing(k), hs = headStart(u);
+            const parts = [u.body && `ดาบ ${u.body}`, u.magic && `เวท ${u.magic}`, u.mind && `หนังสือ ${u.mind}`, u.trade && `งาน ${u.trade}/${TRADE_LESSONS}`, u.school && "เข้าโรงเรียน"].filter(Boolean);
+            return <p className="small" key={k.id}><b>{shortName(k)}</b> อายุ {k.age} · ผูกพัน {k.bond} · {parts.length ? `เรียนกับคุณ: ${parts.join(" · ")}` : "ยังไม่เคยสอน"}{hs.body + hs.magic > 0 ? ` · ถ้ารับช่วงต่อเริ่มด้วยแต้มฝึก +${hs.body + hs.magic}` : ""}</p>;
+          })}
+          <p className="small muted">สอนลูกได้ที่แท็บผู้คน · ลูกที่ผูกพันเกิน 70 เริ่มชีวิตมีความสุขกว่า · เขียนพินัยกรรมได้ที่แท็บทำ ตั้งแต่อายุ 40</p>
+        </>
+      )}
+      {c ? (
+        <p className="small">งานของบั้นปลาย: <b>{c.name}</b>{c.need ? ` · ${c.goal} (${Math.min(callingProg(life), c.need)}/${c.need})` : ` · ${c.desc}`}</p>
+      ) : (
+        <p className="small muted">อายุ {CALLING_AGE} จะได้เลือกงานของบั้นปลาย: สอนคนรุ่นใหม่ เขียนบันทึกชีวิต เดินทาง หรือเฝ้าเมือง</p>
+      )}
+    </Fold>
+  );
+}
+
 export function FantasyCareerCard({ life }: { life: Life }) {
   const f = fl(life);
   const owned = Object.entries(ASSETS).filter(([k]) => Number(life.flags[k] ?? 0) > 0);
@@ -316,6 +347,7 @@ export function FantasyCareerCard({ life }: { life: Life }) {
         <p className="small muted">รวมค่าดูแลปีละ {upkeepOf(life)} เหรียญทอง · ซื้อเพิ่มได้ที่แท็บทำ · ซื้อของใหญ่</p>
       </Fold>
     )}
+    <LegacyFold life={life} />
     {(f.weapon || f.armor || owned.length > 0) && (
     <Fold always id="ft-assets" title={<>ทรัพย์สินและของติดตัว</>}>
       {f.weapon && <p className="small"><b>{f.weapon.name}</b> · คุณภาพ {f.weapon.quality}{f.weapon.enchant ? " · ลงอาคมแล้ว" : ""}</p>}

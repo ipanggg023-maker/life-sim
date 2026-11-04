@@ -14,7 +14,7 @@ import { GOLD } from "./kit";
 /** ฉากที่ต้องเป็นป๊อปอัปเสมอ: อ่านดาว ทะลวงขั้น สงครามจบ จุดหักเหของนิสัย */
 const ALWAYS = /^ft\.(st\.awaken|st\.bloom|break_|wr\.after|pe\.)/;
 /** เรื่องจากระบบที่ผูกกับชีวิตคุณ: ผู้คน ครอบครัว ศัตรู เพื่อน เรื่องที่กลับมา งาน ราชสำนัก สงคราม */
-const TIED = /^ft\.(np|fd|en|fr|ec|wk|wd|wr|mo)\./;
+const TIED = /^ft\.(np|fd|en|fr|ec|wk|wd|wr|mo|fm)\./;
 export const MAX_MOMENTS = 4;
 
 /** เลือกตามนิสัย: ทางที่ตรงกับตัวคุณที่สุด · ไม่เลือกทางเสี่ยงตายแทนผู้เล่น */
@@ -80,7 +80,7 @@ export function buildYear(l: Life) {
     if (!e || (!q.scene && ids.has(q.eventId))) continue;
     ids.add(q.eventId);
     if (e.forced || ALWAYS.test(q.eventId) || q.scene) keep.push(q);
-    else cand.push({ q, s: q.eventId.startsWith("ft.ec.") ? 5 : TIED.test(q.eventId) ? 3 : 1 });
+    else cand.push({ q, s: q.eventId.startsWith("ft.ec.") || q.eventId.startsWith("ft.el.") ? 5 : TIED.test(q.eventId) ? 3 : 1 });
   }
   // เรื่องหลักจากคลังเรื่องใหญ่ ผูกกับชีวิตคุณตามจำนวนจุดเชื่อม
   const hl = pickHeadline(l);

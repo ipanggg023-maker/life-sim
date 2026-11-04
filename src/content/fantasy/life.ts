@@ -14,6 +14,7 @@ import { citiesOf } from "./cities";
 import { applyStarStart, childStars, rollStars } from "./stars";
 import { inheritFeuds } from "./people2";
 import { verdict } from "./persona";
+import { passOn } from "./family";
 
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
   human: { name: "มนุษย์", younger: RACE_YOUNGER.human, desc: "ชีวิตสั้นแต่ไปได้ทุกทาง" },
@@ -110,6 +111,8 @@ export function inheritLife(dead: Life, next: Life, heirId?: string) {
   applyStarStart(next);
   // ลูกที่โตพอแล้วเคยอ่านดาวมาแล้ว
   if (next.age >= 6) next.flags.ftStarsSeen = true;
+  // บทเรียนในวัยเด็ก ของใหญ่ของตระกูล และศิษย์ของพ่อแม่
+  passOn(dead, next, heirId);
 }
 
 /** ย้อนชะตาได้ไหม · เด็กตายเร็วได้โอกาสหนึ่งครั้ง พรสวรรค์หายากให้เพิ่ม */

@@ -11,9 +11,10 @@ import { passivesOf } from "../content/passives";
 import { assetsValue } from "../content/shared/business";
 import { COLLECTIBLES, foundThisLife } from "../content/shared/collection";
 import { SHOP, heirsOf, previewAward, regressTarget } from "../engine/soul";
-import type { Life, Soul, WorldId } from "../engine/types";
+import type { Life, Person, Soul, WorldId } from "../engine/types";
 import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds";
 import { canMercy, canRewind, rewindTarget } from "../content/fantasy/life";
+import { headStart, heirlooms, legacyHeir, upbringing } from "../content/fantasy/family";
 import { BODY_RANKS, MAGIC_RANKS } from "../content/fantasy/power";
 import { verdict } from "../content/fantasy/persona";
 import { Epitaph } from "./tabs/FantasyFate";
@@ -26,6 +27,12 @@ import { catInWorld } from "../content/achievements";
 
 export type RebirthChoice = "regress" | "nextEra" | "rewind" | "stranger" | `world:${WorldId}` | `heir:${string}` | `disciple:${string}`;
 
+/** ทายาทแฟนตาซี: ได้ของใหญ่ไหม และเริ่มด้วยบทเรียนเท่าไร */
+function heirNote(life: Life, c: Person) {
+  const items = heirlooms(life), hs = headStart(upbringing(c));
+  const big = items.length ? (legacyHeir(life)?.id === c.id ? ` · ได้ของใหญ่ของตระกูล: ${items.join(" · ")}` : " · ไม่ได้ของใหญ่ของตระกูล") : "";
+  return `${big}${hs.body + hs.magic > 0 ? ` · เริ่มด้วยแต้มฝึก +${hs.body + hs.magic} จากที่คุณสอน` : ""}`;
+}
 export function DeathScreen({
   life,
   soul,
@@ -326,7 +333,7 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
         <button className="cont-btn heir" key={c.id} disabled={busy} onClick={() => go(`heir:${c.id}`)}>
           <span className="cont-text">
             <span className="cont-title">เล่นต่อเป็น{c.gender === "m" ? "ลูกชาย" : "ลูกสาว"} · {c.name}</span>
-            <span className="cont-desc">อายุ {c.age} ปี · ได้มรดก{heirs.length > 1 ? ` 1/${heirs.length}` : "ทั้งหมด"} ชื่อเสียง และความแค้นของตระกูล</span>
+            <span className="cont-desc">อายุ {c.age} ปี · ได้มรดก{heirs.length > 1 ? ` 1/${heirs.length}` : "ทั้งหมด"} ชื่อเสียง และความแค้นของตระกูล{life.worldId === "fantasy" && life.ft ? heirNote(life, c) : ""}</span>
           </span>
         </button>
       ))}

@@ -13,6 +13,7 @@ import { spread } from "./rumors";
 import { addStanding, fl, homeKingdom } from "./state";
 import { cityOf } from "./cities";
 import { omenOf } from "./world2";
+import { stageAge } from "./folk";
 import { relOf } from "../../engine/npc";
 
 /** จุดเชื่อมกับชีวิตคุณ · เรื่องที่ผูกกับชีวิตมากกว่าได้เป็นเรื่องหลักก่อน */
@@ -40,7 +41,7 @@ const HAS: Record<Hook, (l: Life) => boolean> = {
   famous: (l) => l.fame >= 35,
   war: (l) => !!homeKingdom(l).war,
   omen: (l) => !!omenOf(l),
-  elder: (l) => l.age >= 60,
+  elder: (l) => stageAge(l) >= 60,
   student: (l) => !!fl(l).school && !fl(l).graduated,
   seed: (l) => (fl(l).seeds ?? []).some((s) => s.done === undefined),
   ruler: (l) => !!fl(l).throne,
@@ -117,7 +118,8 @@ function personFor(l: Life, h: Headline): Person | undefined {
 /** คะแนนเรื่องหลัก: ยิ่งมีจุดเชื่อมกับชีวิตคุณมาก ยิ่งได้ขึ้นก่อน */
 export const hookScore = (l: Life, h: Headline) => h.hooks.filter((k) => HAS[k](l)).length + (h.who && h.who !== "new" && HAS[h.who](l) ? 1 : 0);
 export function pickHeadline(l: Life): { id: string; score: number } | undefined {
-  const ok = HEADLINES.filter((h) => l.age >= h.ages[0] && l.age <= h.ages[1] && (l.seen[`ft.hl.${h.id}`] ?? 0) < 1 && ready(l, h));
+  const a = stageAge(l);
+  const ok = HEADLINES.filter((h) => a >= h.ages[0] && a <= h.ages[1] && (l.seen[`ft.hl.${h.id}`] ?? 0) < 1 && ready(l, h));
   if (!ok.length) return;
   const scored = ok.map((h) => ({ h, s: 2 + hookScore(l, h) * 1.5 }));
   scored.sort((a, b) => b.s - a.s);

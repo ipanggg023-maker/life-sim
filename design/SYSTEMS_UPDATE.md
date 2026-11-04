@@ -75,7 +75,34 @@ Result: reckless fight deaths 40 → 22 of 60 (dragons 26 → 12); careful media
 - Fix the dragon death spike for reckless players: a warning beat before lethal dragon fights.
 - Rank spread checked by bots.
 
-## Release 4 — Family and old age (outline)
+## Release 4 — Family and old age
+Measured first (40 active bots): headline years are 67% at 40–59, 46% at 60–79, 5% at 80–119 and 0% after 120, so long-lived races spend
+up to 200 years with no main story. 37/40 lives died holding a weapon, and 7 had their own hall. None of that reaches the heir.
+Teaching children only changes a child's job label and a one-time "destiny" moment. A child you play next starts at zero either way.
+
+Plan:
+1. **Upbringing carries into the heir.** Lessons you gave (sword, magic, letters, your trade) become the heir's starting training points, smarts and
+   a head start in your career (level 2 after three trade lessons). The heir's bond with you sets how they begin: loved or resentful.
+   A new "teach your trade" lesson.
+2. **A will.** A new activity (age 40+, with a child): name the heir who gets your big things. The named heir (or, with no will, the adult child closest
+   to you) takes over your estates, home, weapon, armour and your own hall. The siblings you passed over remember it. Your apprentices and students
+   follow your heir as allies.
+3. **Callings for later life.** At 60 (later for long-lived races) you pick a calling, and can pick again every 40 years: teacher of the young, writing your
+   life story, last journeys, or guardian of the city. Each gives a yearly story beat with real choices, and it ends in a deed or a legend.
+4. **Headlines stretch for long-lived races.** The age windows of the main stories are measured in "life stage" instead of years, so an elf's
+   adult stories spread across their whole life instead of ending at 80.
+5. **QoL**
+   - A "family and legacy" fold in the Career tab: your will, what passes on, each child's upbringing, your calling and its progress.
+6. **Balance targets**
+   - Headline years at 60–79 ≥ 60%, at 80–119 ≥ 50%, and after 120 ≥ 40%.
+   - Lifespans stay as they are.
+   - An heir who was taught starts visibly ahead of one who wasn't.
+
+Built (family.ts): everything above. A fifth calling, "live quietly", has its own small beats. Callings open at real age 60 for every race
+and come up in 60% of years. The heir picker on the death screen says which child gets the big things and how many training points they start with.
+Result (40 bots): headline years 60–79 46% → 77%, 80–119 5% → 65%, after 120 0% → 60%; median lifespan 84 → 83 (noise).
+
+### Original outline
 - Children grow with your choices: teach, apprentice, inherit.
 - Heirs carry estates, titles and gear into the next life.
 - Old-age content: mentor, write memoirs, last journeys, passing the sword.

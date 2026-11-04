@@ -24,6 +24,12 @@ export function folkOf(kingdom: string): [RaceId, number][] {
 
 /** อายุที่เผ่านี้แก่ช้ากว่ามนุษย์ (ปี) */
 export const RACE_YOUNGER: Record<RaceId, number> = { human: 0, elf: 250, dwarf: 70, orc: -8, beastfolk: -4, halfling: 25, dragon: 400, demon: 200 };
+/** อายุตามช่วงชีวิต: เผ่าอายุยืนใช้ชีวิตวัยผู้ใหญ่ยาวกว่า เรื่องของวัยจึงยืดตาม (มนุษย์ = อายุจริง) */
+export function stageAge(l: Life) {
+  if (!l.ft || l.age < 20) return l.age;
+  const y = Math.max(0, RACE_YOUNGER[l.ft.race] ?? 0);
+  return Math.round(20 + ((l.age - 20) * 80) / (80 + y));
+}
 export const RACE_LABEL: Record<RaceId, string> = { human: "มนุษย์", elf: "เอลฟ์", dwarf: "คนแคระ", orc: "ออร์ก", beastfolk: "ชนเผ่าสัตว์", halfling: "ฮาล์ฟลิง", dragon: "มังกรในร่างมนุษย์", demon: "ทายาทปีศาจ" };
 
 export const raceOf = (p: Pick<Person, "tags">): RaceId | undefined => p.tags?.find((t) => t.startsWith("race:"))?.slice(5) as RaceId | undefined;
