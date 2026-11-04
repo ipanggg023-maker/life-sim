@@ -490,6 +490,8 @@ export const deathCauseHooks: Array<(life: Life) => string | undefined> = [];
 /** หลังเลือกทุกครั้ง: โลกต่างๆ ใช้จดนิสัย เมล็ดชะตา และความทรงจำ */
 /** คำตัดสินชีวิตสำหรับสมุดชาติก่อน (persona.ts ลงทะเบียน) */
 export const verdictHook: { fn?: (life: Life) => string } = {};
+/** หลังสุ่มเรื่องของปีเสร็จ ก่อนผู้เล่นเห็น */
+export const yearEndHooks: Array<(life: Life) => void> = [];
 export const choiceHooks: Array<(life: Life, c: Choice, ctx: Ctx, success: boolean, eventId: string) => void> = [];
 /** ปรับโอกาสสำเร็จของตัวเลือก (เช่น ทำตามนิสัยตัวเองได้ดีกว่า) */
 export const oddsHooks: Array<(life: Life, c: Choice, ctx: Ctx, p: number) => number> = [];
@@ -541,6 +543,9 @@ export function ageUp(life: Life) {
     runEvent(life, e.id, ctx, true);
     if (!life.alive) return;
   }
+  // โลกต่างๆ จัดเรื่องของปีใหม่: เลือกเรื่องหลัก ส่วนที่เหลือเป็นช่วงเล็กๆ ที่นิสัยตัดสินเอง
+  for (const h of yearEndHooks) h(life);
+  if (!life.alive) return;
   checkHiddenTalent(life);
   checkTitles(life);
 }

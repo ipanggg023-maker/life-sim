@@ -4,6 +4,8 @@ import { plant } from "../content/fantasy/conseq";
 import { personaOf } from "../content/fantasy/persona";
 import { WORK_ECHOES, WORK_EVENTS, bossOf, matesOf, workFactors } from "../content/fantasy/worklife";
 import { getEvent, visibleChoices } from "./events";
+import { fl } from "../content/fantasy/state";
+import { rumorsOf } from "../content/fantasy/rumors";
 import { ageUp, createLife, resolveChoice, runEvent } from "./game";
 import { remember } from "./npc";
 import type { Life } from "./types";
@@ -54,6 +56,7 @@ describe("ที่ทำงาน", () => {
   });
   it("เรื่องเก่าที่ฉาวตามมาถึงที่ทำงานได้", () => {
     const l = life(8); ageUp(l); drain(l);
+    fl(l).seeds = []; for (const r of rumorsOf(l)) r.heat = 0;
     expect(getEvent("ft.wk.scandal")!.when!(l)).toBe(false);
     plant(l, "tax_hide");
     expect(getEvent("ft.wk.scandal")!.when!(l)).toBe(true);
@@ -77,9 +80,11 @@ describe("ที่ทำงาน", () => {
       for (let y = 0; y < 15 && l.alive; y++) {
         ageUp(l);
         let g = 0;
-        while (l.queue.length && l.alive && g++ < 30) { if (l.queue[0].eventId.startsWith("ft.wk.")) events++; resolveChoice(l, visibleChoices(l, l.queue[0])[0].index); }
+        while (l.queue.length && l.alive && g++ < 30) resolveChoice(l, visibleChoices(l, l.queue[0])[0].index);
         if (!l.job) { fired++; break; }
       }
+      // เรื่องในที่ทำงานเกิดทั้งแบบเรื่องหลักและแบบช่วงเล็กๆ ที่นิสัยตัดสินเอง
+      events += Object.entries(l.seen).filter(([k]) => k.startsWith("ft.wk.")).reduce((s, [, n]) => s + n, 0);
     }
     expect(events).toBeGreaterThan(30);
     expect(fired).toBeLessThan(5);

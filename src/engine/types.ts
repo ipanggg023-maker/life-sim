@@ -245,6 +245,9 @@ export interface Life {
   chron?: { year: number; text: string }[];
   /** สรุปผลของปีล่าสุด (แสดงใต้บันทึก) */
   report?: import("./report").YearReport;
+  /** บทของปีนี้และปีก่อน (โลกแฟนตาซี: ชื่อบท เรื่องย่อ และเรื่องหลักของปี) */
+  chapter?: { age: number; title: string; lines: string[]; headline?: string };
+  lastChapter?: { age: number; title: string; lines: string[]; headline?: string };
 }
 
 export interface Memory {

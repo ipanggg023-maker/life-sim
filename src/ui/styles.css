@@ -1492,3 +1492,10 @@ details[open] > .fold-head .fold-chevron { transform: rotate(180deg); }
 .workplace p { margin: 4px 0; }
 .beat-kind { display: inline-block; min-width: 3.6em; margin-right: 4px; font-size: 10.5px; color: var(--accent); }
 .epitaph p { margin: 4px 0; }
+
+/* ปีหนึ่งคือหนึ่งบท */
+.chapter-head { font-size: 13px; letter-spacing: 0.06em; color: var(--accent); }
+.choice-cost { display: block; margin-top: 2px; font-size: 11.5px; color: var(--muted); }
+.last-chapter { margin-top: 8px; }
+.last-chapter .card { margin-top: 6px; }
+.auto-decide { display: flex; gap: 8px; align-items: center; margin: 6px 0 10px; color: var(--muted); }

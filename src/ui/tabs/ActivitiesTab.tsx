@@ -28,6 +28,12 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
   return (
     <div className="tab-content">
       {left !== undefined && <TimeBar left={left} max={timeBudget.fn?.(life) ?? left} />}
+      {life.worldId === "fantasy" && life.age >= 6 && (
+        <label className="auto-decide small">
+          <input type="checkbox" checked={!!life.flags.ftAutoDecide} onChange={() => act((l) => { l.flags.ftAutoDecide = !l.flags.ftAutoDecide; })} />
+          ให้นิสัยตัดสินเรื่องหลักของปีแทน (เล่นเร็ว)
+        </label>
+      )}
       {place && (
         <div className="card place-card">
           <b>ตอนนี้คุณอยู่: {place.name}</b>

@@ -125,17 +125,17 @@ function keep(e: LogEntry, f: LogFilter, n: Names, whoNames: string[]): boolean 
 
 /** กลุ่มบันทึกของปีหนึ่ง — ปีที่ผ่านไปแล้วไม่ต้องวาดใหม่ */
 const LogGroup = memo(
-  function LogGroup({ age, entries }: { age: number; entries: LogEntry[] }) {
+  function LogGroup({ age, entries, title }: { age: number; entries: LogEntry[]; title?: string }) {
     return (
       <div className="log-group">
-        <div className="log-age">อายุ {age} ปี</div>
+        {title ? <div className="log-age chapter-head">{title}</div> : <div className="log-age">อายุ {age} ปี</div>}
         {entries.map((e, i) => (
           <LogLine e={e} key={i} />
         ))}
       </div>
     );
   },
-  (a, b) => a.age === b.age && a.entries.length === b.entries.length && a.entries[a.entries.length - 1] === b.entries[b.entries.length - 1],
+  (a, b) => a.age === b.age && a.title === b.title && a.entries.length === b.entries.length && a.entries[a.entries.length - 1] === b.entries[b.entries.length - 1],
 );
 
 function groupByAge(log: LogEntry[]) {
@@ -239,6 +239,23 @@ function WorldStrip({ life }: { life: Life }) {
             {g.next && <span className="muted">ถัดไป {g.next}</span>}
             {g.side.length > 0 && <span className="muted"> · รอง {g.side.join(", ")}</span>}
           </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** อ่านบทของปีก่อนอีกครั้ง */
+function LastChapter({ ch }: { ch: NonNullable<Life["lastChapter"]> }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="last-chapter">
+      <button className="btn small ghost" onClick={() => setOpen(!open)}>{open ? "ซ่อนบทที่แล้ว" : "อ่านบทที่แล้ว"}</button>
+      {open && (
+        <div className="card">
+          <div className="card-title">{ch.title}</div>
+          {ch.headline && <p className="small muted">เรื่องหลัก: {ch.headline}</p>}
+          {ch.lines.map((t, i) => <p className="small" key={i}>{t}</p>)}
         </div>
       )}
     </div>
@@ -474,10 +491,11 @@ export function MainScreen({
           </button>
         )}
         {groups.slice(hidden).map((g, i) => (
-          <LogGroup key={`${g.age}:${hidden + i}`} age={g.age} entries={g.entries} />
+          <LogGroup key={`${g.age}:${hidden + i}`} age={g.age} entries={g.entries} title={life.worldId === "fantasy" ? (life.flags[`ch_${g.age}`] as string | undefined) : undefined} />
         ))}
         {!murim && teaser && <p className="cliffhanger">{loc(life, teaser)}</p>}
         {life.report && life.report.to === life.age && life.report.lines.length > 0 && <ReportCard report={life.report} />}
+        {life.worldId === "fantasy" && life.lastChapter && <LastChapter ch={life.lastChapter} />}
       </div>
       </NameCtx.Provider>
 
