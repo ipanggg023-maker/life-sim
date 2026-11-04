@@ -49,7 +49,7 @@ export function ECHO(id: string, note: string, delay: [number, number], text: st
     weight: (l) => { const s = activeSeed(l, id); return s ? Math.min(60, 25 + Math.max(0, l.age - s.age - delay[1]) * 8) : 0; },
     maxTimes: 1,
     title,
-    prepare: (l) => { const s = activeSeed(l, id)!; s.done = l.age; log(l, `เรื่องเก่ากลับมา: ตอนอายุ ${s.age} คุณ${s.note}`, "milestone"); return { who: s.who ?? "", was: s.age }; },
+    prepare: (l) => { const s = activeSeed(l, id)!; s.done = l.age; s.back = title; log(l, `เรื่องเก่ากลับมา: ตอนอายุ ${s.age} คุณ${s.note}`, "milestone"); return { who: s.who ?? "", was: s.age }; },
   });
 }
 

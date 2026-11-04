@@ -48,6 +48,9 @@ import { MOMENT_EVENTS } from "./moments";
 import { WORK_ECHOES, WORK_EVENTS, loadWorklife } from "./worklife";
 import { AFTERMATH, COURT_EVENTS, WAR_EVENTS, WORLD_ECHOES, loadWorldmark } from "./worldmark";
 import { POWER_EVENTS, loadPowerplus } from "./powerplus";
+import { loadLifestory } from "./lifestory";
+import { verdict } from "./persona";
+import { verdictHook } from "../../engine/game";
 import { TALENTS } from "../talents";
 
 export { newFantasyWorld } from "./state";
@@ -91,6 +94,8 @@ export function loadFantasyWorld() {
   registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS, ...ECHOES_1, ...ECHOES_2, ...PERSONA_EVENTS, ...RUMOR_EVENTS, ...PEOPLE2_EVENTS, ...MOMENT_EVENTS, ...WORK_EVENTS, ...WORK_ECHOES, ...COURT_EVENTS, ...WAR_EVENTS, AFTERMATH, ...WORLD_ECHOES, ...POWER_EVENTS], "fantasy");
   addExclusive();
   loadPowerplus();
+  loadLifestory();
+  verdictHook.fn = verdict;
   applyTags();
   const before = timeBudget.fn;
   timeBudget.fn = (l) => (l.worldId === "fantasy" ? (l.age < 10 ? 2 : l.age < 16 ? 3 : 5) : before?.(l));

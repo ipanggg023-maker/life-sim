@@ -16,6 +16,7 @@ import { OPEN_WORLDS, WORLDS, isOpenWorld, isRealistic } from "../content/worlds
 import { canMercy, canRewind, rewindTarget } from "../content/fantasy/life";
 import { BODY_RANKS, MAGIC_RANKS } from "../content/fantasy/power";
 import { verdict } from "../content/fantasy/persona";
+import { Epitaph } from "./tabs/FantasyFate";
 import { displayName, loc, money, people } from "../engine/util";
 import { disciplesOf, lifeSummary } from "../content/murim/life/generations";
 import { RIBBON_COUNT, ribbonOf } from "../content/murim/life/ribbons";
@@ -85,6 +86,7 @@ export function DeathScreen({
         <p className="cause">{loc(life, life.causeOfDeath ?? "")}</p>
       </div>
 
+      {life.worldId === "fantasy" && <Epitaph life={life} />}
       {life.worldId === "murim" && <RibbonCard life={life} soul={soul} />}
       {life.worldId === "murim" && <RouteCard life={life} soul={soul} />}
 

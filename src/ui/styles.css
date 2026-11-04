@@ -1490,3 +1490,5 @@ details[open] > .fold-head .fold-chevron { transform: rotate(180deg); }
 .persona-bar i { position: absolute; top: -4px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 .act-note { display: block; margin-top: 3px; font-size: 11px; color: var(--accent); opacity: 0.8; }
 .workplace p { margin: 4px 0; }
+.beat-kind { display: inline-block; min-width: 3.6em; margin-right: 4px; font-size: 10.5px; color: var(--accent); }
+.epitaph p { margin: 4px 0; }

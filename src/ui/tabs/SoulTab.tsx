@@ -24,7 +24,7 @@ import { ARCS, activeArcs, arcEndings } from "../../content/murim/life/sideStori
 import { injuryLabel } from "../../engine/body";
 import { SeriesCover } from "../SeriesCover";
 import { Fold } from "../Fold";
-import { FateLedger } from "./FantasyFate";
+import { FateLedger, LifeStoryFolds } from "./FantasyFate";
 
 export function SoulTab({
   life,
@@ -50,6 +50,7 @@ export function SoulTab({
   const thisLife = String(life.flags.achShown ?? "").split(",").filter((id) => id && !soul.achievements.includes(id));
   return (
     <div className="tab-content">
+      {life.worldId === "fantasy" && <LifeStoryFolds life={life} />}
       {life.worldId === "fantasy" && <FateLedger life={life} />}
       {real ? (
         <Fold always id="soul-0" title={<>บันทึกชีวิต</>}>
@@ -247,6 +248,7 @@ export function SoulTab({
                 {g.rank !== undefined && <span className={`rank r${g.rank}`}> [{rankLabel({ worldId: g.world ?? "murim" }, g.rank)}]</span>}
                 {g.regressed && " · ย้อนเวลา"}
                 {g.stars && ` · กาย ${g.stars.b}★ เวท ${g.stars.m}★`}
+                {g.verdict && <span className="muted"> · {g.verdict}</span>}
               </div>
               <div className="grave-sub">
                 {g.cause} · {money({ worldId: g.world ?? "murim" }, g.money)}

@@ -45,6 +45,7 @@ const brokeRecently = (l: Life, id: string) => fl(l).vowBroke?.id === id && l.ag
 function breakVow(l: Life, v: Vow) {
   const f = fl(l);
   f.vowBroke = { id: v.id, age: l.age };
+  (f.vowLog ??= []).push({ age: l.age, text: `ผิด${v.name}` });
   f.vow = undefined;
   addStat(l, "happiness", -8);
   spread(l, `ผิด${v.name}ที่ตั้งไว้ต่อหน้าทุกคน`, -1, 40);
@@ -91,7 +92,7 @@ const BREAK_WAYS: Record<string, Choice[]> = {
 };
 
 export const VOW_SCENE: GameEvent = SCENE("ft.vw.take", "ตั้งปณิธาน", (l) => (vowOf(l) ? `คุณถือ${vowOf(l)!.name}มาตั้งแต่อายุ ${fl(l).vow!.age} ปี` : "คุณยืนอยู่หน้าแท่นบูชาเก่า ปณิธานที่ตั้งไว้ที่นี่จะให้พลัง ตราบที่คุณไม่ทำลายมันเอง"), [
-  ...VOWS.map((v): Choice => ({ ...C(`${v.name} · ${v.desc}`, BIG(`คุณสาบานต่อหน้าแท่นบูชา ${v.name}เริ่มนับตั้งแต่วันนี้`, { joy: 3 }, (l) => { fl(l).vow = { id: v.id, age: l.age }; spread(l, `ตั้ง${v.name}`, 1, 25); })), show: (l) => !vowOf(l), req: (l) => (brokeRecently(l, v.id) ? "เพิ่งผิดปณิธานนี้ ต้องรออีกหลายปี" : tr(l, v.axis) * v.dir < 0 ? "นิสัยของคุณยังไปทางตรงข้าม" : undefined) })),
+  ...VOWS.map((v): Choice => ({ ...C(`${v.name} · ${v.desc}`, BIG(`คุณสาบานต่อหน้าแท่นบูชา ${v.name}เริ่มนับตั้งแต่วันนี้`, { joy: 3 }, (l) => { fl(l).vow = { id: v.id, age: l.age }; (fl(l).vowLog ??= []).push({ age: l.age, text: `ตั้ง${v.name}` }); spread(l, `ตั้ง${v.name}`, 1, 25); })), show: (l) => !vowOf(l), req: (l) => (brokeRecently(l, v.id) ? "เพิ่งผิดปณิธานนี้ ต้องรออีกหลายปี" : tr(l, v.axis) * v.dir < 0 ? "นิสัยของคุณยังไปทางตรงข้าม" : undefined) })),
   { ...C("ถอนปณิธานที่ถืออยู่", N("คุณถอนคำสาบานอย่างเงียบๆ ไม่มีใครตำหนิ แต่พลังนั้นก็จากไป", { joy: -2 }, (l) => { fl(l).vow = undefined; })), show: (l) => !!vowOf(l) },
   C("ยังไม่ตั้ง", N("แท่นบูชาจะรออยู่ที่นี่")),
 ]);

@@ -23,7 +23,7 @@ export interface FLife {
   /** นิสัยจากทางเลือก -100..100 (persona.ts) */
   persona?: { m: number; h: number; c: number; f: number };
   /** เมล็ดชะตาที่ปลูกไว้ (echoes.ts) */
-  seeds?: { id: string; age: number; note: string; who?: string; done?: number }[];
+  seeds?: { id: string; age: number; note: string; who?: string; done?: number; back?: string }[];
   /** สิ่งที่คุณเปลี่ยนแผ่นดิน (worldmark.ts) */
   marks?: { text: string; k: string; age: number }[];
   /** ปณิธานที่ถืออยู่ และครั้งล่าสุดที่ผิดปณิธาน (powerplus.ts) */
@@ -31,6 +31,12 @@ export interface FLife {
   vowBroke?: { id: string; age: number };
   /** ท่าประจำตัว · ขั้น 2 = ขั้นตำนาน */
   signature?: { name: string; tier: number };
+  /** ผลงานพร้อมอายุตอนได้ (lifestory.ts) · เซฟเก่ามีแค่ deeds */
+  deedLog?: { text: string; age: number }[];
+  /** นิสัยทุกสิบปี */
+  personaLog?: { age: number; words: string[] }[];
+  /** ปณิธานที่เคยตั้งและผล */
+  vowLog?: { age: number; text: string }[];
   body: number;
   magic: number;
   bodyRank: number;
@@ -239,7 +245,7 @@ export const relicOf = (l: Life, id: string) => dataOf(l).relics.find((r) => r.i
 export const myRelic = (l: Life) => (fl(l).relic ? relicOf(l, fl(l).relic!) : undefined);
 /** ผลงานกลายเป็นข่าวลือ (rumors.ts ลงทะเบียน) */
 export const deedHooks: ((l: Life, text: string) => void)[] = [];
-export const deed = (l: Life, text: string) => { fl(l).deeds.push(text); for (const h of deedHooks) h(l, text); };
+export const deed = (l: Life, text: string) => { const f = fl(l); f.deeds.push(text); (f.deedLog ??= []).push({ text, age: l.age }); for (const h of deedHooks) h(l, text); };
 /** ประวัติผู้ถืออาวุธตำนาน เก็บล่าสุดแปดคน */
 export const passRelic = (w: WorldState, r: Relic, who: string) => { r.history = [...(r.history ?? []), `ปี ${w.year} · ${who}`].slice(-8); };
 /** อคติที่บางเผ่าเจอตั้งแต่เกิด จนกว่าจะสร้างชื่อเสียงเอง */

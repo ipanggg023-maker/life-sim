@@ -8,6 +8,7 @@ import { feelingWords, topMemories } from "../../content/fantasy/people2";
 import { goalOf, traitName, traitsOf } from "../../engine/npc";
 import { dataOf, homeKingdom, kingdomsOf } from "../../content/fantasy/state";
 import { powerParts } from "../../content/fantasy/power";
+import { closest, enemies, epitaph, memoryLine, timelineOf } from "../../content/fantasy/lifestory";
 import { ASPECTS, VOWS, aspectsOf, vowOf } from "../../content/fantasy/powerplus";
 import { TEMPERS, marksOf, regard, regardWord, rulerView, temperOf, viewWord } from "../../content/fantasy/worldmark";
 import { bossOf, matesOf, workFactors } from "../../content/fantasy/worklife";
@@ -156,5 +157,44 @@ export function PowerSourceFolds({ life }: { life: Life }) {
         {f.vowBroke && <p className="small danger-text">เคยผิด{VOWS.find((x) => x.id === f.vowBroke!.id)?.name}ตอนอายุ {f.vowBroke.age}</p>}
       </Fold>
     </>
+  );
+}
+
+/** แท็บบันทึก: เรื่องราวชีวิต · คนสำคัญ · คุณเปลี่ยนไปอย่างไร */
+export function LifeStoryFolds({ life }: { life: Life }) {
+  if (!life.ft) return null;
+  const beats = timelineOf(life).reverse();
+  const near = closest(life);
+  const foes = enemies(life);
+  const changes = life.ft.personaLog ?? [];
+  const KIND: Record<string, string> = { seed: "เลือก", echo: "กลับมา", deed: "ผลงาน", mark: "แผ่นดิน", vow: "ปณิธาน", self: "ตัวตน" };
+  return (
+    <>
+      <Fold always kind="section" id="ft-story" title={<>เรื่องราวชีวิต <span className="fold-count">{beats.length}</span></>}>
+        {beats.length === 0 && <p className="small muted">ทางเลือกสำคัญ ผลงาน และเรื่องที่กลับมาจะถูกร้อยเป็นเรื่องราวที่นี่</p>}
+        {beats.slice(0, 30).map((b, i) => <p className={`small ${b.kind === "echo" || b.kind === "deed" ? "" : "muted"}`} key={i}><span className="beat-kind">{KIND[b.kind]}</span> อายุ {b.age} · {b.text}</p>)}
+      </Fold>
+      <Fold kind="section" id="ft-people-key" title={<>คนที่สำคัญที่สุด</>}>
+        {near.map((p) => <p className="small" key={p.id}><b>{p.name}</b>{feelingWords(p)[0] ? ` · ${feelingWords(p)[0]}` : ""}{memoryLine(p) ? ` · จำได้ว่า${memoryLine(p)}` : ""}</p>)}
+        {foes.length > 0 && <p className="small muted">คนที่ยังแค้นคุณ</p>}
+        {foes.map((p) => <p className="small danger-text" key={p.id}><b>{p.name}</b>{memoryLine(p) ? ` · ${memoryLine(p)}` : ""}{p.alive ? "" : " · จากไปแล้ว"}</p>)}
+      </Fold>
+      {changes.length > 0 && (
+        <Fold kind="section" id="ft-changes" title={<>คุณเปลี่ยนไปอย่างไร</>}>
+          {changes.map((c) => <p className="small" key={c.age}>อายุ {c.age} · {c.words.length ? `เป็นคน${c.words.join(" · ")}` : "ยังไม่มีนิสัยเด่น"}</p>)}
+        </Fold>
+      )}
+    </>
+  );
+}
+
+/** คำจารึกบนหลุมศพ */
+export function Epitaph({ life }: { life: Life }) {
+  if (!life.ft) return null;
+  return (
+    <div className="card epitaph">
+      <div className="card-title">คำจารึก</div>
+      {epitaph(life).map((t) => <p key={t}>{t}</p>)}
+    </div>
   );
 }

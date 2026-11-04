@@ -288,6 +288,8 @@ export interface PastLife {
   series?: Series;
   /** ดาวกายและเวทแต่กำเนิด (โลกแฟนตาซี) */
   stars?: { b: number; m: number };
+  /** คำตัดสินชีวิตจากนิสัย (โลกแฟนตาซี) */
+  verdict?: string;
 }
 
 export interface Soul {

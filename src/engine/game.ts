@@ -488,6 +488,8 @@ export const deathCauseHooks: Array<(life: Life) => string | undefined> = [];
 /** เมื่อมีคนรู้จักเสียชีวิต (violent = ถูกฆ่า) — ให้ content ใช้กระตุ้นเรื่องราว เช่น เปลี่ยนเป้าหมายชีวิต */
 /** ผลเสริมตามระดับผลลัพธ์ (งดงาม/พลาดหนัก) — คืนข้อความต่อท้าย */
 /** หลังเลือกทุกครั้ง: โลกต่างๆ ใช้จดนิสัย เมล็ดชะตา และความทรงจำ */
+/** คำตัดสินชีวิตสำหรับสมุดชาติก่อน (persona.ts ลงทะเบียน) */
+export const verdictHook: { fn?: (life: Life) => string } = {};
 export const choiceHooks: Array<(life: Life, c: Choice, ctx: Ctx, success: boolean, eventId: string) => void> = [];
 /** ปรับโอกาสสำเร็จของตัวเลือก (เช่น ทำตามนิสัยตัวเองได้ดีกว่า) */
 export const oddsHooks: Array<(life: Life, c: Choice, ctx: Ctx, p: number) => number> = [];
@@ -921,6 +923,7 @@ export function toPastLife(life: Life): PastLife {
     birthYear: life.birthYear,
     series: seriesOf(life),
     stars: life.ft ? { b: life.ft.bstars ?? 0, m: life.ft.potential } : undefined,
+    verdict: life.ft ? verdictHook.fn?.(life) : undefined,
   };
 }
 
