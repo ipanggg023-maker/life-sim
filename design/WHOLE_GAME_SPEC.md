@@ -153,3 +153,20 @@ Foundations go first because the four rules apply to everything built after.
   where you can win people over (a person who remembers, and standing).
 - Power tab: rite status and how this kingdom sees your race.
 - Survey (12 lives per race): everyone finds work; orcs have less gold at 50 (864 vs human 1193); lifespans per race unchanged.
+
+## Release 5 built (2026-11-05)
+- **childhood.ts, early years:** six small moments at ages 1–5 (first word, storm night, one toy, a stranger at the fence, a fallen chick,
+  sharing a sweet). Each choice plants a hidden seed that returns 15–40 years later, naming the moment. The seeds stay hidden in the
+  fate ledger and the story until they return.
+- **Five new schools** (places.ts SCHOOLS, 10 in all), each with its own secret line: scholars' academy, merchants' guild school, bards' college,
+  thieves' den (with a heist test), temple novitiate (pick one of 5 gods; 20% of years bring that god's blessing).
+  Schools teach a stat (`stat`) and open a career (`career`).
+- **School life:** a friend accused, the teacher's favour, a leaked exam; expulsion when your class score is 12 or less after 2 years
+  (expelled students get −30% odds for that school's career). **Offers at graduation:** class score 65+ starts the school's career at level 2,
+  85+ at level 3.
+- **No-school paths at 14:** apprentice smith (starts smith at level 2), street kids (can lead to a thieves' guild invite), hermit (a book of secrets),
+  family farm (starts farmer at level 2), each with a follow-up story.
+- **Mentor:** a teacher or craftsman takes you on, gives lessons, and later needs your help.
+- **Lifelong rival:** a rival in your trade (compete, partner up, or smear them), a confession that can turn into love, a last letter in old age.
+- **Teens:** a first crush (with a seed that returns), a night walking out, the cave behind the hill, and at 17 "who do you want to be".
+- Survey (40 lives to 30): nearly everyone goes to school; ~3 childhood seeds return by 30; 1 death before 30.

@@ -116,7 +116,7 @@ describe("พลัง", () => {
 
 describe("โรงเรียน กิลด์ อาชีพ", () => {
   it("มีสามโรงเรียน โอกาสสอบขึ้นกับตัวละคร และสอบไม่ติดยังเล่นต่อได้", () => {
-    expect(SCHOOLS.length).toBe(5);
+    expect(SCHOOLS.length).toBe(10);
     const a = life(6, 12), b = life(6, 12);
     fl(a).potential = 5; fl(b).potential = 0;
     expect(SCHOOLS[0].odds(a)).toBeGreaterThan(SCHOOLS[0].odds(b));

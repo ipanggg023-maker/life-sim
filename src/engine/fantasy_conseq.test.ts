@@ -38,7 +38,9 @@ describe("ป้ายของตัวเลือก", () => {
   });
   it("ทุกเมล็ดมีเรื่องที่กลับมา และทุกเรื่องที่กลับมามีที่ปลูก", () => {
     const fromChoices = allEvents().flatMap((e) => (e.choices ?? []).map((c) => c.seed)).filter(Boolean);
-    const planted = new Set([...Object.values(TAGS).map((t) => t.seed).filter(Boolean), ...fromChoices, "lend_friend", "friend_debt"]);
+    const planted = new Set([...Object.values(TAGS).map((t) => t.seed).filter(Boolean), ...fromChoices, "lend_friend", "friend_debt",
+      // ช่วงเล็กๆ ของวัยเด็กและวัยรุ่นปลูกเมล็ดเองในตัวเลือก (childhood.ts)
+      ...Object.keys(SEEDS).filter((s) => /^(kid|teen)_/.test(s))]);
     for (const s of planted) expect(SEEDS[s!], `seed ${s}`).toBeTruthy();
     const orphan = Object.keys(SEEDS).filter((s) => !planted.has(s));
     expect(orphan).toEqual([]);

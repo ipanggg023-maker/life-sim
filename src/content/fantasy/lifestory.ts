@@ -6,6 +6,7 @@ import { seedsOf } from "./conseq";
 import { traitWords, verdict } from "./persona";
 import { fl, kingdomsOf } from "./state";
 import { RACE_YOUNGER } from "./folk";
+import { HIDDEN_SEED } from "./childhood";
 import { marksOf } from "./worldmark";
 import { topMemories } from "./people2";
 
@@ -15,6 +16,8 @@ export function timelineOf(l: Life): Beat[] {
   const f = fl(l);
   const out: Beat[] = [];
   for (const s of seedsOf(l)) {
+    // เมล็ดของวัยเด็กซ่อนไว้จนกว่าจะกลับมา
+    if (HIDDEN_SEED.test(s.id) && s.done === undefined) continue;
     out.push({ age: s.age, text: `คุณ${s.note}`, kind: "seed" });
     if (s.done !== undefined) out.push({ age: s.done, text: `เรื่องนั้นกลับมา${s.back ? `: ${s.back}` : ""}`, kind: "echo" });
   }

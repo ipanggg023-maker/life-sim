@@ -3,6 +3,7 @@ import type { Life, Person } from "../../engine/types";
 import { Fold } from "../Fold";
 import { AXES, PERSONA, personaOf, traitWords, SHOWN } from "../../content/fantasy/persona";
 import { seedsOf } from "../../content/fantasy/conseq";
+import { HIDDEN_SEED } from "../../content/fantasy/childhood";
 import { heatWord, kingdomName, oldTales, talkIn } from "../../content/fantasy/rumors";
 import { feelingWords, topMemories } from "../../content/fantasy/people2";
 import { goalOf, traitName, traitsOf } from "../../engine/npc";
@@ -54,7 +55,7 @@ export function FantasyMind({ p }: { p: Person }) {
 /** สมุดชะตา: เมล็ดที่ปลูกไว้ และเรื่องที่กลับมาแล้ว */
 export function FateLedger({ life }: { life: Life }) {
   if (!life.ft) return null;
-  const seeds = [...seedsOf(life)].sort((a, b) => b.age - a.age);
+  const seeds = [...seedsOf(life)].filter((s) => !HIDDEN_SEED.test(s.id) || s.done !== undefined).sort((a, b) => b.age - a.age);
   const waiting = seeds.filter((s) => s.done === undefined);
   const back = seeds.filter((s) => s.done !== undefined);
   return (

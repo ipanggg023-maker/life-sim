@@ -3,7 +3,7 @@ import { ACTIVITIES, type Activity } from "../../engine/activities";
 import type { Ctx, GameEvent } from "../../engine/events";
 import { runEvent } from "../../engine/game";
 import { chance, pick, randInt } from "../../engine/rng";
-import type { Life } from "../../engine/types";
+import type { Life, StatKey } from "../../engine/types";
 import { addMoney, addStat, checkChance, createPerson, shortName } from "../../engine/util";
 import { CAREERS } from "../core/careers";
 import { B, BIG, C, E, G, GOLD, K, N, P, PAY, SCENE, type Res } from "./kit";
@@ -14,13 +14,18 @@ import { rollOne, starTrain } from "./stars";
 import { techChoice } from "./styles";
 import { cityOf, moveTo } from "./cities";
 
-export interface School { id: string; name: string; focus: string; odds: (l: Life) => number; fee: number; body: number; magic: number }
+export interface School { id: string; name: string; focus: string; odds: (l: Life) => number; fee: number; body: number; magic: number; /** ค่าที่โรงเรียนนี้สอน (เรียนทุกปีและตอนจบ) */ stat?: [StatKey, number]; /** อาชีพที่โรงเรียนเปิดประตูให้ตอนจบ */ career?: string }
 export const SCHOOLS: School[] = [
   { id: "arcanvale", name: "สถาบันเวทอาร์คานเวล", focus: "เวทมนตร์", fee: 60, body: 2, magic: 14, odds: (l) => 0.1 + fl(l).potential * 0.085 + (l.stats.smarts - 50) / 200 },
   { id: "steelcrest", name: "สำนักดาบสตีลเครสต์", focus: "ดาบและร่างกาย", fee: 30, body: 14, magic: 0, odds: (l) => 0.35 + (l.stats.health - 50) / 120 + (l.stats.luck - 50) / 300 },
   { id: "lionheart", name: "วิทยาลัยหลวงไลออนฮาร์ต", focus: "ดาบและเวทมนตร์", fee: 120, body: 8, magic: 8, odds: (l) => 0.25 + (l.stats.smarts - 50) / 200 + ({ poor: 0, middle: 0.05, rich: 0.2, elite: 0.35 })[l.wealth] },
   { id: "mercy", name: "วิหารเยียวยาเมอร์ซี", focus: "การรักษาและเวทแสง", fee: 20, body: 2, magic: 10, odds: (l) => 0.4 + (l.stats.smarts - 50) / 250 + (l.stats.happiness - 50) / 250 },
   { id: "beastwarden", name: "คอกนักฝึกสัตว์เบสต์วอร์เดน", focus: "สัตว์เวทและการต่อสู้คู่กาย", fee: 30, body: 8, magic: 5, odds: (l) => 0.35 + (l.stats.health - 50) / 200 + (l.stats.luck - 50) / 200 + (fl(l).race === "beastfolk" ? 0.3 : 0) },
+  { id: "scholars", name: "สถาบันปราชญ์ออเรลิส", focus: "ประวัติศาสตร์ กฎหมาย และการเล่นแร่แปรธาตุ", fee: 50, body: 0, magic: 4, stat: ["smarts", 4], career: "ft_scholar", odds: (l) => 0.2 + (l.stats.smarts - 50) / 90 },
+  { id: "merchants", name: "โรงเรียนสมาคมพ่อค้า", focus: "การค้า ตัวเลข และการต่อรอง", fee: 40, body: 0, magic: 0, stat: ["smarts", 3], career: "ft_merchant", odds: (l) => 0.3 + (l.stats.smarts - 50) / 150 + ({ poor: 0, middle: 0.05, rich: 0.15, elite: 0.25 })[l.wealth] },
+  { id: "bards", name: "วิทยาลัยกวีและศิลปินลิวเทล", focus: "ดนตรี บทกวี และจิตรกรรม", fee: 30, body: 0, magic: 2, stat: ["looks", 4], career: "ft_bard", odds: (l) => 0.3 + (l.stats.looks - 50) / 120 + (l.stats.happiness - 50) / 250 },
+  { id: "thieves", name: "รังโจรใต้ตลาดเก่า", focus: "ย่องเงียบ สะเดาะกุญแจ และหนี้กับกิลด์", fee: 0, body: 6, magic: 0, stat: ["luck", 3], career: "ft_thief", odds: (l) => 0.3 + (l.stats.luck - 50) / 120 + (l.wealth === "poor" ? 0.2 : 0) },
+  { id: "temple", name: "วิหารนวกะแห่งทวยเทพ", focus: "บวชเรียนรับใช้เทพองค์หนึ่ง", fee: 10, body: 2, magic: 6, stat: ["happiness", 3], career: "ft_priest", odds: (l) => 0.45 + (l.stats.happiness - 50) / 200 },
 ];
 export const schoolOf = (l: Life) => SCHOOLS.find((s) => s.id === fl(l).school);
 const MATERIALS: [string, number, number][] = [["ไม้ฮอลลี", 1, 40], ["ไม้เถ้า", 2, 120], ["กระดูกนกฟีนิกซ์", 3, 400]];
@@ -83,12 +88,12 @@ export const PLACE_EVENTS: GameEvent[] = [
     C("เปลี่ยนใจไม่สอบ", N("คุณเดินออกจากแถว")),
   ]),
   SCENE("ft.school_day", "ชีวิตในโรงเรียน", (l) => `ปีนี้ที่${schoolOf(l)?.name ?? "โรงเรียน"} คุณจะทุ่มให้อะไร`, [
-    C("ตั้งใจเรียนในห้อง", G("คุณจดเลกเชอร์จนหมึกหมดสองขวด", { iq: 2 }, (l) => { const s = schoolOf(l)!; fl(l).body += s.body; fl(l).magic += s.magic; })),
+    C("ตั้งใจเรียนในห้อง", G("คุณจดเลกเชอร์จนหมึกหมดสองขวด", { iq: 2 }, (l) => { const s = schoolOf(l)!; fl(l).body += s.body; fl(l).magic += s.magic; if (s.stat) addStat(l, s.stat[0], s.stat[1]); })),
     P("ลงประลองประจำปี", (l) => fightOdds(l, 12 + (l.age - 11) * 3), G("คุณชนะคู่ปรับต่อหน้าทั้งโรงเรียน", { fame: 4, joy: 4 }, (l) => { const s = schoolOf(l)!; fl(l).body += s.body; fl(l).magic += s.magic; }), N("คุณแพ้ แต่เรียนรู้ท่าใหม่จากรอยช้ำ", { hp: -2, body: 3 })),
     K("แอบสำรวจห้องต้องห้าม", "luck", 55, G("หลังชั้นหนังสือมีทางลับและสมุดบันทึกของอาจารย์ใหญ่รุ่นแรก", { iq: 3, magic: 6 }), B("อาจารย์ยืนรออยู่ปลายทางเดิน คุณถูกทำโทษขัดชุดเกราะทั้งเดือน", { joy: -3 })),
     C("ออกไปเที่ยวกับเพื่อน", G("พวกคุณแอบขึ้นหลังคาหอพักดูดาวตก", { joy: 6 })),
   ]),
-  E("ft.graduate", [15, 40], (l) => `หลังหลายปีที่${schoolOf(l)?.name} ถึงวันจบการศึกษาแล้ว`, [C("รับป้ายจบการศึกษา", BIG("อาจารย์ใหญ่ส่งป้ายให้ พร้อมบอกว่าประตูโรงเรียนจะเปิดให้คุณเสมอ", { fame: 4, joy: 6 }, (l) => { const s = schoolOf(l)!; fl(l).graduated = true; fl(l).body += s.body * 2; fl(l).magic += s.magic * 2; deed(l, `จบจาก${s.name}`); }))], { when: (l) => school(l) && l.age - Number(fl(l).schoolSince) >= 5, forced: true, maxTimes: 1, title: "จบการศึกษา" }),
+  E("ft.graduate", [15, 40], (l) => `หลังหลายปีที่${schoolOf(l)?.name} ถึงวันจบการศึกษาแล้ว`, [C("รับป้ายจบการศึกษา", BIG("อาจารย์ใหญ่ส่งป้ายให้ พร้อมบอกว่าประตูโรงเรียนจะเปิดให้คุณเสมอ", { fame: 4, joy: 6 }, (l) => { const s = schoolOf(l)!; fl(l).graduated = true; fl(l).body += s.body * 2; fl(l).magic += s.magic * 2; if (s.stat) addStat(l, s.stat[0], s.stat[1] * 2); deed(l, `จบจาก${s.name}`); }))], { when: (l) => school(l) && l.age - Number(fl(l).schoolSince) >= 5, forced: true, maxTimes: 1, title: "จบการศึกษา" }),
 
   SCENE("ft.contract", "งานจากกิลด์", (l, c) => `กระดานประกาศของกิลด์ขั้น${GUILD_RANKS[fl(l).guild]}: ${monster(c).name}${l.stats.smarts >= 50 ? ` · จุดอ่อนธาตุ${ELEMENTS[monster(c).weak].name}` : " · ไม่รู้จุดอ่อน"}`, [
     P("กำจัดสัตว์อสูรด้วยอาวุธ", (l) => fightOdds(l, threatOf(l)), G("คุณนำเขี้ยวของมันกลับมาขึ้นเงินรางวัล", { fame: 1 }, (l) => reward(l, 1)), hurt("มันแข็งแกร่งกว่าที่ประกาศบอก คุณหนีกลับมาพร้อมแผล", 0)),
