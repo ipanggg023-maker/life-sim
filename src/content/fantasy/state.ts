@@ -98,6 +98,23 @@ export interface FLife {
   myTech?: string;
   potions?: { heal?: number; strength?: number; life?: number };
   craft?: Partial<Record<"smith" | "alchemy" | "healing" | "lore", number>>;
+  // ── อันตราย (danger.ts) ──
+  /** แผลถาวรที่เปลี่ยนชีวิต */
+  injuries?: ("eye" | "leg" | "hand" | "lung")[];
+  /** แผลสดที่ยังไม่หาย: อายุที่ได้แผล · ไม่รักษาอาจกลายเป็นแผลถาวร */
+  wound?: number;
+  /** พิษ คำสาป หรือโรคที่ทรุดลงทีละปี */
+  ailment?: { kind: "poison" | "curse" | "plague"; stage: number };
+  /** สัตว์อสูรที่เคยเจอ · ชื่อ → จำนวนครั้ง (bestiary.ts) */
+  bestiary?: Record<string, number>;
+  /** สัตว์ร้ายคู่อาฆาตที่กลับมาหาคุณเรื่อยๆ */
+  nemesis?: { name: string; power: number; met: number; last: number; dead?: boolean };
+  /** แพ้หนักแล้วยังกลัวอยู่ จนกว่าจะชนะได้อีกครั้ง */
+  fear?: boolean;
+  /** ลูกค้าที่จำคุณได้ · ชื่อ → งานที่ทำสำเร็จ */
+  clients?: Record<string, number>;
+  /** ปฏิญาณไม่จับอาวุธ */
+  peaceVow?: boolean;
   /** ลูกครึ่ง: อีกเผ่าหนึ่งในสายเลือด (birth.ts) */
   half?: RaceId;
   /** เส้นเรื่องที่ยังไม่จบ: คนในเรื่องจะกลับมาเมื่อถึงกำหนด (storygen.ts) */

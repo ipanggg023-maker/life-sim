@@ -27,9 +27,11 @@ const choose = (l: Life, re: RegExp) => {
 describe("หลานและการมีลูก", () => {
   it("ลูกที่โตแล้วมีหลานให้ และหลานรับช่วงต่อได้เมื่อพ่อแม่ของเขาไม่อยู่แล้ว", () => {
     const l = life(1, 60);
-    const k = createPerson(l, "child", { age: 30, bond: 70, lastName: l.lastName });
+    // ลูกสามคน: โอกาสมีหลานต่อปีต่อคนไม่สูง จึงไม่ให้ผลทดสอบขึ้นกับดวงของลูกคนเดียว
+    const ks = [30, 28, 26].map((age) => createPerson(l, "child", { age, bond: 70, lastName: l.lastName }));
     for (let i = 0; i < 40 && !grandkids(l).length; i++) { l.queue = []; ageUp(l); }
     const g = grandkids(l)[0];
+    const k = ks.find((c) => g?.tags?.includes(`parent:${c.id}`))!;
     expect(g).toBeTruthy();
     expect(relationLabel(g, l)).toMatch(/หลาน/);
     g.age = 20; k.alive = false;

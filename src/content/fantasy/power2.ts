@@ -95,7 +95,7 @@ export const CRAFT_NAME: Record<Craft, string> = { smith: "งานช่าง
 export const CRAFT_RANKS = ["ไม่เคยเรียน", "เริ่มเรียน", "พอใช้ได้", "ชำนาญ", "เชี่ยวชาญ", "ปรมาจารย์", "ในตำนาน"];
 const CRAFT_AT = [0, 30, 80, 160, 280, 450, 700];
 export const craftRank = (l: Life, k: Craft) => { const x = fl(l).craft?.[k] ?? 0; let r = 0; for (let i = 0; i < CRAFT_AT.length; i++) if (x >= CRAFT_AT[i]) r = i; return r; };
-const addCraft = (l: Life, k: Craft, d: number) => { const f = fl(l); const before = craftRank(l, k); f.craft = { ...f.craft, [k]: (f.craft?.[k] ?? 0) + d }; const after = craftRank(l, k); if (after > before && after >= 3) log(l, `${CRAFT_NAME[k]}ของคุณถึงขั้น${CRAFT_RANKS[after]}`, "good"); if (after >= 5 && before < 5) deed(l, `${CRAFT_RANKS[after]}แห่ง${CRAFT_NAME[k]}`); };
+const addCraft = (l: Life, k: Craft, d: number) => { const f = fl(l); if ((k === "smith" || k === "alchemy") && f.injuries?.includes("hand")) d = Math.round(d / 2); const before = craftRank(l, k); f.craft = { ...f.craft, [k]: (f.craft?.[k] ?? 0) + d }; const after = craftRank(l, k); if (after > before && after >= 3) log(l, `${CRAFT_NAME[k]}ของคุณถึงขั้น${CRAFT_RANKS[after]}`, "good"); if (after >= 5 && before < 5) deed(l, `${CRAFT_RANKS[after]}แห่ง${CRAFT_NAME[k]}`); };
 const JOB_CRAFT: Record<string, Craft> = { ft_smith: "smith", ft_enchanter: "smith", ft_wandwright: "smith", ft_alchemist: "alchemy", ft_priest: "healing", ft_scholar: "lore", ft_cartographer: "lore", ft_diplomat: "lore" };
 const STUDY = SCENE("ft.pw.study", "ฝึกวิชาช่างและตำรา", "ปีนี้คุณจะใช้เวลาเรียนวิชาไหน", [
   ...(Object.keys(CRAFT_NAME) as Craft[]).map((k) => C((l) => `${CRAFT_NAME[k]} · ${CRAFT_RANKS[craftRank(l, k)]}`, G(() => `คุณใช้ทั้งปีกับ${CRAFT_NAME[k]} มือและหัวเริ่มจำได้เอง`, { iq: 1 }, (l) => addCraft(l, k, 25 + Math.round(l.stats.smarts / 5))))),
@@ -134,7 +134,9 @@ function powerYear(l: Life) {
   const f = fl(l);
   // งานที่ทำสอนฝีมือช่างและตำราไปเอง · การรักษาช่วยร่างกาย
   // ฝึกต่อเนื่องนับเป็นปีฝึก · ทุกสิบห้าปีดันเพดานขึ้นหนึ่งขั้น (power.ts)
-  if (l.doneThisYear.includes("act:ft_train") || l.doneThisYear.includes("act:ft_study") || secluded(l)) f.trainYears = (f.trainYears ?? 0) + 1;
+  // ปีที่เพิ่งผ่านมา: doneThisYear ถูกล้างก่อน yearHooks จึงอ่านจาก lastActs
+  const last = String(l.flags.lastActs ?? "").split("|");
+  if (last.includes("act:ft_train") || last.includes("act:ft_study") || secluded(l)) f.trainYears = (f.trainYears ?? 0) + 1;
   const ck = l.job && JOB_CRAFT[l.job.careerId];
   if (ck) addCraft(l, ck, 12);
   if (craftRank(l, "healing") >= 3) addStat(l, "health", 1);

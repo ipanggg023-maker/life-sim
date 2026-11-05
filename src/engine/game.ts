@@ -574,7 +574,7 @@ export function ageUp(life: Life) {
   checkTitles(life);
 }
 
-function oddsOf(life: Life, c: Choice, ctx: Ctx): number | undefined {
+export function oddsOf(life: Life, c: Choice, ctx: Ctx): number | undefined {
   const base = c.odds ? clamp(c.odds(life, ctx), 0.01, 0.99) : c.check ? checkChance(life, c.check.stat, c.check.dc, c.check.bonus?.(life, ctx) ?? 0) : undefined;
   if (base === undefined || !oddsHooks.length) return base;
   return clamp(oddsHooks.reduce((p, h) => h(life, c, ctx, p), base), 0.01, 0.99);

@@ -13,6 +13,7 @@ import { addStanding, fl, kingdomsOf, deed, type Element } from "./state";
 import { rollOne, starTrain } from "./stars";
 import { techChoice } from "./styles";
 import { cityOf, moveTo } from "./cities";
+import { entryOf, knows } from "./bestiary";
 
 export interface School { id: string; name: string; focus: string; odds: (l: Life) => number; fee: number; body: number; magic: number; /** ค่าที่โรงเรียนนี้สอน (เรียนทุกปีและตอนจบ) */ stat?: [StatKey, number]; /** อาชีพที่โรงเรียนเปิดประตูให้ตอนจบ */ career?: string }
 export const SCHOOLS: School[] = [
@@ -44,8 +45,8 @@ const WORLD_CAREERS = [
 const M = (a: Omit<Activity, "world">): Activity => ({ ...a, world: "fantasy" });
 const school = (l: Life) => !!fl(l).school && !fl(l).graduated;
 const free = (l: Life) => !fl(l).school || !!fl(l).graduated;
-const CONTRACT_THREAT = [0, 10, 25, 42, 60, 80];
-const MONSTERS: { name: string; weak: Element; strong: Element }[] = [
+export const CONTRACT_THREAT = [0, 10, 25, 42, 60, 80];
+export const MONSTERS: { name: string; weak: Element; strong: Element }[] = [
   { name: "ซาลาแมนเดอร์เพลิง", weak: "water", strong: "fire" }, { name: "โกเลมศิลา", weak: "wind", strong: "earth" }, { name: "ภูตหนองน้ำ", weak: "earth", strong: "water" },
   { name: "ฮาร์ปี้", weak: "fire", strong: "wind" }, { name: "ซอมบี้ฝูงใหญ่", weak: "light", strong: "dark" }, { name: "อัศวินเงา", weak: "light", strong: "dark" },
   { name: "ไวเวิร์นหนุ่ม", weak: "water", strong: "fire" }, { name: "ราชาก็อบลิน", weak: "fire", strong: "earth" },
@@ -95,7 +96,7 @@ export const PLACE_EVENTS: GameEvent[] = [
   ]),
   E("ft.graduate", [15, 40], (l) => `หลังหลายปีที่${schoolOf(l)?.name} ถึงวันจบการศึกษาแล้ว`, [C("รับป้ายจบการศึกษา", BIG("อาจารย์ใหญ่ส่งป้ายให้ พร้อมบอกว่าประตูโรงเรียนจะเปิดให้คุณเสมอ", { fame: 4, joy: 6 }, (l) => { const s = schoolOf(l)!; fl(l).graduated = true; fl(l).body += s.body * 2; fl(l).magic += s.magic * 2; if (s.stat) addStat(l, s.stat[0], s.stat[1] * 2); deed(l, `จบจาก${s.name}`); }))], { when: (l) => school(l) && l.age - Number(fl(l).schoolSince) >= 5, forced: true, maxTimes: 1, title: "จบการศึกษา" }),
 
-  SCENE("ft.contract", "งานจากกิลด์", (l, c) => `กระดานประกาศของกิลด์ขั้น${GUILD_RANKS[fl(l).guild]}: ${monster(c).name}${l.stats.smarts >= 50 ? ` · จุดอ่อนธาตุ${ELEMENTS[monster(c).weak].name}` : " · ไม่รู้จุดอ่อน"}`, [
+  SCENE("ft.contract", "งานจากกิลด์", (l, c) => `กระดานประกาศของกิลด์ขั้น${GUILD_RANKS[fl(l).guild]}: ${monster(c).name}${l.stats.smarts >= 50 || knows(l, monster(c).name) ? ` · จุดอ่อนธาตุ${ELEMENTS[monster(c).weak].name}${entryOf(monster(c).name) ? ` · แพ้${entryOf(monster(c).name)!.weak}` : ""}` : " · ไม่รู้จุดอ่อน (เจอครั้งแรกแล้วจะจำได้)"}`, [
     P("กำจัดสัตว์อสูรด้วยอาวุธ", (l) => fightOdds(l, threatOf(l)), G("คุณนำเขี้ยวของมันกลับมาขึ้นเงินรางวัล", { fame: 1 }, (l) => reward(l, 1)), hurt("มันแข็งแกร่งกว่าที่ประกาศบอก คุณหนีกลับมาพร้อมแผล", 0)),
     techChoice((l) => threatOf(l), (t) => G(`「${t}」ของคุณจบศึกในพริบตาเดียว`, { fame: 2, body: 4 }, (l) => reward(l, 1.15)), hurt("ท่าไม้ตายพลาดเป้า มันสวนกลับทันที", 0)),
     ...spellChoices(threatOf, (_l, c) => monster(c).weak, (_l, c) => monster(c).strong, (sp) => G(`${sp.name}ของคุณจัดการมันได้เรียบร้อย`, { fame: 1, magic: 3 }, (l) => reward(l, 1.1)), hurt("เวทของคุณทำอะไรมันแทบไม่ได้", 0)),
@@ -105,7 +106,7 @@ export const PLACE_EVENTS: GameEvent[] = [
   ]),
 ];
 
-function reward(l: Life, mul: number) {
+export function reward(l: Life, mul: number) {
   const f = fl(l);
   addMoney(l, Math.round((10 + f.guild * 18) * mul) * GOLD);
   f.body += 9; f.magic += canCast(l) ? 5 : 0;

@@ -10,6 +10,7 @@ import { ELEMENTS, spellChoices } from "./magic";
 import { deathOdds, fightOdds } from "./power";
 import { deed, fl, type Element } from "./state";
 import { techChoice, weaponNoun } from "./styles";
+import { knows, meet } from "./bestiary";
 
 // ── สัตว์เลี้ยง ──
 export type PetKind = "cat" | "owl" | "wolf" | "fox" | "slime" | "golem";
@@ -36,7 +37,16 @@ export const DUNGEONS: Dungeon[] = [
 ];
 const D = (c: Ctx) => DUNGEONS.find((x) => x.id === c.dg)!;
 const floorOf = (l: Life, id: string) => fl(l).dungeons?.[id] ?? 0;
-const threatAt = (l: Life, d: Dungeon) => d.threat + floorOf(l, d.id) * 4;
+/** ลงลึกต่อเนื่องในรอบเดียว: ชั้นละ +3 · พักกลางทางแล้วสัตว์รวมตัว +2 */
+export const RUN_THREAT = 2;
+export const WARN_RUN = 2;
+/** คบไฟพอสำหรับลงต่อเนื่องได้สี่ชั้นต่อรอบ */
+export const MAX_RUN = 4;
+const runOf = (c?: Ctx) => Number(c?.run ?? 0);
+const threatAt = (l: Life, d: Dungeon, c?: Ctx) => d.threat + floorOf(l, d.id) * 4 + runOf(c) * RUN_THREAT + (c?.rested ? 2 : 0);
+/** ไปชั้นต่อไปทันทีในรอบเดียวกัน */
+function deeper(l: Life, c: Ctx): string {
+  if (runOf(c) + 1 >= MAX_RUN) return " คบไฟใกล้หมดแล้ว คุณต้องกลับขึ้นไปพร้อมของที่เก็บได้"; runEvent(l, "ft.h.floor", { dg: c.dg, run: runOf(c) + 1, ...(c.rested ? { rested: true } : {}) }); const q = l.queue.pop(); if (q) l.queue.splice(1, 0, q); return " บันไดลงชั้นต่อไปอยู่ตรงหน้า"; }
 const isBoss = (l: Life, d: Dungeon) => floorOf(l, d.id) === d.floors - 1;
 
 function clearFloor(l: Life, d: Dungeon, mul = 1) {
@@ -52,14 +62,15 @@ function clearFloor(l: Life, d: Dungeon, mul = 1) {
 }
 const floorWin = (mul: number): Res => (l, c) => {
   const d = D(c), boss = isBoss(l, d);
+  if (boss) meet(l, d.boss);
   clearFloor(l, d, mul);
   return boss
     ? BIG(`${d.boss}ล้มลง ${d.name}ถูกพิชิตแล้ว คุณออกมาพร้อม${weaponNoun(l)}ที่เก็บได้จากห้องสมบัติ`, { fame: 10, joy: 10 })(l, c)
-    : G(`ชั้นที่ ${floorOf(l, d.id)} ผ่านไป คุณเก็บสมบัติแล้วจุดคบไฟปักไว้เป็นทางกลับ`, { joy: 3 })(l, c);
+    : G(`ชั้นที่ ${floorOf(l, d.id)} ผ่านไป คุณเก็บสมบัติแล้วจุดคบไฟปักไว้เป็นทางกลับ${deeper(l, c)}`, { joy: 3 })(l, c);
 };
 const floorLose = (text: string, extra = 0): Res => (l, c) => {
   const d = D(c);
-  if (chance(l, deathOdds(l, threatAt(l, d) + extra) * 0.6)) return B("คบไฟของคุณดับลงในความมืดชั้นล่าง", { die: `ตายใน${d.name}` })(l, c);
+  if (chance(l, deathOdds(l, threatAt(l, d, c) + extra) * 0.6 * (runOf(c) >= WARN_RUN ? 1.2 : 0.7))) return B("คบไฟของคุณดับลงในความมืดชั้นล่าง", { die: `ตายใน${d.name}` })(l, c);
   return B(text, { hp: -randInt(l, 8, 14) })(l, c);
 };
 
@@ -100,12 +111,13 @@ export const HOBBY_EVENTS: GameEvent[] = [
     )),
     C("ยังไม่ลงไปปีนี้", N("คุณพับแผนที่เก็บใส่อกเสื้อ")),
   ]),
-  SCENE("ft.h.floor", "ในดันเจี้ยน", (l, c) => { const d = D(c); return isBoss(l, d) ? `ห้องสุดท้ายของ${d.name} ${d.boss}ลืมตาขึ้นในความมืด (จุดอ่อนธาตุ${ELEMENTS[d.weak].name})` : `ชั้นที่ ${floorOf(l, d.id) + 1} ของ${d.name} เงาบางอย่างขยับอยู่ข้างหน้า${l.stats.smarts >= 50 ? ` (จุดอ่อนธาตุ${ELEMENTS[d.weak].name})` : ""}`; }, [
-    P("บุกตรงเข้าไป", (l, c) => fightOdds(l, threatAt(l, D(c)) + (isBoss(l, D(c)) ? 8 : 0)), floorWin(1), floorLose("มันแข็งแกร่งกว่าที่คิด คุณถอยกลับขึ้นบันไดพร้อมแผล")),
-    techChoice((l, c) => threatAt(l, D(c)) + (isBoss(l, D(c)) ? 8 : 0), () => floorWin(1.2), floorLose("ท่าไม้ตายพลาดเป้า มันสวนกลับทันที")),
-    ...spellChoices((l, c) => threatAt(l, D(c)) + (isBoss(l, D(c)) ? 8 : 0), (_l, c) => D(c).weak, () => undefined, () => floorWin(1.1), floorLose("เวทของคุณสะท้อนกลับจากผนัง")),
+  SCENE("ft.h.floor", "ในดันเจี้ยน", (l, c) => { const d = D(c); return isBoss(l, d) ? `ห้องสุดท้ายของ${d.name} ${d.boss}ลืมตาขึ้นในความมืด (จุดอ่อนธาตุ${ELEMENTS[d.weak].name})` : `ชั้นที่ ${floorOf(l, d.id) + 1} ของ${d.name} เงาบางอย่างขยับอยู่ข้างหน้า${l.stats.smarts >= 50 || knows(l, d.boss) ? ` (จุดอ่อนธาตุ${ELEMENTS[d.weak].name})` : ""}${runOf(c) >= WARN_RUN ? " · ลมเย็นจากชั้นล่างเตือนว่าคุณลงมาลึกเกินไปแล้ว ถ้าพลาดตอนนี้อาจไม่ได้กลับขึ้นไป" : runOf(c) ? ` · ลงมาต่อเนื่อง ${runOf(c)} ชั้นแล้ว ยิ่งลึกยิ่งอันตราย` : ""}`; }, [
+    P("บุกตรงเข้าไป", (l, c) => fightOdds(l, threatAt(l, D(c), c) + (isBoss(l, D(c)) ? 8 : 0)), floorWin(1), floorLose("มันแข็งแกร่งกว่าที่คิด คุณถอยกลับขึ้นบันไดพร้อมแผล")),
+    techChoice((l, c) => threatAt(l, D(c), c) + (isBoss(l, D(c)) ? 8 : 0), () => floorWin(1.2), floorLose("ท่าไม้ตายพลาดเป้า มันสวนกลับทันที")),
+    ...spellChoices((l, c) => threatAt(l, D(c), c) + (isBoss(l, D(c)) ? 8 : 0), (_l, c) => D(c).weak, () => undefined, () => floorWin(1.1), floorLose("เวทของคุณสะท้อนกลับจากผนัง")),
     P("ย่องผ่านไปเงียบๆ", (l, c) => 0.75 + (l.stats.luck - 50) / 200 - floorOf(l, D(c).id) * 0.08 - D(c).threat / 200, floorWin(0.6), floorLose("เท้าคุณเหยียบกับดักพอดี", 6), { show: (l, c) => !isBoss(l, D(c)) }),
-    C("ถอยกลับ", N("คุณกลับขึ้นไปก่อน ดันเจี้ยนไม่หนีไปไหน")),
+    C("พักที่ชั้นนี้ก่อน", (l, c) => { c.rested = true; addStat(l, "health", 6); return { text: "คุณนั่งพิงผนังกินเสบียง แผลเล็กๆ เริ่มหยุดเลือด แต่เสียงฝีเท้ารอบตัวมากขึ้น", next: "start" }; }, { show: (_l, c) => runOf(c) >= 1 && !c.rested }),
+    C("ถอยกลับ", N((_l, c) => (runOf(c) ? "คุณกลับขึ้นไปพร้อมของที่เก็บได้ทั้งหมด ดันเจี้ยนไม่หนีไปไหน" : "คุณกลับขึ้นไปก่อน ดันเจี้ยนไม่หนีไปไหน"))),
   ]),
   SCENE("ft.h.temple", "วิหาร", "วิหารหินขาวมีแท่นบูชาห้าแท่น เทียนบนแต่ละแท่นไหวต่างกัน", [
     ...GODS.map((g) => PAY(`${g.name} · เทพแห่ง${g.domain} · ${g.boon}`, 5, (l) => ({ text: g.fx(l), kind: "good" as const }))),

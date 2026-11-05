@@ -211,3 +211,19 @@ Foundations go first because the four rules apply to everything built after.
 - Engine: deathSaves hooks; a death during the year's hooks now ends the year cleanly.
 - Survey (80 random bots): median death 59 (ceiling 60, unchanged). Seclusion had been giving bots safe years (median 70) until it got real dangers and a cooldown.
 - Checked on screen: path-of-power fold, the breakthrough popup (plain 75%, trials 90–97%), a master-duel breakthrough, the potion shop with the alchemy discount and revival potion.
+
+## Release 9 built (2026-11-05)
+- danger.ts: big fights in three beats (opening: charge, guard or use the ground; turn: technique, spell, strength draught, an ally such as a wolf, party member, crew or dragon, or look for a weakness; ending: the deciding roll, with a priced flight where fleeing is allowed).
+  Fresh wounds from any danger hit of 6+ health: rest (60%), a healer, healing rank 2 or a wound salve closes them (+4 health back); left alone, 25% a year turn into lasting injuries (lost eye, bad leg, burned hand, damaged lung), each with its own cost, cured at the temple for 80 gold or by healing rank 5.
+  Poison, curses and plague worsen over three stages unless cured (healer, temple or penance), and can fade on their own.
+  A guild board of three named jobs a year (pay by danger; regular clients pay more and offer a three-step chain of bigger jobs; some person-finding jobs hide a truth you decide on).
+  Bounties with innocent targets, bribes, the gang behind them and friends who come for revenge later. A named nemesis beast born from a failed hunt returns every 6 years, stronger each time, until one of you falls.
+  War roles on the draft (officer, field healer, spy, supplier, deserter) that move kingdom power; a siege of your city (walls, militia, evacuate, bribe, flee) that can damage your home and estates.
+  Danger that comes to you: road bandits, monster raids, assassins once famous, storms and avalanches in port and mountain cities. Pirates at sea and mounted fights as three-beat scenes.
+  Loot (a weapon, a map, monster parts, a sealed letter story). Weapons break only in a lost big fight, then get reforged stronger or are lost. Fear after a bad defeat (-6%) until you win again; bold lives fight better but die more, careful ones survive better.
+  A vow to never take up arms: danger comes half as often, peaceful ways get +10%, and fighting breaks it. Every danger that comes to you has a way through without fighting (tested).
+  bestiary.ts: monsters you've met show their weakness and home; meeting one gives +4%, three times +8%. A "wounds and danger" section and a bestiary in the Power tab.
+- Dungeons now continue floor by floor in one trip (rest once, retreat any time, up to four floors), danger rising with depth and death odds higher after a warning at floor 3.
+- Fixes found on the way: R8's training years only counted during seclusion (year hooks read last year's actions now); a revival potion mid-fight no longer skips the rest of the fight; activity ids ft_vow and ft_board were already taken (now ft_peacevow and ft_guildboard, with a test that ids stay unique).
+- Survey (200 random bots): median death 50 (R8: 56); the extra deaths are bots pushing deeper into dungeons. Quiet lives unchanged (human median 62, elves far ahead).
+- Checked on screen: the danger section and bestiary, a nemesis fight through all three beats with loot, the guild board with danger-based pay, a job twist.

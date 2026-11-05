@@ -1,5 +1,7 @@
 import { CORRUPT_WORDS, CRAFT_NAME, CRAFT_RANKS, KILLS_TO_NAME, POTIONS, corruptionOf, craftRank, learnedOf, nextBreak, secluded, secludedUntil, standingLine, type Craft } from "../../content/fantasy/power2";
 import { YEARS_PER_CAP } from "../../content/fantasy/power";
+import { dangerLines } from "../../content/fantasy/danger";
+import { BESTIARY, timesMet } from "../../content/fantasy/bestiary";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
 import { raceLabel } from "../../content/fantasy/birth";
@@ -81,6 +83,27 @@ function PowerPathFold({ life }: { life: Life }) {
   );
 }
 
+function DangerFold({ life }: { life: Life }) {
+  const lines = dangerLines(life);
+  const met = BESTIARY.filter((b) => timesMet(life, b.name) > 0);
+  if (!lines.length && !met.length) return null;
+  return (
+    <>
+      {lines.length > 0 && (
+        <Fold always kind="section" id="ft-danger" title={<>บาดแผลและภัย</>}>
+          {lines.map((t) => <p className="small" key={t}>{t}</p>)}
+        </Fold>
+      )}
+      {met.length > 0 && (
+        <Fold kind="section" id="ft-bestiary" title={<>สมุดสัตว์อสูร · {met.length}/{BESTIARY.length}</>}>
+          <p className="small muted">เจอแล้วจำจุดอ่อนได้ · เจอสามครั้งขึ้นไปรู้ทางของมัน</p>
+          {met.map((b) => <p className="small" key={b.name}><b>{b.name}</b> · แพ้{b.weak} · อยู่ที่{b.home} · เจอ {timesMet(life, b.name)} ครั้ง{timesMet(life, b.name) >= 3 ? " · รู้ทาง" : ""}</p>)}
+        </Fold>
+      )}
+    </>
+  );
+}
+
 function TrainingFold({ life }: { life: Life }) {
   const [, force] = useState(0);
   const focus = trainFocus(life);
@@ -138,6 +161,7 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         <p className="small muted">{canCast(life) ? `ร่ายเวทได้ เพดานตอนนี้: ${MAGIC_RANKS[magicCap(life)]}` : "ยังร่ายเวทไม่ได้ ซื้อคทาได้ที่แท็บทำ"}</p>
       </Fold>
       <PowerPathFold life={life} />
+      <DangerFold life={life} />
       <TrainingFold life={life} />
       <PowerSourceFolds life={life} />
       {seen(life) && (
