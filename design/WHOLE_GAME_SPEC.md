@@ -141,3 +141,15 @@ Foundations go first because the four rules apply to everything built after.
   - unlocked races roll at 5 instead of 0.6 / 1.2 (soul.rareRaces)
 - **Talents:** every fantasy talent already evolves, and a life already gets 2–3. The weak common ones are stronger now (stats +6 → +10 and similar).
 - Balance (40 lives each): median death 81 plain vs 90 with extras (the lives take different random paths), gold at 50 772 vs 866.
+
+## Release 4 built (2026-11-05)
+- **races.ts: rites of passage** at each race's own age: orc 13 (first hunt), beastfolk 14 (moon run), halfling 15 (first feast as host),
+  human 16 (oath at the temple), dwarf 30 (first forging), demon-born 33 (true name), dragon-born 40 (first flight), elf 50 (night under the old tree).
+  Each has two attempts with real odds, plus "don't take part". Passing gives a lasting boon and a deed. Heirs older than the rite count as passed.
+- **Youth years** for long-lived races: a log note at 18, and one youth scene per race before the rite.
+- **Two race events across life for each race**, plus a race legend late in life (after passing the rite, stage age 55+, fame 40+ or 4+ deeds).
+- **Prejudice 0–2** for orcs, beastfolk, dragon-born and demon-born, weaker where the race is common (12%+ of the kingdom). Fame 40+,
+  standing 20+ and half blood each lower it. Effects: job odds −12% and living cost +8% per level, plus "door closed" and "guard" scenes
+  where you can win people over (a person who remembers, and standing).
+- Power tab: rite status and how this kingdom sees your race.
+- Survey (12 lives per race): everyone finds work; orcs have less gold at 50 (864 vs human 1193); lifespans per race unchanged.

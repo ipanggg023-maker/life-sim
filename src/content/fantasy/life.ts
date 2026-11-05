@@ -15,6 +15,7 @@ import { applyStarStart, childStars, rollStars } from "./stars";
 import { inheritFeuds } from "./people2";
 import { verdict } from "./persona";
 import { passOn } from "./family";
+import { RITES } from "./races";
 
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
   human: { name: "มนุษย์", younger: RACE_YOUNGER.human, desc: "ชีวิตสั้นแต่ไปได้ทุกทาง" },
@@ -122,6 +123,8 @@ export function inheritLife(dead: Life, next: Life, heirId?: string) {
   const sp = dead.people.find((p) => p.relation === "spouse");
   const spRace = sp && raceOf(sp);
   if (spRace && spRace !== d.race && !RARE_RACES.includes(spRace) && !RARE_RACES.includes(d.race)) { next.ft.half = spRace; applyRaceStats(next, spRace, 0.5); }
+  // ทายาทที่โตเลยวัยพิธีของเผ่าแล้ว ถือว่าผ่านพิธีมาแล้ว
+  if (next.age > RITES[next.ft.race].age) next.flags.ftRite = "passed";
   // บทเรียนในวัยเด็ก ของใหญ่ของตระกูล และศิษย์ของพ่อแม่
   passOn(dead, next, heirId);
 }

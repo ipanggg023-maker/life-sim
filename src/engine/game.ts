@@ -706,7 +706,13 @@ export function jobRequirementMissing(life: Life, c: Career): string | undefined
   return;
 }
 
+/** โลกปรับโอกาสได้งาน (เช่น อคติต่อเผ่า) */
+export const jobChanceHooks: Array<(life: Life, c: Career, p: number) => number> = [];
 export function jobChance(life: Life, c: Career) {
+  const p = baseJobChance(life, c);
+  return jobChanceHooks.length ? clamp(jobChanceHooks.reduce((x, h) => h(life, c, x), p), 0.02, 0.98) : p;
+}
+function baseJobChance(life: Life, c: Career) {
   if (c.sys) return clamp(0.5 + (sysAs100(effSys(life, c.sys.main)) - c.dc) / 60 + (life.stats.luck - 50) / 400, 0.05, 0.95);
   return checkChance(life, c.key, c.dc, (life.education.grade - 50) / 300);
 }

@@ -1,3 +1,4 @@
+import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
 import { raceLabel } from "../../content/fantasy/birth";
 import { fitGender } from "../../engine/util";
 // แท็บเฉพาะโลกแฟนตาซี: พลังของตัวละคร และสภาพโลก
@@ -90,6 +91,9 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         <div className="status-grid">
           <span>เผ่า</span>
           <b>{raceLabel(life)}</b>
+          <span>{riteOf(life).title}</span>
+          <b>{riteState(life) === "passed" ? "ผ่านแล้ว" : riteState(life) === "failed" ? "ไม่ผ่าน" : riteState(life) === "skipped" ? "ไม่ได้เข้าร่วม" : `อายุ ${riteOf(life).age}`}</b>
+          {prejudice(life) > 0 && <><span>คนในแผ่นดินนี้</span><b>{prejudice(life) >= 2 ? "ระแวงเผ่าของคุณมาก" : "ยังระแวงเผ่าของคุณ"}</b></>}
           <span>พลังต่อสู้</span>
           <b>{combat(life)}</b>
           <span>สายกาย</span>
