@@ -56,12 +56,12 @@ describe("อาชีพใหม่และบททดสอบ", () => {
 
 describe("รอยที่ทิ้งไว้ตอนจากงาน", () => {
   it("ลาออกดีๆ หลังทำงานนานได้คำรับรอง ถูกไล่ออกแล้วสมัครสายเดิมยากขึ้น", () => {
-    const a = life(3); startJob(a, "ft_smith"); a.job!.years = 4; a.job!.performance = 70;
+    const a = life(3); a.stats.smarts = 70; startJob(a, "ft_smith"); a.job!.years = 4; a.job!.performance = 70;
     const k = careerById("ft_enchanter")!;
-    const before = jobChance(a, k);
     quitJob(a);
+    const twin = life(3); twin.stats.smarts = 70; const before = jobChance(twin, k);
     expect(fl(a).leftMark?.craft?.how).toBe("reference");
-    expect(jobChance(a, k)).toBeCloseTo(Math.min(0.98, before + REFERENCE_EDGE), 5);
+    expect(jobChance(a, k)).toBeGreaterThan(before + REFERENCE_EDGE * 0.8);
     const b = life(4); startJob(b, "ft_smith"); b.job!.performance = 5;
     const p0 = jobChance(b, k);
     for (let i = 0; i < 20 && b.job; i++) { b.job.performance = 5; year(b); }

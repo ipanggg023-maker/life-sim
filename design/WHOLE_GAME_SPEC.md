@@ -267,3 +267,16 @@ Foundations go first because the four rules apply to everything built after.
   A "money" section in the Career tab and a "money" group in the Do tab.
 - Balance: the 200-bot median death is 50 (R11: 51). The reckless-bot test now checks that at least 45% of those lives end before 60, because the median jumps between the two age groups.
 - Checked on screen: the money activities, buying a farm, the Career tab money section, a tax assessment.
+
+## Release 13 built (2026-11-05)
+- society2.ts: each kingdom has a culture (honour, trade, faith or magic) and a main god: Aldria faith and Solia, Varn honour and Garroth, Thalos trade and Myra; kingdoms founded later get one from their name. Careers that fit the culture are easier to get (+8%) and pay 10% more.
+  Five classes (peasant to noble) climbed through wealth, a business, land, court rank, fame, a noble marriage or the throne; nobles sneer at new money once.
+  Five reputations (honour, cruelty, wealth, skill, faith) worked out from what you have done; each career family cares about one when hiring.
+  A court path (courtier, adviser, lord, confidant of the throne) through service, intrigue, gifts and noble marriage, with favour that fades if you stay away; a palace plot (expose, join, or stay out); at the top the council may name you heir.
+  Rulers face one issue every year (famine, rebels, taxes, an heir, troops at the border), each moving stability, power and prosperity.
+  Devotion to one god: a small yearly blessing, a duty every four years (tithe or pilgrimage; skipping it loses the blessing for three years). In faith kingdoms inquisitors hunt worshippers of other gods and the demon-born; holy wars call you to fight.
+  A secret society (the Shadow Circle): an invitation, missions, an inner circle and a plot for the throne (help, betray, or walk away). Rebels in unstable kingdoms: missions, then a night of uprising you can lead to the throne.
+  Moving kingdoms is a journey: choose a destination by culture, tax, god and your standing there, then travel by road, by sea from a port, or with a guarded caravan, and arrive to a summary of the new land.
+  A "society, class and faith" section in the World tab.
+- Balance: free yearly blessings first added about 5 years to random bots; devotion now gives its own small boons at 30% a year. 200-bot median 54 (R12: 50), 56% die before 60.
+- Checked on screen: the World tab section, the journey from Varn to Thalos with a road robbery, the court.

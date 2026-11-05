@@ -148,6 +148,16 @@ export interface FLife {
   charity?: string[];
   /** มีห้องนิรภัยกันขโมย */
   vault?: boolean;
+  // ── สังคม (society2.ts) ──
+  /** ทางในราชสำนัก: ขั้น 1–4 · ความโปรดปราน 0–100 */
+  court?: { rank: number; favor: number };
+  /** เทพที่อุทิศตนให้ · ปีที่ผิดหน้าที่ต่อเทพครั้งล่าสุด */
+  god?: string;
+  godLost?: number;
+  /** สมาคมลับ: ขั้น 1–3 · ภารกิจที่ทำ */
+  shadow?: { rank: number; missions: number; out?: boolean };
+  /** กบฏ: ภารกิจที่ทำ */
+  rebel?: { missions: number; kingdom: string };
   /** ลูกครึ่ง: อีกเผ่าหนึ่งในสายเลือด (birth.ts) */
   half?: RaceId;
   /** เส้นเรื่องที่ยังไม่จบ: คนในเรื่องจะกลับมาเมื่อถึงกำหนด (storygen.ts) */
