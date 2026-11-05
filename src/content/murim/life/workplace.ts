@@ -1,3 +1,4 @@
+import { fitGender } from "../../../engine/util";
 // คนในที่ทำงาน: หัวหน้า เพื่อนร่วมงาน การขอเลื่อนตำแหน่ง และการเกษียณ
 // งานเฉพาะอาชีพอยู่ที่ jobActions.ts · ไฟล์นี้คือเรื่องระหว่างคนกับคนในงานที่มีผู้บังคับบัญชา
 import { timeLeft } from "../../../engine/activities";
@@ -50,7 +51,7 @@ export function nextStep(l: Life): string | undefined {
   if (!c) return;
   if (j.performance < 25) return `ผลงานต่ำมาก ถ้าต่ำกว่า 15 อาจถูกไล่ออก`;
   if (j.level >= 5) return "คุณอยู่ตำแหน่งสูงสุดของอาชีพนี้แล้ว";
-  return `ต่อไป: ${c.titles[j.level]} · รายได้ ${money(l, salaryOf(l, c, j.level + 1))}/ปี · ผลงานถึง 80 มีโอกาสได้เลื่อนทุกปี`;
+  return `ต่อไป: ${fitGender(c.titles[j.level], l.gender)} · รายได้ ${money(l, salaryOf(l, c, j.level + 1))}/ปี · ผลงานถึง 80 มีโอกาสได้เลื่อนทุกปี`;
 }
 
 export const canRetire = (l: Life) => l.worldId === "murim" && !!l.job && l.age >= 55 && l.job.years >= 10 && !DARK_JOBS.has(l.job.careerId) && !l.flags.pension;
@@ -59,7 +60,7 @@ export function retire(l: Life) {
   const c = careerById(l.job!.careerId)!;
   const amount = pensionOf(l);
   l.flags.pension = amount;
-  log(l, `คุณวางมือจากตำแหน่ง${c.titles[l.job!.level - 1]}หลังทำงานมา ${l.job!.years} ปี ได้เบี้ยเลี้ยงปีละ ${money(l, amount)}`, "milestone");
+  log(l, `คุณวางมือจากตำแหน่ง${fitGender(c.titles[l.job!.level - 1], l.gender)}หลังทำงานมา ${l.job!.years} ปี ได้เบี้ยเลี้ยงปีละ ${money(l, amount)}`, "milestone");
   l.job = undefined;
   addStat(l, "happiness", 8);
 }
@@ -84,7 +85,7 @@ export const WORKPLACE_EVENTS: GameEvent[] = [
   scene("jb.w_boss", "พบหัวหน้า", (l, c) => `${nm(l, c)}เงยหน้าจากโต๊ะ ผลงานของคุณตอนนี้ ${l.job?.performance ?? 0}`, [
     K("รายงานผลงานของปีนี้", "smarts", 45, act(G("คุณพูดสั้น ตัวเลขชัด หัวหน้าพยักหน้าครั้งเดียว", { feel: { respect: 4 } }), (l, c) => { perf(l, 8); bond(who(l, c), 4); }), N("หัวหน้าฟังไปครึ่งเดียวแล้วเรียกคนอื่นเข้ามา", {})),
     PAY("ส่งของกำนัลตามธรรมเนียม", 8, act(G("หัวหน้ารับไว้โดยไม่พูดอะไร ปีนี้งานดีๆ ผ่านมือคุณมากขึ้น", {}), (l, c) => { perf(l, 3); bond(who(l, c), 12); })),
-    P("ขอเลื่อนตำแหน่งตรงๆ", askOdds, act(BIG((l) => { const t = careerById(l.job!.careerId)!.titles[l.job!.level]; return `หัวหน้าเงียบไปพักหนึ่ง แล้วเซ็นชื่อ ตั้งแต่พรุ่งนี้คุณคือ${t}`; }, { joy: 8 }), (l) => { l.flags.jbAskNext = l.age + ASK_WAIT; if (l.job) { l.job.level++; l.job.performance = 50; } }), act(B("\"ยังไม่ถึงเวลา\" ประตูปิดลง และคนข้างนอกได้ยินหมด", { joy: -3 }), (l, c) => { l.flags.jbAskNext = l.age + ASK_WAIT; perf(l, -5); bond(who(l, c), -8); }), { show: (l) => !!l.job && l.job.level < 5 && l.job.performance >= 50 && askReady(l) }),
+    P("ขอเลื่อนตำแหน่งตรงๆ", askOdds, act(BIG((l) => { const t = fitGender(careerById(l.job!.careerId)!.titles[l.job!.level], l.gender); return `หัวหน้าเงียบไปพักหนึ่ง แล้วเซ็นชื่อ ตั้งแต่พรุ่งนี้คุณคือ${t}`; }, { joy: 8 }), (l) => { l.flags.jbAskNext = l.age + ASK_WAIT; if (l.job) { l.job.level++; l.job.performance = 50; } }), act(B("\"ยังไม่ถึงเวลา\" ประตูปิดลง และคนข้างนอกได้ยินหมด", { joy: -3 }), (l, c) => { l.flags.jbAskNext = l.age + ASK_WAIT; perf(l, -5); bond(who(l, c), -8); }), { show: (l) => !!l.job && l.job.level < 5 && l.job.performance >= 50 && askReady(l) }),
     C("ทำงานต่อไปเงียบๆ", N("คุณคำนับแล้วกลับไปที่โต๊ะ", {})),
   ]),
 

@@ -70,7 +70,8 @@ export function rememberSeen(soul: Soul, life: Life) {
   const all = new Set(soul.seenEver ?? []);
   for (const id of Object.keys(life.seen)) {
     const e = getEvent(id);
-    if (e && isStoryEvent(e)) all.add(id);
+    // เรื่องหลักของปี (manual แต่เกิดได้ครั้งเดียว) ก็นับด้วย ชาติหน้าจะได้เรื่องหลักใหม่
+    if (e && (isStoryEvent(e) || (e.manual && !e.forced && e.maxTimes === 1))) all.add(id);
   }
   soul.seenEver = [...all];
 }

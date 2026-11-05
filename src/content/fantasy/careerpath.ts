@@ -1,3 +1,4 @@
+import { fitGender } from "../../engine/util";
 // เส้นทางอาชีพ: เลื่อนขั้นต้องได้มาด้วยฝีมือ ขั้นสูงสุดต้องสอบเป็นนายใหญ่ หลังจากนั้นเป็นตำนานของอาชีพ
 // เกษียณตามอายุขัยของเผ่า มีบำนาญ · กลับมาทำงานเดิมไม่ต้องเริ่มจากศูนย์ · แผนอยู่ที่ design/SYSTEMS_UPDATE.md (Release 2)
 import type { GameEvent } from "../../engine/events";
@@ -54,8 +55,8 @@ function careerYear(l: Life) {
   if (j.level > before) {
     l.flags[key] = j.level;
     // ขั้นสำคัญของอาชีพ: ชื่อเริ่มเป็นที่รู้จัก และขั้นสูงสุดเป็นเรื่องที่ทำไว้ในชีวิต
-    if (j.level === 3 && before < 3) { addFame(l, 2); addStanding(l, 1); log(l, `ตำแหน่ง${c.titles[2]}ทำให้คนในวงการ${c.name}เริ่มรู้จักชื่อคุณ`, "good"); }
-    if (j.level === 5 && before < 5) { addFame(l, 5); deed(l, `${c.titles[4]}แห่งวงการ${c.name}`); }
+    if (j.level === 3 && before < 3) { addFame(l, 2); addStanding(l, 1); log(l, `ตำแหน่ง${fitGender(c.titles[2], l.gender)}ทำให้คนในวงการ${c.name}เริ่มรู้จักชื่อคุณ`, "good"); }
+    if (j.level === 5 && before < 5) { addFame(l, 5); deed(l, `${fitGender(c.titles[4], l.gender)}แห่งวงการ${c.name}`); }
   }
   if (l.queue.length > 2) return;
   const age = l.age;
@@ -70,7 +71,7 @@ function careerYear(l: Life) {
 }
 
 const jobName = (l: Life) => (l.job ? careerById(l.job.careerId)!.name : "อาชีพนี้");
-const topTitle = (l: Life) => (l.job ? careerById(l.job.careerId)!.titles[4] : "นายใหญ่");
+const topTitle = (l: Life) => (l.job ? fitGender(careerById(l.job.careerId)!.titles[4], l.gender) : "นายใหญ่");
 const pass = (l: Life) => {
   const j = l.job!;
   l.flags[`ftMaster_${j.careerId}`] = true; l.flags.ftMasterAge = l.age;
@@ -140,7 +141,7 @@ export function loadCareerPath() {
     const same = Number(l.flags[`ftBest_${c.id}`] ?? 0);
     const kin = Math.max(0, ...Object.keys(l.flags).filter((k) => k.startsWith("ftBest_") && k !== `ftBest_${c.id}`).map((k) => (careerById(k.slice(7))?.key === c.key ? Number(l.flags[k]) : 0)));
     const start = clamp(Math.max(same - 1, kin >= 4 ? 2 : 1), 1, 4);
-    if (start > 1) { l.job.level = start; log(l, `ประสบการณ์เดิมทำให้คุณเริ่มที่ตำแหน่ง${c.titles[start - 1]} ไม่ต้องเริ่มจากศูนย์`, "good"); }
+    if (start > 1) { l.job.level = start; log(l, `ประสบการณ์เดิมทำให้คุณเริ่มที่ตำแหน่ง${fitGender(c.titles[start - 1], l.gender)} ไม่ต้องเริ่มจากศูนย์`, "good"); }
   });
   yearHooks.push(careerYear);
 }

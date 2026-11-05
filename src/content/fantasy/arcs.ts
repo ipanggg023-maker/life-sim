@@ -2,7 +2,7 @@
 import type { Ctx, GameEvent } from "../../engine/events";
 import { randInt } from "../../engine/rng";
 import type { Life, Person, StatKey } from "../../engine/types";
-import { createPerson, shortName } from "../../engine/util";
+import { createPerson, fitGender, shortName } from "../../engine/util";
 import { BIG, C, E, G, K, N, type Fx } from "./kit";
 import { RACE_LABEL, raceOf, setPersonRace } from "./folk";
 import { nameFor, type NameRace } from "./names";
@@ -32,7 +32,7 @@ const MASTERS: Master[] = [
   ["ft_enchanter", "เกราะที่ไม่มีวันแตก", "คุณสลักรูนครบพันตัวบนเกราะชุดเดียว เหลือรูนตัวสุดท้ายที่จะปลุกมัน", "สลักรูนตัวสุดท้าย", "smarts", 65, "เกราะเรืองแสงทั้งชุด ไม่มีอาวุธใดในโลกทะลุมันได้", "รูนตัวสุดท้ายผิดเส้น เกราะกลายเป็นแค่เกราะสวยชุดหนึ่ง", { gold: 200, fame: 10 }],
   ["ft_gladiator", "ร้อยชัยไร้พ่าย", "นี่คือการต่อสู้ครั้งที่ร้อยของคุณในสังเวียน ฝูงชนมาเต็มทุกที่นั่ง", "สู้ครั้งที่ร้อย", "health", 65, "คุณชนะครั้งที่ร้อย ฝูงชนลงมาแบกคุณรอบสังเวียน และเจ้าของสังเวียนปลดคุณเป็นอิสระพร้อมทอง", "คุณแพ้ครั้งแรกในรอบหลายปี แต่ฝูงชนยังตะโกนชื่อคุณ", { gold: 200, fame: 15 }],
   ["ft_cartographer", "แผนที่โลกทั้งใบ", "แผนที่ของคุณเหลือเพียงมุมเดียวที่ยังว่าง มุมที่ทุกคนบอกว่าเป็นขอบโลก", "เดินทางไปวาดมุมสุดท้าย", "luck", 60, "แผนที่โลกฉบับสมบูรณ์ฉบับแรกแขวนอยู่ในหอสมุดหลวง พร้อมลายมือของคุณ", "หมอกปกคลุมขอบโลกทั้งปี คุณต้องกลับมาก่อน", { fame: 15, gold: 100 }],
-  ["ft_wandwright", "คทาที่เลือกยุค", "คุณทำคทาจากไม้ของต้นไม้แรกของโลก และมันยังไม่เลือกใคร", "พาคทาไปหาเจ้าของ", "luck", 60, "คทาเลือกเด็กชาวนาคนหนึ่ง และสิบปีต่อมาเด็กคนนั้นกลายเป็นอัครจอมเวท ทุกคนรู้ว่าใครทำคทาให้", "คทานิ่งสนิทกับทุกคน มันยังไม่ถึงเวลา", { fame: 15, gold: 100 }],
+  ["ft_wandwright", "คทาที่เลือกยุค", "คุณทำคทาจากไม้ของต้นไม้แรกของโลก และมันยังไม่เลือกใคร", "พาคทาไปหาเจ้าของ", "luck", 60, "คทาเลือกเด็กชาวนาคนหนึ่ง และสิบปีต่อมาเด็กคนนั้นกลายเป็นมหาจอมเวท ทุกคนรู้ว่าใครทำคทาให้", "คทานิ่งสนิทกับทุกคน มันยังไม่ถึงเวลา", { fame: 15, gold: 100 }],
   ["ft_dragonkeeper", "ฝูงมังกรหลวง", "ไข่มังกรเจ็ดฟองในคอกหลวงฟักพร้อมกันในคืนเดียว", "ดูแลลูกมังกรทั้งเจ็ดตัว", "health", 60, "ลูกมังกรทั้งเจ็ดรอด ฝูงมังกรหลวงฝูงแรกในประวัติศาสตร์เกิดขึ้นเพราะคุณ", "ลูกมังกรตัวหนึ่งไม่รอด คุณร้องไห้ทั้งคืน", { fame: 15 }],
   ["ft_courtier", "เบื้องหลังบัลลังก์", "ผู้ครองแผ่นดินประชวรหนัก และทุกคนในราชสำนักรอดูว่าคุณจะหนุนใคร", "ประคองแผ่นดินจนผู้ครองหาย", "smarts", 65, "แผ่นดินสงบตลอดสามเดือนที่ผู้ครองประชวร ทุกคนรู้ว่าใครคือเสาค้ำบัลลังก์", "ขุนนางสองฝ่ายตีกันกลางสภา คุณห้ามได้แค่ครึ่งเดียว", { fame: 15, gold: 100 }],
 ];
@@ -54,7 +54,7 @@ const PATH: Record<string, [job: string, text: string]> = {
   free: ["นักผจญภัยหนุ่ม", "{n}เก็บกระเป๋าแล้วบอกว่าจะออกไปหาเส้นทางของตัวเอง เหมือนที่คุณเคยทำ"],
 };
 const DESTINY: GameEvent = E("ft.ar.destiny", [36, 900], (l, c) => PATH[String(c.path)][1].replace("{n}", kid(l, c) ? shortName(kid(l, c)!) : "ลูก"), [
-  C("กอดลูกแล้วอวยพร", G("ลูกของคุณออกเดินทางด้วยรอยยิ้ม และคุณรู้ว่าทุกบทเรียนไม่สูญเปล่า", { joy: 10, fame: 2 }, (l, c) => { const p = kid(l, c); if (!p) return; p.job = PATH[String(c.path)][0]; p.tags = [...(p.tags ?? []), "ft_destiny"]; p.bond = Math.min(100, p.bond + 10); })),
+  C("กอดลูกแล้วอวยพร", G("ลูกของคุณออกเดินทางด้วยรอยยิ้ม และคุณรู้ว่าทุกบทเรียนไม่สูญเปล่า", { joy: 10, fame: 2 }, (l, c) => { const p = kid(l, c); if (!p) return; p.job = fitGender(PATH[String(c.path)][0], p.gender); p.tags = [...(p.tags ?? []), "ft_destiny"]; p.bond = Math.min(100, p.bond + 10); })),
   C("ขอให้ลูกอยู่ช่วยงานที่บ้านก่อน", N("ลูกยอมอยู่ แต่มองออกไปนอกหน้าต่างทุกเย็น", { joy: -2 }, (l, c) => { const p = kid(l, c); if (p) p.tags = [...(p.tags ?? []), "ft_destiny"]; })),
 ], { title: "ชะตาของลูก", weight: 30, maxTimes: 0, when: (l) => !!l.ft && !!grownKid(l), prepare: (l): Ctx => { const p = grownKid(l)!; return { pid: p.id, path: destiny(p) }; } });
 
@@ -69,8 +69,10 @@ const LOVES: Love[] = [
   ["human", "คนแปลกหน้าในงานเต้นรำ", "ในงานเต้นรำหน้ากาก คนแปลกหน้าคนหนึ่งเต้นกับคุณสามเพลงติด แล้วหายไปก่อนเที่ยงคืน", "สามวันต่อมาเขามาเคาะประตูบ้านคุณพร้อมรองเท้าที่คุณทำตกไว้", "ขุนนางหนุ่ม"],
 ];
 const freeHeart = (l: Life) => l.age >= 18 && !l.people.some((p) => p.alive && (p.relation === "spouse" || p.relation === "partner"));
-const loveEvent = ([race, title, text, ok, job]: Love): GameEvent => E(`ft.ar.love_${race}`, [18, 300], text, [
-  K("เปิดใจให้", "looks", 40, G(ok, { joy: 8 }, (l) => {
+/** ข้อความของคนรัก: ตรงกับเพศของเขา (คนรักเป็นเพศตรงข้ามกับคุณ) */
+const forLover = (l: Life, t: string) => (l.gender === "m" ? fitGender(t, "f") : t.replace(/เธอ/g, "เขา"));
+const loveEvent = ([race, title, text, ok, job]: Love): GameEvent => E(`ft.ar.love_${race}`, [18, 300], (l) => forLover(l, text), [
+  K("เปิดใจให้", "looks", 40, G((l) => forLover(l, ok), { joy: 8 }, (l) => {
     const gender = l.gender === "m" ? "f" : "m";
     const p = createPerson(l, "partner", { gender, age: Math.max(18, l.age + randInt(l, -4, 4)), bond: 60, job });
     const n = nameFor(l, race as NameRace, gender);

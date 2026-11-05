@@ -235,7 +235,8 @@ describe("หลายชีวิตในโลกเดียว", () => {
     a.fame = 5;
     closeLife(s, a);
     expect(s.fantasyWorld!.legends).toEqual([]);
-    expect(s.fantasyWorld!.chronicle.at(-1)!.text).toContain(displayName(a));
+    // ชีวิตที่ไม่มีอะไรให้จดจำไม่ทิ้งอะไรไว้ในพงศาวดาร
+    expect(s.fantasyWorld!.chronicle.some((c) => c.text.includes(displayName(a)))).toBe(false);
   });
   it("อาวุธของคนตายกลับสู่โลกให้คนอื่นตามหา", () => {
     const s = newSoul(), a = life(23);

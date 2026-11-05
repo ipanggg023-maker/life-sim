@@ -1,3 +1,4 @@
+import { fitGender } from "../engine/util";
 import { createContext, memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { careerById } from "../content/core/careers";
 import { rankLabel } from "../content/core/power";
@@ -262,17 +263,26 @@ function LastChapter({ ch }: { ch: NonNullable<Life["lastChapter"]> }) {
   );
 }
 
+const REPORT_SHORT = 3;
 /** สรุปผลของปีที่เพิ่งผ่านไป */
 function ReportCard({ report }: { report: YearReport }) {
+  const [all, setAll] = useState(false);
+  // สามเรื่องที่เปลี่ยนมากที่สุดก่อน · ที่เหลือกดดูได้
+  const lines = all ? report.lines : report.lines.slice(0, REPORT_SHORT);
   return (
     <div className="report-card">
       <div className="report-head">สรุป{report.to - report.from > 1 ? ` ${report.to - report.from} ปี (อายุ ${report.from}–${report.to})` : "ปีที่ผ่านมา"}</div>
       <div className="report-lines">
-        {report.lines.map((x, i) => (
+        {lines.map((x, i) => (
           <span key={i} className={`report-chip ${x.tone}`}>
             {x.text}
           </span>
         ))}
+        {report.lines.length > REPORT_SHORT && (
+          <button className="report-chip report-more" onClick={() => setAll(!all)}>
+            {all ? "ย่อ" : `ดูทั้งหมด (${report.lines.length})`}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -369,7 +379,7 @@ export function MainScreen({
     : murim && rank >= 4
     ? COURT_RANKS[rank]
     : job
-    ? job.titles[life.job!.level - 1]
+    ? fitGender(job.titles[life.job!.level - 1], life.gender)
     : life.education.stage === "university"
       ? "นักศึกษา"
       : life.age < 3

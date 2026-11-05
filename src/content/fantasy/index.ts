@@ -1,6 +1,8 @@
 // โลกแฟนตาซี · แผนอยู่ที่ design/FANTASY_PLAN.md
 import { activityFilters, timeBudget } from "../../engine/activities";
 import { eligibilityFilters, registerEvents } from "../../engine/events";
+/** เรื่องเล็กที่เกิดซ้ำได้ต้องห่างกันกี่ปี */
+export const REPEAT_GAP = 15;
 import { lifespanHooks, yearHooks } from "../../engine/game";
 import type { Life } from "../../engine/types";
 import { registerWorld } from "../../engine/worldModule";
@@ -69,6 +71,8 @@ export function loadFantasyWorld() {
   loaded = true;
   // โลกนี้ใช้เนื้อหาของตัวเองเท่านั้น ไม่รับเหตุการณ์และกิจกรรมชุดเก่า
   eligibilityFilters.push((l, e) => l.worldId !== "fantasy" || e.world === "fantasy");
+  // เรื่องที่เกิดซ้ำได้: ต้องห่างกันอย่างน้อย REPEAT_GAP ปี
+  eligibilityFilters.push((l, e) => l.worldId !== "fantasy" || e.forced || e.maxTimes === 1 || e.maxTimes === undefined || l.age - (l.seenAt?.[e.id] ?? -999) >= REPEAT_GAP);
   activityFilters.push((l, a) => l.worldId !== "fantasy" || a.world === "fantasy");
   TALENTS.push(...FANTASY_TALENTS);
   loadTalentEvo();

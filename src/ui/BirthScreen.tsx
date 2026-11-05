@@ -1,3 +1,4 @@
+import { fitGender } from "../engine/util";
 import { RACES } from "../content/fantasy/life";
 import { useEffect, useState } from "react";
 import { RARITY_LABEL, talentById, talentFlavor } from "../content/talents";
@@ -70,8 +71,8 @@ export function BirthScreen({
       {step >= 1 && (
         <div className="card fade-in">
           <div className="card-title">ครอบครัว</div>
-          {dad && <p>{relationLabel(dad, life)}: {shortName(dad)} ({dad.job}) อายุ {dad.age}</p>}
-          {mom && <p>{relationLabel(mom, life)}: {shortName(mom)} ({mom.job}) อายุ {mom.age}</p>}
+          {dad && <p>{relationLabel(dad, life)}: {shortName(dad)} ({fitGender(dad.job, dad.gender)}) อายุ {dad.age}</p>}
+          {mom && <p>{relationLabel(mom, life)}: {shortName(mom)} ({fitGender(mom.job, mom.gender)}) อายุ {mom.age}</p>}
           {sibs.length ? (
             sibs.map((s) => <p key={s.id}>{relationLabel(s, life)}: {shortName(s)} อายุ {s.age}</p>)
           ) : (

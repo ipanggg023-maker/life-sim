@@ -1,3 +1,4 @@
+import { fitGender } from "../../engine/util";
 // แท็บอาชีพ: ที่ทำงานมีเจ้านายและเพื่อนร่วมงานที่จำสิ่งที่คุณทำ · ผลงานขึ้นกับนิสัยที่เหมาะกับงาน ข่าวลือ และคนรอบตัว
 // เรื่องในที่ทำงานมีช่องของตัวเองทุกปี · การเลื่อนขั้นต้องแข่งกับเพื่อนร่วมงาน · เรื่องเก่าที่ฉาวตามมาถึงที่ทำงานได้
 import type { Ctx, GameEvent } from "../../engine/events";
@@ -28,7 +29,7 @@ const cid = (l: Life) => (l.job?.careerId.startsWith("ft_") ? l.job.careerId : u
 const circle = (l: Life, role?: "boss" | "mate") => { const c = cid(l); return c ? l.people.filter((p) => p.alive && p.tags?.includes(`work:${c}`) && (!role || p.tags.includes(role))) : []; };
 export const bossOf = (l: Life) => circle(l, "boss")[0];
 export const matesOf = (l: Life) => circle(l, "mate");
-const titleOf = (l: Life) => { const c = l.job && careerById(l.job.careerId); return c ? c.titles[l.job!.level - 1] : ""; };
+const titleOf = (l: Life) => { const c = l.job && careerById(l.job.careerId); return c ? fitGender(c.titles[l.job!.level - 1], l.gender) : ""; };
 const jobName = (l: Life) => careerById(l.job?.careerId ?? "")?.name ?? "งาน";
 
 /** มีงานใหม่: เจ้านายหนึ่งคน เพื่อนร่วมงานสองคน · งานเก่ากลายเป็นอดีตเพื่อนร่วมงาน */
@@ -150,7 +151,7 @@ export const WORK_EVENTS: GameEvent[] = [
     tagged(C("ยอมรับและขอโทษ", (l) => { perf(-8)(l); bossMem("admitted", "คุณยอมรับเรื่องเก่าของตัวเอง", 2, { respect: 6 })(l); return { text: "นายจ้างลดตำแหน่งคุณชั่วคราว แต่ไม่ไล่ออก เพราะคุณไม่โกหก", kind: "normal" }; }), { h: 7 }),
     tagged(K("ปฏิเสธว่าเป็นข่าวลือ", "smarts", 50, G("ไม่มีหลักฐาน เรื่องจึงจบ", {}, perf(-2)), (l) => { if (l.job && l.job.level > 1) l.job.level--; perf(-10)(l); bossMem("lied", "คุณโกหกเรื่องเก่าของตัวเอง", 3, { trust: -25 })(l); return { text: "หลักฐานมาถึงโต๊ะนายจ้างในสัปดาห์ต่อมา คุณถูกลดขั้น", kind: "bad" }; }), { h: -5 }),
   ], { when: (l) => !!cid(l) && (seedsOf(l).some((s) => SCANDAL.includes(s.id)) || talkHere(l).some((r) => r.tone < 0 && r.heat >= 35)), maxTimes: 2, weight: 18 }),
-  W("promo", "ชิงตำแหน่ง", (l, c) => `ตำแหน่ง${careerById(l.job?.careerId ?? "")?.titles[l.job?.level ?? 1] ?? "ที่สูงขึ้น"}ว่างลง คุณกับ${nm(l, c)}เป็นตัวเต็งสองคนสุดท้าย`, [
+  W("promo", "ชิงตำแหน่ง", (l, c) => `ตำแหน่ง${fitGender(careerById(l.job?.careerId ?? "")?.titles[l.job?.level ?? 1], l.gender) ?? "ที่สูงขึ้น"}ว่างลง คุณกับ${nm(l, c)}เป็นตัวเต็งสองคนสุดท้าย`, [
     C("ปล่อยให้ผลงานพูดแทน", (l, c) => promoRace(l, c, 0)),
     tagged(K("หาเสียงสนับสนุนในที่ทำงาน", "looks", 50, (l, c) => promoRace(l, c, 0.15), (l, c) => promoRace(l, c, -0.05)), { c: 2 }),
     tagged(C("แอบปล่อยข่าวเสียหายของคู่แข่ง", (l, c) => { const p = who(l, c); if (p) remember(l, p, "smeared", "คุณปล่อยข่าวเสียหายเพื่อชิงตำแหน่ง", 3, { grudge: 40 }); lean(l, { h: -3 }); return promoRace(l, c, 0.2); }), { h: -6, m: -4 }),
@@ -171,7 +172,7 @@ function promoRace(l: Life, c: Ctx, bonus: number) {
     job.level = Math.min(5, job.level + 1);
     job.performance = 55;
     if (rival) remember(l, rival, "lost_promo", "แพ้คุณในการชิงตำแหน่ง", 2, { jealousy: 25, respect: 5 });
-    const t = careerById(job.careerId)!.titles[job.level - 1];
+    const t = fitGender(careerById(job.careerId)!.titles[job.level - 1], l.gender);
     log(l, `คุณได้เลื่อนเป็น "${t}"`, "good");
     return { text: `เจ้านายเรียกชื่อคุณต่อหน้าทุกคน ตำแหน่ง${t}เป็นของคุณ`, kind: "milestone" as const };
   }

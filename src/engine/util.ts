@@ -108,7 +108,7 @@ export function createPerson(
     age: opts.age,
     bond: opts.bond ?? 50,
     alive: true,
-    job: opts.job,
+    job: fitGender(opts.job, gender),
     ...(familyFirst ? { short: n.first } : {}),
     ...("tags" in n && n.tags?.length ? { tags: [...n.tags] } : {}),
   };
@@ -180,4 +180,18 @@ export function checkChance(life: Life, stat: StatKey, dc: number, bonus = 0): n
 export function formatMoney(n: number) {
   const sign = n < 0 ? "-" : "";
   return `${sign}฿${Math.abs(n).toLocaleString("th-TH")}`;
+}
+
+// คำที่บอกเพศในชื่อตำแหน่งและฉายา: ผู้หญิงได้คำของผู้หญิง · "หนุ่มสาว" (คนรุ่นใหม่) คงไว้
+const FEMALE_WORDS: [RegExp, string][] = [
+  [/ชายหนุ่ม/g, "หญิงสาว"], [/เด็กหนุ่ม/g, "เด็กสาว"], [/หนุ่ม(?!สาว)/g, "สาว"],
+  [/พ่อค้า/g, "แม่ค้า"], [/พ่อครัว/g, "แม่ครัว"], [/พระราชา/g, "พระราชินี"], [/ราชาโจร/g, "ราชินีโจร"], [/ราชัน/g, "ราชินี"],
+  [/เจ้าชาย/g, "เจ้าหญิง"], [/ท่านชาย/g, "ท่านหญิง"], [/ลูกชาย/g, "ลูกสาว"], [/มหาดเล็ก/g, "นางกำนัล"], [/สามเณร(?!ี)/g, "สามเณรี"],
+];
+/** ปรับชื่อตำแหน่ง ฉายา หรืออาชีพของคนให้ตรงกับเพศของเขา */
+export function fitGender<T extends string | undefined>(text: T, g: Gender | undefined): T {
+  if (!text || g !== "f") return text;
+  let s: string = text;
+  for (const [re, to] of FEMALE_WORDS) s = s.replace(re, to);
+  return s as T;
 }

@@ -205,6 +205,8 @@ export interface Life {
   flags: Record<string, string | number | boolean>;
   /** event ที่เคยเกิดแล้ว (นับครั้ง) */
   seen: Record<string, number>;
+  /** อายุตอนที่เจอ event นั้นครั้งล่าสุด (กันเรื่องซ้ำในเวลาใกล้กัน) */
+  seenAt?: Record<string, number>;
   /** event เรื่องราวที่วิญญาณเคยเจอในชาติก่อนๆ — ชาตินี้จะเลี่ยงไปเจอเรื่องใหม่ก่อน */
   pastSeen?: string[];
   /** ของสะสมที่วิญญาณมีอยู่แล้วตอนเกิด */

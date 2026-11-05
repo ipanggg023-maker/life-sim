@@ -161,7 +161,7 @@ describe("พลัง: เวท สายอาวุธ และฉายา
     l.ft!.guild = 5;
     expect(epithetOf(l)).toBe("นักผจญภัยขั้นมิธริล");
     l.ft!.magicRank = 4;
-    expect(epithetOf(l)).toBe("อัครจอมเวท");
+    expect(epithetOf(l)).toBe("มหาจอมเวท");
   });
 });
 
@@ -398,7 +398,8 @@ describe("เส้นเรื่องยาว: งานชิ้นเอ�
     k.tags = [...(k.tags ?? []), "taught_body:3"];
     runEvent(l, "ft.ar.destiny");
     resolveChoice(l, visibleChoices(l, l.queue[0])[0].index);
-    expect(k.job).toBe("อัศวินหนุ่ม");
+    // ชื่อตำแหน่งตามเพศของลูก
+    expect(k.job).toBe(k.gender === "f" ? "อัศวินสาว" : "อัศวินหนุ่ม");
   });
   it("รักต่างเผ่าได้คู่เผ่านั้น และงานแต่งเป็นไปตามประเพณีของเผ่า", () => {
     const l = fantasy(115);

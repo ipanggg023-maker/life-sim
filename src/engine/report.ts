@@ -64,5 +64,8 @@ export function buildReport(l: Life, before: Snapshot): YearReport {
   if (newcomers.length) lines.push({ text: `คนใหม่ในชีวิต: ${newcomers.slice(0, 3).map((p) => shortName(p)).join(", ")}${newcomers.length > 3 ? " …" : ""}`, tone: "normal" });
   const lost = l.people.filter((p) => !p.alive && before.alive.includes(p.id));
   if (lost.length) lines.push({ text: `จากไป: ${lost.map((p) => shortName(p)).join(", ")}`, tone: "bad" });
+  // เรื่องใหญ่ก่อน: คนที่จากไป ขั้นพลัง เงินและหนี้ แล้วค่อยเรื่องอื่น (หน้าจอแสดงสามบรรทัดแรก)
+  const pri = (t: string) => (t.startsWith("จากไป") ? 0 : /ขั้นพลัง|ฝีมือก้าวหน้า/.test(t) ? 1 : /^(เงิน|หนี้)/.test(t) ? 2 : 3);
+  lines.sort((a, b) => pri(a.text) - pri(b.text));
   return { from: before.age, to: l.age, lines };
 }

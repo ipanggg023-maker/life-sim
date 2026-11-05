@@ -81,18 +81,23 @@ export function attachWorld(l: Life, s: Soul) {
   if (!kingdomsOf(l).some((k) => k.id === fl(l).kingdom)) fl(l).kingdom = kingdomsOf(l)[0].id;
 }
 
+/** ชีวิตนี้น่าจดจำพอให้โลกเล่าต่อไหม: มีชื่อเสียง มีวีรกรรม หรือมีตำนานแล้ว */
+export const memorable = (l: Life) => l.fame >= MEMORABLE_FAME || fl(l).deeds.length >= 2 || worldOfLife(l).legends.some((g) => g.lifeId === l.id);
+export const MEMORABLE_FAME = 30;
+
 /** ก่อนเล่นต่อ: โลกจดจำคนที่จากไป แล้วบันทึกไว้กับวิญญาณ */
 export function closeLife(s: Soul, l: Life) {
   const w = worldOfLife(l), f = fl(l);
   w.year = l.birthYear + l.age;
-  recordChronicle(w, `${displayName(l)}จากโลกไปเมื่ออายุ ${l.age} ปี · ${verdict(l)}`);
+  // ชีวิตที่ไม่มีอะไรให้จดจำไม่ทิ้งอะไรไว้ในโลก · ชีวิตที่น่าจดจำอยู่ในพงศาวดารและตำนานต่อไป
+  if (memorable(l)) recordChronicle(w, `${displayName(l)}จากโลกไปเมื่ออายุ ${l.age} ปี · ${verdict(l)}`);
   for (const r of (w.data as { relics: { holder: string; id: string; at: string }[] }).relics) if (r.holder === "player") { r.holder = "lost"; r.at = f.kingdom; }
   for (const x of (w.data as { factions?: { playerLed?: boolean; leader: string }[] }).factions ?? []) if (x.playerLed) { x.playerLed = false; x.leader = ""; }
   passThrone(l);
   if (f.whelp) { release(w, l, f.whelp, "บินกลับขุนเขาหลังเจ้าของจากไป"); f.whelp = undefined; }
   const top = f.deeds.at(-1);
   // ชีวิตที่มีตำนานบันทึกไว้แล้ว ไม่ต้องสรุปซ้ำตอนจากไป
-  if (top && (l.fame >= 30 || f.deeds.length >= 2) && !w.legends.some((g) => g.lifeId === l.id)) addLegend(w, { name: displayName(l), deed: top, lifeId: l.id });
+  if (top && memorable(l) && !w.legends.some((g) => g.lifeId === l.id)) addLegend(w, { name: displayName(l), deed: top, lifeId: l.id });
   s.fantasyWorld = w;
 }
 

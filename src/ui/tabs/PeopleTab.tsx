@@ -1,3 +1,4 @@
+import { fitGender } from "../../engine/util";
 ﻿import { useEffect, useState } from "react";
 import { runEvent, argue, askMoney, breakUp, propose, spendTime, tryForBaby, confess, cutTies, giveGift } from "../../engine/game";
 import type { Life, Person, Relation } from "../../engine/types";
@@ -56,7 +57,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
               <div className="person-sub">
                 {relationLabel(p, life)} · อายุ {p.age}
                 {life.worldId === "fantasy" && raceOf(p) ? ` · ${RACE_LABEL[raceOf(p)!]}` : ""}
-                {p.job ? ` · ${p.job}` : ""}
+                {p.job ? ` · ${fitGender(p.job, p.gender)}` : ""}
                 {p.tags?.some((t) => t.startsWith("away:")) ? " · ย้ายไปอยู่ไกล" : ""}
                 {p.tags?.includes("life_rival") ? " · คู่ปรับตลอดชีวิต" : ""}
                 {p.tags?.includes("chosen") ? " · ศิษย์เอก" : ""}

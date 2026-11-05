@@ -32,8 +32,7 @@ import {
   log,
   people,
   randomName,
-  shortName,
-} from "./util";
+  shortName, fitGender } from "./util";
 
 // ───────────────────────── การเกิด ─────────────────────────
 
@@ -360,10 +359,10 @@ function progressJob(life: Life) {
   if (job.performance >= 80 && job.level < 5 && !promoteGates.some((g) => g(life, career, job.level + 1)) && chance(life, 0.6)) {
     job.level++;
     job.performance = 50;
-    log(life, `🎉 คุณได้เลื่อนตำแหน่งเป็น "${career.titles[job.level - 1]}"`, "good");
+    log(life, `🎉 คุณได้เลื่อนตำแหน่งเป็น "${fitGender(career.titles[job.level - 1], life.gender)}"`, "good");
     addStat(life, "happiness", 8);
   } else if (job.performance < 15 && chance(life, 0.5)) {
-    log(life, `คุณโดนไล่ออกจากตำแหน่ง${career.titles[job.level - 1]} เพราะผลงานแย่`, "bad");
+    log(life, `คุณโดนไล่ออกจากตำแหน่ง${fitGender(career.titles[job.level - 1], life.gender)} เพราะผลงานแย่`, "bad");
     life.job = undefined;
     addStat(life, "happiness", -15);
   }
@@ -477,6 +476,7 @@ export function runEvent(life: Life, eventId: string, ctx: Ctx = {}, prepared = 
   // ฉากที่เลือกเป้าหมายเอง (prepare) ต้องได้ ctx ด้วย แม้จะเปิดจากปุ่ม — ctx ที่ส่งมาชนะ
   if (e.prepare && !prepared && Object.keys(ctx).length === 0) ctx = e.prepare(life);
   life.seen[eventId] = (life.seen[eventId] ?? 0) + 1;
+  (life.seenAt ??= {})[eventId] = life.age;
   if (e.choices?.length) {
     life.queue.push({ eventId, ctx });
   } else {
@@ -711,7 +711,7 @@ export function applyJob(life: Life, careerId: string): Outcome {
   if (chance(life, jobChance(life, c))) {
     life.job = { careerId, level: 1, performance: 50, years: 0 };
     for (const h of jobStartHooks) h(life);
-    const out = { text: `คุณได้งานเป็น${c.titles[life.job.level - 1]} (${c.name}) เงินเดือนปีละ ${money(life, salaryOf(life, c, life.job.level))}`, kind: "good" as const };
+    const out = { text: `คุณได้งานเป็น${fitGender(c.titles[life.job.level - 1], life.gender)} (${c.name}) เงินเดือนปีละ ${money(life, salaryOf(life, c, life.job.level))}`, kind: "good" as const };
     log(life, out.text, out.kind);
     return out;
   }
@@ -952,3 +952,14 @@ export function toPastLife(life: Life): PastLife {
 }
 
 export { CAREERS };
+
+/** เหตุผลหนึ่งบรรทัดเมื่อทางเลือกพลาด · ใช้ปัจจัยชุดเดียวกับหน้าต่าง "อะไรขยับโอกาสนี้" (ต้องเรียกก่อนเลือก) */
+export function whyFailed(life: Life, q: QueuedEvent, index: number): string | undefined {
+  const rows = choiceFactors(life, q, index);
+  if (!rows) return;
+  const [base, ...rest] = rows;
+  const down = rest.filter((r) => r.delta <= -0.03 && r.label !== "ปัจจัยอื่น").sort((a, b) => a.delta - b.delta).slice(0, 2);
+  if (down.length) return `สิ่งที่ฉุดไว้: ${down.map((r) => `${r.label} ${Math.round(r.delta * 100)}%`).join(" · ")}`;
+  if (base.delta < 0.4) return `เรื่องนี้ยากในตัวเอง โอกาสตั้งต้นแค่ ${Math.round(base.delta * 100)}%`;
+  return "ครั้งนี้ดวงไม่เข้าข้าง";
+}

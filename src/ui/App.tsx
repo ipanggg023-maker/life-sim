@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ageUp, createLife, pastSelfOf, resolveChoice, toPastLife, type BirthOptions, migrateLife } from "../engine/game";
+import { ageUp, createLife, pastSelfOf, resolveChoice, toPastLife, whyFailed, type BirthOptions, migrateLife } from "../engine/game";
 import { currentScene, labelOf, type Outcome } from "../engine/events";
 import { buildDisciple, inheritMurim, recordChronicle } from "../content/murim/life/generations";
 import { applySoul, buildHeir, buildRegression, claimAward, nextEraOptions, regressTarget } from "../engine/soul";
@@ -237,10 +237,11 @@ export function App() {
       const scene = currentScene(q, life)!;
       const prompt = loc(life, scene.text(life, q.ctx));
       const choice = loc(life, labelOf(scene.choices[index], life, q.ctx));
+      const why = whyFailed(life, q, index);
       const out = resolveChoice(life, index);
       if (out) {
         const kind = out.kind === "system" && isRealistic(life.worldId) ? "good" : out.kind;
-        setResolved({ title: scene.title, prompt, choice, out: { ...out, kind, text: loc(life, out.text) } });
+        setResolved({ title: scene.title, prompt, choice, why, out: { ...out, kind, text: loc(life, out.text) } });
         if (out.kind === "bad") flash();
       }
       commit(life);

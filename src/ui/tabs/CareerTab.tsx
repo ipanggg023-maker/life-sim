@@ -1,3 +1,4 @@
+import { fitGender } from "../../engine/util";
 import { CAREERS, careerById, facultyById } from "../../content/core/careers";
 import { worldMatches, worldOf } from "../../content/worlds";
 import { applyJob, gradeToGpa, isStudent, jobChance, jobRequirementMissing, quitJob, salaryOf, studyHard, workHard } from "../../engine/game";
@@ -52,7 +53,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
       {job && career && (
         <Fold always id="career-1" title={<>งานปัจจุบัน</>}>
           <p>
-            <b>{career.titles[job.level - 1]}</b> · {career.name}
+            <b>{fitGender(career.titles[job.level - 1], life.gender)}</b> · {career.name}
           </p>
           <p>รายได้ {money(life, salaryOf(life, career, job.level))}/ปี · ทำมา {job.years} ปี</p>
           <div className="mini-bar">

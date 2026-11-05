@@ -1499,3 +1499,13 @@ details[open] > .fold-head .fold-chevron { transform: rotate(180deg); }
 .last-chapter { margin-top: 8px; }
 .last-chapter .card { margin-top: 6px; }
 .auto-decide { display: flex; gap: 8px; align-items: center; margin: 6px 0 10px; color: var(--muted); }
+
+/* ─── นิ้วโป้งบนมือถือ: ปุ่มเล็กมีพื้นที่กดอย่างน้อยราว 40px โดยหน้าตาเท่าเดิม ─── */
+.icon-btn { width: 40px; height: 40px; }
+.chip { min-height: 36px; }
+.odds-info { position: relative; }
+.odds-info::after { content: ""; position: absolute; inset: -11px; }
+.report-more { border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer; min-height: 28px; }
+.why-failed { margin: -8px 0 14px; }
+/* จอเตี้ย: ภาพหัวการ์ดเล็กลง ตัวเลือกจะได้อยู่ในจอโดยไม่ต้องเลื่อน */
+@media (max-height: 700px) { :root[data-world="fantasy"] .fate-scene { height: 84px; } :root[data-world="fantasy"] .modal-text { line-height: 1.7; } }

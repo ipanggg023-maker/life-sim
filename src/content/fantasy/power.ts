@@ -7,9 +7,9 @@ import { styleBonus } from "./styles";
 import { mschoolFight, mschoolSafety } from "./mschools";
 import { dual, starFight, starSafety } from "./stars";
 
-export const BODY_RANKS = ["สามัญชน", "นักสู้", "นักดาบ", "ยอดนักดาบ", "ปรมาจารย์ดาบ", "นักบุญดาบ", "เทพดาบ"];
-export const MAGIC_RANKS = ["ผู้ไร้เวท", "ผู้ฝึกเวท", "นักเวท", "จอมเวท", "อัครจอมเวท", "ปราชญ์เวท", "จอมเวทแห่งดวงดาว"];
-export const GUILD_RANKS = ["", "เหล็ก", "ทองแดง", "เงิน", "ทอง", "มิธริล"];
+export const BODY_RANKS = ["คนธรรมดา", "นักรบฝึกหัด", "นักรบ", "ยอดนักรบ", "ปรมาจารย์แห่งยุทธ์", "วีรชนในตำนาน", "เทพแห่งสงคราม"];
+export const MAGIC_RANKS = ["ผู้ตื่นรู้มานา", "ผู้ฝึกหัดเวท", "นักเวท", "จอมเวท", "มหาจอมเวท", "มหาปราชญ์เวท", "ผู้ครองดารา"];
+export const GUILD_RANKS = ["", "ทองแดง", "เหล็ก", "เงิน", "ทอง", "มิธริล"];
 /** ขั้นสูงสุดของคนทั่วไป · สองขั้นเหนือจากนี้เป็นขั้นตำนาน ต้องมีแปดและสิบดาว */
 export const MASTER = 4;
 export const MAX_RANK = 6;

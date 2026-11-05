@@ -96,7 +96,6 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
                   <span className="choice-main">
                     <span className="choice-label">{noEmoji(loc(life, labelOf(c, life, q.ctx)))}</span>
                   {c.mark && <span className="choice-mark">{c.mark}</span>}
-                  {c.cons && !missing && <span className="choice-cost">เสี่ยง: {typeof c.cons === "function" ? c.cons(life, q.ctx) : c.cons}</span>}
                     {missing && <span className="cons"><Icon name="lock" size={13} /> {missing}</span>}
                     {survive !== undefined && survive < 0.95 && (
                       <span className="warn">โอกาสรอดชีวิต {vague ? vagueLabel(survive) : `${Math.round(survive * 100)}%`}</span>
@@ -145,6 +144,8 @@ export interface Resolved {
   title?: string;
   prompt: string;
   choice: string;
+  /** เหตุผลหนึ่งบรรทัดเมื่อพลาด */
+  why?: string;
   out: Outcome;
 }
 
@@ -170,6 +171,7 @@ export function OutcomeModal({ resolved, onNext }: { resolved: Resolved; onNext:
             </p>
           )}
           <p className={`modal-outcome ${resolved.out.kind ?? ""}`}>{noEmoji(resolved.out.text)}</p>
+          {resolved.out.roll && !resolved.out.roll.ok && resolved.why && <p className="small muted why-failed">{resolved.why}</p>}
           {resolved.out.effects && (resolved.out.effects.good.length > 0 || resolved.out.effects.bad.length > 0) && (
             <p className="effects">
               {resolved.out.effects.good.map((t) => (

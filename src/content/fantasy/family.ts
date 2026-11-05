@@ -296,7 +296,7 @@ function beatFor(l: Life): [string, Ctx?] | undefined {
       for (const [id] of TRIPS) if (!tripDone(l, id)) opts.push([`ft.el.j.${id}`]);
       break;
     case "rest":
-      for (const id of ["ft.el.r.garden", "ft.el.r.visit", "ft.el.r.friend"]) if (cd(id, 4)) opts.push([id]);
+      for (const id of ["ft.el.r.garden", "ft.el.r.visit", "ft.el.r.friend"]) if (cd(id, 15)) opts.push([id]);
       break;
     case "guardian":
       opts.push(["ft.el.g.threat"]);

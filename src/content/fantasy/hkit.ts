@@ -108,7 +108,9 @@ const ready = (l: Life, h: Headline) => (h.need ?? []).every((k) => HAS[k](l)) &
 function personFor(l: Life, h: Headline): Person | undefined {
   if (h.who === "new") {
     const a = h.newAs ?? { rel: "friend" as const, job: "คนแปลกหน้า" };
-    const p = createPerson(l, a.rel, { age: a.age ? randInt(l, a.age[0], a.age[1]) : Math.max(8, l.age + randInt(l, -10, 10)), bond: 30 });
+    // คนที่เรื่องเรียกว่า "หนุ่ม" หรือ "สาว" ต้องเป็นเพศนั้นจริง ข้อความในเรื่องจะได้ตรงกับคน
+    const gender = /หนุ่ม|ชาย/.test(a.job) && !/หนุ่มสาว/.test(a.job) ? "m" as const : /สาว|หญิง/.test(a.job) ? "f" as const : undefined;
+    const p = createPerson(l, a.rel, { gender, age: a.age ? randInt(l, a.age[0], a.age[1]) : Math.max(8, l.age + randInt(l, -10, 10)), bond: 30 });
     p.job = a.job;
     return p;
   }
@@ -117,11 +119,20 @@ function personFor(l: Life, h: Headline): Person | undefined {
 }
 /** คะแนนเรื่องหลัก: ยิ่งมีจุดเชื่อมกับชีวิตคุณมาก ยิ่งได้ขึ้นก่อน */
 export const hookScore = (l: Life, h: Headline) => h.hooks.filter((k) => HAS[k](l)).length + (h.who && h.who !== "new" && HAS[h.who](l) ? 1 : 0);
+/** เรื่องหลักที่ยังไม่เคยเจอเหลือน้อยกว่านี้ เรื่องเก่าจึงกลับมาได้ */
+export const HEADLINE_RESET = 10;
 export function pickHeadline(l: Life): { id: string; score: number } | undefined {
   const a = stageAge(l);
   const ok = HEADLINES.filter((h) => a >= h.ages[0] && a <= h.ages[1] && (l.seen[`ft.hl.${h.id}`] ?? 0) < 1 && ready(l, h));
   if (!ok.length) return;
-  const scored = ok.map((h) => ({ h, s: 2 + hookScore(l, h) * 1.5 }));
+  // ทุกชีวิตต้องได้เรื่องไม่ซ้ำกัน: เรื่องหลักที่ชาติก่อนเคยเจอจะกลับมาเมื่อเรื่องใหม่หมดแล้วเท่านั้น
+  const past = new Set(l.pastSeen ?? []);
+  const fresh = ok.filter((h) => !past.has(`ft.hl.${h.id}`));
+  // เรื่องที่เข้ากับปีนี้ถูกใช้ไปหมดแล้วในชาติก่อน: ปีนี้ให้เรื่องอื่นเป็นเรื่องหลักแทน
+  // จนกว่าวิญญาณจะเจอเรื่องหลักแทบครบทุกเรื่องแล้ว จึงยอมให้เรื่องเก่ากลับมา
+  const unseen = HEADLINES.filter((h) => !past.has(`ft.hl.${h.id}`)).length;
+  if (!fresh.length && unseen >= HEADLINE_RESET) return;
+  const scored = (fresh.length ? fresh : ok).map((h) => ({ h, s: 2 + hookScore(l, h) * 1.5 }));
   scored.sort((a, b) => b.s - a.s);
   const top = scored.filter((x) => x.s >= scored[0].s - 1.5);
   const h = pick(l, top).h;

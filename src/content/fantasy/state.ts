@@ -195,13 +195,13 @@ const newData = () => ({
   relics: RELICS.map((x) => ({ ...x })),
 });
 const RELICS: Relic[] = [
-    { id: "veilcutter", name: "เวลคัตเตอร์", power: "ดาบที่ตัดม่านเวทมนตร์ทุกชนิด", holder: "lost", at: "aldria", bonus: 18, trial: "combat" },
-    { id: "dawnchoice", name: "อรุณาเลือก", power: "ดาบที่เลือกเจ้าของด้วยตัวเอง", holder: "lost", at: "thalos", bonus: 20, trial: "heart" },
-    { id: "wyrmsbane", name: "ไวร์มสเบน", power: "ทวนที่ตีขึ้นเพื่อสังหารมังกรโดยเฉพาะ", holder: "lost", at: "varn", bonus: 15, trial: "wit" },
-  { id: "stormcrown", name: "มงกุฎพายุ", power: "ใครสวมแล้วพูด สภาทั้งห้องจะเงียบฟัง", holder: "lost", at: "thalos", bonus: 8, trial: "heart" },
-  { id: "embersoul", name: "คทาวิญญาณถ่าน", power: "ทำให้เพดานเวทของผู้ถือสูงขึ้นหนึ่งขั้น", holder: "lost", at: "aldria", bonus: 12, trial: "wit" },
-  { id: "grief", name: "ดาบโศกา", power: "ดาบที่แรงที่สุดในโลก และดูดความสุขของผู้ถือทุกปี", holder: "lost", at: "varn", bonus: 30, trial: "combat" },
-  { id: "phoenixring", name: "แหวนฟีนิกซ์", power: "ให้ด้ายชะตาเพิ่มหนึ่งเส้นแก่ผู้ที่สวมครั้งแรก", holder: "lost", at: "thalos", bonus: 5, trial: "heart" },
+    { id: "veilcutter", name: "ดาบผ่ามิติรัตติกาล", power: "ดาบที่ตัดม่านเวทมนตร์ทุกชนิด", holder: "lost", at: "aldria", bonus: 18, trial: "combat" },
+    { id: "dawnchoice", name: "ดาบสุริยัน", power: "ดาบที่เลือกเจ้าของด้วยตัวเอง", holder: "lost", at: "thalos", bonus: 20, trial: "heart" },
+    { id: "wyrmsbane", name: "ทวนพิฆาตมังกร", power: "ทวนที่ตีขึ้นเพื่อสังหารมังกรโดยเฉพาะ", holder: "lost", at: "varn", bonus: 15, trial: "wit" },
+  { id: "stormcrown", name: "มงกุฏราชันอัสนี", power: "ใครสวมแล้วพูด สภาทั้งห้องจะเงียบฟัง", holder: "lost", at: "thalos", bonus: 8, trial: "heart" },
+  { id: "embersoul", name: "คทาวิญญาณเพลิงนิรันดร์", power: "ทำให้เพดานเวทของผู้ถือสูงขึ้นหนึ่งขั้น", holder: "lost", at: "aldria", bonus: 12, trial: "wit" },
+  { id: "grief", name: "ดาบคำสาปแห่งความโศกา", power: "ดาบที่แรงที่สุดในโลก และดูดความสุขของผู้ถือทุกปี", holder: "lost", at: "varn", bonus: 30, trial: "combat" },
+  { id: "phoenixring", name: "แหวนวิญญาณฟีนิกซ์", power: "ให้ด้ายชะตาเพิ่มหนึ่งเส้นแก่ผู้ที่สวมครั้งแรก", holder: "lost", at: "thalos", bonus: 5, trial: "heart" },
   { id: "dragonhorn", name: "แตรมังกร", power: "มังกรได้ยินเสียงนี้แล้วผูกพันกับผู้เป่าเร็วขึ้นสองเท่า", holder: "lost", at: "aldria", bonus: 6, trial: "wit" },
 ];
 const DRAGONS: Dragon[] = [
@@ -233,6 +233,8 @@ export function ensureSociety(w: WorldState) {
     d.eggs = [];
     for (const r of RELICS) if (!d.relics.some((x) => x.id === r.id)) d.relics.push({ ...r });
   }
+  // ชื่ออาวุธตำนานเปลี่ยนแล้ว: โลกเก่าใช้ชื่อใหม่ด้วย (ประวัติผู้ถือยังอยู่ครบ)
+  for (const x of d.relics) { const r = RELICS.find((y) => y.id === x.id); if (r) x.name = r.name; }
   if (d.factions) return d;
   const r = { rng: (w.seed >>> 0) || 1 };
   d.nextId = 1;

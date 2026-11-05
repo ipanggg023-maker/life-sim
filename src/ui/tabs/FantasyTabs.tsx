@@ -1,3 +1,4 @@
+import { fitGender } from "../../engine/util";
 // แท็บเฉพาะโลกแฟนตาซี: พลังของตัวละคร และสภาพโลก
 import { RACES } from "../../content/fantasy/life";
 import { BODY_RANKS, FOCUS, GUILD_RANKS, MAGIC_RANKS, bodyCap, canCast, combat, magicCap, needXp, trainFocus, type TrainFocus } from "../../content/fantasy/power";
@@ -311,11 +312,11 @@ export function FantasyCareerCard({ life }: { life: Life }) {
   return (
     <>
     {job && career && (
-      <Fold always id="ft-path" title={<>เส้นทางอาชีพ · {career.titles[job.level - 1]}</>}>
-        <p className="small">{career.titles.map((t, i) => (i < job.level ? <b key={t}>{t}</b> : <span key={t} className="muted">{t}</span>)).reduce<React.ReactNode[]>((a, x, i) => (i ? [...a, " → ", x] : [x]), [])}</p>
+      <Fold always id="ft-path" title={<>เส้นทางอาชีพ · {fitGender(career.titles[job.level - 1], life.gender)}</>}>
+        <p className="small">{career.titles.map((t0, i) => { const t = fitGender(t0, life.gender); return i < job.level ? <b key={t}>{t}</b> : <span key={t} className="muted">{t}</span>; }).reduce<React.ReactNode[]>((a, x, i) => (i ? [...a, " → ", x] : [x]), [])}</p>
         {job.level < 5 ? (
           <>
-            <p className="small muted">ขึ้นเป็น{career.titles[job.level]}ต้องมี:</p>
+            <p className="small muted">ขึ้นเป็น{fitGender(career.titles[job.level], life.gender)}ต้องมี:</p>
             {stepsFor(life, career, job.level + 1).map((s) => <p className="small" key={s.label}>{s.ok ? "✓" : "✗"} {s.label}</p>)}
             {job.level === 4 && <p className="small muted">ผ่านเงื่อนไขครบแล้ว สมาคมจะเรียกไปสอบเอง สอบตกรอสองปี</p>}
           </>

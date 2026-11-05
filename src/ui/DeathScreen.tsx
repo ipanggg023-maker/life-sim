@@ -1,3 +1,4 @@
+import { fitGender } from "../engine/util";
 import { useState } from "react";
 import { careerById, facultyById } from "../content/core/careers";
 import { rankLabel } from "../content/core/power";
@@ -121,7 +122,7 @@ export function DeathScreen({
             {life.education.degree ? `ปริญญาตรี ${facultyById(life.education.degree).name}` : life.education.highSchoolDone ? "ม.6" : "ไม่จบ ม.6"}
           </p>
         )}
-        <p>งานสุดท้าย: {job ? `${job.titles[life.job!.level - 1]} (${job.name})` : "-"}</p>
+        <p>งานสุดท้าย: {job ? `${fitGender(job.titles[life.job!.level - 1], life.gender)} (${job.name})` : "-"}</p>
         {life.power && real && <p>ฝีมือ: ขั้น{rankLabel(life, life.power.rank)}</p>}
         {life.worldId === "fantasy" && life.ft && <p>{verdict(life)}</p>}
         {life.worldId === "fantasy" && life.ft && <p>ดาวแต่กำเนิด: กาย {life.ft.bstars ?? 0}★ · เวท {life.ft.potential}★ · {BODY_RANKS[life.ft.bodyRank]} · {MAGIC_RANKS[life.ft.magicRank]}</p>}
