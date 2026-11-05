@@ -280,3 +280,15 @@ Foundations go first because the four rules apply to everything built after.
   A "society, class and faith" section in the World tab.
 - Balance: free yearly blessings first added about 5 years to random bots; devotion now gives its own small boons at 30% a year. 200-bot median 54 (R12: 50), 56% die before 60.
 - Checked on screen: the World tab section, the journey from Varn to Thalos with a road robbery, the court.
+
+## Release 14 built (2026-11-06)
+- creatures.ts: your dragon grows through four stages (hatchling, young, adult, great dragon) with a personality (proud, gentle, greedy, curious) and a wish every five years (grant it for bond, refuse and it sulks). Children who grow up with it can become its friends; when you die it stays with an heir who was its friend, otherwise it flies off, and in a later life it comes back to your family as a friend or for revenge.
+  A friendly ancient dragon can offer your kingdom a protection pact. Every slain dragon is gone for good; from three dead dragons the world's magic thins and spellcasters fight worse, and pacts end when their dragon dies. Dragon-born lives are called to the clan moot every eight years (go, pay tribute, or refuse and gain a dragon enemy).
+  Mounts by region (war horse anywhere, giant wolf in forests, griffon in the mountains and sea serpent in ports for tamers) that add to your fighting power, join the middle beat of big fights (and can be hurt or killed when the fight is lost), carry over to an heir, grow wild and run off if neglected, and breed a named bloodline that becomes famous by the third generation. Flying mounts and dragons add a fast flight option to journeys that can draw attention.
+  A beast market (mounts, selling monster parts from your bestiary) and a black-market dragon egg that may bring its mother after you. Beast tamers from level 2 can seek a basilisk (guards and fights), a unicorn (cures poison, curses and plague) or a phoenix (health every year).
+  Forest spirits, a riddling fey whose gift comes back to collect years later, a house spirit, a ghost waiting a hundred years, a lich in an old tower, a sphinx in the mountains, and an owl that becomes a familiar.
+  Each city kind has its own creatures; hunting a region raises its hunting pressure, and at 10 rewards drop and monsters stop raiding until it recovers.
+  A "creatures and the uncanny" section in the World tab.
+- danger.ts gained hooks so creatures can join the middle beat of fights and pay the price when it is lost.
+- Balance: 200-bot median 48, 58% die before 60 (R13: 54 and 56%).
+- Checked on screen: the animal market by region, buying a war horse, the World tab section.

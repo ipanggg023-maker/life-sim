@@ -110,9 +110,10 @@ describe("กิจการ สมาคม และผลงาน", () => {
     expect(l.job?.careerId).toBe("ft_merchant");
   });
   it("ทำงานนานแล้วมีผลงานที่มีชื่อ และงานดังกลายเป็นตำนาน", () => {
-    const l = life(9); startJob(l, "ft_bard"); l.job!.level = 3;
-    const keep = () => { if (!l.job) { startJob(l, "ft_bard"); l.job!.level = 3; } l.job!.performance = 60; };
-    for (let i = 0; i < 40 && !(fl(l).works ?? []).length; i++) { keep(); year(l); }
+    // ผลงานเกิดแบบสุ่มปีละ 15% · ลองหลายชีวิตเพื่อไม่ให้ผลขึ้นกับดวงของชีวิตเดียว
+    let l = life(9);
+    const keep = () => { l.stats.health = 90; l.alive = true; if (!l.job) { startJob(l, "ft_bard"); l.job!.level = 3; } l.job!.performance = 60; };
+    for (let s = 9; s < 14 && !(fl(l).works ?? []).length; s++) { l = life(s); for (let i = 0; i < 30 && !(fl(l).works ?? []).length; i++) { keep(); year(l); } }
     const w = fl(l).works![0];
     expect(w.name.length).toBeGreaterThan(2);
     w.fame = WORK_LEGEND - 1;

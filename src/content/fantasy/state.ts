@@ -158,6 +158,13 @@ export interface FLife {
   shadow?: { rank: number; missions: number; out?: boolean };
   /** กบฏ: ภารกิจที่ทำ */
   rebel?: { missions: number; kingdom: string };
+  // ── สัตว์ (creatures.ts) ──
+  /** สัตว์ขี่: ม้า กริฟฟิน หมาป่ายักษ์ งูทะเล · สายเลือดรุ่นที่เท่าไร */
+  steed?: { kind: string; name: string; bond: number; born: number; line: string; gen: number; lastCare: number };
+  /** สัตว์หายากที่ฝึกได้ */
+  beasts?: { kind: string; name: string; bond: number }[];
+  /** ภูตประจำบ้าน */
+  houseSpirit?: { fed: number };
   /** ลูกครึ่ง: อีกเผ่าหนึ่งในสายเลือด (birth.ts) */
   half?: RaceId;
   /** เส้นเรื่องที่ยังไม่จบ: คนในเรื่องจะกลับมาเมื่อถึงกำหนด (storygen.ts) */
@@ -179,7 +186,7 @@ export interface FLife {
   dBonds?: Record<string, number>;
   dLearned?: string[];
   egg?: { element: Element; warmth: number; from: string; lastCare: number };
-  whelp?: { name: string; element: Element; age: number; bond: number; power: number; lastCare: number; from: string };
+  whelp?: { name: string; element: Element; age: number; bond: number; power: number; lastCare: number; from: string; /** นิสัยของมังกร (creatures.ts) */ trait?: string };
   /** มังกรที่ขี่อยู่ · "whelp" = ตัวที่เลี้ยงเอง */
   mount?: string;
   dragonFoe?: string;
@@ -206,7 +213,7 @@ export interface FLife {
 }
 
 export interface Gear { name: string; quality: number; enchant?: boolean; /** ศัตรูที่ล้มด้วยอาวุธนี้ (power2.ts) */ kills?: number; /** ได้ชื่อจากเรื่องที่ผ่านมาแล้ว */ named?: boolean }
-export interface Kingdom { /** ช่วงรุ่งหรือร่วงของเศรษฐกิจ (money2.ts) */ boom?: { kind: "harvest" | "goldrush" | "embargo" | "bust"; left: number }; id: string; name: string; ruler: string; rulerAge: number; power: number; stability: number; war?: string; plague?: number; prosperity?: number; famine?: number; laws?: LawId[]; /** เป็นเมืองขึ้นของ */ overlord?: string; playerRuled?: boolean; /** ชื่อผู้เล่นที่เป็นคู่ครองและจะสืบบัลลังก์ */ consortHeir?: string; dynasty?: string; elective?: boolean; nextElection?: number; founded?: number }
+export interface Kingdom { /** ล่าสัตว์มากเกินไปแล้วสัตว์หายจากแถบนี้ (creatures.ts) */ hunted?: number; /** ช่วงรุ่งหรือร่วงของเศรษฐกิจ (money2.ts) */ boom?: { kind: "harvest" | "goldrush" | "embargo" | "bust"; left: number }; id: string; name: string; ruler: string; rulerAge: number; power: number; stability: number; war?: string; plague?: number; prosperity?: number; famine?: number; laws?: LawId[]; /** เป็นเมืองขึ้นของ */ overlord?: string; playerRuled?: boolean; /** ชื่อผู้เล่นที่เป็นคู่ครองและจะสืบบัลลังก์ */ consortHeir?: string; dynasty?: string; elective?: boolean; nextElection?: number; founded?: number }
 export interface Dragon { id: string; name: string; title: string; element: Element; home: string; age: number; mood: number; alive: boolean; power: number; slainBy?: string; /** นามสกุลของครอบครัวที่เคยเลี้ยงมัน */ kin?: string }
 export interface Mystery { step: number; notes: string[]; solvedBy?: string }
 export interface Egg { mother: string; element: Element; laid: number }

@@ -5,6 +5,7 @@ import { lawLines } from "../../content/fantasy/underworld";
 import { careerLines } from "../../content/fantasy/careers2";
 import { moneyLines } from "../../content/fantasy/money2";
 import { societyLines } from "../../content/fantasy/society2";
+import { creatureLines } from "../../content/fantasy/creatures";
 import { BESTIARY, timesMet } from "../../content/fantasy/bestiary";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
@@ -267,6 +268,9 @@ export function FantasyWorldTab({ life }: { life: Life }) {
     <div className="tab-content">
       <Fold always id="ft-society" title={<>สังคม ชนชั้น และศรัทธา</>}>
         {societyLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
+      </Fold>
+      <Fold always id="ft-creatures" title={<>สัตว์และสิ่งลี้ลับ</>}>
+        {creatureLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
       </Fold>
       <Fold always id="ft-here" title={<>ที่อยู่ของคุณ</>}>
         <p className="small"><b>{cityOf(life).name}</b> · {KINDS[cityOf(life).kind].name} · {KINDS[cityOf(life).kind].perk}</p>

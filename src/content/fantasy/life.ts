@@ -4,6 +4,7 @@ import type { Life, Soul } from "../../engine/types";
 import { addStat, displayName, log } from "../../engine/util";
 import { addLegend, recordChronicle } from "../../engine/worldState";
 import { fl, kingdomsOf, worldOfLife, type FLife, type RaceId } from "./state";
+import { inheritCreatures } from "./creatures";
 import { release } from "./dragons";
 import { inheritThrone, passThrone } from "./realm";
 import { rollElement } from "./magic";
@@ -99,7 +100,8 @@ export function closeLife(s: Soul, l: Life) {
   for (const r of (w.data as { relics: { holder: string; id: string; at: string }[] }).relics) if (r.holder === "player") { r.holder = "lost"; r.at = f.kingdom; }
   for (const x of (w.data as { factions?: { playerLed?: boolean; leader: string }[] }).factions ?? []) if (x.playerLed) { x.playerLed = false; x.leader = ""; }
   passThrone(l);
-  if (f.whelp) { release(w, l, f.whelp, "บินกลับขุนเขาหลังเจ้าของจากไป"); f.whelp = undefined; }
+  // จำว่ามังกรตัวไหนบินออกไป ทายาทที่โตมากับมันจะได้มันคืน (creatures.ts)
+  if (f.whelp) { l.flags.ftWhelpLeft = `whelp${w.year}${f.whelp.name}`; release(w, l, f.whelp, "บินกลับขุนเขาหลังเจ้าของจากไป"); f.whelp = undefined; }
   const top = f.deeds.at(-1);
   // ชีวิตที่มีตำนานบันทึกไว้แล้ว ไม่ต้องสรุปซ้ำตอนจากไป
   if (top && memorable(l) && !w.legends.some((g) => g.lifeId === l.id)) addLegend(w, { name: displayName(l), deed: top, lifeId: l.id });
@@ -131,6 +133,8 @@ export function inheritLife(dead: Life, next: Life, heirId?: string) {
   inheritFamily(dead, next, legacyHeir(dead)?.id !== heirId);
   // บทเรียนในวัยเด็ก ของใหญ่ของตระกูล และศิษย์ของพ่อแม่
   passOn(dead, next, heirId);
+  // มังกรและสัตว์ขี่ที่อยู่กับครอบครัว
+  inheritCreatures(dead, next, heirId);
 }
 
 /** ย้อนชะตาได้ไหม · เด็กตายเร็วได้โอกาสหนึ่งครั้ง พรสวรรค์หายากให้เพิ่ม */

@@ -106,8 +106,13 @@ const bump = (c: Ctx, d: number) => { c.edge = Number(c.edge ?? 0) + d; };
 type Txt = string | ((l: Life, c: Ctx) => string);
 const say = (t: Txt, l: Life, c: Ctx) => (typeof t === "string" ? t : t(l, c));
 const go = (t: Txt, d: number | ((l: Life, c: Ctx) => number), next = "turn"): Res => (l, c) => { bump(c, typeof d === "number" ? d : d(l, c)); return { text: say(t, l, c), next }; };
+/** สัตว์คู่ใจอื่นๆ ช่วยในจังหวะกลางของศึกได้ (creatures.ts) · แพ้แล้วสัตว์ที่ช่วยอาจเจ็บ */
+export const allyHooks: ((l: Life, c: Ctx) => string | undefined)[] = [];
+export const allyLossHooks: ((l: Life, c: Ctx) => string)[] = [];
 const allyName = (l: Life, c: Ctx) => {
   if (c.crew) return "ลูกเรือ";
+  const extra = allyHooks.map((h) => h(l, c)).find(Boolean);
+  if (extra) return extra;
   const f = fl(l);
   if (c.mounted && f.mount) return f.mount === "whelp" ? f.whelp?.name ?? "มังกรของคุณ" : "มังกรของคุณ";
   if (f.pet?.kind === "wolf") return f.pet.name;
@@ -136,6 +141,7 @@ function beat(o: Beat): GameEvent {
     addStat(l, "health", -randInt(l, 8, 14)); f.fear = true;
     let extra = "";
     if (f.weapon && chance(l, 0.25)) { nextUp(l, "ft.dg.broken", { w: f.weapon.name }); extra = ` ${f.weapon.name}หักกลางการต่อสู้`; }
+    if (c.allyUsed) extra += allyLossHooks.map((h) => h(l, c)).join("");
     const out = o.lose(l, c);
     return { ...out, text: out.text + extra + " · ความพ่ายแพ้ครั้งนี้ทิ้งความกลัวไว้ในใจ", kind: "bad" };
   };
@@ -150,7 +156,7 @@ function beat(o: Beat): GameEvent {
     C((l) => `ใช้ท่าไม้ตาย「${techsOf(l).at(-1)}」`, go((l) => `「${techsOf(l).at(-1)}」ของคุณเปิดช่องโหว่ให้เห็น`, (l) => 0.08 + (fl(l).myTech ? 0.04 : 0), "end"), { show: (l) => techsOf(l).length > 0 }),
     C("ร่ายเวทใส่", go("เวทของคุณทำให้มันชะงักไปครู่หนึ่ง", (l, c) => 0.06 + (c.weak && fl(l).element === c.weak ? 0.06 : 0), "end"), { show: (l) => canCast(l) }),
     C("ดื่มยาเพิ่มพลัง", (l, c) => { fl(l).potions!.strength!--; return go("ยาร้อนวูบไปทั่วร่าง แขนคุณหนักแน่นขึ้น", 0.1, "end")(l, c); }, { show: (l) => (fl(l).potions?.strength ?? 0) > 0 }),
-    C((l, c) => `ให้${allyName(l, c)}ช่วย`, go((l, c) => `${allyName(l, c)}เข้ามาประกบอีกด้าน`, (l, c) => 0.06 + (c.mounted && fl(l).whelp ? fl(l).whelp!.bond / 1000 : 0), "end"), { show: (l, c) => !!allyName(l, c) }),
+    C((l, c) => `ให้${allyName(l, c)}ช่วย`, (l, c) => { c.allyUsed = allyName(l, c); return go(`${allyName(l, c)}เข้ามาประกบอีกด้าน`, 0.06 + (c.mounted && fl(l).whelp ? fl(l).whelp!.bond / 1000 : 0), "end")(l, c); }, { show: (l, c) => !!allyName(l, c) }),
     K("มองหาจุดอ่อน", "smarts", 50, go("คุณเห็นจุดที่มันระวังน้อยที่สุด", (l, c) => 0.08 + beastEdge(l, String(c.foe ?? "")), "end"), go("คุณมองนานเกินไปจนโดนเข้าเต็มแรง", -0.04, "end")),
     C("สู้ต่อด้วยแรงที่มี", go("คุณกัดฟันสู้ต่อ", 0, "end")),
   ];
