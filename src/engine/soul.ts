@@ -178,6 +178,7 @@ export function buildHeir(dead: Life, childId: string): Life {
     lastName: dead.lastName,
     wealth: wealthTier(share),
     legacy: legacyOf(dead),
+    heir: true,
   });
   life.id = `${dead.id}h${(Number(dead.flags.generation ?? 1) + 1)}`;
   life.age = child.age;

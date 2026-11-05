@@ -321,6 +321,8 @@ export interface Soul {
   arcEnds?: string[];
   /** โลกแฟนตาซีระหว่างตัวละคร */
   fantasyWorld?: import("./worldState").WorldState;
+  /** เผ่าหายากที่วิญญาณปลดได้แล้ว (แฟนตาซี) · เกิดเป็นเผ่านี้ได้บ่อยขึ้น */
+  rareRaces?: string[];
   /** เป้าหมายของสายตระกูลที่เคยทำสำเร็จ */
   dynGoals?: string[];
   /** บันทึกยุทธภพ: ชีวิตทุกชีวิตและเหตุการณ์โลกที่ผ่านมา (MURIM_PLAN §9) */

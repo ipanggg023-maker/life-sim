@@ -9,7 +9,7 @@ import { inheritThrone, passThrone } from "./realm";
 import { rollElement } from "./magic";
 import { applyFtTalents } from "./talents";
 import { fastForward } from "./world";
-import { RACE_YOUNGER, renameFamily } from "./folk";
+import { RACE_YOUNGER, raceOf, renameFamily } from "./folk";
 import { citiesOf } from "./cities";
 import { applyStarStart, childStars, rollStars } from "./stars";
 import { inheritFeuds } from "./people2";
@@ -42,7 +42,9 @@ function rollFlife(l: Life, race: RaceId): FLife {
 /** สร้างข้อมูลตอนเกิด · ยังไม่รู้จักวิญญาณ จะผูกกับโลกจริงใน attachWorld */
 export function setupLife(l: Life) {
   worldOfLife(l);
-  const race = weightedPick(l, RACE_IDS, (r) => ({ human: 55, elf: 12, dwarf: 12, orc: 8, beastfolk: 8, halfling: 5, dragon: 0.6, demon: 1.2 })[r])!;
+  // เผ่าหายากที่วิญญาณปลดไว้แล้วเกิดได้บ่อยขึ้น (ยังสุ่มเสมอ ไม่ได้เลือกเอง)
+  const rare = String(l.flags.ftRare ?? "").split(",");
+  const race = weightedPick(l, RACE_IDS, (r) => ({ human: 55, elf: 12, dwarf: 12, orc: 8, beastfolk: 8, halfling: 5, dragon: rare.includes("dragon") ? 5 : 0.6, demon: rare.includes("demon") ? 5 : 1.2 })[r])!;
   applyRaceStats(l, race, 1);
   l.ft = { ...rollFlife(l, race), element: rollElement(l) };
   l.flags.ftBornRace = race;
@@ -54,7 +56,7 @@ export function setupLife(l: Life) {
   applyFtTalents(l);
   applyStarStart(l);
 }
-function applyRaceStats(l: Life, r: RaceId, sign: number) {
+export function applyRaceStats(l: Life, r: RaceId, sign: number) {
   if (r === "elf") { addStat(l, "smarts", 6 * sign); addStat(l, "looks", 6 * sign); addStat(l, "health", -4 * sign); }
   if (r === "dwarf") { addStat(l, "health", 8 * sign); addStat(l, "looks", -4 * sign); }
   if (r === "orc") { addStat(l, "health", 10 * sign); addStat(l, "smarts", -4 * sign); addStat(l, "looks", -4 * sign); }
@@ -116,6 +118,10 @@ export function inheritLife(dead: Life, next: Life, heirId?: string) {
   applyStarStart(next);
   // ลูกที่โตพอแล้วเคยอ่านดาวมาแล้ว
   if (next.age >= 6) next.flags.ftStarsSeen = true;
+  // ลูกของคู่ต่างเผ่าเป็นลูกครึ่ง
+  const sp = dead.people.find((p) => p.relation === "spouse");
+  const spRace = sp && raceOf(sp);
+  if (spRace && spRace !== d.race && !RARE_RACES.includes(spRace) && !RARE_RACES.includes(d.race)) { next.ft.half = spRace; applyRaceStats(next, spRace, 0.5); }
   // บทเรียนในวัยเด็ก ของใหญ่ของตระกูล และศิษย์ของพ่อแม่
   passOn(dead, next, heirId);
 }

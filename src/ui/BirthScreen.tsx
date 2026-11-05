@@ -1,3 +1,4 @@
+import { FAMILY_TYPES, OMENS, SIB_ROLE, familyTypeOf, omenOfBirth, raceLabel, sibRoleOf, starHint } from "../content/fantasy/birth";
 import { fitGender } from "../engine/util";
 import { RACES } from "../content/fantasy/life";
 import { useEffect, useState } from "react";
@@ -74,10 +75,11 @@ export function BirthScreen({
           {dad && <p>{relationLabel(dad, life)}: {shortName(dad)} ({fitGender(dad.job, dad.gender)}) อายุ {dad.age}</p>}
           {mom && <p>{relationLabel(mom, life)}: {shortName(mom)} ({fitGender(mom.job, mom.gender)}) อายุ {mom.age}</p>}
           {sibs.length ? (
-            sibs.map((s) => <p key={s.id}>{relationLabel(s, life)}: {shortName(s)} อายุ {s.age}</p>)
+            sibs.map((s) => <p key={s.id}>{relationLabel(s, life)}: {shortName(s)} {s.tags?.includes("twin") ? "· ฝาแฝดของคุณ" : `อายุ ${s.age}`}{life.ft && sibRoleOf(s) ? ` · ${SIB_ROLE[sibRoleOf(s)!]}` : ""}</p>)
           ) : (
             <p>พี่น้อง: ลูกคนเดียว</p>
           )}
+          {life.ft && <BirthFate life={life} />}
         </div>
       )}
 
@@ -128,5 +130,18 @@ export function BirthScreen({
         </>
       )}
     </div>
+  );
+}
+
+/** เรื่องตอนเกิดของโลกแฟนตาซี: ลาง ครอบครัว สายเลือด และคำใบ้ของดาว */
+function BirthFate({ life }: { life: Life }) {
+  const o = omenOfBirth(life), t = familyTypeOf(life), h = life.ft?.half;
+  return (
+    <>
+      {h && <p className="small">สายเลือด: {raceLabel(life)}</p>}
+      {t && <p className="small">{FAMILY_TYPES[t].name}</p>}
+      {o && <p className="small">ลางวันเกิด: {OMENS[o].name}</p>}
+      {!life.flags.ftStarsSeen && <p className="small muted">{starHint(life)}</p>}
+    </>
   );
 }

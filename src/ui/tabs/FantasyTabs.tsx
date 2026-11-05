@@ -1,3 +1,4 @@
+import { raceLabel } from "../../content/fantasy/birth";
 import { fitGender } from "../../engine/util";
 // แท็บเฉพาะโลกแฟนตาซี: พลังของตัวละคร และสภาพโลก
 import { RACES } from "../../content/fantasy/life";
@@ -88,7 +89,7 @@ export function FantasyPowerTab({ life }: { life: Life }) {
       <Fold always id="ft-power" title={<>ตัวคุณ{epithetOf(life) ? <span className="muted small"> · {epithetOf(life)}</span> : null}</>}>
         <div className="status-grid">
           <span>เผ่า</span>
-          <b>{RACES[f.race].name}</b>
+          <b>{raceLabel(life)}</b>
           <span>พลังต่อสู้</span>
           <b>{combat(life)}</b>
           <span>สายกาย</span>

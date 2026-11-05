@@ -184,6 +184,7 @@ export function App() {
         ...opts,
         blessed: opts.blessed ?? s.perks.blessing > 0,
         inheritTalent: opts.inheritTalent ?? s.perks.lockedTalent,
+        rareRaces: opts.rareRaces ?? s.rareRaces,
       };
       if (full.blessed) s.perks.blessing = 0;
       s.perks.lockedTalent = undefined;

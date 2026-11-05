@@ -17,10 +17,10 @@ const learnOwn = (l: Life, tier: number) => {
 
 /** ผลต่อข้อมูลตัวละครแฟนตาซี · เรียกตอนพรสวรรค์เปิด และซ้ำตอนสร้างตัวละคร/ทายาทเพื่อไม่ให้หาย */
 export const FT_PART: Record<string, (l: Life) => void> = {
-  ft_stout: (l) => { fl(l).body += 15; },
-  ft_bookworm: (l) => { fl(l).magic += 15; },
-  ft_animal: (l) => { fl(l).dragonBond += 5; },
-  ft_wanderer: (l) => { addStanding(l, 5); },
+  ft_stout: (l) => { fl(l).body += 30; },
+  ft_bookworm: (l) => { fl(l).magic += 30; },
+  ft_animal: (l) => { fl(l).dragonBond += 10; },
+  ft_wanderer: (l) => { addStanding(l, 10); },
   ft_blade: (l) => { fl(l).body += 40; },
   ft_mana: (l) => addStars(l, "magic", 2),
   ft_warblood: (l) => addStars(l, "body", 2),
@@ -54,17 +54,17 @@ const T = (id: string, name: string, rarity: Talent["rarity"], desc: string, sta
 
 export const FANTASY_TALENTS: Talent[] = [
   // ธรรมดา
-  T("ft_strong", "กำลังวังชา", "common", "ร่างกายแข็งแรงกว่าเด็กทั่วไป — สุขภาพ +6", (l) => add(l, "health", 6)),
-  T("ft_clever", "หัวไว", "common", "จำอะไรได้เร็ว — สติปัญญา +6", (l) => add(l, "smarts", 6)),
-  T("ft_charm", "เสน่ห์ติดตัว", "common", "ใครเห็นก็เอ็นดู — รูปลักษณ์ +6", (l) => add(l, "looks", 6)),
-  T("ft_lucky", "ดาวนำโชค", "common", "เรื่องร้ายมักพลาดคุณไปนิดเดียว — โชค +6", (l) => add(l, "luck", 6)),
-  T("ft_stout", "กระดูกแกร่ง", "common", "ล้มแล้วลุกได้เสมอ — สุขภาพ +4 และพลังกายตั้งต้นสูงขึ้น", (l) => add(l, "health", 4)),
-  T("ft_bookworm", "หนอนตำรา", "common", "อ่านคัมภีร์ได้ตั้งแต่ยังไม่หย่านม — สติปัญญา +4 และพลังเวทตั้งต้นสูงขึ้น", (l) => add(l, "smarts", 4)),
+  T("ft_strong", "กำลังวังชา", "common", "ร่างกายแข็งแรงกว่าเด็กทั่วไป — สุขภาพ +10", (l) => add(l, "health", 10)),
+  T("ft_clever", "หัวไว", "common", "จำอะไรได้เร็ว — สติปัญญา +10", (l) => add(l, "smarts", 10)),
+  T("ft_charm", "เสน่ห์ติดตัว", "common", "ใครเห็นก็เอ็นดู — รูปลักษณ์ +10", (l) => add(l, "looks", 10)),
+  T("ft_lucky", "ดาวนำโชค", "common", "เรื่องร้ายมักพลาดคุณไปนิดเดียว — โชค +10", (l) => add(l, "luck", 10)),
+  T("ft_stout", "กระดูกแกร่ง", "common", "ล้มแล้วลุกได้เสมอ — สุขภาพ +7 และพลังกายตั้งต้นสูงขึ้น", (l) => add(l, "health", 7)),
+  T("ft_bookworm", "หนอนตำรา", "common", "อ่านคัมภีร์ได้ตั้งแต่ยังไม่หย่านม — สติปัญญา +7 และพลังเวทตั้งต้นสูงขึ้น", (l) => add(l, "smarts", 7)),
   T("ft_fighter_spark", "แววนักสู้", "common", "ชนะทุกการปล้ำในหมู่บ้าน — ดาวกาย +1"),
   T("ft_mana_spark", "ประกายมานา", "common", "ผมของคุณชี้ฟูทุกครั้งที่ฟ้าร้อง — ดาวเวท +1"),
-  T("ft_cheerful", "ยิ้มง่าย", "common", "แดดออกเสมอในใจคุณ — ความสุข +8", (l) => add(l, "happiness", 8)),
-  T("ft_thrifty", "รู้ค่าเหรียญ", "common", "เหรียญทองไม่เคยหลุดมือคุณ — เริ่มด้วยเงิน 30 เหรียญทอง", (l) => gold(l, 30)),
-  T("ft_animal", "คู่หูสัตว์", "common", "สัตว์ทุกตัวเดินมาหาคุณเอง — ความสุข +3 และมังกรระแวงคุณน้อยลง", (l) => add(l, "happiness", 3)),
+  T("ft_cheerful", "ยิ้มง่าย", "common", "แดดออกเสมอในใจคุณ — ความสุข +12", (l) => add(l, "happiness", 12)),
+  T("ft_thrifty", "รู้ค่าเหรียญ", "common", "เหรียญทองไม่เคยหลุดมือคุณ — เริ่มด้วยเงิน 50 เหรียญทอง", (l) => gold(l, 50)),
+  T("ft_animal", "คู่หูสัตว์", "common", "สัตว์ทุกตัวเดินมาหาคุณเอง — ความสุข +6 และมังกรระแวงคุณน้อยลง", (l) => add(l, "happiness", 6)),
   T("ft_wanderer", "เท้าไม่อยู่สุข", "common", "ทุกถนนพาคุณไปเจอเรื่องดีๆ — โชค +3 และชาวเมืองรู้จักคุณ", (l) => add(l, "luck", 3)),
   // หายาก
   T("ft_blade", "สัมผัสดาบ", "rare", "ถือดาบเป็นตั้งแต่ครั้งแรก — เริ่มสายดาบเร็วกว่าคนอื่นมาก"),

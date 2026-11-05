@@ -90,6 +90,8 @@ export interface FLife {
   lastWorth?: number;
   /** อันดับในสังเวียนของแผ่นดินที่ขึ้นสู้ (arena.ts) · 1 = แชมป์ */
   arena?: { kingdom: string; rank: number };
+  /** ลูกครึ่ง: อีกเผ่าหนึ่งในสายเลือด (birth.ts) */
+  half?: RaceId;
   /** เส้นเรื่องที่ยังไม่จบ: คนในเรื่องจะกลับมาเมื่อถึงกำหนด (storygen.ts) */
   storylines?: import("./storygen").Storyline[];
   beatGreat?: boolean;

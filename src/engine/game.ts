@@ -53,6 +53,12 @@ export interface BirthOptions {
   blessed?: boolean;
   /** พรสวรรค์ที่ผนึกติดตัวมาจากชาติก่อน */
   inheritTalent?: string;
+  /** ทายาทที่เล่นต่อ: ครอบครัวมีอยู่แล้ว ไม่สุ่มเรื่องตอนเกิด */
+  heir?: boolean;
+  /** การเกิดแบบมาตรฐาน ไม่มีลาง ครอบครัวพิเศษ หรือฝาแฝด (ใช้ในเทสต์ที่ตรวจค่าตั้งต้นของเผ่า) */
+  plain?: boolean;
+  /** เผ่าหายากที่วิญญาณปลดไว้แล้ว (เกิดได้บ่อยขึ้น) */
+  rareRaces?: string[];
   /** ประเทศที่เกิด (โลกยุคปัจจุบัน) — ไม่ใส่ = สุ่ม ไทย/เกาหลี/ญี่ปุ่น */
   country?: Country;
   /** วิญญาณข้ามโลก: ชาติก่อนมาจากโลกอื่น */
@@ -189,6 +195,7 @@ export function createLife(opts: BirthOptions = {}): Life {
   // ชื่อที่กำหนดมาแล้ว (เช่น ทายาท) โลกจะไม่ตั้งให้ใหม่
   if (opts.firstName) life.flags.givenName = true;
   if (opts.lastName) life.flags.givenLast = true;
+  if (opts.rareRaces?.length) life.flags.ftRare = opts.rareRaces.join(",");
   moduleOf(life.worldId)?.onCreate?.(life);
   delete life.flags.givenName;
   delete life.flags.givenLast;
@@ -224,6 +231,7 @@ export function createLife(opts: BirthOptions = {}): Life {
     if (p.rank !== undefined) life.flags.pastRank = p.rank;
     if (p.skill) life.flags.pastSkill = p.skill;
   }
+  if (!opts.heir && !opts.plain) for (const h of birthHooks) h(life);
   if (opts.stats || opts.talents || opts.wealth) life.devCreated = true;
   return life;
 }
@@ -502,6 +510,8 @@ export const deathCauseHooks: Array<(life: Life) => string | undefined> = [];
 export const verdictHook: { fn?: (life: Life) => string } = {};
 /** หลังสุ่มเรื่องของปีเสร็จ ก่อนผู้เล่นเห็น */
 export const yearEndHooks: Array<(life: Life) => void> = [];
+/** หลังสร้างตัวละครและครอบครัวแล้ว (ไม่ใช่ทายาทที่เล่นต่อ) · โลกเติมเรื่องตอนเกิดได้ที่นี่ */
+export const birthHooks: Array<(life: Life) => void> = [];
 export const choiceHooks: Array<(life: Life, c: Choice, ctx: Ctx, success: boolean, eventId: string) => void> = [];
 /** ปรับโอกาสสำเร็จของตัวเลือก (เช่น ทำตามนิสัยตัวเองได้ดีกว่า) */
 export const oddsHooks: Array<(life: Life, c: Choice, ctx: Ctx, p: number) => number> = [];

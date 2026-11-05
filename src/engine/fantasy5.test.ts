@@ -14,7 +14,7 @@ import { validateLife } from "./validate";
 loadFantasyWorld();
 
 const life = (seed: number, race: keyof typeof RACES = "human", age = 25): Life => {
-  const l = createLife({ seed, worldId: "fantasy" });
+  const l = createLife({ seed, worldId: "fantasy", plain: true });
   setRace(l, race);
   l.age = age; l.queue = []; l.money = 500_000; l.stats.health = 90; l.stats.smarts = 70; l.stats.looks = 70; l.stats.luck = 70;
   return l;

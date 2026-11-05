@@ -122,3 +122,22 @@ Foundations go first because the four rules apply to everything built after.
   health under 40, or new debt, and the summary says why it stopped.
 - Job, court and war events repeat every 5 years instead of 15.
 - Result (10 souls × 3 lives): main stories per life 51 / 48 / 40, none shared with earlier lives (a second life got ~9 before), lifespans unchanged.
+
+## Release 3 built (2026-11-05)
+- **birth.ts.** Birth stays fully random; heirs (BirthOptions.heir) skip these extras, and tests can pass `plain`.
+- **Birth omens (~23%):** war, comet, dragon flight, plague, eclipse, harvest. Each has a small effect and its own childhood event at 7–13.
+- **Star hint** at birth, in the log and on the birth screen; the exact count still comes at the reading at 6.
+- **Family types (~17%):**
+  - foundling: a guardian raises you, your real parents can turn up (16–45)
+  - raised by another race: small culture bonus, meeting your own people later
+  - noble blood: known (rich, standing +10) or hidden (a herald comes 16–45: claim, keep secret, or sell it)
+  - outcast family: poor, standing −8, a name to change or clear
+- **Twins (3%)** with a "shared fate" scene and heavier grief. Older siblings take a role: protector, rival or heir, each with a scene.
+- **Half-races (6%, and the children of mixed couples):** half the other race's stat changes, lifespan midway, race shown as "มนุษย์เลือดครึ่งเอลฟ์",
+  with two events about belonging and being a bridge between peoples.
+- **Rare races unlocked by deeds:**
+  - dragon-born: ride or raise a dragon, or reach bond 60
+  - demon-born: a pact, or surviving the hunt
+  - unlocked races roll at 5 instead of 0.6 / 1.2 (soul.rareRaces)
+- **Talents:** every fantasy talent already evolves, and a life already gets 2–3. The weak common ones are stronger now (stats +6 → +10 and similar).
+- Balance (40 lives each): median death 81 plain vs 90 with extras (the lives take different random paths), gold at 50 772 vs 866.

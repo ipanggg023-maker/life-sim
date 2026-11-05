@@ -39,10 +39,12 @@ describe("ลูกที่คุณเลี้ยง", () => {
   it("บทเรียนในวัยเด็กติดตัวทายาท และสอนงานครบสามครั้งเริ่มงานเดิมที่ขั้นสอง", () => {
     const a = life(11);
     a.job = { careerId: "ft_merchant", level: 3, performance: 60, years: 5 };
-    const taught = kid(a, 20, 80), plain = kid(a, 18, 80);
+    // ลูกคนเดียวกัน สอนกับไม่สอน: ทายาทคนเดียวกันต่างกันแค่บทเรียน
+    const taught = kid(a, 20, 80);
+    const p = heirOf(a, taught);
     taught.tags = [...(taught.tags ?? []), "taught_body:4", "taught_mind:3", "taught_trade:3"];
-    const t = heirOf(a, taught), p = heirOf(a, plain);
-    expect(fl(t).body).toBeGreaterThanOrEqual(fl(p).body + 45);
+    const t = heirOf(a, taught);
+    expect(fl(t).body).toBe(fl(p).body + 60);
     expect(t.stats.smarts).toBeGreaterThan(p.stats.smarts);
     expect(Number(t.flags.ftBest_ft_merchant)).toBe(3);
     expect(p.flags.ftBest_ft_merchant).toBeUndefined();

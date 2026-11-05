@@ -1,3 +1,4 @@
+import { familyTypeOf } from "../content/fantasy/birth";
 import { describe, expect, it } from "vitest";
 import { loadFantasyWorld } from "../content/fantasy";
 import { ASSETS, FT_JOB_ACTIONS, assetIncome } from "../content/fantasy/careers";
@@ -35,6 +36,8 @@ describe("ชื่อและเผ่าของผู้คน", () => {
       const l = fantasy(s * 13);
       const pool = NAMES[l.ft!.race];
       expect(pool.m.concat(pool.f), `${l.ft!.race} ${l.firstName}`).toContain(l.firstName);
+      // ครอบครัวต่างเผ่าที่เลี้ยงดู และลูกครึ่ง มีพ่อหรือแม่คนละเผ่าโดยตั้งใจ
+      if (familyTypeOf(l) === "adopted" || l.ft!.half) continue;
       for (const p of l.people.filter((x) => ["father", "mother", "sibling"].includes(x.relation))) {
         expect(raceOf(p)).toBe(l.ft!.race);
         expect(p.name.endsWith(l.lastName)).toBe(true);
