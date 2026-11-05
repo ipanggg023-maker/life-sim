@@ -21,10 +21,13 @@ export const needXp = (rank: number) => NEED[Math.min(rank, NEED.length - 1)];
 export const starCap = (stars: number, track: "body" | "magic") => (stars >= 10 ? 6 : stars >= 8 ? 5 : Math.min(MASTER, Math.floor(stars / 2) + (track === "body" ? 1 : 0)));
 /** ของช่วยดันเพดานได้ถึงปรมาจารย์ แต่พาขึ้นขั้นตำนานเองไม่ได้ */
 const capWith = (stars: number, track: "body" | "magic", extra: number) => { const base = starCap(stars, track); return Math.min(MAX_RANK, Math.max(base, Math.min(MASTER, base + extra))); };
+/** ความเพียร: ฝึกต่อเนื่องทุกสิบห้าปีดันเพดานขึ้นหนึ่งขั้น (คนดาวน้อยไปถึงปรมาจารย์ได้ด้วยเวลา) */
+export const YEARS_PER_CAP = 15;
+const grit = (l: Life) => Math.floor((fl(l).trainYears ?? 0) / YEARS_PER_CAP);
 /** เพดานเวท: ดาวคือหลัก คทาช่วยให้คนธรรมดาเข้าถึงได้ถึงขั้นนักเวท */
-export const magicCap = (l: Life) => { const f = fl(l); return capWith(f.potential, "magic", (f.wand ? 2 : 0) + (f.relic === "embersoul" ? 1 : 0)); };
+export const magicCap = (l: Life) => { const f = fl(l); return capWith(f.potential, "magic", (f.wand ? 2 : 0) + (f.relic === "embersoul" ? 1 : 0) + grit(l)); };
 /** เพดานกาย: ดาวคือหลัก อาวุธชั้นยอดกับของวิเศษช่วยได้ขั้นละหนึ่ง */
-export const bodyCap = (l: Life) => { const f = fl(l); return capWith(f.bstars ?? 0, "body", ((f.weapon?.quality ?? 0) >= 4 ? 1 : 0) + (f.relic ? 1 : 0)); };
+export const bodyCap = (l: Life) => { const f = fl(l); return capWith(f.bstars ?? 0, "body", ((f.weapon?.quality ?? 0) >= 4 ? 1 : 0) + (f.relic ? 1 : 0) + grit(l)); };
 /** ร่ายเวทได้ไหม: มีคทา หรือเก่งจนไม่ต้องใช้ */
 export const canCast = (l: Life) => { const f = fl(l); return !!f.wand || f.magicRank >= 3 || f.race === "dragon" || f.race === "demon"; };
 

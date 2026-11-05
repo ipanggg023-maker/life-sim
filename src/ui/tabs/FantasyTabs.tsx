@@ -1,3 +1,5 @@
+import { CORRUPT_WORDS, CRAFT_NAME, CRAFT_RANKS, KILLS_TO_NAME, POTIONS, corruptionOf, craftRank, learnedOf, nextBreak, secluded, secludedUntil, standingLine, type Craft } from "../../content/fantasy/power2";
+import { YEARS_PER_CAP } from "../../content/fantasy/power";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
 import { raceLabel } from "../../content/fantasy/birth";
@@ -58,6 +60,27 @@ const Bar = ({ label, value, need }: { label: string; value: number; need: numbe
 );
 
 /** แนวทางการฝึก และอันดับในสังเวียน */
+/** เส้นทางแห่งพลัง: ทะลวงขั้นต่อไป สู้อะไรได้ ท่าที่รู้ ความมืด ยา ฝีมือช่าง */
+function PowerPathFold({ life }: { life: Life }) {
+  const f = fl(life);
+  const dark = corruptionOf(life), pot = f.potions ?? {};
+  const crafts = (Object.keys(CRAFT_NAME) as Craft[]).filter((k) => craftRank(life, k) > 0);
+  return (
+    <Fold always kind="section" id="ft-power-path" title={<>เส้นทางแห่งพลัง</>}>
+      <p className="small"><b>{standingLine(life)}</b></p>
+      <p className="small">สายกาย: {nextBreak(life, "body")}</p>
+      {(canCast(life) || f.magicRank > 0) && <p className="small">สายเวท: {nextBreak(life, "magic")}</p>}
+      {(f.trainYears ?? 0) > 0 && <p className="small muted">ฝึกต่อเนื่องมา {f.trainYears} ปี · ทุก {YEARS_PER_CAP} ปีเพดานขยับขึ้นหนึ่งขั้น</p>}
+      {(learnedOf(life).length > 0 || f.myTech) && <p className="small">ท่าที่รู้: {[...(f.myTech ? [`「${f.myTech}」(ของคุณเอง)`] : []), ...learnedOf(life)].join(" · ")}</p>}
+      {f.weapon && (f.weapon.kills ?? 0) > 0 && <p className="small muted">{f.weapon.name} ล้มศัตรูมาแล้ว {f.weapon.kills} ครั้ง{f.weapon.named ? "" : ` · ครบ ${KILLS_TO_NAME} ครั้งจะได้ชื่อ`}</p>}
+      {dark > 0 && <p className="small" style={{ color: dark >= 50 ? "var(--bad)" : undefined }}>ความมืดในตัว {dark}{CORRUPT_WORDS(dark) ? ` · ${CORRUPT_WORDS(dark)}` : ""} · ชำระบาปได้ที่วิหาร</p>}
+      {(pot.heal || pot.strength || pot.life) ? <p className="small">ยาที่พกอยู่: {(Object.keys(POTIONS) as (keyof typeof POTIONS)[]).filter((k) => pot[k]).map((k) => `${POTIONS[k].name} ${pot[k]}`).join(" · ")}</p> : null}
+      {crafts.length > 0 && <p className="small">ฝีมือ: {crafts.map((k) => `${CRAFT_NAME[k]} ${CRAFT_RANKS[craftRank(life, k)]}`).join(" · ")}</p>}
+      {secluded(life) && <p className="small">กำลังเก็บตัวฝึกบนเขาจนถึงอายุ {secludedUntil(life)}</p>}
+    </Fold>
+  );
+}
+
 function TrainingFold({ life }: { life: Life }) {
   const [, force] = useState(0);
   const focus = trainFocus(life);
@@ -114,6 +137,7 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         {seen(life) && <p className="small muted">เพดานสายกาย: {BODY_RANKS[Math.max(bodyCap(life), f.bodyRank)]}{dual(life) ? " · ดาวสองสายสูง เดินทางดาบเวทได้" : ""}</p>}
         <p className="small muted">{canCast(life) ? `ร่ายเวทได้ เพดานตอนนี้: ${MAGIC_RANKS[magicCap(life)]}` : "ยังร่ายเวทไม่ได้ ซื้อคทาได้ที่แท็บทำ"}</p>
       </Fold>
+      <PowerPathFold life={life} />
       <TrainingFold life={life} />
       <PowerSourceFolds life={life} />
       {seen(life) && (

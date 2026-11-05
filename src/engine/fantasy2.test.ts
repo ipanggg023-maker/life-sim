@@ -47,9 +47,9 @@ describe("เวทมนตร์", () => {
   it("ใช้ธาตุถูกทางได้เปรียบ ผิดทางเสียเปรียบ ทำให้ไม่มีเวทเดียวเก่งสุด", () => {
     const l = life(2);
     const s = spellById("water1");
-    const base = spellOdds(l, s, 40);
-    expect(spellOdds(l, s, 40, "water")).toBeGreaterThan(base);
-    expect(spellOdds(l, s, 40, undefined, "water")).toBeLessThan(base);
+    const base = spellOdds(l, s, 20);
+    expect(spellOdds(l, s, 20, "water")).toBeGreaterThan(base);
+    expect(spellOdds(l, s, 20, undefined, "water")).toBeLessThan(base);
   });
   it("มานามีจำกัดต่อปี และคืนเมื่อขึ้นปีใหม่", () => {
     const l = life(3);

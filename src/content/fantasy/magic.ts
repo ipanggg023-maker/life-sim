@@ -48,10 +48,13 @@ export function learnSpell(l: Life, id: string) {
 }
 
 /** โอกาสเมื่อร่ายใส่ศัตรู: ถูกธาตุแรงขึ้นมาก ผิดธาตุแย่ลง บทสวดช่วยให้แม่น */
+const OPPOSITE: Partial<Record<Element, Element>> = { fire: "water", water: "fire", earth: "wind", wind: "earth", light: "dark", dark: "light" };
 export function spellOdds(l: Life, s: Spell, threat: number, weak?: Element, strong?: Element) {
   const f = fl(l);
   let o = fightOdds(l, threat) + s.tier * 0.04 + (f.chant ?? 0) * 0.03 + (f.mschool === "elemental" ? 0.06 : 0);
   if (s.element === f.element) o += 0.05;
+  // ธาตุตรงข้ามกับธาตุของคุณร่ายยากกว่า
+  else if (f.element && OPPOSITE[f.element] === s.element) o -= 0.05;
   if (weak && s.element === weak) o += 0.25;
   if (strong && s.element === strong) o -= 0.2;
   return clamp(o, 0.04, 0.97);

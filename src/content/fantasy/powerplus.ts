@@ -65,13 +65,13 @@ function signatureName(l: Life) {
 export const signatureBonus = (l: Life) => { const s = fl(l).signature; return s ? (s.tier >= 2 ? 7 : 3) : 0; };
 
 // ── ทางทะลวงขั้นของแต่ละนิสัย ──
-function broke(l: Life, track: "body" | "magic") {
+export function broke(l: Life, track: "body" | "magic") {
   const f = fl(l);
   if (track === "body") { f.bodyRank++; f.body = 0; if (f.bodyRank >= 3) deed(l, `ยอดฝีมือระดับ${BODY_RANKS[f.bodyRank]}`); return `คุณเป็น${BODY_RANKS[f.bodyRank]}แล้ว`; }
   f.magicRank++; f.magic = 0; if (f.magicRank >= 3) deed(l, `ถึงระดับ${MAGIC_RANKS[f.magicRank]}`); if (f.magicRank === 3 && !f.wand) l.flags.wandless = true;
   return `คุณเป็น${MAGIC_RANKS[f.magicRank]}แล้ว`;
 }
-const failBreak = (track: "body" | "magic", hp: number) => B("กำแพงยังไม่ยอมแตก คุณต้องสะสมใหม่บางส่วน", { hp: -hp }, (l) => { const f = fl(l); if (track === "body") f.body = Math.round(needXp(f.bodyRank) * 0.6); else f.magic = Math.round(needXp(f.magicRank) * 0.6); });
+export const failBreak = (track: "body" | "magic", hp: number) => B("กำแพงยังไม่ยอมแตก คุณต้องสะสมใหม่บางส่วน", { hp: -hp }, (l) => { const f = fl(l); if (track === "body") f.body = Math.round(needXp(f.bodyRank) * 0.6); else f.magic = Math.round(needXp(f.magicRank) * 0.6); });
 const way = (track: "body" | "magic", axis: Axis, min: number, label: string, bonus: number, ok: string, extra: { hp?: number; lean?: Partial<Record<Axis, number>> } = {}): Choice => ({
   ...tagged(P(label, (l) => breakOdds(l, track) + bonus, BIG((l) => `${ok} ${broke(l, track)}`, { joy: 6, fame: 2, hp: -(extra.hp ?? 0) }), failBreak(track, 8 + (extra.hp ?? 0))), extra.lean ?? {}),
   show: (l) => (min > 0 ? tr(l, axis) >= min : tr(l, axis) <= min), tone: "special",

@@ -90,6 +90,14 @@ export interface FLife {
   lastWorth?: number;
   /** อันดับในสังเวียนของแผ่นดินที่ขึ้นสู้ (arena.ts) · 1 = แชมป์ */
   arena?: { kingdom: string; rank: number };
+  /** พลังชุดที่สอง (power2.ts): ความมืดในตัว 0–100 · ท่าที่เรียนจากอาจารย์ · ท่าที่ตั้งชื่อเอง · ยาที่พกอยู่ · ฝีมือช่างและตำรา */
+  corruption?: number;
+  /** ปีที่ฝึกต่อเนื่อง · ทุก 15 ปีดันเพดานขั้นขึ้นหนึ่ง จนถึงปรมาจารย์ */
+  trainYears?: number;
+  learned?: string[];
+  myTech?: string;
+  potions?: { heal?: number; strength?: number; life?: number };
+  craft?: Partial<Record<"smith" | "alchemy" | "healing" | "lore", number>>;
   /** ลูกครึ่ง: อีกเผ่าหนึ่งในสายเลือด (birth.ts) */
   half?: RaceId;
   /** เส้นเรื่องที่ยังไม่จบ: คนในเรื่องจะกลับมาเมื่อถึงกำหนด (storygen.ts) */
@@ -137,7 +145,7 @@ export interface FLife {
   mKnown?: string[];
 }
 
-export interface Gear { name: string; quality: number; enchant?: boolean }
+export interface Gear { name: string; quality: number; enchant?: boolean; /** ศัตรูที่ล้มด้วยอาวุธนี้ (power2.ts) */ kills?: number; /** ได้ชื่อจากเรื่องที่ผ่านมาแล้ว */ named?: boolean }
 export interface Kingdom { id: string; name: string; ruler: string; rulerAge: number; power: number; stability: number; war?: string; plague?: number; prosperity?: number; famine?: number; laws?: LawId[]; /** เป็นเมืองขึ้นของ */ overlord?: string; playerRuled?: boolean; /** ชื่อผู้เล่นที่เป็นคู่ครองและจะสืบบัลลังก์ */ consortHeir?: string; dynasty?: string; elective?: boolean; nextElection?: number; founded?: number }
 export interface Dragon { id: string; name: string; title: string; element: Element; home: string; age: number; mood: number; alive: boolean; power: number; slainBy?: string; /** นามสกุลของครอบครัวที่เคยเลี้ยงมัน */ kin?: string }
 export interface Mystery { step: number; notes: string[]; solvedBy?: string }

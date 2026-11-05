@@ -239,8 +239,11 @@ export function createLife(opts: BirthOptions = {}): Life {
 // ───────────────────────── +1 ปี ─────────────────────────
 
 
+/** โลกกันความตายได้ครั้งหนึ่ง (เช่น ยาคืนชีพ) · คืน true = รอด */
+export const deathSaves: Array<(life: Life, cause: string) => boolean> = [];
 export function kill(life: Life, cause: string) {
   if (!life.alive) return;
+  if (deathSaves.some((h) => h(life, cause))) return;
   life.alive = false;
   life.causeOfDeath = cause;
   life.queue = [];
@@ -531,7 +534,8 @@ export function ageUp(life: Life) {
   progressJob(life);
   progressMoney(life);
   progressPeople(life);
-  for (const hook of yearHooks) hook(life);
+  // ตายระหว่างปี (เช่น สิ้นใจบนเขา) แล้วหยุดทันที ไม่ให้เหตุการณ์อื่นเข้าคิวต่อ
+  for (const hook of yearHooks) { hook(life); if (!life.alive) { life.queue = []; return; } }
   const joy = titleBonus(life, "happiness");
   if (joy) addStat(life, "happiness", joy);
 

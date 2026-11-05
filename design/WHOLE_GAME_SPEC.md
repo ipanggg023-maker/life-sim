@@ -199,3 +199,15 @@ Foundations go first because the four rules apply to everything built after.
   stepfamily, outliving descendants. Four new callings in family.ts: elder, last great work, atonement, one last adventure.
 - Survey (20 lives each): kids 1.6–1.9 and grandkids 2.3–2.9 per life for humans, elves and dwarves; lifespans unchanged.
 - Checked on screen: family fold with parenting chips and grandchild, หลานสาว in People, adoption, home in old age, a new calling, the last scene. Fixed: the last scene could be dropped when health changed mid-year (now latched with ftLastDue, also fires from 75 with health 35 or less, or at 85).
+
+## Release 8 built (2026-11-05)
+- power2.ts: breakthrough trials (a master duel, a beast hunt, meditation, a reckless all-in that is the only one that can kill); the plain roll is 15% worse than the trials.
+  Fifteen years of steady training lifts the cap one rank. Learn another style from a new master (the old one holds a grudge); invent your own technique at master rank.
+  Corruption: forbidden breaks, the death school and dark deeds add to it; at 50 an inquisitor comes, at 80 you can lose control; penance at the temple lowers it.
+  Potions: wound salve (auto at low health), strength draught (+8% on the next dangerous choice), revival (one death, not old age, once per life, alchemy rank 3 to brew). Carry limits 3/3/1; alchemy makes them cheaper.
+  Craft ranks for smithing, alchemy, healing and lore (jobs teach them; healing 3 gives +1 health a year, lore helps smarts checks, smithing 3 can reforge).
+  A weapon is named after 10 kills. Seclusion for 1, 3 or 5 years (lots of training, town activities closed, a 12% injury and 1.5% death chance a year, 5 years before going back).
+  Bodies decline with age (elves and long-lived races less); opposite elements cost 5% on spells; a peak-power event at rank 5. A "path of power" fold in the Power tab.
+- Engine: deathSaves hooks; a death during the year's hooks now ends the year cleanly.
+- Survey (80 random bots): median death 59 (ceiling 60, unchanged). Seclusion had been giving bots safe years (median 70) until it got real dangers and a cooldown.
+- Checked on screen: path-of-power fold, the breakthrough popup (plain 75%, trials 90–97%), a master-duel breakthrough, the potion shop with the alchemy discount and revival potion.
