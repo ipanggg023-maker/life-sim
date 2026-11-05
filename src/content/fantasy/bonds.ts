@@ -97,7 +97,7 @@ export function fantasyPersonActions(l: Life, p: Person): PersonAction[] {
   const busyJail = Number(l.flags.jailUntil ?? -1) > l.age ? "ติดคุกอยู่" : undefined;
   if (FIGHTERS.includes(p.relation) && l.age >= 10 && p.age >= 10) add("spar", "ประลองฝีมือ", "ft.p.spar", busyJail);
   if (p.relation === "rival" && l.age >= 14) add("duel", "ท้าดวล", "ft.p.duel", busyJail);
-  if (p.relation === "child" && p.age >= 6 && p.age <= 17 && l.age >= 18) add("teach", "สอนลูก", "ft.p.teach");
+  if ((p.relation === "child" || p.relation === "grandchild") && p.age >= 6 && p.age <= 17 && l.age >= 18) add("teach", p.relation === "grandchild" ? "สอนหลาน" : "สอนลูก", "ft.p.teach");
   if (p.relation === "child" && p.age >= 3 && p.age <= 10) add("tale", "เล่านิทาน", "ft.p.tale");
   if (p.relation === "child" && p.age >= 11 && p.age <= 15 && !p.tags?.includes("ft_school")) add("school", "ส่งเข้าโรงเรียน", "ft.p.school");
   if (["friend", "ally"].includes(p.relation) && l.age >= 16 && p.age >= 16) add("quest", "ผจญภัยด้วยกัน", "ft.p.quest", busyJail);

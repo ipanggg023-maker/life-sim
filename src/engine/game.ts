@@ -860,6 +860,7 @@ export function breakUp(life: Life, p: Person): Outcome {
   life.people = life.people.filter((x) => x.id !== p.id);
   if (divorce && life.money > 0) addMoney(life, -Math.round(life.money / 2));
   addStat(life, "happiness", -8);
+  for (const h of breakupHooks) h(life, p, divorce);
   const out = { text: divorce ? `คุณหย่ากับ${shortName(p)} และต้องแบ่งทรัพย์สินครึ่งหนึ่ง` : `คุณเลิกกับ${shortName(p)}`, kind: "bad" as const };
   log(life, out.text, out.kind);
   return out;
@@ -916,12 +917,18 @@ export function cutTies(life: Life, p: Person): Outcome {
   return out;
 }
 
+/** โลกปรับเรื่องมีลูก: อายุที่ใช้นับความเจริญพันธุ์ (เผ่าอายุยืน) และตัวคูณโอกาส */
+export const babyHooks: { age?: (life: Life, p: Person) => number | undefined; mult?: (life: Life, p: Person) => number }[] = [];
+/** หลังเลิกหรือหย่า (คนนั้นถูกลบออกจากรายชื่อแล้ว) */
+export const breakupHooks: Array<(life: Life, p: Person, divorce: boolean) => void> = [];
 export function tryForBaby(life: Life, p: Person): Outcome {
   if (life.doneThisYear.includes("baby")) return { text: "ปีนี้ลองไปแล้ว" };
   life.doneThisYear.push("baby");
   if (p.gender === life.gender) return { text: "คุณสองคนมีลูกด้วยกันเองไม่ได้ — แต่เด็กกำพร้าในวัดยังรอบ้านอยู่ (รับเลี้ยงได้ที่แท็บทำ → ครอบครัว)" };
-  const motherAge = life.gender === "f" ? life.age : p.age;
-  const fertile = motherAge <= 44 ? 0.55 - Math.max(0, motherAge - 35) * 0.05 : 0;
+  const rawAge = life.gender === "f" ? life.age : p.age;
+  const motherAge = babyHooks.reduce((a, h) => h.age?.(life, p) ?? a, rawAge);
+  const mult = babyHooks.reduce((m, h) => m * (h.mult?.(life, p) ?? 1), 1);
+  const fertile = (motherAge <= 44 ? 0.55 - Math.max(0, motherAge - 35) * 0.05 : 0) * mult;
   if (chance(life, fertile)) {
     const kid = createPerson(life, "child", { age: 0, bond: 90, lastName: life.lastName });
     addStat(life, "happiness", 15);

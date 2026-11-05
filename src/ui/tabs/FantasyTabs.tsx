@@ -1,3 +1,4 @@
+import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
 import { raceLabel } from "../../content/fantasy/birth";
 import { fitGender } from "../../engine/util";
@@ -277,7 +278,11 @@ export function FantasyWorldTab({ life }: { life: Life }) {
 /** แท็บอาชีพของโลกแฟนตาซี: ของติดตัวที่ทำหรือซื้อ และทรัพย์สินที่ให้รายได้ทุกปี */
 /** ครอบครัวและมรดก: ใครได้ของใหญ่ ลูกแต่ละคนได้เรียนอะไร งานของบั้นปลาย */
 function LegacyFold({ life }: { life: Life }) {
+  const [, force] = useState(0);
   const kids = life.people.filter((p) => p.alive && p.relation === "child");
+  const grand = life.people.filter((p) => p.alive && p.relation === "grandchild");
+  const style = parentingOf(life);
+  const fam = life.fw ? familyRec(life) : undefined;
   const calling = callingOf(life);
   if (!kids.length && !calling && life.age < CALLING_AGE - 5) return null;
   const heir = legacyHeir(life), items = heirlooms(life);
@@ -293,9 +298,18 @@ function LegacyFold({ life }: { life: Life }) {
             const parts = [u.body && `ดาบ ${u.body}`, u.magic && `เวท ${u.magic}`, u.mind && `หนังสือ ${u.mind}`, u.trade && `งาน ${u.trade}/${TRADE_LESSONS}`, u.school && "เข้าโรงเรียน"].filter(Boolean);
             return <p className="small" key={k.id}><b>{shortName(k)}</b> อายุ {k.age} · ผูกพัน {k.bond} · {parts.length ? `เรียนกับคุณ: ${parts.join(" · ")}` : "ยังไม่เคยสอน"}{hs.body + hs.magic > 0 ? ` · ถ้ารับช่วงต่อเริ่มด้วยแต้มฝึก +${hs.body + hs.magic}` : ""}</p>;
           })}
+          {kids.some((k) => k.age < 18) && (
+            <>
+              <p className="small">วิธีเลี้ยงลูก</p>
+              <div className="row">{(Object.keys(PARENTING) as Parenting[]).map((k) => <button key={k} className={`chip ${style === k ? "on" : ""}`} onClick={() => { life.flags.ftParenting = k; force((n) => n + 1); }}>{PARENTING[k].name}</button>)}</div>
+              {style && <p className="small muted">{PARENTING[style].desc}</p>}
+            </>
+          )}
+          {grand.length > 0 && <p className="small">หลาน {grand.length} คน: {grand.map((g) => `${shortName(g)} ${g.age} ปี`).join(" · ")}</p>}
           <p className="small muted">สอนลูกได้ที่แท็บผู้คน · ลูกที่ผูกพันเกิน 70 เริ่มชีวิตมีความสุขกว่า · เขียนพินัยกรรมได้ที่แท็บทำ ตั้งแต่อายุ 40</p>
         </>
       )}
+      {fam && (fam.crest || fam.fame !== 0) && <p className="small">ตระกูล{life.lastName}{fam.crest ? ` · ตรา${fam.crest} · "${fam.motto}"` : ""} · ชื่อเสียงของตระกูล {fam.fame}</p>}
       {c ? (
         <p className="small">งานของบั้นปลาย: <b>{c.name}</b>{c.need ? ` · ${c.goal} (${Math.min(callingProg(life), c.need)}/${c.need})` : ` · ${c.desc}`}</p>
       ) : (

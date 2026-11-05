@@ -153,7 +153,8 @@ export function legacyOf(dead: Life): Legacy {
 // ───────────────────────── เล่นต่อเป็นลูก ─────────────────────────
 
 /** ลูกที่รับช่วงต่อได้ (ยังมีชีวิต) */
-export const heirsOf = (dead: Life) => people(dead, "child").filter((c) => c.alive);
+/** ลูกที่รับช่วงต่อได้ · หลานที่โตแล้วรับต่อได้เมื่อพ่อแม่ของเขาไม่อยู่แล้ว (ข้ามรุ่น) */
+export const heirsOf = (dead: Life) => [...people(dead, "child").filter((c) => c.alive), ...dead.people.filter((g) => g.alive && g.relation === "grandchild" && g.age >= 16 && !dead.people.some((c) => c.alive && c.relation === "child" && g.tags?.includes(`parent:${c.id}`)))];
 
 /**
  * ภาคต่อของมังฮวาเรื่องเดิม: ลูกรับมรดก ชื่อเสียงตระกูล และเริ่มเล่นที่อายุปัจจุบันของลูก
@@ -214,7 +215,7 @@ export function buildHeir(dead: Life, childId: string): Life {
   }
   life.log = [];
   startArc(life, `รุ่นที่ ${life.flags.generation} — ทายาทของ${displayName(dead)}`);
-  log(life, `คุณคือ ${displayName(life)} อายุ ${life.age} ปี ลูกของ${displayName(dead)} ผู้จากไปเมื่ออายุ ${dead.age} ปี`, "milestone");
+  log(life, `คุณคือ ${displayName(life)} อายุ ${life.age} ปี ${child.relation === "grandchild" ? "หลาน" : "ลูก"}ของ${displayName(dead)} ผู้จากไปเมื่ออายุ ${dead.age} ปี`, "milestone");
   if (share > 0) log(life, `คุณได้รับมรดก ${money(life, share)}${heirs.length > 1 ? ` (แบ่งกับพี่น้องอีก ${heirs.length - 1} คน)` : ""}`, "good");
   if (dead.flags.doomed && !dead.flags.rebuilt) inheritSystem(life);
   return life;

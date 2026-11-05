@@ -148,7 +148,9 @@ export type Good = "grain" | "iron" | "herbs";
 export type Role = "hero" | "mage" | "merchant" | "rogue" | "priest" | "general";
 export interface Notable { id: number; name: string; role: Role; age: number; power: number; kingdom: string; faction?: string; fame: number; /** เพดานฝีมือของคนนี้ · ส่วนใหญ่ธรรมดา บางคนเป็นตำนาน */ peak?: number }
 export interface Faction { id: string; /** แบบของงานและผลประโยชน์ · ไม่ใส่ = ใช้ id */ kind?: string; name: string; creed: string; power: number; leader: string; feud?: string; playerLed?: boolean }
-export interface FData { kingdoms: Kingdom[]; dragons: Dragon[]; eggs: Egg[]; gates: Gate[]; gods: God[]; mysteries: Record<string, Mystery>; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number; /** เซฟเก่าก่อนมีหลายมังกร */ dragon?: Omit<Dragon, "id" | "element" | "power"> }
+/** ชื่อเสียงของตระกูลข้ามชีวิต (family2.ts) */
+export interface FamilyRecord { fame: number; crest?: string; motto?: string; secret?: "sibling" | "crime" | "stolen" | "curse"; revealed?: boolean; lives: number }
+export interface FData { families?: Record<string, FamilyRecord>; kingdoms: Kingdom[]; dragons: Dragon[]; eggs: Egg[]; gates: Gate[]; gods: God[]; mysteries: Record<string, Mystery>; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number; /** เซฟเก่าก่อนมีหลายมังกร */ dragon?: Omit<Dragon, "id" | "element" | "power"> }
 
 export const LAWS: Record<LawId, { name: string; desc: string }> = {
   banMagic: { name: "ห้ามเวทในที่สาธารณะ", desc: "ผู้ตรวจการตามล่าคนร่ายเวท" },

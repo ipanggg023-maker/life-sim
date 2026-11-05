@@ -41,7 +41,8 @@ export type Relation =
   | "spouse"
   | "child"
   | "rival"
-  | "ally"; // เพื่อนร่วมทีม (M8)
+  | "ally" // เพื่อนร่วมทีม (M8)
+  | "grandchild"; // หลาน (แฟนตาซี: ลูกของลูก)
 
 export interface Person {
   id: string;

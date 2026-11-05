@@ -3,7 +3,7 @@
 import { ACTIVITIES, type Activity } from "../../engine/activities";
 import type { Ctx, GameEvent } from "../../engine/events";
 import { runEvent, yearHooks } from "../../engine/game";
-import { remember } from "../../engine/npc";
+import { relOf, remember } from "../../engine/npc";
 import { chance, pick, randInt } from "../../engine/rng";
 import type { Life, Person } from "../../engine/types";
 import { addStat, clamp, createPerson, displayName, log, people, shortName } from "../../engine/util";
@@ -13,7 +13,7 @@ import { B, BIG, C, E, G, K, N, P, PAY, SCENE } from "./kit";
 import { ESTATES, owns } from "./economy";
 import { stageAge } from "./folk";
 import { fightOdds } from "./power";
-import { addStanding, deed, fl, worldOfLife } from "./state";
+import { addStanding, deed, fl, homeKingdom, standingOf, worldOfLife } from "./state";
 import { cityOf } from "./cities";
 
 const on = (l: Life) => l.worldId === "fantasy" && !!l.ft;
@@ -119,13 +119,17 @@ export function passOn(dead: Life, next: Life, heirId?: string) {
 }
 
 // ───────────── งานของชีวิตช่วงหลัง ─────────────
-export type CallingId = "mentor" | "memoir" | "journey" | "guardian" | "rest";
+export type CallingId = "mentor" | "memoir" | "journey" | "guardian" | "rest" | "elder" | "work" | "atone" | "adventure";
 export const CALLINGS: Record<CallingId, { name: string; desc: string; goal: string; need: number }> = {
   mentor: { name: "ครูของคนรุ่นใหม่", desc: "รับศิษย์ สอนจนเขาออกไปสร้างชื่อ", goal: "ส่งศิษย์ออกไปสร้างชื่อสองคน", need: 2 },
   memoir: { name: "บันทึกชีวิต", desc: "เขียนเรื่องชีวิตทีละบท แล้วตัดสินใจว่าจะให้ใครอ่าน", goal: "เขียนให้ครบห้าบทแล้วตีพิมพ์หรือเก็บไว้", need: 5 },
   journey: { name: "การเดินทางครั้งสุดท้าย", desc: "ไปที่ที่ฝันไว้ทีละแห่ง ก่อนขาจะไม่ไหว", goal: "ไปให้ครบห้าแห่ง", need: 5 },
   guardian: { name: "ผู้พิทักษ์เมือง", desc: "เฝ้าเมืองด้วยฝีมือที่เหลือ และส่งดาบต่อให้คนรุ่นหลัง", goal: "ปกป้องเมืองห้าครั้ง", need: 5 },
   rest: { name: "ใช้ชีวิตเงียบๆ", desc: "อยู่กับคนที่รัก ไม่ต้องพิสูจน์อะไรอีก", goal: "", need: 0 },
+  elder: { name: "ผู้เฒ่าของเมือง", desc: "ตัดสินข้อพิพาท ให้คำปรึกษาผู้ครอง ดูแลเรื่องของหมู่บ้าน", goal: "ตัดสินเรื่องใหญ่ของเมืองสี่ครั้ง", need: 4 },
+  work: { name: "งานชิ้นสุดท้าย", desc: "สร้างงานชิ้นเอกของชีวิต ดาบ ตำรา สะพาน หรือเพลง", goal: "ทำงานชิ้นเอกให้เสร็จสามช่วง", need: 3 },
+  atone: { name: "การไถ่บาป", desc: "ตามหาคนที่คุณเคยทำร้าย แล้วทำให้มันถูกต้อง", goal: "ไถ่บาปให้ครบสามคน", need: 3 },
+  adventure: { name: "การผจญภัยครั้งสุดท้าย", desc: "ภารกิจอันตรายครั้งสุดท้ายกับเพื่อนเก่า", goal: "ผ่านภารกิจสามช่วง", need: 3 },
 };
 export const CALLING_AGE = 60;
 export const CALLING_GAP = 40;
@@ -149,6 +153,10 @@ const CALLING: GameEvent = { ...E("ft.el.calling", [40, 900], (l) => (l.flags.ft
   C("เขียนเรื่องชีวิตของตัวเอง", BIG("คุณซื้อสมุดเล่มหนาที่สุดในร้าน แล้วนั่งมองหน้าแรกที่ยังว่างอยู่ทั้งคืน", { joy: 3 }, choose("memoir")), { mark: CALLINGS.memoir.desc }),
   C("ออกเดินทางไปที่ที่ยังไม่เคยไป", BIG("คุณกางแผนที่เก่าบนโต๊ะ แล้ววงห้าที่ด้วยหมึกแดง", { joy: 4 }, choose("journey")), { mark: CALLINGS.journey.desc }),
   C("เฝ้าเมืองของคุณ", BIG("คุณลับดาบเล่มเก่าอีกครั้ง ทหารยามที่ประตูเมืองเริ่มทักคุณทุกเช้า", { joy: 2 }, choose("guardian")), { mark: CALLINGS.guardian.desc, show: (l) => Math.max(fl(l).bodyRank, fl(l).magicRank) >= 2 }),
+  C("เป็นผู้เฒ่าที่คนในเมืองมาขอคำตัดสิน", BIG("คุณเริ่มนั่งที่ม้านั่งหน้าวิหารทุกเช้า ไม่นานคนก็เริ่มเดินมาเล่าปัญหาให้ฟัง", { joy: 3 }, choose("elder")), { mark: CALLINGS.elder.desc, show: (l) => standingOf(l) >= 10 || l.fame >= 25 }),
+  C("สร้างงานชิ้นสุดท้ายของชีวิต", BIG("คุณเคลียร์โต๊ะทำงานจนว่าง และวางวัสดุชิ้นแรกลงตรงกลาง", { joy: 3 }, choose("work")), { mark: CALLINGS.work.desc }),
+  C("ไถ่บาปให้คนที่เคยทำร้าย", BIG("คุณเขียนรายชื่อคนที่เคยทำร้ายลงกระดาษแผ่นหนึ่ง มันยาวกว่าที่คิด", { joy: 1 }, choose("atone")), { mark: CALLINGS.atone.desc, show: (l) => l.people.some((p) => relOf(p).grudge >= 25) }),
+  C("ออกผจญภัยครั้งสุดท้ายกับเพื่อนเก่า", BIG("คุณส่งจดหมายถึงเพื่อนเก่าสามคน ทุกคนตอบกลับมาว่า \"รอวันนี้มานานแล้ว\"", { joy: 5 }, choose("adventure")), { mark: CALLINGS.adventure.desc, show: (l) => Math.max(fl(l).bodyRank, fl(l).magicRank) >= 1 }),
   C("ใช้ชีวิตเงียบๆ กับคนที่รัก", G("คุณปลูกสวนหลังบ้าน และเรียนรู้ที่จะนั่งเฉยๆ โดยไม่รู้สึกผิด", { joy: 6, hp: 3 }, choose("rest"))),
 ], { title: "บทต่อไปของชีวิต", forced: true, maxTimes: 0 }), manual: true };
 
@@ -273,6 +281,31 @@ const REST: GameEvent[] = [
   ]),
 ];
 
+// ── ผู้เฒ่า · งานชิ้นสุดท้าย · ไถ่บาป · ผจญภัยครั้งสุดท้าย ──
+const stepDone = (id: CallingId, deedText: string) => (l: Life) => { prog(l); if (callingProg(l) >= CALLINGS[id].need) finishCalling(l, deedText); };
+const LATE: GameEvent[] = [
+  SCENE("ft.el.e.dispute", "คำตัดสินของผู้เฒ่า", (l) => `สองครอบครัวใน${cityOf(l).name}ทะเลาะกันเรื่องบ่อน้ำที่ใช้ร่วมกันมาสามรุ่น ทั้งคู่มาหาคุณ`, [
+    P("ฟังทั้งสองฝั่งแล้วตัดสินอย่างยุติธรรม", (l) => 0.45 + l.stats.smarts / 200, G("ทั้งสองครอบครัวจับมือกันหน้าบ่อน้ำ ทั้งเมืองพูดถึงคำตัดสินของคุณ", { fame: 2, joy: 4 }, (l) => { addStanding(l, 2); stepDone("elder", "เป็นผู้เฒ่าที่ทั้งเมืองฟังคำตัดสิน")(l); }), N("ฝั่งหนึ่งไม่พอใจ และย้ายไปใช้บ่อน้ำอีกฝั่งของเมือง", { joy: -2 }, (l) => stepDone("elder", "เป็นผู้เฒ่าที่ทั้งเมืองฟังคำตัดสิน")(l))),
+    C("ให้ทั้งสองฝั่งขุดบ่อใหม่ด้วยกัน", G("สองครอบครัวขุดบ่อใหม่ด้วยกันทั้งฤดูร้อน ลูกหลานของพวกเขาแต่งงานกันในอีกสิบปีต่อมา", { joy: 5 }, (l) => stepDone("elder", "เป็นผู้เฒ่าที่ทั้งเมืองฟังคำตัดสิน")(l))),
+  ]),
+  SCENE("ft.el.e.advise", "คำปรึกษาจากผู้เฒ่า", (l) => `ผู้ครอง${homeKingdom(l).name}ส่งคนมาถามความเห็นของคุณ เรื่องจะขึ้นภาษีเพื่อสร้างกำแพงเมืองใหม่`, [
+    C("แนะนำให้สร้าง แต่ขึ้นภาษีเฉพาะคนรวย", G("ผู้ครองทำตามครึ่งหนึ่ง กำแพงเสร็จในสามปี และคนจนไม่ต้องอดอยาก", { fame: 2 }, (l) => { addStanding(l, 3); stepDone("elder", "เป็นผู้เฒ่าที่ทั้งเมืองฟังคำตัดสิน")(l); })),
+    C("แนะนำให้รอจนปีหน้าข้าวงามกว่านี้", N("ผู้ครองรอ และปีหน้าข้าวงามจริง", { joy: 2 }, (l) => stepDone("elder", "เป็นผู้เฒ่าที่ทั้งเมืองฟังคำตัดสิน")(l))),
+  ]),
+  SCENE("ft.el.k.work", "งานชิ้นสุดท้าย", (l) => `ช่วงที่ ${callingProg(l) + 1} ของงานชิ้นสุดท้าย มือของคุณไม่นิ่งเหมือนเมื่อก่อน แต่ตารู้ชัดกว่าทุกครั้งว่าต้องการอะไร`, [
+    P("ทำอย่างไม่ยอมประนีประนอม", (l) => 0.4 + l.stats.smarts / 250 + l.stats.health / 400, G("ช่วงนี้ออกมางดงามกว่าที่วาดไว้ในหัว", { joy: 4 }, (l) => stepDone("work", "สร้างงานชิ้นเอกชิ้นสุดท้ายของชีวิต")(l)), N("คุณทุบงานช่วงนี้ทิ้งแล้วเริ่มใหม่ ปีหน้าค่อยว่ากัน", { joy: -2 })),
+    C("ชวนลูกศิษย์หรือลูกหลานมาช่วย", G("มือที่นิ่งกว่าช่วยทำส่วนที่คุณทำไม่ไหวแล้ว และเขาได้เรียนทุกอย่างที่คุณรู้", { joy: 5 }, (l) => { const k = l.people.find((p) => p.alive && (p.relation === "child" || p.relation === "grandchild" || p.tags?.includes("apprentice"))); if (k) { k.bond = clamp(k.bond + 10, 0, 100); k.tags = [...(k.tags ?? []).filter((t) => !t.startsWith("taught_trade:")), "taught_trade:3"]; } stepDone("work", "สร้างงานชิ้นเอกชิ้นสุดท้ายของชีวิต")(l); })),
+  ]),
+  SCENE("ft.el.a.seek", "ไถ่บาป", (l, c) => { const p = l.people.find((x) => x.id === c.pid); return `คุณเดินทางไปหา${p ? shortName(p) : "คนที่เคยทำร้าย"} คนที่ยังแค้นคุณอยู่ เขาเปิดประตูแล้วยืนนิ่ง`; }, [
+    C("ขอโทษโดยไม่แก้ตัวแม้แต่คำเดียว", G("เขาเงียบไปนาน แล้วเปิดประตูกว้างขึ้น", { joy: 5 }, (l, c) => { const p = l.people.find((x) => x.id === c.pid); if (p) remember(l, p, "atone", "คุณมาขอโทษในวัยชรา", 3, { grudge: -40, respect: 10 }); stepDone("atone", "ไถ่บาปให้คนที่เคยทำร้ายจนครบ")(l); })),
+    PAY("ชดใช้สิ่งที่เขาเสียไป", 25, G("เงินไม่ได้ลบอดีต แต่มันทำให้ลูกของเขาได้เรียนหนังสือ", { joy: 3 }, (l, c) => { const p = l.people.find((x) => x.id === c.pid); if (p) remember(l, p, "atone", "คุณชดใช้สิ่งที่เขาเสียไป", 3, { grudge: -30, debt: 15 }); stepDone("atone", "ไถ่บาปให้คนที่เคยทำร้ายจนครบ")(l); })),
+  ]),
+  SCENE("ft.el.v.quest", "การผจญภัยครั้งสุดท้าย", (l) => `ช่วงที่ ${callingProg(l) + 1} ของภารกิจครั้งสุดท้าย เพื่อนเก่าทั้งสามหอบหายใจหนักกว่าเมื่อก่อน แต่ไม่มีใครยอมพูดว่าเหนื่อย`, [
+    P("บุกตรงเข้าไปเหมือนสมัยหนุ่มสาว", (l) => fightOdds(l, 22 + Math.max(0, stageAge(l) - 60) / 2), BIG("พวกคุณผ่านไปได้ และหัวเราะกันเหมือนเด็กกลางซากปรักหักพัง", { fame: 3, joy: 6 }, (l) => stepDone("adventure", "ออกผจญภัยครั้งสุดท้ายกับเพื่อนเก่าจนจบ")(l)), N("พวกคุณต้องถอยออกมาพักแผลหนึ่งปี", { hp: -4, joy: -2 })),
+    C("วางแผนอย่างคนที่ผ่านมาเยอะ", G("ประสบการณ์ทั้งชีวิตทำให้พวกคุณผ่านไปได้โดยไม่ต้องชักดาบ", { iq: 2, joy: 4 }, (l) => stepDone("adventure", "ออกผจญภัยครั้งสุดท้ายกับเพื่อนเก่าจนจบ")(l))),
+  ]),
+];
+
 /** ฉากของงานที่เลือกในปีนี้ · คืน [id, ctx] หรือไม่มี */
 function beatFor(l: Life): [string, Ctx?] | undefined {
   const cd = (id: string, gap: number) => l.age - Number(l.flags[`ftElCd_${id}`] ?? -99) >= gap;
@@ -295,6 +328,10 @@ function beatFor(l: Life): [string, Ctx?] | undefined {
     case "journey":
       for (const [id] of TRIPS) if (!tripDone(l, id)) opts.push([`ft.el.j.${id}`]);
       break;
+    case "elder": opts.push([pick(l, ["ft.el.e.dispute", "ft.el.e.advise"])]); break;
+    case "work": opts.push(["ft.el.k.work"]); break;
+    case "atone": { const v = l.people.find((p) => relOf(p).grudge >= 20); if (v) opts.push(["ft.el.a.seek", { pid: v.id }]); else if (callingProg(l) > 0) finishCalling(l, `ไถ่บาปให้คนที่เคยทำร้าย ${callingProg(l)} คน`); break; }
+    case "adventure": opts.push(["ft.el.v.quest"]); break;
     case "rest":
       for (const id of ["ft.el.r.garden", "ft.el.r.visit", "ft.el.r.friend"]) if (cd(id, 15)) opts.push([id]);
       break;
@@ -322,7 +359,7 @@ const ACTS: Activity[] = [
     available: (l) => !!l.ft && kids(l).length > 0, run: (l) => { runEvent(l, "ft.fm.will"); return { text: "" }; } },
 ];
 
-export const FAMILY_EVENTS: GameEvent[] = [WILL, CALLING, ...MENTOR, ...MEMOIR, ...JOURNEY, ...GUARDIAN, ...REST];
+export const FAMILY_EVENTS: GameEvent[] = [WILL, CALLING, ...MENTOR, ...MEMOIR, ...JOURNEY, ...GUARDIAN, ...REST, ...LATE];
 
 export function loadFamily() {
   ACTIVITIES.push(...ACTS);

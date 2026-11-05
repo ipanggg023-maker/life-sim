@@ -333,7 +333,7 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
       {heirs.map((c) => (
         <button className="cont-btn heir" key={c.id} disabled={busy} onClick={() => go(`heir:${c.id}`)}>
           <span className="cont-text">
-            <span className="cont-title">เล่นต่อเป็น{c.gender === "m" ? "ลูกชาย" : "ลูกสาว"} · {c.name}</span>
+            <span className="cont-title">เล่นต่อเป็น{c.relation === "grandchild" ? (c.gender === "m" ? "หลานชาย" : "หลานสาว") : c.gender === "m" ? "ลูกชาย" : "ลูกสาว"} · {c.name}</span>
             <span className="cont-desc">อายุ {c.age} ปี · ได้มรดก{heirs.length > 1 ? ` 1/${heirs.length}` : "ทั้งหมด"} ชื่อเสียง และความแค้นของตระกูล{life.worldId === "fantasy" && life.ft ? heirNote(life, c) : ""}</span>
           </span>
         </button>

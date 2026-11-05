@@ -17,7 +17,7 @@ import { isPrincess, isSovereign, personActions } from "../../content/murim/life
 import { Fold } from "../Fold";
 
 /** กลุ่มคนในแท็บผู้คน — แต่ละกลุ่มย่อ/ขยายได้ */
-const FAMILY: Relation[] = ["spouse", "partner", "child", "father", "mother", "sibling"];
+const FAMILY: Relation[] = ["spouse", "partner", "child", "grandchild", "father", "mother", "sibling"];
 const PEOPLE_GROUPS: { id: string; name: string; of: (p: Person) => boolean }[] = [
   { id: "family", name: "ครอบครัว", of: (p) => p.alive && FAMILY.includes(p.relation) },
   { id: "friends", name: "มิตรสหายและศิษย์", of: (p) => p.alive && (p.relation === "friend" || p.relation === "ally") },
@@ -34,7 +34,7 @@ const FT_GROUPS: typeof PEOPLE_GROUPS = [
   { id: "known", name: "คนรู้จัก", of: (p) => p.alive && (p.relation === "friend" || p.relation === "ally") && !closeOne(p) },
   PEOPLE_GROUPS[3],
 ];
-const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "father", "mother", "sibling", "friend", "rival"];
+const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "grandchild", "father", "mother", "sibling", "friend", "rival"];
 
 export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; act: Act; focus?: string | null; onShowLog?: (id: string) => void }) {
   const [open, setOpen] = useState<string | null>(focus);

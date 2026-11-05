@@ -14,7 +14,8 @@ import { citiesOf } from "./cities";
 import { applyStarStart, childStars, rollStars } from "./stars";
 import { inheritFeuds } from "./people2";
 import { verdict } from "./persona";
-import { passOn } from "./family";
+import { legacyHeir, passOn } from "./family";
+import { inheritFamily, recordFamily } from "./family2";
 import { RITES } from "./races";
 
 export const RACES: Record<RaceId, { name: string; younger: number; desc: string }> = {
@@ -94,6 +95,7 @@ export function closeLife(s: Soul, l: Life) {
   w.year = l.birthYear + l.age;
   // ชีวิตที่ไม่มีอะไรให้จดจำไม่ทิ้งอะไรไว้ในโลก · ชีวิตที่น่าจดจำอยู่ในพงศาวดารและตำนานต่อไป
   if (memorable(l)) recordChronicle(w, `${displayName(l)}จากโลกไปเมื่ออายุ ${l.age} ปี · ${verdict(l)}`);
+  recordFamily(w, l, memorable(l));
   for (const r of (w.data as { relics: { holder: string; id: string; at: string }[] }).relics) if (r.holder === "player") { r.holder = "lost"; r.at = f.kingdom; }
   for (const x of (w.data as { factions?: { playerLed?: boolean; leader: string }[] }).factions ?? []) if (x.playerLed) { x.playerLed = false; x.leader = ""; }
   passThrone(l);
@@ -125,6 +127,8 @@ export function inheritLife(dead: Life, next: Life, heirId?: string) {
   if (spRace && spRace !== d.race && !RARE_RACES.includes(spRace) && !RARE_RACES.includes(d.race)) { next.ft.half = spRace; applyRaceStats(next, spRace, 0.5); }
   // ทายาทที่โตเลยวัยพิธีของเผ่าแล้ว ถือว่าผ่านพิธีมาแล้ว
   if (next.age > RITES[next.ft.race].age) next.flags.ftRite = "passed";
+  // ชื่อเสียงของตระกูล ข้อพิพาทมรดก และคำขอสุดท้ายของพ่อแม่ (ก่อน passOn ที่อาจเปลี่ยนผู้ได้มรดก)
+  inheritFamily(dead, next, legacyHeir(dead)?.id !== heirId);
   // บทเรียนในวัยเด็ก ของใหญ่ของตระกูล และศิษย์ของพ่อแม่
   passOn(dead, next, heirId);
 }

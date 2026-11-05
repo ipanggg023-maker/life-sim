@@ -190,3 +190,12 @@ Foundations go first because the four rules apply to everything built after.
 - **People tab:** close circle on top, acquaintances folded; love stage, sworn siblings, and the partner's main want are shown.
 - Fixed a trap: events that switch themselves off in `prepare` get dropped by the queue re-check, so they now switch off in their choices.
 - Survey (30 lives): married 18/30 with stages vs 19 without, kids 1.4 per life either way, close circle ~14.
+
+## Release 7 built (2026-11-05)
+- family2.ts: grandchildren (new "grandchild" relation, heirs when their parent is gone), adoption (3-year gap), a newborn naming scene,
+  fertility by life stage and race (elves can have children long after 44), a parenting style (fold chips; "absent" gives +1 yearly time),
+  kids' own dreams, sibling rivalry, adult children joining the family trade, ageing choices, a home in old age, a last scene with a last wish
+  that echoes in the heir, family reputation with a crest and motto across lives, family secrets, inheritance disputes, children reacting to divorce,
+  stepfamily, outliving descendants. Four new callings in family.ts: elder, last great work, atonement, one last adventure.
+- Survey (20 lives each): kids 1.6–1.9 and grandkids 2.3–2.9 per life for humans, elves and dwarves; lifespans unchanged.
+- Not yet checked on screen (usage limit).

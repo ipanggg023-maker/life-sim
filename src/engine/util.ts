@@ -165,6 +165,8 @@ export function relationLabel(p: Person, life?: { age: number; worldId?: WorldId
       return "เพื่อนร่วมทีม";
     case "rival":
       return "คู่ปรับ";
+    case "grandchild":
+      return p.gender === "m" ? "หลานชาย" : "หลานสาว";
   }
 }
 
