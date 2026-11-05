@@ -292,3 +292,15 @@ Foundations go first because the four rules apply to everything built after.
 - danger.ts gained hooks so creatures can join the middle beat of fights and pay the price when it is lost.
 - Balance: 200-bot median 48, 58% die before 60 (R13: 54 and 56%).
 - Checked on screen: the animal market by region, buying a war horse, the World tab section.
+
+## Release 15 built (2026-11-06)
+- legends2.ts: eight new legendary weapons with draft names awaiting approval: เอ็กซ์คาลิเบอร์ (in a stone in Aldria's old temple yard; only someone worthy of a throne can draw it: a ruler, a high courtier, known noble blood, or standing 40+), ธนูจันทร์เสี้ยว, ขวานผ่าภูผา, ค้อนหลอมดารา, มีดคู่เงาสนธยา, โล่ปราการนิรันดร์, สนับมือหัวใจมังกร, คทาห้วงกาล. Old saves get them on their next year.
+  Every relic is usable: once a year it appears as its own choice in any fight scene, with better odds and some with a price (Grief drains happiness, the ember staff burns, the time staff costs a year of life).
+  Each of the 16 relics has its own event (a sealed door, a sword that refuses to be drawn, a dragon that smells the spear, a deadlocked council, a ring that can wake the dead once, a false king, a falling star to forge...).
+  Relics have a will: Excalibur leaves the dishonest and returns to its stone, the Sun Sword leaves the cruel, the Eternal Bulwark leaves cowards; history of holders is shown.
+  Forge your own relic at smithing rank 5 for 200 gold and a great sacrifice (ten years of life, all happiness, or all fame); it enters the world with your family name.
+  Four hidden wonders (a lost city, a sunken temple, a sky island, the first tree), one claimant per world, each with its own requirement, found only after a lead (a treasure map from loot, the sphinx, or two pieces of world lore).
+  A prophecy that may point to you or a rival (chase it, defy it, or fake it). World crises that span lives (demon invasion, dying sun, a dying god): lives push them back step by step, or after 120 years the world loses. Six truths of the world uncovered in old libraries and kept by the world across lives. One great prayer per life, answered with a price. Ghosts of past legends asking for unfinished business.
+  A "legends of the world" section in the World tab.
+- Balance: 200-bot median 51, 57% die before 60; wonders reached in about 1 in 5 random lives.
+- Checked on screen: a relic choice in a guild fight and its result, the World tab section with the relic's past holders.

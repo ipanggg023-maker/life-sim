@@ -38,14 +38,17 @@ describe("ความรักเป็นขั้น", () => {
     expect(marriageBlock(l)).toBeUndefined();
   });
   it("ไปเที่ยวด้วยกันนับเป็นเดต และไม่ได้ไปไหนด้วยกันนานเกินไป ความรักเย็นลง", () => {
-    const l = life(2); l.money = 0; // ไม่มีเงิน ภาษีประจำปีจึงไม่มาแย่งช่องเรื่องของปี (การทดสอบไม่ได้ตอบภาษี)
-    const p = createPerson(l, "spouse", { gender: l.gender === "m" ? "f" : "m", age: 25, bond: 70 });
-    const date = fantasyPersonActions(l, p).find((a) => a.id === "date")!;
-    date.run(l);
-    expect(p.tags).toContain(`dated:${l.age}`);
-    l.queue = []; l.age += 4;
+    // เรื่องนี้สุ่มขึ้นในปีที่เหินห่าง · ลองหลายชีวิตเพื่อไม่ให้ผลขึ้นกับดวงของชีวิตเดียว
     let cold = false;
-    for (let i = 0; i < 20 && !cold; i++) { l.queue = []; ageUp(l); cold = l.seen["ft.lv.cold"] > 0; }
+    for (let seed = 2; seed < 7 && !cold; seed++) {
+      const l = life(seed); l.money = 0; // ไม่มีเงิน ภาษีประจำปีจึงไม่มาแย่งช่องเรื่องของปี (การทดสอบไม่ได้ตอบภาษี)
+      const p = createPerson(l, "spouse", { gender: l.gender === "m" ? "f" : "m", age: 25, bond: 70 });
+      const date = fantasyPersonActions(l, p).find((a) => a.id === "date")!;
+      date.run(l);
+      expect(p.tags).toContain(`dated:${l.age}`);
+      l.queue = []; l.age += 4;
+      for (let i = 0; i < 20 && !cold; i++) { l.queue = []; ageUp(l); cold = l.seen["ft.lv.cold"] > 0; }
+    }
     expect(cold).toBe(true);
   });
 });

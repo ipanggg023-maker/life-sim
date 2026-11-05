@@ -80,6 +80,8 @@ export function afflict(l: Life, kind: keyof typeof AILMENTS) {
 // ───────────── ความกล้า ความกลัว และคำปฏิญาณ ─────────────
 /** ทางเลือกที่เป็นการต่อสู้จริง (ใช้พลังต่อสู้) · ทางเลือกที่ผ่านได้โดยไม่สู้ */
 const FIGHTS = new WeakSet<Choice>();
+/** ทางเลือกนี้เป็นการต่อสู้จริงไหม (ใช้กับอาวุธตำนานในฉากต่อสู้) */
+export const isFight = (c: Choice) => FIGHTS.has(c) || (c.tone === "danger" && !!c.odds);
 const PEACE = new WeakSet<Choice>();
 export const FEAR_PENALTY = 0.06;
 export const BOLD_EDGE = 0.03;
@@ -95,7 +97,7 @@ function loot(l: Life): string {
   if (!chance(l, LOOT_CHANCE)) return "";
   const f = fl(l), roll = randInt(l, 0, 3);
   if (roll === 0 && (f.weapon?.quality ?? 0) < 3) { f.weapon = { name: `${weaponNoun(l)}ไร้ชื่อที่ยังคมกริบ`, quality: (f.weapon?.quality ?? 0) + 1 }; return ` ในกองกระดูกมี${weaponNoun(l)}เล่มหนึ่งที่ยังคมกริบ คุณเอามันมาใช้แทนของเดิม`; }
-  if (roll === 1) { addStat(l, "luck", 2); addMoney(l, 10 * GOLD); return " คุณเจอแผนที่เก่าที่มีกากบาทแดง ขายให้นักสำรวจได้ 10 เหรียญทอง และเก็บสำเนาไว้เอง"; }
+  if (roll === 1) { addStat(l, "luck", 2); addMoney(l, 10 * GOLD); l.flags.ftMapFound = true; return " คุณเจอแผนที่เก่าที่มีกากบาทแดง ขายให้นักสำรวจได้ 10 เหรียญทอง และเก็บสำเนาไว้เอง"; }
   if (roll === 2) { const g = randInt(l, 15, 40); addMoney(l, g * GOLD); return ` เขี้ยวของมันขายให้ร้านยาได้ ${g} เหรียญทอง`; }
   nextUp(l, "ft.dg.letter", {});
   return " ในย่ามของศพมีจดหมายผนึกครั่งที่ยังไม่มีใครเปิด";

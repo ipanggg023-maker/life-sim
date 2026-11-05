@@ -15,7 +15,8 @@ const TRIAL_THREAT = 58;
 const SEEK_WAIT = 1;
 export const DRAGON_THREAT = 105;
 const EXAGGERATE = ["ด้วยมือเปล่า", "ในคืนเดียว", "ทั้งที่ตาบอดข้างหนึ่ง", "ตอนอายุเพียงสิบสองปี", "ขณะร้องเพลงไปด้วย", "โดยมีมังกรสามตัวเป็นพยาน"];
-const lost = (l: Life) => dataOf(l).relics.filter((r) => r.holder !== "player");
+// ดาบในหินไม่ต้องตามหา มันอยู่ที่เดิมรอคนที่คู่ควร (legends2.ts)
+const lost = (l: Life) => dataOf(l).relics.filter((r) => r.holder !== "player" && r.holder !== "stone");
 /** ตามชิ้นที่มีเบาะแสมากสุด เบาะแสจึงไม่กระจาย */
 const chase = (l: Life) => lost(l).slice().sort((a, b) => (fl(l).clues[b.id] ?? 0) - (fl(l).clues[a.id] ?? 0))[0];
 const R = (l: Life, c: Ctx): Relic => relicOf(l, String(c.relic))!;

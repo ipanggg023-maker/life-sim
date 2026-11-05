@@ -6,6 +6,7 @@ import { careerLines } from "../../content/fantasy/careers2";
 import { moneyLines } from "../../content/fantasy/money2";
 import { societyLines } from "../../content/fantasy/society2";
 import { creatureLines } from "../../content/fantasy/creatures";
+import { legendLines } from "../../content/fantasy/legends2";
 import { BESTIARY, timesMet } from "../../content/fantasy/bestiary";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
@@ -269,6 +270,11 @@ export function FantasyWorldTab({ life }: { life: Life }) {
       <Fold always id="ft-society" title={<>สังคม ชนชั้น และศรัทธา</>}>
         {societyLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
       </Fold>
+      {legendLines(life).length > 0 && (
+        <Fold always id="ft-legends2" title={<>ตำนานของโลก</>}>
+          {legendLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
+        </Fold>
+      )}
       <Fold always id="ft-creatures" title={<>สัตว์และสิ่งลี้ลับ</>}>
         {creatureLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
       </Fold>
