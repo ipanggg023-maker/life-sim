@@ -3,6 +3,7 @@ import { YEARS_PER_CAP } from "../../content/fantasy/power";
 import { dangerLines } from "../../content/fantasy/danger";
 import { lawLines } from "../../content/fantasy/underworld";
 import { careerLines } from "../../content/fantasy/careers2";
+import { moneyLines } from "../../content/fantasy/money2";
 import { BESTIARY, timesMet } from "../../content/fantasy/bestiary";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
@@ -393,6 +394,12 @@ export function FantasyCareerCard({ life }: { life: Life }) {
           <p className="small">{mastered(life, career.id) ? "คุณเป็นนายใหญ่ที่สอบผ่านของสมาคม" : "คุณอยู่ขั้นสูงสุดของอาชีพนี้"}{life.flags.ftLegacyDone ? " · ทิ้งตำนานไว้ให้อาชีพนี้แล้ว" : " · เป็นนายใหญ่สักพัก จะได้เลือกสิ่งที่ทิ้งไว้ให้อาชีพนี้"}</p>
         )}
         <p className="small muted">เกษียณตอนอายุ {retireAge(life)} · บำนาญ {job.level >= 5 ? (mastered(life, career.id) ? "50" : "40") : job.level >= 3 ? "25" : "10"}% ของค่าจ้าง</p>
+      </Fold>
+    )}
+    {life.age >= 18 && (
+      <Fold always id="ft-money2" title={<>การเงิน</>}>
+        {moneyLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
+        <p className="small muted">ลงทุน ปล่อยกู้ ซื้อที่ดิน ทำบุญ และเลือกวิธีใช้ชีวิตได้ที่แท็บทำ หมวดเงิน</p>
       </Fold>
     )}
     {careerLines(life).length > 0 && (

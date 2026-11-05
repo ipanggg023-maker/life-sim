@@ -111,11 +111,12 @@ describe("กิจการ สมาคม และผลงาน", () => {
   });
   it("ทำงานนานแล้วมีผลงานที่มีชื่อ และงานดังกลายเป็นตำนาน", () => {
     const l = life(9); startJob(l, "ft_bard"); l.job!.level = 3;
-    for (let i = 0; i < 40 && !(fl(l).works ?? []).length; i++) { l.job!.performance = 60; year(l); }
+    const keep = () => { if (!l.job) { startJob(l, "ft_bard"); l.job!.level = 3; } l.job!.performance = 60; };
+    for (let i = 0; i < 40 && !(fl(l).works ?? []).length; i++) { keep(); year(l); }
     const w = fl(l).works![0];
     expect(w.name.length).toBeGreaterThan(2);
     w.fame = WORK_LEGEND - 1;
-    for (let i = 0; i < 30 && w.fame < WORK_LEGEND; i++) { l.job!.performance = 60; year(l); }
+    for (let i = 0; i < 30 && w.fame < WORK_LEGEND; i++) { keep(); year(l); }
     expect(fl(l).deeds.some((d) => d.includes(w.name))).toBe(true);
   });
 });

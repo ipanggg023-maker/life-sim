@@ -105,7 +105,7 @@ const destOf = (l: Life, g: Good): Kingdom => away(l).sort((a, b) => priceOf(b, 
 // ทุนต่อเที่ยวโตตามประสบการณ์แต่มีเพดาน · ส่งทุกปีติดกันตลาดปลายทางอิ่มตัว กำไรบางลง (พักหนึ่งปีแล้วกลับมาเต็ม)
 const airship = (l: Life) => fl(l).estates?.airship !== undefined;
 export const capitalOf = (l: Life) => Math.min(Math.floor(l.money / GOLD), Math.min(250, 80 + (fl(l).trades ?? 0) * 6) + (inFaction(l, "league") ? fl(l).fRank * 40 : 0));
-const tradeOdds = (l: Life, g: Good) => 0.8 - (destOf(l, g).war ? 0.15 : 0) + (inFaction(l, "league") ? 0.08 : 0) + (fl(l).race === "halfling" ? 0.05 : 0) + (airship(l) ? 0.08 : 0) + (l.stats.luck - 50) / 400;
+const tradeOdds = (l: Life, g: Good) => 0.8 - (destOf(l, g).war ? 0.15 : 0) - (homeKingdom(l).boom?.kind === "embargo" ? 0.15 : 0) + (inFaction(l, "league") ? 0.08 : 0) + (fl(l).race === "halfling" ? 0.05 : 0) + (airship(l) ? 0.08 : 0) + (l.stats.luck - 50) / 400;
 const streakOf = (l: Life) => (fl(l).tradeLast === l.age - 1 ? (fl(l).tradeStreak ?? 0) + 1 : 0);
 export const tradeSaturation = (l: Life) => streakOf(l) * 0.03;
 export function tradeProfit(l: Life, g: Good) {

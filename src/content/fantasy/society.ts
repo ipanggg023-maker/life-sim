@@ -1,5 +1,6 @@
 // สังคมที่เดินเองโดยไม่ต้องมีผู้เล่น: บุคคลสำคัญ ฝ่ายอำนาจ เศรษฐกิจ และกฎหมาย
 import { chance, pick, randInt, weightedPick } from "../../engine/rng";
+import { boomPrice } from "./money2";
 import type { Life } from "../../engine/types";
 import { clamp } from "../../engine/util";
 import { recordChronicle, type WorldState } from "../../engine/worldState";
@@ -20,6 +21,7 @@ export function priceOf(k: Kingdom, g: Good) {
   if (g === "iron" && k.war) m += 0.6;
   if (g === "herbs" && k.plague) m += 0.8;
   if (g === "grain" && k.famine) m += 0.8;
+  m += boomPrice(k, g);
   return Math.round(GOODS[g].base * m);
 }
 

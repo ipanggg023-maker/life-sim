@@ -41,10 +41,12 @@ describe("แท็บทำ", () => {
     expect(personaOf(l).h).toBeLessThan(0);
   });
   it("ทิ้งการฝึกนานเกินสี่ปี ฝีมือที่สะสมไว้หายไปบ้าง", () => {
-    const l = life(6, 30);
+    // เทียบกับชีวิตเดียวกันที่เพิ่งฝึก (เรื่องเล็กๆ ของปีอาจให้แต้มฝึกเพิ่มได้ทั้งสองชีวิต)
+    const l = life(6, 30), fresh = life(6, 30);
     l.ft!.bodyRank = 2; l.ft!.body = 300; l.flags.ftBodyAt = 25;
-    ageUp(l);
-    expect(l.ft!.body).toBeLessThan(300);
+    fresh.ft!.bodyRank = 2; fresh.ft!.body = 300; fresh.flags.ftBodyAt = 29;
+    ageUp(l); ageUp(fresh);
+    expect(l.ft!.body).toBeLessThan(fresh.ft!.body);
     expect(l.ft!.bodyRank).toBe(2);
   });
   it("เรื่องต่อเนื่องทุกเรื่องลงทะเบียนแล้วและเขียนข้อความได้", () => {

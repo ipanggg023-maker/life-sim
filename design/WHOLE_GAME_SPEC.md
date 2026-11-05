@@ -252,3 +252,18 @@ Foundations go first because the four rules apply to everything built after.
 - Engine: startJob, hireTrialHooks, jobEndHooks (fired or quit) and salaryHooks.
 - Balance: side income at first added about 10 years to random bots (money spent on healers); gig pay was halved and shop and patron income cut until the 200-bot median was back at 51 (R10: 47). The reckless-bot test now uses 120 lives, because deaths split into two groups and the 80-life median jumped six years on one life.
 - Checked on screen: new careers in the job list, a jester's hiring trial, opening a tavern and the work-life section, the Do tab work group, a career crisis popup.
+
+## Release 12 built (2026-11-05)
+- money2.ts: investing in a voyage, an expedition, a mine or a friend's shop (20 or 60 gold, results in 2–4 years: profit, money back, or lost, sometimes with a story; a failed friend's shop hurts the friendship).
+  Lending at 25% over three years: borrowers repay, beg for time (give time, forgive, or seize goods and make an enemy), or flee.
+  Land with tenants: farms, villages (need two farms) and mines pay rent by the tenants' mood; squeezing pays 50% more but mood falls every year; tenant crises; a revolt below 15 mood; a lordship deed with a village, three farms and happy tenants.
+  Property tax by kingdom (3–7%, +4% in war) every three years once you hold 80+ gold: pay, hide assets (hard), bribe, or move to a cheaper kingdom.
+  A gambling habit from dice games (five plays makes a habit): a nightly urge that costs money and family bonds; resisting or a priest's help clears it.
+  Poverty paths for the broke and jobless: begging, odd jobs, a stranger's kindness, crime's pull, and a way up through an apprenticeship.
+  Theft for the rich (200+ gold) without a vault, guard or steward; a vault costs 40 gold. Charity: a temple, an orphanage or a bridge (deeds and standing), and an orphan who comes back to nurse you.
+  A yearly lifestyle: frugal (living ×0.7, less happiness), comfortable, or lavish (×1.6, more happiness and standing, flatterers).
+  Booms and busts per kingdom (plentiful harvest, gold rush, embargo, slump) for 2–4 years, changing prices, living costs, wages, rents and trade odds.
+  A successful caravan can carry on to up to three more cities, each leg riskier and more profitable.
+  A "money" section in the Career tab and a "money" group in the Do tab.
+- Balance: the 200-bot median death is 50 (R11: 51). The reckless-bot test now checks that at least 45% of those lives end before 60, because the median jumps between the two age groups.
+- Checked on screen: the money activities, buying a farm, the Career tab money section, a tax assessment.

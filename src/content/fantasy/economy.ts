@@ -15,6 +15,7 @@ import { HOMES } from "./world2";
 import { assetIncome } from "./careers";
 import { PREJUDICE_COST, prejudice } from "./races";
 import { staffOf } from "./people3";
+import { livingMul } from "./money2";
 
 export type EstateId = "tower" | "stable" | "airship" | "title" | "blade" | "plate";
 export interface Estate { name: string; price: number; upkeep: number; perk: string; once?: boolean; req?: (l: Life) => string | undefined; year?: (l: Life) => void; buy?: (l: Life) => void }
@@ -64,7 +65,7 @@ export function ftLiving(l: Life, kids: number, income: number) {
   const tax = k.laws?.includes("heavyTax") ? 1.25 : 1;
   // แผ่นดินที่ระแวงเผ่าของคุณขายของให้แพงกว่า
   const wary = 1 + prejudice(l) * PREJUDICE_COST;
-  return Math.round(((3_000 + kids * 700) * rich * tax + Math.max(0, income) * clamp(0.25 - (rich - 1) / 4, 0.1, 0.4) * tax) * cityCost(l) * wary);
+  return Math.round(((3_000 + kids * 700) * rich * tax + Math.max(0, income) * clamp(0.25 - (rich - 1) / 4, 0.1, 0.4) * tax) * cityCost(l) * wary * livingMul(l));
 }
 
 /** หนี้: ดอกเบี้ยปีละ 6% · เจ้าหนี้มาเมื่อเกิน 40 เหรียญทอง */

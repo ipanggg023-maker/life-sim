@@ -97,6 +97,9 @@ describe("เศรษฐกิจ", () => {
     force(l, `ขน${GOODS.grain.name}`);
     expect(l.money).toBeGreaterThan(m);
     expect(fl(l).trades).toBe(1);
+    // ส่งสำเร็จแล้วไปต่อเมืองถัดไปได้ (Release 12)
+    expect(l.queue[0]?.eventId).toBe("ft.m2.route");
+    l.queue = [];
     runEvent(l, "ft.e.trade");
     const m2 = l.money;
     force(l, `ขน${GOODS.grain.name}`, false);
