@@ -14,6 +14,8 @@ import { addStanding, fl, homeKingdom } from "./state";
 import { cityOf } from "./cities";
 import { omenOf } from "./world2";
 import { stageAge } from "./folk";
+import { storyCtx } from "./storygen";
+import { nextFloat } from "../../engine/rng";
 import { relOf } from "../../engine/npc";
 
 /** จุดเชื่อมกับชีวิตคุณ · เรื่องที่ผูกกับชีวิตมากกว่าได้เป็นเรื่องหลักก่อน */
@@ -105,11 +107,19 @@ export function HL(h: Headline): GameEvent {
   };
 }
 const ready = (l: Life, h: Headline) => (h.need ?? []).every((k) => HAS[k](l)) && (!h.who || h.who === "new" || HAS[h.who](l)) && (!h.when || h.when(l));
+/** เพศที่ข้อความบอกไว้ (ชื่อเรื่อง อาชีพ) · "หนุ่มสาว" ไม่นับ */
+export function genderOfText(t: string): "m" | "f" | undefined {
+  const s = t.replace(/หนุ่มสาว/g, "");
+  if (/หนุ่ม|ชาย|ลูกเขย|พ่อ(?!ค้า|ครัว)/.test(s)) return "m";
+  if (/สาว|หญิง|ลูกสะใภ้|แม่(?!ทัพ|น้ำ|สื่อ)/.test(s)) return "f";
+  return undefined;
+}
 function personFor(l: Life, h: Headline): Person | undefined {
   if (h.who === "new") {
     const a = h.newAs ?? { rel: "friend" as const, job: "คนแปลกหน้า" };
     // คนที่เรื่องเรียกว่า "หนุ่ม" หรือ "สาว" ต้องเป็นเพศนั้นจริง ข้อความในเรื่องจะได้ตรงกับคน
-    const gender = /หนุ่ม|ชาย/.test(a.job) && !/หนุ่มสาว/.test(a.job) ? "m" as const : /สาว|หญิง/.test(a.job) ? "f" as const : undefined;
+    // อาชีพบอกเพศของคนนี้ตรงๆ · ชื่อเรื่องนับเฉพาะคำชัดๆ (ชายแก่ ลูกชาย) เพราะอาจพูดถึงคนอื่น
+    const gender = genderOfText(a.job) ?? (/ชาย|หนุ่ม(?!สาว)/.test(h.title) ? "m" : /หญิง/.test(h.title) ? "f" : undefined);
     const p = createPerson(l, a.rel, { gender, age: a.age ? randInt(l, a.age[0], a.age[1]) : Math.max(8, l.age + randInt(l, -10, 10)), bond: 30 });
     p.job = a.job;
     return p;
@@ -121,17 +131,24 @@ function personFor(l: Life, h: Headline): Person | undefined {
 export const hookScore = (l: Life, h: Headline) => h.hooks.filter((k) => HAS[k](l)).length + (h.who && h.who !== "new" && HAS[h.who](l) ? 1 : 0);
 /** เรื่องหลักที่ยังไม่เคยเจอเหลือน้อยกว่านี้ เรื่องเก่าจึงกลับมาได้ */
 export const HEADLINE_RESET = 10;
-export function pickHeadline(l: Life): { id: string; score: number } | undefined {
+/** คะแนนของเรื่องที่ประกอบจากชิ้นส่วน และสัดส่วนที่แทรกเข้ามาแม้ยังมีเรื่องเขียนไว้ */
+export const STORY_SCORE = 2.5;
+export const STORY_SHARE = 0.25;
+export function pickHeadline(l: Life): { id: string; score: number; ctx?: () => Ctx } | undefined {
+  const story = storyCtx(l);
+  const made = story && { id: story.id, score: STORY_SCORE, ctx: story.make };
   const a = stageAge(l);
   const ok = HEADLINES.filter((h) => a >= h.ages[0] && a <= h.ages[1] && (l.seen[`ft.hl.${h.id}`] ?? 0) < 1 && ready(l, h));
-  if (!ok.length) return;
+  if (!ok.length) return made;
   // ทุกชีวิตต้องได้เรื่องไม่ซ้ำกัน: เรื่องหลักที่ชาติก่อนเคยเจอจะกลับมาเมื่อเรื่องใหม่หมดแล้วเท่านั้น
   const past = new Set(l.pastSeen ?? []);
   const fresh = ok.filter((h) => !past.has(`ft.hl.${h.id}`));
   // เรื่องที่เข้ากับปีนี้ถูกใช้ไปหมดแล้วในชาติก่อน: ปีนี้ให้เรื่องอื่นเป็นเรื่องหลักแทน
   // จนกว่าวิญญาณจะเจอเรื่องหลักแทบครบทุกเรื่องแล้ว จึงยอมให้เรื่องเก่ากลับมา
   const unseen = HEADLINES.filter((h) => !past.has(`ft.hl.${h.id}`)).length;
-  if (!fresh.length && unseen >= HEADLINE_RESET) return;
+  if (!fresh.length && unseen >= HEADLINE_RESET) return made;
+  // เรื่องที่ประกอบจากชิ้นส่วนแทรกบ้าง ชีวิตจะได้ไม่วนอยู่กับเรื่องชุดเดิม
+  if (made && nextFloat(l) < STORY_SHARE) return made;
   const scored = (fresh.length ? fresh : ok).map((h) => ({ h, s: 2 + hookScore(l, h) * 1.5 }));
   scored.sort((a, b) => b.s - a.s);
   const top = scored.filter((x) => x.s >= scored[0].s - 1.5);

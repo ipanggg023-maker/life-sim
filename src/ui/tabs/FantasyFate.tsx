@@ -8,7 +8,8 @@ import { feelingWords, topMemories } from "../../content/fantasy/people2";
 import { goalOf, traitName, traitsOf } from "../../engine/npc";
 import { dataOf, homeKingdom, kingdomsOf } from "../../content/fantasy/state";
 import { powerParts } from "../../content/fantasy/power";
-import { closest, enemies, epitaph, memoryLine, timelineOf } from "../../content/fantasy/lifestory";
+import { closest, enemies, epitaph, isTurn, memoryLine, timelineOf, volumesOf } from "../../content/fantasy/lifestory";
+import { storylinesOf } from "../../content/fantasy/storygen";
 import { ASPECTS, VOWS, aspectsOf, vowOf } from "../../content/fantasy/powerplus";
 import { TEMPERS, marksOf, regard, regardWord, rulerView, temperOf, viewWord } from "../../content/fantasy/worldmark";
 import { bossOf, matesOf, workFactors } from "../../content/fantasy/worklife";
@@ -167,12 +168,25 @@ export function LifeStoryFolds({ life }: { life: Life }) {
   const near = closest(life);
   const foes = enemies(life);
   const changes = life.ft.personaLog ?? [];
-  const KIND: Record<string, string> = { seed: "เลือก", echo: "กลับมา", deed: "ผลงาน", mark: "แผ่นดิน", vow: "ปณิธาน", self: "ตัวตน" };
+  const KIND: Record<string, string> = { seed: "เลือก", echo: "กลับมา", deed: "ผลงาน", mark: "แผ่นดิน", vow: "ปณิธาน", self: "ตัวตน", turn: "หักเห" };
+  const vols = volumesOf(life).reverse();
+  const lines = storylinesOf(life);
   return (
     <>
+      {lines.length > 0 && (
+        <Fold always kind="section" id="ft-threads" title={<>เรื่องที่ยังไม่จบ <span className="fold-count">{lines.length}</span></>}>
+          {lines.map((s, i) => { const p = life.people.find((x) => x.id === s.pid); return <p className="small" key={i}><b>{s.title}</b> · {p ? p.name : "คนในเรื่อง"} {s.kind === "revenge" ? "ยังไม่ยอมจบเรื่องนี้" : s.kind === "help" ? "สัญญาว่าจะกลับมาตอบแทน" : "รู้อะไรบางอย่างเกี่ยวกับพ่อแม่คุณ"}</p>; })}
+          <p className="small muted">เรื่องเหล่านี้จะกลับมาเองในอีกไม่กี่ปี</p>
+        </Fold>
+      )}
       <Fold always kind="section" id="ft-story" title={<>เรื่องราวชีวิต <span className="fold-count">{beats.length}</span></>}>
         {beats.length === 0 && <p className="small muted">ทางเลือกสำคัญ ผลงาน และเรื่องที่กลับมาจะถูกร้อยเป็นเรื่องราวที่นี่</p>}
-        {beats.slice(0, 30).map((b, i) => <p className={`small ${b.kind === "echo" || b.kind === "deed" ? "" : "muted"}`} key={i}><span className="beat-kind">{KIND[b.kind]}</span> อายุ {b.age} · {b.text}</p>)}
+        {vols.map((v, vi) => (
+          <div className="volume" key={v.name}>
+            <p className="volume-head"><b>เล่ม {vols.length - vi} · {v.name}</b> <span className="muted">อายุ {v.from}{v.to > v.from ? `–${v.to}` : ""} · {v.beats.length} เรื่อง{v.turns ? ` · จุดหักเห ${v.turns}` : ""}</span></p>
+            {[...v.beats].reverse().slice(0, vi === 0 ? 20 : 8).map((b, i) => <p className={`small ${isTurn(b) ? "" : "muted"}`} key={i}>{isTurn(b) ? "★ " : ""}<span className="beat-kind">{KIND[b.kind]}</span> อายุ {b.age} · {b.text}</p>)}
+          </div>
+        ))}
       </Fold>
       <Fold kind="section" id="ft-people-key" title={<>คนที่สำคัญที่สุด</>}>
         {near.map((p) => <p className="small" key={p.id}><b>{p.name}</b>{feelingWords(p)[0] ? ` · ${feelingWords(p)[0]}` : ""}{memoryLine(p) ? ` · จำได้ว่า${memoryLine(p)}` : ""}</p>)}

@@ -107,3 +107,18 @@ Foundations go first because the four rules apply to everything built after.
 - **Names:** the body ranks above, the user's magic ranks (ผู้ตื่นรู้มานา, ผู้ฝึกหัดเวท, นักเวท, จอมเวท, มหาจอมเวท, มหาปราชญ์เวท, ผู้ครองดารา),
   guild tiers ทองแดง → เหล็ก → เงิน → ทอง → มิธริล, and the user's relic names (ดาบผ่ามิติรัตติกาล, ดาบสุริยัน, ทวนพิฆาตมังกร,
   มงกุฏราชันอัสนี, คทาวิญญาณเพลิงนิรันดร์, ดาบคำสาปแห่งความโศกา, แหวนวิญญาณฟีนิกซ์). Old worlds take the new relic names.
+
+## Release 2 built (2026-11-05)
+- **Stories from parts (storygen.ts):** 16 situations × 16 kinds of person × 6 twists, set in your own city. Each situation is its own event
+  with 3 ways (force, wits, heart, luck, or pay a sure price). The soul remembers each combination it has seen. The same situation
+  can't come back within 15 years in one life. Generated stories fill the main slot when no fresh written story fits, and take 25% of slots anyway
+  (score 2.5, so job, court and war events still win when relevant). Injuries are scaled like written stories (×0.2).
+- **Threads:** twists can open a storyline (they come back to help, come back for revenge, or know something about your parents), due in 2–8 years,
+  at most 3 open. Shown as "เรื่องที่ยังไม่จบ" in the Log tab.
+- **Year:** chapter titles name what happened ("อายุ 33 · หนี้ที่คู่ครองซ่อนไว้"); one world news line a year from the chronicle or the world's state.
+- **Log tab:** the story is grouped into life-stage volumes (stretched for long-lived races), with turning points starred.
+- **Redo:** once a year, redo one small moment for −3 happiness (only right after the year, in the same session).
+- **Live quietly 5 or 10 years:** personality decides calm years; it stops for forced or important events, danger, family births or deaths,
+  health under 40, or new debt, and the summary says why it stopped.
+- Job, court and war events repeat every 5 years instead of 15.
+- Result (10 souls × 3 lives): main stories per life 51 / 48 / 40, none shared with earlier lives (a second life got ~9 before), lifespans unchanged.

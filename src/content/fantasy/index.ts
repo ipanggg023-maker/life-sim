@@ -3,6 +3,9 @@ import { activityFilters, timeBudget } from "../../engine/activities";
 import { eligibilityFilters, registerEvents } from "../../engine/events";
 /** เรื่องเล็กที่เกิดซ้ำได้ต้องห่างกันกี่ปี */
 export const REPEAT_GAP = 15;
+/** หน้าที่ของตำแหน่ง (งาน ราชสำนัก สงคราม) วนกลับมาตามบทบาท ห่างกันน้อยกว่า */
+export const ROLE_GAP = 5;
+const ROLE_EVENT = /^ft\.(wk|wd|wr)\./;
 import { lifespanHooks, yearHooks } from "../../engine/game";
 import type { Life } from "../../engine/types";
 import { registerWorld } from "../../engine/worldModule";
@@ -56,6 +59,7 @@ import { ECONOMY_EVENTS, ftLiving, loadEconomy } from "./economy";
 import { CAREER_PATH_EVENTS, loadCareerPath } from "./careerpath";
 import { ARENA_EVENTS, loadArena } from "./arena";
 import { FAMILY_EVENTS, loadFamily } from "./family";
+import { STORY_GEN_EVENTS, loadStoryGen } from "./storygen";
 import { verdict } from "./persona";
 import { verdictHook } from "../../engine/game";
 import { TALENTS } from "../talents";
@@ -72,7 +76,7 @@ export function loadFantasyWorld() {
   // โลกนี้ใช้เนื้อหาของตัวเองเท่านั้น ไม่รับเหตุการณ์และกิจกรรมชุดเก่า
   eligibilityFilters.push((l, e) => l.worldId !== "fantasy" || e.world === "fantasy");
   // เรื่องที่เกิดซ้ำได้: ต้องห่างกันอย่างน้อย REPEAT_GAP ปี
-  eligibilityFilters.push((l, e) => l.worldId !== "fantasy" || e.forced || e.maxTimes === 1 || e.maxTimes === undefined || l.age - (l.seenAt?.[e.id] ?? -999) >= REPEAT_GAP);
+  eligibilityFilters.push((l, e) => l.worldId !== "fantasy" || e.forced || e.maxTimes === 1 || e.maxTimes === undefined || l.age - (l.seenAt?.[e.id] ?? -999) >= (ROLE_EVENT.test(e.id) ? ROLE_GAP : REPEAT_GAP));
   activityFilters.push((l, a) => l.worldId !== "fantasy" || a.world === "fantasy");
   TALENTS.push(...FANTASY_TALENTS);
   loadTalentEvo();
@@ -88,6 +92,7 @@ export function loadFantasyWorld() {
   loadCareerPath();
   loadArena();
   loadFamily();
+  loadStoryGen();
   loadWorldmark();
   loadCities();
   loadEconomy();
@@ -104,7 +109,7 @@ export function loadFantasyWorld() {
   loadRealm();
   loadRealms();
   transform.fn = setRace;
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS, ...ECHOES_1, ...ECHOES_2, ...PERSONA_EVENTS, ...RUMOR_EVENTS, ...PEOPLE2_EVENTS, ...MOMENT_EVENTS, ...WORK_EVENTS, ...WORK_ECHOES, ...COURT_EVENTS, ...WAR_EVENTS, AFTERMATH, ...WORLD_ECHOES, ...POWER_EVENTS, ...HEADLINE_EVENTS, ...ECONOMY_EVENTS, ...CAREER_PATH_EVENTS, ...ARENA_EVENTS, ...FAMILY_EVENTS], "fantasy");
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS, ...ECHOES_1, ...ECHOES_2, ...PERSONA_EVENTS, ...RUMOR_EVENTS, ...PEOPLE2_EVENTS, ...MOMENT_EVENTS, ...WORK_EVENTS, ...WORK_ECHOES, ...COURT_EVENTS, ...WAR_EVENTS, AFTERMATH, ...WORLD_ECHOES, ...POWER_EVENTS, ...HEADLINE_EVENTS, ...ECONOMY_EVENTS, ...CAREER_PATH_EVENTS, ...ARENA_EVENTS, ...FAMILY_EVENTS, ...STORY_GEN_EVENTS], "fantasy");
   addExclusive();
   loadPowerplus();
   loadLifestory();

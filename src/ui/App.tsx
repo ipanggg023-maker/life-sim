@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { liveQuietly, redoMoment } from "../content/fantasy/year";
 import { ageUp, createLife, pastSelfOf, resolveChoice, toPastLife, whyFailed, type BirthOptions, migrateLife } from "../engine/game";
 import { currentScene, labelOf, type Outcome } from "../engine/events";
 import { buildDisciple, inheritMurim, recordChronicle } from "../content/murim/life/generations";
@@ -218,6 +219,16 @@ export function App() {
     async (years = 1) => {
       if (!life) return;
       const before = snapshot(life);
+      // แฟนตาซี: ใช้ชีวิตเงียบๆ หลายปี · นิสัยตัดสินเรื่องเล็ก หยุดเมื่อมีเรื่องสำคัญ
+      if (life.worldId === "fantasy" && years > 1) {
+        const stop = liveQuietly(life, years, (l) => {
+          if (TURNING_POINTS.includes(l.age) || l.flags.ftMark) { delete l.flags.ftMark; void saveSnapshot(l); }
+          ageUp(l);
+        });
+        life.report = { ...buildReport(life, before), stop };
+        commit(life);
+        return;
+      }
       for (let i = 0; i < years; i++) {
         if (life.worldId === "fantasy" && (TURNING_POINTS.includes(life.age) || life.flags.ftMark)) { delete life.flags.ftMark; void saveSnapshot(life); } // จุดที่ย้อนชะตากลับมาได้
         ageUp(life);
@@ -403,7 +414,7 @@ export function App() {
   return (
     <div className={`app ${shake ? "shake" : ""}`}>
       {life.worldId === "fantasy" && <AstralSky />}
-      <MainScreen life={life} onAgeUp={onAgeUp} onTab={(t) => { setFocus(null); setTab(t); }} who={who} setWho={setWho} onPerson={(id) => { setFocus(id); setTab("people"); }} />
+      <MainScreen life={life} onAgeUp={onAgeUp} onRedo={(i) => { const n = redoMoment(life, i); if (n) void commit(n); }} onTab={(t) => { setFocus(null); setTab(t); }} who={who} setWho={setWho} onPerson={(id) => { setFocus(id); setTab("people"); }} />
 
       {tab && !life.queue.length && !resolved && (
         <Sheet title={isRealistic(life.worldId) && tab === "soul" ? "บันทึก" : isRealistic(life.worldId) && tab === "power" ? (life.worldId === "fantasy" ? "พลัง" : "วิชายุทธ์") : life.worldId === "fantasy" && tab === "jianghu" ? "โลก" : TAB_TITLES[tab]} onClose={() => setTab(null)}>

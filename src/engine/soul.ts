@@ -72,6 +72,8 @@ export function rememberSeen(soul: Soul, life: Life) {
     const e = getEvent(id);
     // เรื่องหลักของปี (manual แต่เกิดได้ครั้งเดียว) ก็นับด้วย ชาติหน้าจะได้เรื่องหลักใหม่
     if (e && (isStoryEvent(e) || (e.manual && !e.forced && e.maxTimes === 1))) all.add(id);
+    // เรื่องที่ประกอบจากชิ้นส่วน: จำเป็นชุด (สถานการณ์ · คน · จุดหักมุม)
+    else if (id.startsWith("ft.sg:")) all.add(id);
   }
   soul.seenEver = [...all];
 }

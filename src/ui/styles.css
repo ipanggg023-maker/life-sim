@@ -1509,3 +1509,5 @@ details[open] > .fold-head .fold-chevron { transform: rotate(180deg); }
 .why-failed { margin: -8px 0 14px; }
 /* จอเตี้ย: ภาพหัวการ์ดเล็กลง ตัวเลือกจะได้อยู่ในจอโดยไม่ต้องเลื่อน */
 @media (max-height: 700px) { :root[data-world="fantasy"] .fate-scene { height: 84px; } :root[data-world="fantasy"] .modal-text { line-height: 1.7; } }
+.quiet-row { display: flex; gap: 8px; justify-content: center; margin-top: 6px; }
+.volume { margin: 6px 0 10px; } .volume-head { margin: 4px 0; font-size: 13px; }

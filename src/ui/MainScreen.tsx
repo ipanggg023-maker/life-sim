@@ -1,4 +1,5 @@
 import { fitGender } from "../engine/util";
+import { QUIET_YEARS, REDO_COST, redoable } from "../content/fantasy/year";
 import { createContext, memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { careerById } from "../content/core/careers";
 import { rankLabel } from "../content/core/power";
@@ -246,6 +247,24 @@ function WorldStrip({ life }: { life: Life }) {
   );
 }
 
+/** คิดใหม่: เลือกเองหนึ่งเรื่องเล็กของปีนี้ที่นิสัยตัดสินไปแล้ว */
+function RedoBar({ life, onRedo }: { life: Life; onRedo: (i: number) => void }) {
+  const [open, setOpen] = useState(false);
+  const list = redoable(life);
+  if (!list.length) return null;
+  return (
+    <div className="last-chapter">
+      <button className="btn small ghost" onClick={() => setOpen(!open)}>{open ? "ไม่คิดใหม่แล้ว" : `คิดใหม่หนึ่งเรื่องของปีนี้ (ความสุข −${REDO_COST})`}</button>
+      {open && (
+        <div className="card">
+          <p className="small muted">เลือกเรื่องที่อยากตัดสินใจเอง เรื่องนั้นจะเปิดให้เลือกใหม่ ปีละครั้ง</p>
+          {list.map((x) => <button key={x.i} className="btn small ghost" onClick={() => onRedo(x.i)}>{x.title}</button>)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** อ่านบทของปีก่อนอีกครั้ง */
 function LastChapter({ ch }: { ch: NonNullable<Life["lastChapter"]> }) {
   const [open, setOpen] = useState(false);
@@ -271,7 +290,7 @@ function ReportCard({ report }: { report: YearReport }) {
   const lines = all ? report.lines : report.lines.slice(0, REPORT_SHORT);
   return (
     <div className="report-card">
-      <div className="report-head">สรุป{report.to - report.from > 1 ? ` ${report.to - report.from} ปี (อายุ ${report.from}–${report.to})` : "ปีที่ผ่านมา"}</div>
+      <div className="report-head">สรุป{report.to - report.from > 1 ? ` ${report.to - report.from} ปี (อายุ ${report.from}–${report.to})` : "ปีที่ผ่านมา"}{report.stop ? ` · หยุดเพราะ${report.stop}` : ""}</div>
       <div className="report-lines">
         {lines.map((x, i) => (
           <span key={i} className={`report-chip ${x.tone}`}>
@@ -326,6 +345,7 @@ function PlanBar({ life }: { life: Life }) {
 export function MainScreen({
   life,
   onAgeUp,
+  onRedo,
   onTab,
   who = null,
   setWho,
@@ -333,6 +353,8 @@ export function MainScreen({
 }: {
   life: Life;
   onAgeUp: (years?: number) => void;
+  /** คิดใหม่หนึ่งเรื่องเล็กของปีนี้ (แฟนตาซี) */
+  onRedo?: (i: number) => void;
   onTab: (t: TabId) => void;
   who?: string | null;
   setWho?: (id: string | null) => void;
@@ -505,6 +527,7 @@ export function MainScreen({
         ))}
         {!murim && teaser && <p className="cliffhanger">{loc(life, teaser)}</p>}
         {life.report && life.report.to === life.age && life.report.lines.length > 0 && <ReportCard report={life.report} />}
+        {life.worldId === "fantasy" && onRedo && !life.queue.length && <RedoBar life={life} onRedo={onRedo} />}
         {life.worldId === "fantasy" && life.lastChapter && <LastChapter ch={life.lastChapter} />}
       </div>
       </NameCtx.Provider>
@@ -516,8 +539,12 @@ export function MainScreen({
         <button className="age-btn" onClick={() => onAgeUp(1)} disabled={life.queue.length > 0}>
           อายุ +1 ปี
         </button>
-        {life.ft && life.ft.race !== "human" && (
-          <button className="btn small ghost" onClick={() => onAgeUp(10)} disabled={life.queue.length > 0}>ข้ามไป 10 ปี</button>
+        {life.ft && life.age >= 6 && (
+          <div className="quiet-row">
+            {QUIET_YEARS.map((n) => (
+              <button key={n} className="btn small ghost" onClick={() => onAgeUp(n)} disabled={life.queue.length > 0}>ใช้ชีวิตเงียบๆ {n} ปี</button>
+            ))}
+          </div>
         )}
         <nav className="tabs">
           {TABS.filter((t) => (t.id !== "phone" || hasPhone(life)) && (t.id !== "jianghu" || isRealistic(life.worldId))).map((t) => (

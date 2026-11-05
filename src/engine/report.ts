@@ -19,6 +19,8 @@ export interface YearReport {
   from: number;
   to: number;
   lines: { text: string; tone: "good" | "bad" | "normal" }[];
+  /** ใช้ชีวิตเงียบๆ หลายปีแล้วหยุดเพราะอะไร */
+  stop?: string;
 }
 
 export function snapshot(l: Life): Snapshot {
