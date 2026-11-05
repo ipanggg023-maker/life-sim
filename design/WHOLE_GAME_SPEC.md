@@ -198,4 +198,4 @@ Foundations go first because the four rules apply to everything built after.
   that echoes in the heir, family reputation with a crest and motto across lives, family secrets, inheritance disputes, children reacting to divorce,
   stepfamily, outliving descendants. Four new callings in family.ts: elder, last great work, atonement, one last adventure.
 - Survey (20 lives each): kids 1.6–1.9 and grandkids 2.3–2.9 per life for humans, elves and dwarves; lifespans unchanged.
-- Not yet checked on screen (usage limit).
+- Checked on screen: family fold with parenting chips and grandchild, หลานสาว in People, adoption, home in old age, a new calling, the last scene. Fixed: the last scene could be dropped when health changed mid-year (now latched with ftLastDue, also fires from 75 with health 35 or less, or at 85).

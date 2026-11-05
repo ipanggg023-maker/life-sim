@@ -129,7 +129,7 @@ const AGEING: GameEvent[] = [
     C("ให้อภัยศัตรูทุกคน", G("คุณส่งจดหมายสั้นๆ ไปหาทุกคนที่เคยแค้นกัน บางคนตอบกลับ บางคนไม่ แต่คุณนอนหลับสบาย", { joy: 6 }, (l) => { for (const p of l.people) if (p.alive && relOf(p).grudge >= 20) remember(l, p, "forgive", "คุณให้อภัยเขาก่อนจากไป", 3, { grudge: -40 }); l.flags.ftLastWish = "forgive"; })),
     C("แบ่งของที่มีให้ทุกคนที่รัก", G("คุณเรียกทุกคนเข้ามาทีละคน และมอบของชิ้นเล็กๆ ที่มีความหมายให้", { joy: 5 }, (l) => { for (const p of l.people) if (p.alive && p.bond >= 50) bond(p, 10); l.flags.ftLastWish = "give"; })),
     C("บอกความลับที่เก็บมาทั้งชีวิต", G("คุณเล่าเรื่องที่ไม่เคยบอกใคร คนข้างเตียงจับมือคุณแน่น แล้วสัญญาว่าจะส่งต่อเรื่องนี้ให้ถูกคน", { joy: 4 }, (l) => { l.flags.ftLastWish = "secret"; })),
-  ], { title: "คำขอสุดท้าย", forced: true, maxTimes: 1, when: (l) => on(l) && stageAge(l) >= 68 && l.stats.health <= 22 && !l.flags.ftLastWish }),
+  ], { title: "คำขอสุดท้าย", forced: true, maxTimes: 0, when: (l) => on(l) && !!l.flags.ftLastDue && !l.flags.ftLastWish }),
 ];
 
 // ───────────── ชื่อเสียงของตระกูล · ความลับของตระกูล ─────────────
@@ -205,8 +205,11 @@ const LATER: GameEvent[] = [
 const stepSpouse = (l: Life) => { const s = l.people.find((p) => p.alive && p.relation === "spouse"); return s && Number(tagOf(s, "since") ?? l.age) > Math.max(-1, ...kids(l).map((k) => l.age - k.age)) && kids(l).some((k) => k.age >= 6) && !l.flags.ftStepDone ? s : undefined; };
 const outlived = (l: Life) => l.people.find((p) => !p.alive && (p.relation === "child" || p.relation === "grandchild") && p.age >= 60 && !p.tags?.includes("outlived"));
 
+/** ใกล้วาระสุดท้าย: จดไว้ครั้งเดียว · ฉากต้องไม่หายเพราะสุขภาพขึ้นลงระหว่างปี */
+export const lastDue = (l: Life) => stageAge(l) >= 85 || (stageAge(l) >= 75 && l.stats.health <= 35) || (stageAge(l) >= 68 && l.stats.health <= 22);
 function familyYear2(l: Life) {
   if (!on(l) || !l.alive) return;
+  if (!l.flags.ftLastDue && lastDue(l)) l.flags.ftLastDue = true;
   grandYear(l);
   parentYear(l);
   // ลูกเริ่มมีความฝันของตัวเองตอนสิบสี่

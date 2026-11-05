@@ -85,7 +85,7 @@ describe("บั้นปลาย", () => {
     const l = life(7, 80); l.stats.health = 15;
     const foe = createPerson(l, "rival", { age: 80, bond: 10 });
     foe.rel = { love: 0, trust: 10, respect: 0, fear: 0, debt: 0, grudge: 60, jealousy: 0, loyalty: 0 };
-    runEvent(l, "ft.f2.last"); choose(l, /ให้อภัย/);
+    l.flags.ftLastDue = true; runEvent(l, "ft.f2.last"); choose(l, /ให้อภัย/);
     expect(l.flags.ftLastWish).toBe("forgive");
     expect(foe.rel!.grudge).toBeLessThan(60);
   });

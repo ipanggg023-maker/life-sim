@@ -313,7 +313,7 @@ function LegacyFold({ life }: { life: Life }) {
       {c ? (
         <p className="small">งานของบั้นปลาย: <b>{c.name}</b>{c.need ? ` · ${c.goal} (${Math.min(callingProg(life), c.need)}/${c.need})` : ` · ${c.desc}`}</p>
       ) : (
-        <p className="small muted">อายุ {CALLING_AGE} จะได้เลือกงานของบั้นปลาย: สอนคนรุ่นใหม่ เขียนบันทึกชีวิต เดินทาง หรือเฝ้าเมือง</p>
+        <p className="small muted">อายุ {CALLING_AGE} จะได้เลือกงานของบั้นปลาย: สอนคนรุ่นใหม่ เขียนบันทึกชีวิต เดินทาง เฝ้าเมือง เป็นผู้เฒ่า สร้างงานชิ้นสุดท้าย ไถ่บาป หรือผจญภัยครั้งสุดท้าย</p>
       )}
     </Fold>
   );
