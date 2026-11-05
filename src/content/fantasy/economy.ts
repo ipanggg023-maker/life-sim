@@ -155,7 +155,7 @@ const CREDITOR: GameEvent = {
       { show: (l) => citiesOf(homeKingdom(l)).length > 1, cons: "ชื่อเสียงในแผ่นดินลด และหนี้ยังอยู่" }),
     C("ไล่เจ้าหนี้ออกไป", (l, c) => {
       if (debtGold(l) >= PRISON_AT) {
-        l.flags.jailUntil = l.age + 1; l.job = undefined; l.debt = Math.round(l.debt * 0.6);
+        l.flags.jailUntil = l.age + 2; l.job = undefined; l.debt = Math.round(l.debt * 0.6);
         return B("ทหารมาถึงก่อนเที่ยง คุณถูกส่งเข้าคุกลูกหนี้หนึ่งปี หนี้บางส่วนถูกยกเลิกแลกกับอิสรภาพ", { joy: -10 })(l, c);
       }
       l.flags.ftCreditorAngry = true;

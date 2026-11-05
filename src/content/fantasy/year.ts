@@ -72,6 +72,8 @@ export function chapterTitle(l: Life, theme?: string) {
 export const autoDecide = (l: Life) => !!l.flags.ftAutoDecide;
 
 /** จัดปีใหม่: เรื่องหลักหนึ่งเรื่อง · ช่วงเล็กๆ ไม่เกินสี่ · ฉากบังคับเป็นป๊อปอัปตามเดิม */
+/** เรื่องที่เกิดในคุกได้ (ตรงกับ JAIL_EVENTS ใน underworld.ts) */
+const JAIL_STORY = /^ft\.(ug\.|break_|f2\.last|fr\.jail)/;
 export function buildYear(l: Life) {
   if (l.worldId !== "fantasy" || !l.ft || !l.alive || l.age < 3) return;
   const queued = l.queue.splice(0);
@@ -85,8 +87,11 @@ export function buildYear(l: Life) {
     if (e.forced || ALWAYS.test(q.eventId) || q.scene) keep.push(q);
     else cand.push({ q, s: q.eventId.startsWith("ft.ec.") || q.eventId.startsWith("ft.el.") || q.eventId === "ft.sg.cont" ? 5 : TIED.test(q.eventId) ? 3 : 1 });
   }
+  // ในคุก: เรื่องของชีวิตข้างนอกรอจนพ้นโทษ เหลือแค่เรื่องในคุก (underworld.ts)
+  const inJail = Number(l.flags.jailUntil ?? -1) > l.age;
+  if (inJail) for (let i = cand.length - 1; i >= 0; i--) if (!JAIL_STORY.test(cand[i].q.eventId)) cand.splice(i, 1);
   // เรื่องหลักจากคลังเรื่องใหญ่ ผูกกับชีวิตคุณตามจำนวนจุดเชื่อม
-  const hl = pickHeadline(l);
+  const hl = inJail ? undefined : pickHeadline(l);
   let head: QueuedEvent | undefined;
   let best = -1, bestIdx = -1;
   cand.forEach((x, i) => { const s = x.s + nextFloat(l) * 1.5; if (s > best) { best = s; bestIdx = i; } });

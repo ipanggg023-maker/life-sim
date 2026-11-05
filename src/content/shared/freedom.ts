@@ -38,7 +38,8 @@ function sendToJail(l: Life, years: number, why: string): string {
 }
 
 yearHooks.push((l) => {
-  if (l.flags.jailUntil === undefined || !l.alive) return;
+  // แฟนตาซีมีชีวิตในคุกและวันพ้นโทษของตัวเอง (fantasy/underworld.ts)
+  if (l.flags.jailUntil === undefined || !l.alive || l.worldId === "fantasy") return;
   const until = Number(l.flags.jailUntil);
   if (l.age < until) {
     addStat(l, "health", -randInt(l, 0, 3));

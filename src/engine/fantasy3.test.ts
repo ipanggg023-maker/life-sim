@@ -196,22 +196,25 @@ describe("กฎหมายและอาชญากรรม", () => {
     const l = life(20);
     homeKingdom(l).laws = [];
     runEvent(l, "ft.l.crime");
-    force(l, "ย่องเข้าคฤหาสน์", false);
+    // คดีเล็ก (ล้วงกระเป๋า) จบด้วยค่าปรับได้ · คดีใหญ่ต้องขึ้นศาล (Release 10)
+    force(l, "ล้วงกระเป๋า", false);
     expect(l.queue[0].eventId).toBe("ft.l.arrest");
     const soft = getEvent("ft.l.arrest")!.text(l, l.queue[0].ctx);
     homeKingdom(l).laws = ["harshCourts"];
     const hard = getEvent("ft.l.arrest")!.text(l, l.queue[0].ctx);
-    expect(soft).toContain("40 เหรียญทอง");
-    expect(hard).toContain("80 เหรียญทอง");
+    expect(soft).toContain("20 เหรียญทอง");
+    expect(hard).toContain("40 เหรียญทอง");
   });
   it("ติดคุกทำให้ทำกิจกรรมไม่ได้จนพ้นโทษ", () => {
     const l = life(21);
     homeKingdom(l).laws = [];
     runEvent(l, "ft.l.arrest", { sev: 2 });
     force(l, "แก้ต่าง", false);
-    expect(l.flags.jailUntil).toBe(l.age + 2);
-    expect(activityLocked(l, act(l, "ft_crime"))).toBe("ติดคุกอยู่");
-    l.age += 2;
+    // จำคุกสองปีเต็ม: พ้นโทษเมื่อผ่านไปสามขั้นปี (ปีที่ตัดสิน + สองปี)
+    expect(l.flags.jailUntil).toBe(l.age + 3);
+    // ในคุกเห็นแค่สิ่งที่ทำในคุกได้ (Release 10)
+    expect(activitiesFor(l).some((a) => a.id === "ft_crime")).toBe(false);
+    l.age += 3;
     expect(activityLocked(l, act(l, "ft_crime"))).toBeUndefined();
   });
   it("ชื่อเสียงผูกกับอาณาจักร หนีข้ามแดนจึงพ้นหมายจับ", () => {

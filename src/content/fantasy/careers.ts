@@ -57,7 +57,7 @@ const hurt = (l: Life, threat: number, text: string, cause: string, risk = 0.4):
   addStat(l, "health", -randInt(l, 8, 14));
   return bad(text);
 };
-const jail = (l: Life, years: number) => { l.flags.jailUntil = l.age + years; fl(l).crimes = (fl(l).crimes ?? 0) + 1; addStanding(l, -6); l.job = undefined; };
+const jail = (l: Life, years: number) => { l.flags.jailUntil = l.age + years + 1; fl(l).crimes = (fl(l).crimes ?? 0) + 1; addStanding(l, -6); l.job = undefined; };
 const learnMystery = (l: Life) => {
   const m = MYSTERIES.find((x) => !fl(l).mKnown?.includes(x.id) && !mysteryState(l, x.id).solvedBy);
   if (!m) return false;

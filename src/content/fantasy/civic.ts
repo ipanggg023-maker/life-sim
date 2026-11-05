@@ -23,7 +23,7 @@ const needMerit = (l: Life) => (fl(l).fRank + 1) * 3;
 const away = (l: Life) => kingdomsOf(l).filter((k) => k.id !== fl(l).kingdom);
 
 /** หนีข้ามแดน: ชื่อเสียงผูกกับอาณาจักร คดีจึงไม่ตามมาด้วย */
-function flee(l: Life) {
+export function flee(l: Life) {
   const k = pick(l, away(l));
   fl(l).kingdom = k.id;
   return k;
@@ -98,7 +98,7 @@ const crimeOdds = (base: number) => (l: Life) => base + (l.stats.luck - 50) / 20
 const caught = (sev: number): Res => (l) => { runEvent(l, "ft.l.arrest", { sev }); return { text: "มือของยามตะปบไหล่คุณ", kind: "bad" }; };
 const got = (text: string, gold: number, drop: number): Res => G(text, { gold }, (l) => { addStanding(l, -drop); fl(l).crimes = (fl(l).crimes ?? 0) + 1; });
 const fine = (l: Life, c: Ctx) => Number(c.sev) * 20 * (hereHas(l, "harshCourts") ? 2 : 1);
-const jail = (l: Life, c: Ctx) => { const y = Number(c.sev) + (hereHas(l, "harshCourts") ? 1 : 0); l.flags.jailUntil = l.age + y; l.job = undefined; return y; };
+const jail = (l: Life, c: Ctx) => { const y = Number(c.sev) + (hereHas(l, "harshCourts") ? 1 : 0); l.flags.jailUntil = l.age + y + 1; l.job = undefined; return y; };
 
 // ---------- การค้า ----------
 const destOf = (l: Life, g: Good): Kingdom => away(l).sort((a, b) => priceOf(b, g) - priceOf(a, g))[0];
@@ -184,10 +184,10 @@ export const CIVIC_EVENTS: GameEvent[] = [
     P("ลอบสังหารตามคำจ้าง", (l) => crimeOdds(0.2)(l) + fightOdds(l, 30) / 3, got("เช้านี้ทั้งเมืองคุยกันเรื่องศพเดียว", 130, 15), caught(3)),
     C("ไม่ทำดีกว่า", N("คุณเดินกลับบ้านทางสว่าง")),
   ]),
-  SCENE("ft.l.arrest", "ถูกจับกุม", (l, c) => `ยามลากคุณมาหน้าศาล${hereHas(l, "harshCourts") ? " ศาลที่นี่ไม่เคยปรานีใคร" : ""} ค่าปรับคือ ${fine(l, c)} เหรียญทอง`, [
+  SCENE("ft.l.arrest", "ถูกจับกุม", (l, c) => `ยามลากคุณมาหน้าศาล${hereHas(l, "harshCourts") ? " ศาลที่นี่ไม่เคยปรานีใคร" : ""}${Number(c.sev) >= 2 ? " คดีนี้หนักเกินกว่าจะจบด้วยค่าปรับ" : ` ค่าปรับคือ ${fine(l, c)} เหรียญทอง`}`, [
     { label: "จ่ายค่าปรับ", req: (l, c) => (l.money < fine(l, c) * GOLD ? `ต้องมี ${fine(l, c)} เหรียญทอง` : undefined), run: (l, c) => { addMoney(l, -fine(l, c) * GOLD); addStanding(l, -Number(c.sev) * 3); return { text: "คุณจ่ายแล้วเดินออกมาโดยไม่เหลียวหลัง" }; } },
     K("แก้ต่างในศาล", "smarts", 55, G("คุณพลิกคดีจนผู้พิพากษาขอโทษ", { joy: 4 }), (l, c) => { const y = jail(l, c); addStanding(l, -5); return B(`ศาลตัดสินจำคุก ${y} ปี`, { joy: -10 })(l, c); }),
-    P("สู้ฝ่าออกไป", (l, c) => fightOdds(l, 15 + Number(c.sev) * 8), B("คุณฝ่าวงล้อมออกไปได้ ทั้งแคว้นรู้จักหน้าคุณแล้ว", { hp: -6 }, (l) => addStanding(l, -18)), (l, c) => { const y = jail(l, c) + 1; l.flags.jailUntil = l.age + y; addStanding(l, -8); return B(`คุณถูกจับได้อีก ศาลตัดสินจำคุก ${y} ปี`, { hp: -10, joy: -10 })(l, c); }),
+    P("สู้ฝ่าออกไป", (l, c) => fightOdds(l, 15 + Number(c.sev) * 8), B("คุณฝ่าวงล้อมออกไปได้ ทั้งแคว้นรู้จักหน้าคุณแล้ว", { hp: -6 }, (l) => addStanding(l, -18)), (l, c) => { const y = jail(l, c) + 1; l.flags.jailUntil = l.age + y + 1; addStanding(l, -8); return B(`คุณถูกจับได้อีก ศาลตัดสินจำคุก ${y} ปี`, { hp: -10, joy: -10 })(l, c); }),
     C("หนีข้ามแดนคืนนี้", (l, c) => { addStanding(l, -12); const k = flee(l); return B(`คุณทิ้งทุกอย่างแล้วหนีไป${k.name}`, { joy: -6 })(l, c); }),
   ]),
   E("ft.l.bounty", [16, 400], "นักล่าค่าหัวถือใบประกาศที่มีหน้าคุณเดินเข้ามาในโรงเตี๊ยม", [

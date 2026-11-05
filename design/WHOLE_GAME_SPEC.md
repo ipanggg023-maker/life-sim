@@ -227,3 +227,14 @@ Foundations go first because the four rules apply to everything built after.
 - Fixes found on the way: R8's training years only counted during seclusion (year hooks read last year's actions now); a revival potion mid-fight no longer skips the rest of the fight; activity ids ft_vow and ft_board were already taken (now ft_peacevow and ft_guildboard, with a test that ids stay unique).
 - Survey (200 random bots): median death 50 (R8: 56); the extra deaths are bots pushing deeper into dungeons. Quiet lives unchanged (human median 62, elves far ahead).
 - Checked on screen: the danger section and bestiary, a nemesis fight through all three beats with loot, the guild board with danger-based pay, a job twist.
+
+## Release 10 built (2026-11-05)
+- underworld.ts: a thieves' guild with five ranks (apprentice to Shadow King), joined by proving yourself or a referral; yearly guild work (pickpocketing, smuggling, protection money, toppling a rival boss, paying the guild to buy off guards).
+  Heists in four beats (target by rank, plan, crew, the job), with loot from 80 to 500 gold; a failed heist goes straight to court. Heat rises with every job, cools each year, and at 60 the guards raid your home (fight, bribe, flee abroad, surrender).
+  Court: hire a lawyer, call a close friend as witness, argue self-defence (only when it applies), confess for a lighter sentence, bribe the judge. Fines only end small cases; defending yourself gets harder with how serious the case is; four or more past crimes or harsh-court laws add a year.
+  Prison is its own stretch of life: only prison activities show (work, train, learn from a prisoner, make an ally, plan an escape over three years, bribe a guard for a year off, appeal once per case), and only prison stories happen (the yard, a cellmate, a letter from outside, a guard's offer to inform, prison fever, a riot, visiting day). Release day lets you start honest, return to the guild, or go home. An escape makes you a fugitive.
+  Killing outside war shifts your character, can bring guards and a trial, and years later the victim's family comes for you (fight, pay blood money, tell the truth).
+  A "wounds, danger and law" section in the Power tab shows prison time, guild rank, merit, heat, record and kills.
+- Fixes found on the way: a 1-year sentence used to pass without a single year in prison (sentences now count full years everywhere); the shared modern-world release message no longer shows in fantasy; the year headline skipped the prison filter; the murim world hides any activity group named "ในคุก", so fantasy uses "ชีวิตในคุก"; a rare orc arena event was raised to the same weight as other race events.
+- Survey (200 random bots): median death 47 (R9: 50, within noise); quiet lives median 59.
+- Checked on screen: guild jobs and a full heist, a raid, the court with all options, prison activities and escape planning, prison-only years, a prison story, release day, the Power tab lines.

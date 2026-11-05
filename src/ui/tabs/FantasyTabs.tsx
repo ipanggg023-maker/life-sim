@@ -1,6 +1,7 @@
 import { CORRUPT_WORDS, CRAFT_NAME, CRAFT_RANKS, KILLS_TO_NAME, POTIONS, corruptionOf, craftRank, learnedOf, nextBreak, secluded, secludedUntil, standingLine, type Craft } from "../../content/fantasy/power2";
 import { YEARS_PER_CAP } from "../../content/fantasy/power";
 import { dangerLines } from "../../content/fantasy/danger";
+import { lawLines } from "../../content/fantasy/underworld";
 import { BESTIARY, timesMet } from "../../content/fantasy/bestiary";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
@@ -84,13 +85,13 @@ function PowerPathFold({ life }: { life: Life }) {
 }
 
 function DangerFold({ life }: { life: Life }) {
-  const lines = dangerLines(life);
+  const lines = [...lawLines(life), ...dangerLines(life)];
   const met = BESTIARY.filter((b) => timesMet(life, b.name) > 0);
   if (!lines.length && !met.length) return null;
   return (
     <>
       {lines.length > 0 && (
-        <Fold always kind="section" id="ft-danger" title={<>บาดแผลและภัย</>}>
+        <Fold always kind="section" id="ft-danger" title={<>บาดแผล ภัย และกฎหมาย</>}>
           {lines.map((t) => <p className="small" key={t}>{t}</p>)}
         </Fold>
       )}

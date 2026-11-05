@@ -115,6 +115,13 @@ export interface FLife {
   clients?: Record<string, number>;
   /** ปฏิญาณไม่จับอาวุธ */
   peaceVow?: boolean;
+  // ── ใต้ดินและกฎหมาย (underworld.ts) ──
+  /** กิลด์โจร: ขั้น 1–5 แต้มผลงาน และความร้อน (ยามจับตามอง 0–100) */
+  ug?: { rank: number; merit: number; heat: number };
+  /** คนที่ตายด้วยมือคุณนอกสงคราม */
+  kills?: number;
+  /** แผนแหกคุกที่เตรียมไว้ 0–3 */
+  escape?: number;
   /** ลูกครึ่ง: อีกเผ่าหนึ่งในสายเลือด (birth.ts) */
   half?: RaceId;
   /** เส้นเรื่องที่ยังไม่จบ: คนในเรื่องจะกลับมาเมื่อถึงกำหนด (storygen.ts) */
