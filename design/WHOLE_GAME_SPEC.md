@@ -238,3 +238,17 @@ Foundations go first because the four rules apply to everything built after.
 - Fixes found on the way: a 1-year sentence used to pass without a single year in prison (sentences now count full years everywhere); the shared modern-world release message no longer shows in fantasy; the year headline skipped the prison filter; the murim world hides any activity group named "ในคุก", so fantasy uses "ชีวิตในคุก"; a rare orc arena event was raised to the same weight as other race events.
 - Survey (200 random bots): median death 47 (R9: 50, within noise); quiet lives median 59.
 - Checked on screen: guild jobs and a full heist, a raid, the court with all options, prison activities and escape planning, prison-only years, a prison story, release day, the Power tab lines.
+
+## Release 11 built (2026-11-05)
+- careers2.ts: eight new careers (court clerk to judge, tax officer, inquisitor, temple healer, painter, playwright, jester, caravan guide), each with two job actions, a masterpiece, and city bonuses. Careers sort into ten families.
+  A hiring trial that fits the family (forge a piece, spar the trainer, judge an old case, perform on an empty stage...); a contact in the trade and a matching school help.
+  Each family has a signature scene on reaching level 2 and a crisis at level 3, once per job, shown as their own popups.
+  Your own business (smithy, apothecary, tavern, trading house) grows in five steps from a small shop to a trading family, with staff at step 2, bad years that can shrink it, rival shops (fight on quality, buy them out, or spread rumours), and selling up.
+  A yearly side gig (busking, tutoring, short guard jobs, smuggling that adds heat). A guild for crafts, trade, arts and travel with ranks, yearly dues (two missed years means expulsion), a rule test, better hiring odds, and one rescue if you're fired.
+  Named works (swords, songs, maps, verdicts...) that spread, help your work and become legends. Apprentices from level 3 who can surpass you or turn rival. A turning point between 35 and 50 (stay, change course with skills carrying over to level 2, or take a year off).
+  Asking for a raise once a year (up to three, +8% each). Patrons (noble, mage or hero) who pay a little each year, drag you into feuds, and can fall from power. A boss caught embezzling (expose and take the post, blackmail, or burn the ledger).
+  Leaving leaves a mark: fired means harder hiring in that family for 10 years; quitting well after 3+ years gives a reference.
+  A "work life" section in the Career tab.
+- Engine: startJob, hireTrialHooks, jobEndHooks (fired or quit) and salaryHooks.
+- Balance: side income at first added about 10 years to random bots (money spent on healers); gig pay was halved and shop and patron income cut until the 200-bot median was back at 51 (R10: 47). The reckless-bot test now uses 120 lives, because deaths split into two groups and the 80-life median jumped six years on one life.
+- Checked on screen: new careers in the job list, a jester's hiring trial, opening a tavern and the work-life section, the Do tab work group, a career crisis popup.

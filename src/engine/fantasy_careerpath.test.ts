@@ -80,7 +80,7 @@ describe("เส้นทางอาชีพ", () => {
   });
   it("กลับมาทำงานเดิมไม่ต้องเริ่มจากศูนย์", () => {
     const l = life(10); l.job = undefined; l.flags.ftBest_ft_merchant = 4;
-    for (let i = 0; i < 20 && !l.job; i++) { l.doneThisYear = []; applyJob(l, "ft_merchant"); }
+    for (let i = 0; i < 20 && !l.job; i++) { l.doneThisYear = []; l.queue = []; applyJob(l, "ft_merchant"); if (l.queue[0]?.eventId === "ft.c2.trial") resolveChoice(l, 0); }
     expect((l.job as Life["job"])?.level).toBe(3);
   });
 });

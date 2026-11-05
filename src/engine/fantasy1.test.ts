@@ -147,7 +147,7 @@ describe("โรงเรียน กิลด์ อาชีพ", () => {
   });
   it("สมัครงานในโลกนี้ได้ และงานนักเวทต้องร่ายเวทเป็น", () => {
     const l = life(9);
-    const count = () => { let n = 0; for (let i = 0; i < 40; i++) { l.doneThisYear = []; applyJob(l, "ft_farmer"); if (l.job) { n++; break; } } return n; };
+    const count = () => { let n = 0; for (let i = 0; i < 40; i++) { l.doneThisYear = []; l.queue = []; applyJob(l, "ft_farmer"); if (l.queue[0]?.eventId === "ft.c2.trial") resolveChoice(l, 0); if (l.job) { n++; break; } } return n; };
     expect(count()).toBe(1);
   });
 });
@@ -320,7 +320,8 @@ describe("เล่นจริง", () => {
 
 describe("สมดุล", () => {
   it("คนบ้าบิ่นตายเร็ว ยอดฝีมือหายาก แต่คนใช้ชีวิตเงียบๆ อยู่ได้นาน", () => {
-    const N = 80;
+    // อายุตอนตายแยกเป็นสองกลุ่ม (ตายก่อน 55 กับตายเพราะชรา) ค่ากลางของ 80 ชีวิตจึงกระโดดได้หกปีจากชีวิตเดียว · ใช้ 120 ชีวิต
+    const N = 120;
     const ages: number[] = [];
     let top = 0, guildDeaths = 0, relics = 0, trials = 0;
     for (let s = 1; s <= N; s++) {

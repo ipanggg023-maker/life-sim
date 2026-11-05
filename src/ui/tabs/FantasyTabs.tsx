@@ -2,6 +2,7 @@ import { CORRUPT_WORDS, CRAFT_NAME, CRAFT_RANKS, KILLS_TO_NAME, POTIONS, corrupt
 import { YEARS_PER_CAP } from "../../content/fantasy/power";
 import { dangerLines } from "../../content/fantasy/danger";
 import { lawLines } from "../../content/fantasy/underworld";
+import { careerLines } from "../../content/fantasy/careers2";
 import { BESTIARY, timesMet } from "../../content/fantasy/bestiary";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
@@ -392,6 +393,11 @@ export function FantasyCareerCard({ life }: { life: Life }) {
           <p className="small">{mastered(life, career.id) ? "คุณเป็นนายใหญ่ที่สอบผ่านของสมาคม" : "คุณอยู่ขั้นสูงสุดของอาชีพนี้"}{life.flags.ftLegacyDone ? " · ทิ้งตำนานไว้ให้อาชีพนี้แล้ว" : " · เป็นนายใหญ่สักพัก จะได้เลือกสิ่งที่ทิ้งไว้ให้อาชีพนี้"}</p>
         )}
         <p className="small muted">เกษียณตอนอายุ {retireAge(life)} · บำนาญ {job.level >= 5 ? (mastered(life, career.id) ? "50" : "40") : job.level >= 3 ? "25" : "10"}% ของค่าจ้าง</p>
+      </Fold>
+    )}
+    {careerLines(life).length > 0 && (
+      <Fold always id="ft-worklife2" title={<>ชีวิตการงาน</>}>
+        {careerLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
       </Fold>
     )}
     {g && (

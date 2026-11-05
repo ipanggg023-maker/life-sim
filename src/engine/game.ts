@@ -3,7 +3,7 @@ import { HIDDEN_RARITY_ODDS, RARITY_ODDS, TALENTS, talentById, talentFlavor } fr
 import { currentScene, getEvent, pickEvents, stillValid, type Choice, type Ctx, type Outcome } from "./events";
 import { chance, newSeed, nextFloat, pick, randInt, weightedPick } from "./rng";
 import type { Career } from "../content/core/careers";
-import type { Country, Faculty, Gender, SysStat, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
+import type { Country, Faculty, Gender, SysStat, Job, Legacy, Life, PastLife, Person, QueuedEvent, Rarity, Stats, Wealth, WorldId } from "./types";
 import { isRealistic, worldMatches, worldOf } from "../content/worlds";
 import { feel, relOf, remember } from "./npc";
 import { SAVE_VERSION, repairLife } from "./validate";
@@ -324,6 +324,8 @@ export function gradeToGpa(grade: number) {
   return (clamp(grade, 0, 100) / 25).toFixed(2);
 }
 
+/** ปรับค่าจ้างจาก content (เช่น ขอขึ้นเงินเดือนสำเร็จ) */
+export const salaryHooks: Array<(life: Life, c: Career, base: number) => number> = [];
 export function salaryOf(life: Life, career: Career, level: number) {
   let base = career.baseSalary * (1 + 0.35 * (level - 1));
   if (career.salary) base = career.salary(life, base);
@@ -332,6 +334,7 @@ export function salaryOf(life: Life, career: Career, level: number) {
   base *= 1 + titleBonus(life, "money") + sponsorBonus(life, "money") + passiveBonus(life, "money");
   // กิจการที่ขยายด้วยงานเฉพาะอาชีพ (ที่นา เรือ สาขา ห้องพัก ลูกศิษย์) — รายได้เพิ่ม 15% ต่อขั้น
   base *= 1 + Number(life.flags[`jobUp_${career.id}`] ?? 0) * 0.15;
+  for (const h of salaryHooks) base = h(life, career, base);
   if (isStudent(life)) base *= 0.4;
   if (life.flags.doomed && !life.flags.rebuilt && !career.needsPower) base *= 0.3;
   return Math.round(base / 1000) * 1000;
@@ -375,6 +378,7 @@ function progressJob(life: Life) {
   } else if (job.performance < 15 && chance(life, 0.5)) {
     log(life, `คุณโดนไล่ออกจากตำแหน่ง${fitGender(career.titles[job.level - 1], life.gender)} เพราะผลงานแย่`, "bad");
     life.job = undefined;
+    for (const h of jobEndHooks) h(life, career.id, "fired", job);
     addStat(life, "happiness", -15);
   }
   const retireAt = retireAgeHooks.map((h) => h(life)).find((x) => x !== undefined) ?? 60;
@@ -721,6 +725,19 @@ function baseJobChance(life: Life, c: Career) {
   return checkChance(life, c.key, c.dc, (life.education.grade - 50) / 300);
 }
 
+/** บททดสอบก่อนรับเข้างาน: คืนรหัสฉาก = เปิดฉากนั้นแทนการสุ่มทันที (ฉากเรียก startJob เองเมื่อผ่าน) */
+export const hireTrialHooks: Array<(life: Life, c: Career) => string | undefined> = [];
+/** งานจบลง: ถูกไล่ออก หรือลาออกเอง */
+export const jobEndHooks: Array<(life: Life, careerId: string, how: "fired" | "quit", job: Job) => void> = [];
+/** เริ่มงานใหม่ (ใช้ทั้งตอนสมัครผ่านและตอนผ่านบททดสอบ) */
+export function startJob(life: Life, careerId: string): Outcome {
+  const c = careerById(careerId)!;
+  life.job = { careerId, level: 1, performance: 50, years: 0 };
+  for (const h of jobStartHooks) h(life);
+  const out = { text: `คุณได้งานเป็น${fitGender(c.titles[life.job.level - 1], life.gender)} (${c.name}) เงินเดือนปีละ ${money(life, salaryOf(life, c, life.job.level))}`, kind: "good" as const };
+  log(life, out.text, out.kind);
+  return out;
+}
 export function applyJob(life: Life, careerId: string): Outcome {
   const c = careerById(careerId)!;
   const key = `apply:${careerId}`;
@@ -728,13 +745,9 @@ export function applyJob(life: Life, careerId: string): Outcome {
   life.doneThisYear.push(key);
   const missing = jobRequirementMissing(life, c);
   if (missing) return { text: `สมัครไม่ได้ (${missing})`, kind: "bad" };
-  if (chance(life, jobChance(life, c))) {
-    life.job = { careerId, level: 1, performance: 50, years: 0 };
-    for (const h of jobStartHooks) h(life);
-    const out = { text: `คุณได้งานเป็น${fitGender(c.titles[life.job.level - 1], life.gender)} (${c.name}) เงินเดือนปีละ ${money(life, salaryOf(life, c, life.job.level))}`, kind: "good" as const };
-    log(life, out.text, out.kind);
-    return out;
-  }
+  const trial = hireTrialHooks.map((h) => h(life, c)).find(Boolean);
+  if (trial) { runEvent(life, trial, { cid: careerId }); return { text: "" }; }
+  if (chance(life, jobChance(life, c))) return startJob(life, careerId);
   const out = { text: `คุณไปสัมภาษณ์งาน${c.name} แต่ไม่ผ่าน`, kind: "bad" as const };
   log(life, out.text, out.kind);
   return out;
@@ -743,7 +756,9 @@ export function applyJob(life: Life, careerId: string): Outcome {
 export function quitJob(life: Life): Outcome {
   if (!life.job) return { text: "" };
   const c = careerById(life.job.careerId)!;
+  const old = life.job;
   life.job = undefined;
+  for (const h of jobEndHooks) h(life, c.id, "quit", old);
   const out = { text: `คุณลาออกจากงาน${c.name}` };
   log(life, out.text);
   return out;

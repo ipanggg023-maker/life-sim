@@ -122,6 +122,17 @@ export interface FLife {
   kills?: number;
   /** แผนแหกคุกที่เตรียมไว้ 0–3 */
   escape?: number;
+  // ── การงาน 2 (careers2.ts) ──
+  /** กิจการของตัวเอง ขั้น 1–5 · ส่งต่อให้ทายาทได้ */
+  biz?: { kind: string; name: string; level: number; since: number; rival?: string; bad?: number };
+  /** สมาคมของสายงาน: ขั้น 1–4 · ค่าบำรุงที่ค้าง */
+  tguild?: { fam: string; rank: number; since: number; owed: number; saved?: boolean };
+  /** ผลงานที่มีชื่อ */
+  works?: { name: string; fam: string; fame: number; age: number }[];
+  /** ผู้อุปถัมภ์ */
+  patron?: { name: string; kind: "noble" | "mage" | "hero"; favor: number; since: number };
+  /** การจากงานครั้งล่าสุดของแต่ละสายงาน: ถูกไล่ออก หรือลาออกดีๆ พร้อมคำรับรอง */
+  leftMark?: Record<string, { how: "fired" | "reference"; age: number }>;
   /** ลูกครึ่ง: อีกเผ่าหนึ่งในสายเลือด (birth.ts) */
   half?: RaceId;
   /** เส้นเรื่องที่ยังไม่จบ: คนในเรื่องจะกลับมาเมื่อถึงกำหนด (storygen.ts) */
