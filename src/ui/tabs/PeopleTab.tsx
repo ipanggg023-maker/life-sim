@@ -12,6 +12,7 @@ import { martialLabel } from "../../content/murim/life/npcMartial";
 import { npcStarText } from "../../content/fantasy/stars";
 import { FantasyMind, PersonaCard } from "./FantasyFate";
 import { feelingWords } from "../../content/fantasy/people2";
+import { STAGE_LABEL, stageOf } from "../../content/fantasy/people3";
 import { isPrincess, isSovereign, personActions } from "../../content/murim/life/kinship";
 import { Fold } from "../Fold";
 
@@ -22,6 +23,16 @@ const PEOPLE_GROUPS: { id: string; name: string; of: (p: Person) => boolean }[] 
   { id: "friends", name: "มิตรสหายและศิษย์", of: (p) => p.alive && (p.relation === "friend" || p.relation === "ally") },
   { id: "rivals", name: "คู่ปรับและศัตรู", of: (p) => p.alive && p.relation === "rival" },
   { id: "gone", name: "ผู้ล่วงลับ", of: (p) => !p.alive },
+];
+/** แฟนตาซี: วงคนใกล้ชิดอยู่บน คนรู้จักพับเก็บไว้ */
+const CLOSE_TAG = /^(party:|staff:|notable:)|^(mentor|sworn|apprentice|el_student|guardian|life_rival)$/;
+const closeOne = (p: Person) => p.bond >= 50 || !!p.tags?.some((t) => CLOSE_TAG.test(t));
+const FT_GROUPS: typeof PEOPLE_GROUPS = [
+  PEOPLE_GROUPS[0],
+  { id: "circle", name: "คนใกล้ชิด", of: (p) => p.alive && (p.relation === "friend" || p.relation === "ally") && closeOne(p) },
+  PEOPLE_GROUPS[2],
+  { id: "known", name: "คนรู้จัก", of: (p) => p.alive && (p.relation === "friend" || p.relation === "ally") && !closeOne(p) },
+  PEOPLE_GROUPS[3],
 ];
 const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "father", "mother", "sibling", "friend", "rival"];
 
@@ -42,11 +53,11 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
       {life.worldId === "murim" && <LineageCard life={life} pick={(id) => { setOpen(id); document.getElementById(`person-${id}`)?.scrollIntoView({ block: "center" }); }} />}
       {life.worldId === "murim" && life.age >= 3 && <KinCare life={life} act={act} />}
       {life.worldId === "fantasy" && <PersonaCard life={life} />}
-      {PEOPLE_GROUPS.map((grp) => {
+      {(life.worldId === "fantasy" ? FT_GROUPS : PEOPLE_GROUPS).map((grp) => {
         const members = list.filter((p) => grp.of(p));
         if (!members.length) return null;
         return (
-          <Fold always={grp.id !== "gone"} kind="section" key={grp.id} id={`people-${grp.id}`} force={!!focus && members.some((m) => m.id === focus)} title={<>{grp.name} <span className="fold-count">{members.length}</span></>}>
+          <Fold always={grp.id !== "gone" && grp.id !== "known"} kind="section" key={grp.id} id={`people-${grp.id}`} force={!!focus && members.some((m) => m.id === focus)} title={<>{grp.name} <span className="fold-count">{members.length}</span></>}>
       {members.map((p) => (
         <div className={`person ${p.alive ? "" : "dead"} ${focus === p.id ? "focused" : ""}`} key={p.id} id={`person-${p.id}`}>
           <button className="person-row" onClick={() => setOpen(open === p.id ? null : p.id)}>
@@ -60,6 +71,8 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
                 {p.job ? ` · ${fitGender(p.job, p.gender)}` : ""}
                 {p.tags?.some((t) => t.startsWith("away:")) ? " · ย้ายไปอยู่ไกล" : ""}
                 {p.tags?.includes("life_rival") ? " · คู่ปรับตลอดชีวิต" : ""}
+                {life.worldId === "fantasy" && stageOf(p) ? ` · ${STAGE_LABEL[stageOf(p)!]}` : ""}
+                {p.tags?.includes("sworn") ? " · พี่น้องร่วมสาบาน" : ""}
                 {p.tags?.includes("chosen") ? " · ศิษย์เอก" : ""}
                 {p.alive && drifting(p) ? " · เริ่มห่างเหิน" : ""}
                 {p.martial ? ` · ${martialLabel(life, p)}` : ""}

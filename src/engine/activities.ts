@@ -171,7 +171,8 @@ export const activitiesFor = (life: Life) => ACTIVITIES.filter((a) => inWorld(a,
 
 /** งบเวลากิจกรรมรองต่อปี (EXPANSION §3.1) — โลกที่ไม่ตั้ง = ไม่จำกัด */
 export const timeBudget: { fn?: (life: Life) => number | undefined } = {};
-const costOf = (x: string) => (x.startsWith("act:") ? ACTIVITIES.find((a) => a.id === x.slice(4))?.time ?? 1 : x.startsWith("job:") ? 1 : 0);
+// กิจกรรม งาน และการใช้เวลากับคน (fp:) กินเวลาของปีเดียวกัน
+const costOf = (x: string) => (x.startsWith("act:") ? ACTIVITIES.find((a) => a.id === x.slice(4))?.time ?? 1 : x.startsWith("job:") || x.startsWith("fp:") ? 1 : 0);
 export const timeUsed = (life: Life) => life.doneThisYear.reduce((s, x) => s + costOf(x), 0);
 /** เวลาที่เหลือปีนี้ · undefined = โลกนี้ไม่จำกัด */
 export function timeLeft(life: Life): number | undefined {

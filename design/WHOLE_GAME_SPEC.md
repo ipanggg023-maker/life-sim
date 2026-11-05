@@ -170,3 +170,23 @@ Foundations go first because the four rules apply to everything built after.
 - **Lifelong rival:** a rival in your trade (compete, partner up, or smear them), a confession that can turn into love, a last letter in old age.
 - **Teens:** a first crush (with a seed that returns), a night walking out, the cave behind the hill, and at 17 "who do you want to be".
 - Survey (40 lives to 30): nearly everyone goes to school; ~3 childhood seeds return by 30; 1 death before 30.
+
+## Release 6 built (2026-11-05)
+- **people3.ts, romance stages:** a partner starts out "courting". After 2 dates (or bond 75), a popup asks "what are we?". Being together is required
+  before a proposal (module marriageBlock). Dates are recorded by the date action. Each lover has a main want (from their values):
+  matching values, time, their dream, or safety, each with its own scene. A neglected relationship (no date for 3 years) has a "quiet house" scene,
+  and a partner can leave. Also family disapproval, and a political marriage for nobles, rulers and courtiers.
+- **Person actions:** introduce two people (eases grudges, can make a couple), and write a letter (free, once a year). People actions (fp:) now cost
+  1 of the year's time, like activities. Every action records when you last talked; every 5 years a note names close people you haven't talked to.
+- **Friendship:** a loyalty test (lie for a friend vs. a 50-gold reward), sworn siblings at bond 85+. **Betrayal with signs:** a jealous friend starts
+  "turning" and you see warning signs (ask, watch, ignore); if you watched, you catch them.
+- **Grief:** a close death (bond 50+) brings a 3-year grief with a popup choosing how you grieve (drink, work, faith, revenge after a violent death),
+  each with lasting effects; anniversaries every 10 years.
+- **Party:** a party name, members' personal quests (help, or they leave), and members can die on a failed quest.
+- **Household staff** (home tier 3+ or 300 gold): steward (−20% upkeep, catches theft), bodyguard (×0.85 death odds), servant (gossip), with yearly
+  wages; unpaid staff quit, disloyal ones steal.
+- **Famous people:** at fame 40+, notables of your kingdom invite you (befriend, spar, refuse), once every 8 years.
+- **Go out and meet people** (activity): tavern, training ground, your trade, noble parties; single adults may meet someone.
+- **People tab:** close circle on top, acquaintances folded; love stage, sworn siblings, and the partner's main want are shown.
+- Fixed a trap: events that switch themselves off in `prepare` get dropped by the queue re-check, so they now switch off in their choices.
+- Survey (30 lives): married 18/30 with stages vs 19 without, kids 1.4 per life either way, close circle ~14.

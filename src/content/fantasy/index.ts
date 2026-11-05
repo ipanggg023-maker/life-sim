@@ -63,6 +63,7 @@ import { STORY_GEN_EVENTS, loadStoryGen } from "./storygen";
 import { BIRTH_EVENTS, loadBirth, recordRare } from "./birth";
 import { RACE_PATH_EVENTS, loadRaces } from "./races";
 import { CHILDHOOD_EVENTS, loadChildhood } from "./childhood";
+import { PEOPLE3_EVENTS, loadPeople3, marriageBlock } from "./people3";
 import { verdict } from "./persona";
 import { verdictHook } from "../../engine/game";
 import { TALENTS } from "../talents";
@@ -100,6 +101,7 @@ export function loadFantasyWorld() {
   loadBirth();
   loadRaces();
   loadChildhood();
+  loadPeople3();
   loadWorldmark();
   loadCities();
   loadEconomy();
@@ -116,7 +118,7 @@ export function loadFantasyWorld() {
   loadRealm();
   loadRealms();
   transform.fn = setRace;
-  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS, ...ECHOES_1, ...ECHOES_2, ...PERSONA_EVENTS, ...RUMOR_EVENTS, ...PEOPLE2_EVENTS, ...MOMENT_EVENTS, ...WORK_EVENTS, ...WORK_ECHOES, ...COURT_EVENTS, ...WAR_EVENTS, AFTERMATH, ...WORLD_ECHOES, ...POWER_EVENTS, ...HEADLINE_EVENTS, ...ECONOMY_EVENTS, ...CAREER_PATH_EVENTS, ...ARENA_EVENTS, ...FAMILY_EVENTS, ...STORY_GEN_EVENTS, ...BIRTH_EVENTS, ...RACE_PATH_EVENTS, ...CHILDHOOD_EVENTS], "fantasy");
+  registerEvents([...PLACE_EVENTS, ...LEGEND_EVENTS, ...STORY_EVENTS, ...MAGIC_EVENTS, ...SCHOOL_EVENTS, ...CIVIC_EVENTS, ...DRAGON_EVENTS, ...PEOPLE_EVENTS, ...MYSTERY_EVENTS, ...REALM_EVENTS, ...REALM_TRAVEL_EVENTS, ...RARE_EVENTS, ...CAREER_EVENTS, ...BOND_EVENTS, ...STYLE_EVENTS, ...CITY_SCENES, ...HOBBY_EVENTS, ...TALENT_EVO_EVENTS, ...SAGA_EVENTS, ...DRAGON_TALES, ...DRAGON_SCENES, DRAGON_PLEA, ...MSCHOOL_EVENTS, ...ARC_EVENTS, ...WORLD2_EVENTS, ...STAR_EVENTS, ...ECHOES_1, ...ECHOES_2, ...PERSONA_EVENTS, ...RUMOR_EVENTS, ...PEOPLE2_EVENTS, ...MOMENT_EVENTS, ...WORK_EVENTS, ...WORK_ECHOES, ...COURT_EVENTS, ...WAR_EVENTS, AFTERMATH, ...WORLD_ECHOES, ...POWER_EVENTS, ...HEADLINE_EVENTS, ...ECONOMY_EVENTS, ...CAREER_PATH_EVENTS, ...ARENA_EVENTS, ...FAMILY_EVENTS, ...STORY_GEN_EVENTS, ...BIRTH_EVENTS, ...RACE_PATH_EVENTS, ...CHILDHOOD_EVENTS, ...PEOPLE3_EVENTS], "fantasy");
   addExclusive();
   loadPowerplus();
   loadLifestory();
@@ -150,6 +152,7 @@ export function loadFantasyWorld() {
     migrate: migrateStars,
     onNewBirth: (l, s) => attachWorld(l, s),
     onSoulRecord: (s, l) => recordRare(s, l),
+    marriageBlock,
     bodyYounger: younger,
     npcYounger: (l, p) => { const r = raceOf(p); return r ? RACES[r].younger : ["father", "mother", "sibling", "child"].includes(p.relation) ? younger(l) : 0; },
   });

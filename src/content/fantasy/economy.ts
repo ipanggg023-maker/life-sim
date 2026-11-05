@@ -14,6 +14,7 @@ import { cityCost, citiesOf, cityOf } from "./cities";
 import { HOMES } from "./world2";
 import { assetIncome } from "./careers";
 import { PREJUDICE_COST, prejudice } from "./races";
+import { staffOf } from "./people3";
 
 export type EstateId = "tower" | "stable" | "airship" | "title" | "blade" | "plate";
 export interface Estate { name: string; price: number; upkeep: number; perk: string; once?: boolean; req?: (l: Life) => string | undefined; year?: (l: Life) => void; buy?: (l: Life) => void }
@@ -53,7 +54,8 @@ export const HOME_UPKEEP = [0, 0, 0, 15, 60];
 
 export const owns = (l: Life, id: EstateId) => fl(l).estates?.[id] !== undefined;
 export const ownedEstates = (l: Life) => IDS.filter((id) => owns(l, id) && !ESTATES[id].once);
-export const upkeepOf = (l: Life) => ownedEstates(l).reduce((s, id) => s + ESTATES[id].upkeep, 0) + HOME_UPKEEP[Number(l.flags.ftHome ?? 0)];
+/** ค่าดูแลของใหญ่และบ้าน · พ่อบ้านดูแลบัญชีลดได้หนึ่งในห้า */
+export const upkeepOf = (l: Life) => Math.round((ownedEstates(l).reduce((s, id) => s + ESTATES[id].upkeep, 0) + HOME_UPKEEP[Number(l.flags.ftHome ?? 0)]) * (staffOf(l, "steward") ? 0.8 : 1));
 
 /** ค่าครองชีพของโลกนี้ (ใช้ทั้งตอนหักเงินจริงและในบัญชี) */
 export function ftLiving(l: Life, kids: number, income: number) {

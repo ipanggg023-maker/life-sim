@@ -81,7 +81,13 @@ const SCENES: GameEvent[] = [
 ];
 
 const yearly = (l: Life, p: Person, id: string) => (l.doneThisYear.includes(`fp:${id}:${p.id}`) ? "ปีนี้ทำไปแล้ว" : undefined);
-const open = (l: Life, p: Person, id: string, eventId: string) => { l.doneThisYear.push(`fp:${id}:${p.id}`); runEvent(l, eventId, { pid: p.id }); };
+const open = (l: Life, p: Person, id: string, eventId: string) => {
+  l.doneThisYear.push(`fp:${id}:${p.id}`);
+  // จดว่าคุยกันล่าสุดเมื่อไร · เดตนับเป็นขั้นของความรัก
+  p.tags = [...(p.tags ?? []).filter((t) => !t.startsWith("talked:")), `talked:${l.age}`];
+  if (id === "date") { const n = Number(p.tags.find((t) => t.startsWith("dates:"))?.slice(6) ?? 0) + 1; p.tags = [...p.tags.filter((t) => !t.startsWith("dates:") && !t.startsWith("dated:")), `dates:${n}`, `dated:${l.age}`]; }
+  runEvent(l, eventId, { pid: p.id });
+};
 const FIGHTERS = ["friend", "rival", "ally", "sibling", "spouse", "partner"];
 
 export function fantasyPersonActions(l: Life, p: Person): PersonAction[] {

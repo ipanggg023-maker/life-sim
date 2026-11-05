@@ -1,3 +1,4 @@
+import { STAGE_LABEL, WANT_LABEL, stageOf, wantOf } from "../../content/fantasy/people3";
 // ส่วนแสดงผลของ "ทุกทางเลือกมีผล": นิสัย สมุดชะตา ข่าวลือ และความรู้สึกของแต่ละคน
 import type { Life, Person } from "../../engine/types";
 import { Fold } from "../Fold";
@@ -43,6 +44,7 @@ export function FantasyMind({ p }: { p: Person }) {
     <div className="person-mind">
       <div className="small muted">{traitsOf(p).map(traitName).join(" · ")} · {goalOf(p)}</div>
       {words.length > 0 && <div className="small">ตอนนี้เขา{words.join(" · ")}</div>}
+      {(p.relation === "partner" || p.relation === "spouse") && <div className="small">สิ่งที่เขาต้องการที่สุด: {WANT_LABEL[wantOf(p)]}{stageOf(p) ? ` · ${STAGE_LABEL[stageOf(p)!]}` : ""}</div>}
       {mems.length > 0 ? (
         <div className="small muted">จำได้ว่า: {mems.map((m) => `${m.text} (ตอนคุณอายุ ${m.age})`).join(" · ")}</div>
       ) : (
