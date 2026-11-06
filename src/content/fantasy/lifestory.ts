@@ -19,6 +19,7 @@ export function timelineOf(l: Life): Beat[] {
     // เมล็ดของวัยเด็กซ่อนไว้จนกว่าจะกลับมา
     if (HIDDEN_SEED.test(s.id) && s.done === undefined) continue;
     out.push({ age: s.age, text: `คุณ${s.note}`, kind: "seed" });
+    if (s.faded) continue;
     if (s.done !== undefined) out.push({ age: s.done, text: `เรื่องนั้นกลับมา${s.back ? `: ${s.back}` : ""}`, kind: "echo" });
   }
   for (const d of f.deedLog ?? []) out.push({ age: d.age, text: d.text, kind: "deed" });
@@ -73,7 +74,7 @@ export function epitaph(l: Life): string[] {
   const big = (f.deedLog ?? []).at(-1)?.text ?? f.deeds.at(-1);
   // ตำแหน่งที่เป็นคำนามอยู่แล้ว (เจ้าถิ่น นักรบ ยอดฝีมือ) ไม่ต้องเติม "ผู้" ข้างหน้า
   if (big) lines.push(`เป็นที่จดจำในฐานะ${TITLE_START.test(big) ? big : `ผู้${big.replace(/^ผู้/, "")}`}`);
-  const back = seedsOf(l).filter((s) => s.done !== undefined).length;
+  const back = seedsOf(l).filter((s) => s.done !== undefined && !s.faded).length;
   if (back) lines.push(`ทางเลือก ${back} อย่างในชีวิตกลับมาหาตัวเองก่อนตาย`);
   const c = closest(l, 1)[0];
   if (c && relOf(c).love >= 50) lines.push(`${c.name}จะคิดถึงที่สุด`);

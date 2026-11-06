@@ -23,7 +23,7 @@ export interface FLife {
   /** นิสัยจากทางเลือก -100..100 (persona.ts) */
   persona?: { m: number; h: number; c: number; f: number };
   /** เมล็ดชะตาที่ปลูกไว้ (echoes.ts) */
-  seeds?: { id: string; age: number; note: string; who?: string; done?: number; back?: string }[];
+  seeds?: { id: string; age: number; note: string; who?: string; done?: number; back?: string; faded?: boolean }[];
   /** สิ่งที่คุณเปลี่ยนแผ่นดิน (worldmark.ts) */
   marks?: { text: string; k: string; age: number }[];
   /** ปณิธานที่ถืออยู่ และครั้งล่าสุดที่ผิดปณิธาน (powerplus.ts) */

@@ -12,17 +12,51 @@ import { dataOf, kingdomsOf, worldOfLife } from "./state";
 import { personaOf } from "./persona";
 import { pickHeadline } from "./hkit";
 import { GOLD } from "./kit";
+import { throneOf } from "./realm";
+import { homeKingdom } from "./state";
+
+// ───────────── เรื่องประจำของระบบ: เงียบไว้ถ้าไม่สำคัญ ─────────────
+/** ป๊อปอัปของระบบที่เกิดซ้ำได้ (ภาษี เจ้าหนี้ ลาง โรคระบาด ราชกิจ) · ครั้งแรกขึ้นเป็นป๊อปอัป
+ *  ครั้งต่อไปจบเงียบๆ เป็นบรรทัดในบันทึก เว้นแต่จะสำคัญจริง (จ่ายไม่ไหว มีคนขู่ ร่างกายไม่พร้อม) */
+export const ROUTINE: Record<string, (l: Life) => boolean> = {
+  // จ่ายหนี้ได้ทั้งก้อนก็ไม่ต้องหยุดถาม · จ่ายไม่ไหวหรือเจ้าหนี้โกรธอยู่ ต้องตัดสินใจเอง
+  "ft.$.creditor": (l) => l.money < l.debt || !!l.flags.ftCreditorAngry,
+  "ft.m2.tax": () => false,
+  "ft.m2.revolt": () => false,
+  "ft.ug.out": () => false,
+  "ft.om.seen": () => false,
+  "ft.w.plague": (l) => l.stats.health < 50 || l.money < 15 * GOLD,
+  "ft.so.rule": (l) => { const k = throneOf(l); return !k || k.stability < 35 || !!homeKingdom(l).war; },
+};
+const ROUTINE_PICK: Record<string, RegExp> = { "ft.$.creditor": /^ใช้หนี้ทั้งหมด/, "ft.m2.tax": /^จ่ายครบ/, "ft.w.plague": /^จ้างหมอ/ };
+/** เรื่องนี้จบเงียบได้ไหม: เคยเห็นแล้ว และครั้งนี้ไม่สำคัญ */
+export function quietRoutine(l: Life, q: QueuedEvent): boolean {
+  const m = ROUTINE[q.eventId];
+  if (!m || q.scene) return false;
+  return (l.seen[q.eventId] ?? 0) > 1 && !m(l);
+}
+
+// ───────────── ช่วงเล็กๆ ไม่ซ้ำในชีวิตเดียว ─────────────
+/** เรื่องที่ต่อจากเรื่องเก่า (เมล็ดที่กลับมา เรื่องที่ยังไม่จบ) เป็นคนละเรื่องกันทุกครั้ง จึงไม่นับว่าซ้ำ */
+const CONTINUES = /^ft\.(ec\.|sg\.cont)/;
+export const momentDone = (l: Life, id: string) => !CONTINUES.test(id) && !!l.flags[`ftMo_${id}`];
+const markMoment = (l: Life, id: string) => { if (!CONTINUES.test(id)) l.flags[`ftMo_${id}`] = l.age; };
 
 /** ฉากที่ต้องเป็นป๊อปอัปเสมอ: อ่านดาว ทะลวงขั้น สงครามจบ จุดหักเหของนิสัย */
 const ALWAYS = /^ft\.(st\.awaken|st\.bloom|break_|wr\.after|pe\.|hu\.|wand\.|an\.(sleep|awake|friend|bones|raid))/;
 /** เรื่องจากระบบที่ผูกกับชีวิตคุณ: ผู้คน ครอบครัว ศัตรู เพื่อน เรื่องที่กลับมา งาน ราชสำนัก สงคราม */
 const TIED = /^ft\.(np|fd|en|fr|ec|wk|wd|wr|mo|fm)\./;
 export const MAX_MOMENTS = 4;
+/** ช่วงเล็กๆ ที่ตรงกับชีวิตคุณ (เผ่า งาน เมือง ครอบครัว) ได้อยู่ในปีก่อนเรื่องทั่วไป */
+export const SITUATION_SCORE = 2;
 
 /** เลือกตามนิสัย: ทางที่ตรงกับตัวคุณที่สุด · ไม่เลือกทางเสี่ยงตายแทนผู้เล่น */
 export function personaPick(l: Life, q: QueuedEvent): number | undefined {
   const vis = visibleChoices(l, q).filter(({ c }) => c.tone !== "danger" && !c.survival);
   if (!vis.length) return undefined;
+  // เรื่องประจำที่จบเงียบ: ทำแบบที่คนทั่วไปทำ (จ่ายภาษี ใช้หนี้ จ้างหมอ)
+  const want = ROUTINE_PICK[q.eventId];
+  if (want) { const w = vis.find(({ c }) => want.test(labelOf(c, l, q.ctx))); if (w) return w.index; }
   const p = personaOf(l);
   let best = vis[0].index, top = -Infinity;
   for (const { c, index } of vis) {
@@ -69,6 +103,8 @@ export function chapterTitle(l: Life, theme?: string) {
   // ชื่อบทตามเรื่องที่เกิดจริงในปีนั้น · ปีที่ไม่มีเรื่องใหญ่ก็บอกว่าเงียบ
   return `อายุ ${l.age} · ${theme ?? QUIET_TITLE[(l.age * 7 + l.id.length) % QUIET_TITLE.length]}`;
 }
+/** บรรทัดของเรื่องประจำ: สั้นกว่าช่วงเล็กๆ */
+export const routineLine = (m: Moment) => clean(`${m.title ?? ""}: ${/^คุณ/.test(m.text) ? m.text : `คุณ${m.label.replace(/\s*\(\d+ เหรียญทอง\)/, "")} ${m.text}`}`);
 export const autoDecide = (l: Life) => !!l.flags.ftAutoDecide;
 
 /** จัดปีใหม่: เรื่องหลักหนึ่งเรื่อง · ช่วงเล็กๆ ไม่เกินสี่ · ฉากบังคับเป็นป๊อปอัปตามเดิม */
@@ -77,15 +113,18 @@ const JAIL_STORY = /^ft\.(ug\.|break_|f2\.last|fr\.jail)/;
 export function buildYear(l: Life) {
   if (l.worldId !== "fantasy" || !l.ft || !l.alive || l.age < 3) return;
   const queued = l.queue.splice(0);
-  const keep: QueuedEvent[] = [], cand: { q: QueuedEvent; s: number }[] = [];
+  const keep: QueuedEvent[] = [], routine: QueuedEvent[] = [], cand: { q: QueuedEvent; s: number }[] = [];
   const ids = new Set<string>();
   for (const q of queued) {
     const e = getEvent(q.eventId);
     // เรื่องเดียวกันซ้ำในปีเดียวไม่ต้องเล่าสองรอบ
     if (!e || (!q.scene && ids.has(q.eventId))) continue;
     ids.add(q.eventId);
+    if (quietRoutine(l, q)) { routine.push(q); continue; }
     if (e.forced || ALWAYS.test(q.eventId) || q.scene) keep.push(q);
-    else cand.push({ q, s: q.eventId.startsWith("ft.ec.") || q.eventId.startsWith("ft.el.") || q.eventId === "ft.sg.cont" ? 5 : TIED.test(q.eventId) ? 3 : 1 });
+    // เรื่องที่เคยผ่านมาแล้วในชีวิตนี้ไม่กลับมาอีก ทั้งเป็นช่วงเล็กๆ และเป็นเรื่องหลัก
+    else if (momentDone(l, q.eventId)) continue;
+    else cand.push({ q, s: q.eventId.startsWith("ft.ec.") || q.eventId.startsWith("ft.el.") || q.eventId === "ft.sg.cont" ? 5 : TIED.test(q.eventId) ? 3 : q.eventId.startsWith("ft.sm.") ? SITUATION_SCORE : 1 });
   }
   // ในคุก: เรื่องของชีวิตข้างนอกรอจนพ้นโทษ เหลือแค่เรื่องในคุก (underworld.ts)
   const inJail = Number(l.flags.jailUntil ?? -1) > l.age;
@@ -108,16 +147,22 @@ export function buildYear(l: Life) {
   if (head && autoDecide(l)) rest.unshift(head), (head = undefined);
   const list = rest.slice(0, MAX_MOMENTS + (autoDecide(l) ? 1 : 0));
   // จำสภาพก่อนช่วงเล็กๆ ไว้ (เฉพาะในหน้าจอนี้) เพื่อให้ "คิดใหม่" ได้หนึ่งเรื่องต่อปี
+  if (head) markMoment(l, head.eventId);
+  // เรื่องประจำที่ไม่สำคัญจบเงียบๆ ก่อน เป็นบรรทัดในบันทึก ไม่นับเป็นช่วงเล็กๆ ของปี
+  const quiet: string[] = [];
+  for (const q of routine) { if (!l.alive) break; const m = autoResolve(l, q); if (m) { const line = routineLine(m); quiet.push(line); log(l, line, m.kind ?? "normal"); } }
+  if (!l.alive) return;
   redoSnap = { id: l.id, age: l.age, base: structuredClone(l), head: head && structuredClone(head), keep: structuredClone(keep), list: structuredClone(list), picked: [] };
-  finishYear(l, head, keep, list);
+  finishYear(l, head, keep, list, undefined, quiet);
 }
 
 /** ช่วงเล็กๆ ของปี นิสัยตัดสินเอง · redo = เรื่องที่ผู้เล่นขอเลือกเอง (ขึ้นเป็นป๊อปอัปแทน) */
-function finishYear(l: Life, head: QueuedEvent | undefined, keep: QueuedEvent[], list: QueuedEvent[], redo?: number) {
+function finishYear(l: Life, head: QueuedEvent | undefined, keep: QueuedEvent[], list: QueuedEvent[], redo?: number, quiet: string[] = []) {
   const moments: Moment[] = [];
   const mine: QueuedEvent[] = [];
   list.forEach((q, i) => {
     if (!l.alive) return;
+    markMoment(l, q.eventId);
     if (i === redo) { mine.push(q); return; }
     const m = autoResolve(l, q);
     if (m) { moments.push(m); log(l, momentLine(m, moments.length - 1), m.kind ?? "normal"); if (redo === undefined) redoSnap?.picked.push({ i, title: m.title ?? m.label }); }
@@ -130,7 +175,7 @@ function finishYear(l: Life, head: QueuedEvent | undefined, keep: QueuedEvent[],
   if (news) log(l, `ข่าวจากแผ่นดิน: ${news}`, "normal");
   l.lastChapter = l.chapter;
   l.flags[`ch_${l.age}`] = chapterTitle(l, theme);
-  l.chapter = { age: l.age, title: chapterTitle(l, theme), lines: moments.map(momentLine), ...(head ? { headline: getEvent(head.eventId)?.title ?? "" } : {}) };
+  l.chapter = { age: l.age, title: chapterTitle(l, theme), lines: [...moments.map(momentLine), ...quiet], ...(head ? { headline: getEvent(head.eventId)?.title ?? "" } : {}) };
 }
 
 // ───────────── คิดใหม่หนึ่งเรื่องต่อปี ─────────────
@@ -180,6 +225,7 @@ const STOP_ID = /^ft\.(st\.|break_|wr\.|pe\.|fd\.|np\.|ec\.|sg\.cont|el\.calling
 export function stopsQuiet(l: Life, q: QueuedEvent): string | undefined {
   const e = getEvent(q.eventId);
   if (!e) return;
+  if (quietRoutine(l, q)) return;
   if (e.forced || STOP_ID.test(q.eventId)) return e.title ? `มีเรื่อง${e.title}ให้ตัดสินใจ` : "มีเรื่องสำคัญให้ตัดสินใจ";
   const risky = visibleChoices(l, q).some(({ c }) => c.tone === "danger" || (c.survival && c.survival(l, q.ctx) < 0.95));
   return risky ? `เรื่อง${e.title ?? "ที่เกิดขึ้น"}มีอันตราย` : undefined;
@@ -198,8 +244,11 @@ export function liveQuietly(l: Life, years: number, ageUp: (l: Life) => void): s
       const why = stopsQuiet(l, q);
       if (why) return why;
       l.queue.shift();
+      const routine = quietRoutine(l, q);
+      if (!routine && momentDone(l, q.eventId)) continue;
+      if (!routine) markMoment(l, q.eventId);
       const m = autoResolve(l, q);
-      if (m) log(l, momentLine(m), m.kind ?? "normal");
+      if (m) log(l, routine ? routineLine(m) : momentLine(m), m.kind ?? "normal");
       if (!l.alive) return "ชีวิตจบลง";
     }
     const kinNow = l.people.filter((p) => p.alive && ["child", "spouse", "partner", "father", "mother"].includes(p.relation)).map((p) => p.id).join();

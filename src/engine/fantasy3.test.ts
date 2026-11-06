@@ -238,6 +238,8 @@ describe("กฎหมายและอาชญากรรม", () => {
     l.queue = []; ageUp(l);
     const a = standingOf(l);
     homeKingdom(l).ruler = "ราชินีใหม่";
+    // ภาษีที่จ่ายเงียบๆ ให้ชื่อเสียงในแผ่นดินเพิ่มหนึ่ง · ปีนี้ไม่ให้มีภาษีมาปน
+    l.flags.ftTaxAt = l.age + 1;
     l.queue = []; ageUp(l);
     expect(standingOf(l)).toBe(a + 15);
   });

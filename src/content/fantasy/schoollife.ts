@@ -13,6 +13,9 @@ import { underdogWin } from "./stars";
 
 const student = (l: Life) => !!fl(l).school && !fl(l).graduated;
 const noSchool = (l: Life) => !fl(l).school;
+// คู่ปรับที่ดีกันแล้ว หรือคุณเลิกทางนักสู้ไปแล้ว: เรื่องไปอีกทาง (chains.ts)
+export const madePeace = (l: Life) => { const r = rivalOf(l); return !!r && (r.relation === "friend" || r.bond >= 60); };
+export const leftPath = (l: Life) => !!l.job && Math.max(fl(l).bodyRank, fl(l).magicRank) < 2;
 export const rivalOf = (l: Life): Person | undefined => l.people.find((p) => p.id === fl(l).rivalId);
 const rivalName = (l: Life) => { const r = rivalOf(l); return r ? shortName(r) : "คู่ปรับ"; };
 const score = (l: Life, d: number) => { const f = fl(l); f.classScore = clamp((f.classScore ?? 50) + d, 0, 100); };
@@ -77,7 +80,7 @@ export const SCHOOL_EVENTS: GameEvent[] = [
   E("ft.s.rival_return", [26, 80], (l) => `${rivalName(l)} คู่ปรับสมัยเรียน กลับมาพร้อมชื่อเสียง เขาบอกว่ายังติดค้างการประลองกับคุณอยู่`, [
     P("รับคำท้า", (l) => fightOdds(l, fl(l).rivalPower ?? 30), (l, c) => ({ ...G("คุณชนะ และเขาหัวเราะเป็นครั้งแรกในรอบสิบปี", { fame: 8, joy: 5 })(l, c), text: `คุณชนะ และเขาหัวเราะเป็นครั้งแรกในรอบสิบปี${underdogWin(l, rivalOf(l)?.stars)}` }), B("เขาเก่งขึ้นมาก คุณได้แผลเป็นเป็นที่ระลึก", { hp: -8 })),
     C("ชวนไปดื่มแทน", G("พวกคุณเล่าเรื่องเก่าจนร้านปิด", { joy: 7 })),
-  ], { when: (l) => !!fl(l).graduated && !!rivalOf(l)?.alive, weight: 10, maxTimes: 2, title: "คู่ปรับเก่า" }),
+  ], { when: (l) => !!fl(l).graduated && !!rivalOf(l)?.alive && !madePeace(l) && !leftPath(l), weight: 10, maxTimes: 2, title: "คู่ปรับเก่า" }),
 
   E("ft.o.master", [12, 30], "ชายชราถือไม้เท้าหยุดดูคุณซ้อมอยู่นาน แล้วพูดว่าโรงเรียนสอนคุณผิดทั้งนั้น ทั้งที่คุณไม่ได้เรียนโรงเรียนไหน", [
     K("ขอเดินทางไปกับเขาหนึ่งปี", "looks", 40, G("เขาสอนสิ่งที่ไม่มีในตำรา แล้วจากไปโดยไม่บอกลา", { body: 18, magic: 12 }, (l) => { deed(l, "ศิษย์ของอาจารย์พเนจร"); if (!spellsOf(l).length && fl(l).wand) learnSpell(l, firstSpell(l).id); }), N("เขาส่ายหน้าแล้วเดินต่อ")),

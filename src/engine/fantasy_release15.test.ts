@@ -52,8 +52,9 @@ describe("อาวุธตำนาน", () => {
     const relic = s.choices.find((c) => labelOf(c, l, l.queue[0].ctx).startsWith("ขวานผ่าภูผา"));
     expect(relic).toBeTruthy();
     expect(oddsOf(l, relic!, l.queue[0].ctx)!).toBeGreaterThan(oddsOf(l, s.choices[0], l.queue[0].ctx)!);
-    relic!.run(l, l.queue[0].ctx, true); l.queue.shift();
-    runEvent(l, "ft.dg.road");
+    relic!.run(l, l.queue[0].ctx, true);
+    // ผลของการต่อสู้อาจพาเรื่องอื่นเข้าคิว · ดูเฉพาะฉากต่อสู้ครั้งใหม่
+    l.queue = []; runEvent(l, "ft.dg.road");
     expect(currentScene(l.queue[0], l)!.choices.some((c) => labelOf(c, l, l.queue[0].ctx).startsWith("ขวานผ่าภูผา"))).toBe(false);
   });
   it("อาวุธแต่ละชิ้นมีเรื่องของตัวเอง", () => {

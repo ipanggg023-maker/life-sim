@@ -1,6 +1,8 @@
 // แกนกลางของ "ทุกทางเลือกมีผล": ติดป้ายให้ตัวเลือกเดิมโดยไม่ต้องแก้ไฟล์ของมัน แล้วจดนิสัย เมล็ดชะตา ข่าวลือ และความทรงจำ
 // ป้ายอยู่ใน tags.ts · เรื่องที่กลับมาอยู่ใน echoes.ts
 import type { Choice, Ctx, GameEvent } from "../../engine/events";
+import { nextFloat } from "../../engine/rng";
+import { lifeHash } from "../../engine/events";
 import { allEvents } from "../../engine/events";
 import { choiceHooks, oddsHooks, runEvent, yearHooks } from "../../engine/game";
 import { chance } from "../../engine/rng";
@@ -85,12 +87,18 @@ export function loadConseq() {
   oddsHooks.push((l, c, _ctx, p) => (l.worldId === "fantasy" ? p + inCharacter(l, c) : p));
   // เรื่องที่ถึงเวลากลับมาแล้ว มีช่องของตัวเองทุกปี
   yearHooks.push((l) => {
-    if (l.worldId !== "fantasy" || !l.ft || !l.alive || !chance(l, ECHO_CHANCE) || l.queue.some((q) => q.eventId.startsWith("ft.ec."))) return;
-    const ready = seedsOf(l).filter((s) => s.done === undefined && l.age >= s.age + (SEEDS[s.id]?.delay[0] ?? 99)).sort((a, b) => a.age - b.age);
-    if (ready.length) runEvent(l, `ft.ec.${ready[0].id}`);
+    if (l.worldId !== "fantasy" || !l.ft || !l.alive) return;
+    // บางเรื่องไม่เคยกลับมา: ผ่านไปนานพอแล้วก็เงียบหายไปเอง (แต่ละชีวิตไม่เหมือนกัน)
+    for (const s of seedsOf(l)) if (s.done === undefined && SEEDS[s.id] && l.age >= s.age + SEEDS[s.id].delay[1] && lifeHash(l, `fade.${s.id}`) % FADE_ONE_IN === 0) { s.done = l.age; s.faded = true; }
+    if (!chance(l, ECHO_CHANCE) || l.queue.some((q) => q.eventId.startsWith("ft.ec."))) return;
+    const ready = seedsOf(l).filter((s) => s.done === undefined && l.age >= s.age + (SEEDS[s.id]?.delay[0] ?? 99));
+    // เรื่องที่ถึงเวลาแล้วไม่ได้กลับมาตามลำดับเสมอ
+    if (ready.length) runEvent(l, `ft.ec.${ready[Math.floor(nextFloat(l) * ready.length)].id}`);
   });
 }
 export const ECHO_CHANCE = 0.35;
+/** หนึ่งในกี่เรื่องที่เงียบหายไปโดยไม่กลับมา */
+export const FADE_ONE_IN = 4;
 
 /** ตัวเลือกที่สร้างเองใช้ป้ายเดียวกันได้ */
 export function tagged(c: Choice, t: Tag): Choice { tagOf.set(c, t); const d: Record<string, number> = {}; for (const k of ["m", "h", "c", "f"] as const) if (t[k]) d[k] = t[k]!; if (Object.keys(d).length) c.lean = d; if (t.seed || (t.mem && t.mem[2] >= 2)) c.mark = MARK; if (t.seed) c.seed = t.seed; return c; }

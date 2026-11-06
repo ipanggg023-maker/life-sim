@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { loadFantasyWorld } from "../content/fantasy";
 import { HUNTS } from "../content/fantasy/hunts_data";
 import { canStart, giveUp, huntOf, huntRelics, startHunt } from "../content/fantasy/hunts";
-import { fl, relicOf } from "../content/fantasy/state";
+import { dataOf, fl, relicOf } from "../content/fantasy/state";
 import { currentScene, labelOf, visibleChoices } from "./events";
 import { ageUp, createLife } from "./game";
 import type { Life } from "./types";
@@ -24,6 +24,8 @@ const play = (l: Life, index: number, ok = true) => {
 };
 /** วนปีจนบทของการตามล่ามาถึง */
 const nextChapter = (l: Life) => { for (let i = 0; i < 6 && !l.queue.length; i++) year(l); return l.queue[0]?.eventId; };
+/** เหมือน nextChapter แต่ไม่ให้โลกย้ายอาวุธชิ้นนี้ระหว่างปี (ทดสอบเฉพาะเรื่องของการตามล่า) */
+const nextPinned = (l: Life, id: string) => { const h = relicOf(l, id)!.holder; for (let i = 0; i < 6 && !l.queue.length; i++) { year(l); relicOf(l, id)!.holder = h; } return l.queue[0]?.eventId; };
 
 describe("ข้อมูลตำนาน", () => {
   it("อาวุธทั้ง 16 ชิ้นมีเรื่องสี่บท และเจ้าของในอดีตอยู่ในปี 1-999", () => {
@@ -67,10 +69,12 @@ describe("ตามล่าอาวุธตำนาน", () => {
     startHunt(l, "cleaver");
     for (let ch = 0; ch < 2; ch++) { nextChapter(l); play(l, 0, true); }
     nextChapter(l); relicOf(l, "cleaver")!.holder = "lost";
+    // คู่แข่งอาจตายไประหว่างปีที่ผ่านไป · ให้เป็นคนดังที่ยังมีชีวิตอยู่
+    huntOf(l)!.rival = dataOf(l).notables[0].name;
     const rival = huntOf(l)!.rival!;
     play(l, 0, false);
     expect(relicOf(l, "cleaver")!.holder).toBe(rival);
-    expect(nextChapter(l)).toBe("ft.hu.holder");
+    expect(nextPinned(l, "cleaver")).toBe("ft.hu.holder");
     play(l, 0, true);
     expect(relicOf(l, "cleaver")!.holder).toBe("player");
   });
@@ -78,9 +82,13 @@ describe("ตามล่าอาวุธตำนาน", () => {
     const l = life(6);
     startHunt(l, "twilight");
     for (let ch = 0; ch < 2; ch++) { nextChapter(l); play(l, 2, true); }
-    nextChapter(l); play(l, 0, false);
+    nextChapter(l); relicOf(l, "twilight")!.holder = "lost";
+    // คู่แข่งที่ยังมีชีวิตคว้าไปก่อน จึงมีเจ้าของให้ขโมยมา
+    huntOf(l)!.rival = dataOf(l).notables[0].name;
+    play(l, 0, false);
     const owner = relicOf(l, "twilight")!.holder;
-    nextChapter(l); play(l, 1, true);
+    expect(owner).toBe(huntOf(l)!.rival);
+    nextPinned(l, "twilight"); play(l, 1, true);
     expect(fl(l).huntStolen?.from).toBe(owner);
     for (let i = 0; i < 20 && !l.queue.length; i++) year(l);
     expect(l.queue[0]?.eventId).toBe("ft.hu.hunted");

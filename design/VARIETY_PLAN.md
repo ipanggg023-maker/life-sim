@@ -50,3 +50,26 @@ Grilled 2026-11-06. Each release is tested, given a balance pass, checked on scr
 - The Power tab shows the wand's name, wood and core, quality and perks.
 - Balance: a free "work a year for it" option made almost every random bot a caster, and reckless bots dying before 60 fell to 33% (the guardrail is 45%). It became half-down instalments and the guardrail passes again.
 - Checked on screen: a kind, fire-element character with 7 stars was chosen by ลูมิเอล (willow wood, phoenix core, quality 4) after two misfires; bought it and saw it in the Power tab.
+
+## Release 24 built (2026-11-06)
+- System popups resolve quietly after the first time. Tax, debt collectors, omens, plague, tenant revolts, yearly royal duties and release from jail: the first one is a popup, and later ones finish on their own as a short line in the chapter ("ภาษีประจำปี: …"). The routine choice is the obvious one (pay the tax, pay off the debt, hire a doctor). They still stop you when it matters:
+  - you can't pay the debt in full, or the collectors are angry
+  - plague hits while your health is under 50 or you have under 15 gold
+  - the realm you rule is unstable (under 35) or at war
+- Small moments never repeat within one life. An event that has happened once, as a moment or as the year's main story, won't come back in that life. Echoes of old choices and unfinished storylines are exempt because each one is different.
+- Story chains are looser and branch:
+  - School, court and trade chains wait a random 1–4 years between parts.
+  - In each life, one part in five never comes at all.
+  - Seeds from old choices come back in random order, and one in four fades away without returning (the life story skips them).
+  - Unfinished storylines skip 25% of the time (was 10%).
+  - A grudge storyline turns into a reconciliation if you made peace with that person since.
+  - If you moved city, the story says it followed you there.
+  - The school rival comes back three ways: still a rival (the duel), made peace (opening a school together), or you left the fighting path (a visit to your shop).
+- New content:
+  - 38 situational small moments, each with three different approaches, weighted toward your life: race (2 each), job type, city type (port, capital, mountain, frontier, town) and family (small kids, teens, partner, ageing parents, siblings).
+  - 12 new hand-written main stories, from childhood to ruler.
+  - 6 new situations and 8 new roles for the assembled stories.
+- Fix: the sword in the stone no longer "goes missing from stone" in the world news.
+- Situational moments have weight 20 and keep a place in the year ahead of generic filler, so about 3–4 reach each life (measured on 30 random lives without jobs).
+- Balance: random bots dying before 60 went from 63%/61% to 51%/58%. The new moments are milder than the random filler they push out. The guardrail (≥45%) passes, and quiet lives have a median of 65.
+- Repetition survey (80 random lives): small-moment repeats fell from 801 to 245, and almost all of those 245 are now the short routine lines. The tax popup is gone after its first appearance, and omens show once.

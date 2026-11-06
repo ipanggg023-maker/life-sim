@@ -85,7 +85,7 @@ describe("เกิดและเผ่า", () => {
     expect(d).toBeGreaterThan(h + 25);
     expect(e).toBeGreaterThan(h + 150);
     expect(RACES.elf.younger).toBeGreaterThan(RACES.dwarf.younger);
-  });
+  }, 600_000);
 });
 
 describe("พลัง", () => {

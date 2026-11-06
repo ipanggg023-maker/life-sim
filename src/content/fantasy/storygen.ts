@@ -3,11 +3,11 @@
 // แผนอยู่ที่ design/WHOLE_GAME_SPEC.md (Release 2)
 import type { Choice, Ctx, GameEvent } from "../../engine/events";
 import { runEvent, yearHooks } from "../../engine/game";
-import { remember } from "../../engine/npc";
+import { relOf, remember } from "../../engine/npc";
 import { chance, pick, randInt } from "../../engine/rng";
 import type { Life, Person } from "../../engine/types";
 import { addStat, clamp, createPerson, shortName } from "../../engine/util";
-import { B, C, G, GOLD, N, P, PAY, type Res } from "./kit";
+import { B, C, G, GOLD, K, N, P, PAY, type Res } from "./kit";
 import { fightOdds } from "./power";
 import { spread } from "./rumors";
 import { addStanding, fl } from "./state";
@@ -16,7 +16,8 @@ import { stageAge } from "./folk";
 
 /** คนในเรื่อง: อาชีพ (คำกลางๆ ปรับตามเพศเอง) */
 export const ROLES = ["พ่อค้าเร่", "ช่างไม้", "นักดนตรีพเนจร", "ทหารปลดประจำการ", "หมอยาสมุนไพร", "ชาวประมง", "คนเลี้ยงแพะ", "นักบวชพเนจร",
-  "ช่างทอผ้า", "คนส่งสาร", "นักล่าค่าหัว", "ลูกขุนนางตกยาก", "คนแจวเรือ", "นักเรียนเวท", "พรานป่า", "คนทำขนมปัง"];
+  "ช่างทอผ้า", "คนส่งสาร", "นักล่าค่าหัว", "ลูกขุนนางตกยาก", "คนแจวเรือ", "นักเรียนเวท", "พรานป่า", "คนทำขนมปัง",
+  "คนเลี้ยงผึ้ง", "นักโบราณคดี", "คนขายดอกไม้", "ช่างทำรองเท้า", "นักเล่านิทาน", "คนเฝ้าประภาคาร", "ช่างทองฝึกหัด", "หมอตำแย"];
 
 type Way = "force" | "wits" | "heart" | "luck";
 interface Approach { label: string; way: Way | number; ok: string; bad: string; okFx?: Partial<Record<"joy" | "gold" | "fame" | "hp" | "iq", number>>; badFx?: Partial<Record<"joy" | "gold" | "fame" | "hp" | "iq", number>> }
@@ -103,6 +104,36 @@ export const SITUATIONS: Situation[] = [
     { label: "เก็บสมุนไพรตามที่เคยรู้มา", way: "wits", ok: "ยาต้มของคุณได้ผล {n}ลุกเดินได้ในวันถัดมา", bad: "สมุนไพรผิดชนิด {n}อาเจียนทั้งคืน แต่ก็รอด", okFx: { iq: 1, joy: 4 }, badFx: { joy: -3 } },
     { label: "จ้างเกวียนพาไปหาหมอในเมือง", way: 7, ok: "หมอบอกว่าถ้ามาช้ากว่านี้อีกครึ่งวันคงไม่รอด", bad: "", okFx: { joy: 3 } },
   ] },
+  { id: "bees", title: "ผึ้งแตกรัง", text: "รังผึ้งของ{n} {r}แตกฝูงกลางตลาด{c} ผู้คนวิ่งหนีกันชุลมุน และเด็กคนหนึ่งล้มอยู่กลางฝูงผึ้ง", ways: [
+    { label: "วิ่งฝ่าฝูงผึ้งไปอุ้มเด็ก", way: "force", ok: "คุณอุ้มเด็กออกมาได้ แลกกับรอยต่อยสิบกว่าจุด {n}ทายาให้คุณทั้งคืน", bad: "ผึ้งต่อยจนตาคุณบวมปิด เด็กวิ่งออกมาเองได้ก่อนคุณ", okFx: { fame: 2, joy: 3, hp: -2 }, badFx: { hp: -5 } },
+    { label: "จุดควันไล่ผึ้งตามที่{n}บอก", way: "wits", ok: "ควันทำให้ฝูงผึ้งสงบลง {n}ต้อนนางพญากลับเข้ากล่องได้ในเวลาไม่นาน", bad: "ควันลอยไปทางผิด ทั้งตลาดสำลักแทน", okFx: { iq: 1, joy: 3 }, badFx: { joy: -3 } },
+    { label: "ร้องเพลงช้าๆ ให้เด็กนอนนิ่ง", way: "heart", ok: "เด็กนอนนิ่งตามเสียงเพลง ฝูงผึ้งบินผ่านไปโดยไม่ต่อยเลย", bad: "เด็กตกใจจนดิ้น คุณต้องวิ่งเข้าไปลากออกมาเอง", okFx: { joy: 4 }, badFx: { hp: -2 } },
+  ] },
+  { id: "ruin", title: "ซากปรักหักพังใต้ไร่", text: "ไถของ{n} {r}นอก{c}ไปติดแผ่นหินแกะสลักใต้ดิน ข้างใต้มีบันไดลงไปในความมืด", threat: 18, ways: [
+    { label: "ถือคบไฟลงไปเป็นคนแรก", way: "force", ok: "ห้องใต้ดินเต็มไปด้วยเครื่องปั้นโบราณ คุณกับ{n}แบ่งกันคนละครึ่งแล้วขายให้หอสมุด", bad: "บันไดผุพังกลางทาง คุณตกลงไปข้อเท้าแพลง ต้องรอ{n}หย่อนเชือกลงมา", okFx: { gold: 10, joy: 3 }, badFx: { hp: -5 } },
+    { label: "คัดลอกลายแกะสลักไปถามนักปราชญ์", way: "wits", ok: "นักปราชญ์ตื่นเต้นจนลืมกินข้าว หอสมุดจ่ายรางวัลให้คุณกับ{n}งาม", bad: "นักปราชญ์บอกว่าเป็นแค่ห้องเก็บเหล้าเก่า", okFx: { gold: 8, iq: 2 }, badFx: { joy: -1 } },
+    { label: "บอก{n}ให้ปิดไว้ตามเดิม", way: "luck", ok: "คืนนั้นคุณฝันถึงผู้หญิงชุดขาวที่ขอบคุณ เช้ามาโชคของคุณดีไปทั้งปี", bad: "{n}แอบลงไปคนเดียวในคืนถัดมา และกลับมาด้วยไข้สามวัน", okFx: { joy: 3, gold: 2 }, badFx: { joy: -2 } },
+  ] },
+  { id: "shoes", title: "รองเท้าที่ไม่ได้จ่าย", text: "{n} {r}ใน{c}ทำรองเท้าให้ขุนนางคนหนึ่งเสร็จนานแล้ว แต่ขุนนางไม่ยอมจ่ายเงิน ครอบครัวของ{n}เริ่มไม่มีข้าวกิน", ways: [
+    { label: "ไปทวงที่คฤหาสน์ด้วยกัน", way: "force", ok: "ขุนนางเห็นคุณยืนอยู่หน้าประตูทุกวันจนอาย แล้วยอมจ่ายครบ", bad: "คนรับใช้ไล่คุณออกมาพร้อมหมาเฝ้าบ้าน", okFx: { joy: 3 }, badFx: { hp: -3, joy: -2 } },
+    { label: "ปล่อยข่าวในหมู่คนรับใช้ของขุนนาง", way: "wits", ok: "ข่าวว่าขุนนางเบี้ยวค่ารองเท้าไปถึงหูภรรยาเขา เงินมาถึงในวันรุ่งขึ้น", bad: "ข่าวย้อนกลับมาว่าคุณเป็นคนปล่อย ขุนนางหมายหัวคุณ", okFx: { iq: 1, joy: 3 }, badFx: { joy: -3 } },
+    { label: "ให้{n}ยืมเงินไปก่อน", way: 6, ok: "{n}ซื้อข้าวให้ครอบครัว และคืนเงินคุณทันทีที่ขุนนางยอมจ่ายในเดือนถัดมา", bad: "" },
+  ] },
+  { id: "lighthouse", title: "ประภาคารดับ", text: "คืนพายุ ไฟบนประภาคารนอก{c}ดับลง {n} {r}ป่วยหนักอยู่ข้างล่าง และมีเรือกำลังเข้าใกล้โขดหิน", threat: 14, ways: [
+    { label: "ปีนบันไดเปียกขึ้นไปจุดไฟเอง", way: "force", ok: "ไฟลุกขึ้นทันเวลา เรือเลี้ยวพ้นโขดหิน ลูกเรือโบกคบไฟขอบคุณจากดาดฟ้า", bad: "คุณลื่นตกบันไดสามขั้น แต่ยังลากตัวขึ้นไปจุดไฟได้ แม้จะช้าไปนิด", okFx: { fame: 3, joy: 4 }, badFx: { hp: -6, fame: 1 } },
+    { label: "จุดกองไฟบนหน้าผาแทน", way: "wits", ok: "กองไฟบนหน้าผาเห็นได้ไกลพอ เรือเลี้ยวพ้นได้", bad: "ฝนดับไฟของคุณสองครั้ง เรือครูดโขดหินจนเสียหายแต่ไม่จม", okFx: { iq: 1, fame: 1 }, badFx: { joy: -3 } },
+    { label: "อยู่ดูแล{n}แล้วสวดให้เรือรอด", way: "luck", ok: "ฟ้าแลบส่องทางให้เรือพอดี {n}ไข้ลดลงตอนรุ่งเช้า", bad: "เช้ามามีเศษไม้เรือเกยหาด คุณไม่รู้ว่าทำถูกหรือผิด", okFx: { joy: 3 }, badFx: { joy: -5 } },
+  ] },
+  { id: "midwife", title: "คืนคลอดลูก", text: "หิมะปิดทางเข้า{c} หญิงท้องแก่ในบ้านข้างๆ เจ็บท้องคลอด {n} {r}มาไม่ทัน มีแค่คุณอยู่ใกล้ที่สุด", ways: [
+    { label: "ลุยหิมะไปตาม{n}มา", way: "force", ok: "คุณพา{n}มาถึงทันเวลา เด็กเกิดมาร้องเสียงดังที่สุดในหมู่บ้าน", bad: "หิมะลึกจนคุณกลับมาถึงตอนเด็กเกิดแล้ว แต่ขาคุณชาไปทั้งสองข้าง", okFx: { joy: 5, fame: 1 }, badFx: { hp: -4 } },
+    { label: "ทำตามที่เคยได้ยิน{n}สอน", way: "wits", ok: "ทุกอย่างผ่านไปด้วยดี แม่ตั้งชื่อลูกตามชื่อคุณ", bad: "คุณทำได้ไม่ดีนัก แต่แม่กับลูกยังรอด และ{n}มาถึงตอนเช้าทันดูแลต่อ", okFx: { iq: 2, joy: 6 }, badFx: { joy: -1 } },
+    { label: "จับมือแม่ไว้และอยู่ข้างๆ", way: "heart", ok: "แม่บอกว่ามือคุณทำให้เธอไม่กลัว เด็กเกิดตอนฟ้าสาง", bad: "คืนนั้นยาวมาก คุณร้องไห้ไปพร้อมแม่ แต่ทั้งคู่ก็ผ่านมันมาได้", okFx: { joy: 5 }, badFx: { joy: -2 } },
+  ] },
+  { id: "storyteller", title: "นิทานที่ไม่ควรเล่า", text: "{n} {r}เล่านิทานในโรงเตี๊ยมของ{c} นิทานเรื่องนั้นล้อเลียนเจ้าเมืองชัดเจนเกินไป และยามสองคนเพิ่งเดินเข้ามา", ways: [
+    { label: "ลุกขึ้นเปลี่ยนเรื่องด้วยนิทานของคุณเอง", way: "heart", ok: "นิทานของคุณตลกจนยามหัวเราะ {n}ย่องออกทางประตูหลังทันเวลา", bad: "นิทานของคุณไม่ตลก และยามเริ่มถามว่าคุณเป็นใคร", okFx: { joy: 4, fame: 1 }, badFx: { joy: -3 } },
+    { label: "แกล้งทำเหล้าหกใส่ยาม", way: "luck", ok: "ยามวุ่นกับเสื้อเปียกจนลืม{n}ไปเลย", bad: "ยามจับคุณแทน คุณต้องนอนในห้องขังหนึ่งคืน", okFx: { joy: 3 }, badFx: { joy: -4 } },
+    { label: "ตะโกนว่านี่คือนิทานเรื่องเจ้าเมืองของแผ่นดินอื่น", way: "wits", ok: "ยามพยักหน้าแล้วนั่งฟังต่อ {n}ปรับตอนจบให้เข้ากับเรื่องที่คุณแต่งขึ้น", bad: "ยามรู้ว่าคุณโกหก และจดชื่อทั้งคุณและ{n}ไป", okFx: { iq: 1, joy: 3 }, badFx: { joy: -3 } },
+  ] },
 ];
 
 /** จุดหักมุมท้ายเรื่อง · บางแบบเปิดเส้นเรื่องที่กลับมาอีกหลายปีต่อมา */
@@ -111,7 +142,7 @@ export const TWISTS: Twist[] = ["none", "returns", "grudge", "rumor", "friend", 
 export const MAX_STORYLINES = 3;
 /** ความเจ็บจากเรื่องที่ประกอบขึ้น (เท่ากับ HL_HURT ของเรื่องหลักที่เขียนไว้) */
 export const STORY_HURT = 0.2;
-export interface Storyline { kind: "help" | "revenge" | "family"; pid: string; due: number; title: string }
+export interface Storyline { kind: "help" | "revenge" | "family" | "peace"; pid: string; due: number; title: string; city?: string }
 export const storylinesOf = (l: Life): Storyline[] => (fl(l).storylines ??= []);
 
 const sit = (c: Ctx) => SITUATIONS[Number(c.s)] ?? SITUATIONS[0];
@@ -150,7 +181,7 @@ function ending(won: boolean, a: Approach): Res {
     const t = c.t as Twist;
     const open = (kind: Storyline["kind"], lo: number, hi: number) => {
       if (!p || storylinesOf(l).length >= MAX_STORYLINES) return;
-      storylinesOf(l).push({ kind, pid: p.id, due: l.age + randInt(l, lo, hi), title: sit(c).title });
+      storylinesOf(l).push({ kind, pid: p.id, due: l.age + randInt(l, lo, hi), title: sit(c).title, city: cityOf(l).id });
     };
     if (t === "returns" && won) { open("help", 3, 8); text += ` ก่อนจากกัน ${p ? shortName(p) : "เขา"}บอกว่าจะไม่ลืมวันนี้`; }
     else if (t === "grudge" && (!won || a.way === "force")) { open("revenge", 2, 6); if (p) remember(l, p, "sg_grudge", "คุณทำให้เขาเสียหน้า", 2, { grudge: 25 }); text += ` ${p ? shortName(p) : "เขา"}มองคุณด้วยสายตาที่บอกว่ายังไม่จบ`; }
@@ -208,15 +239,18 @@ export function storyCtx(l: Life): { id: string; make: () => Ctx } | undefined {
 const cnm = (l: Life, c: Ctx) => { const p = who(l, c); return p ? shortName(p) : "เขา"; };
 const CONT: GameEvent = {
   id: "ft.sg.cont", world: "fantasy", minAge: 14, maxAge: 900, manual: true, maxTimes: 0, title: "เรื่องที่ยังไม่จบ",
-  text: (l, c) => c.kind === "help" ? `${cnm(l, c)}ที่คุณช่วยไว้ตอน "${c.title}" กลับมาที่${cityOf(l).name}พร้อมห่อของใบใหญ่ \"ข้าบอกแล้วว่าจะไม่ลืม\"`
+  text: (l, c) => (c.moved ? `คุณย้ายมาอยู่${cityOf(l).name}แล้ว แต่เรื่องเก่ายังตามมาหาจนเจอ ` : "") + (c.kind === "peace" ? `${cnm(l, c)}จากเรื่อง "${c.title}" ที่เคยแค้นคุณ มายืนอยู่หน้าบ้านมือเปล่า "ข้าคิดเรื่องวันนั้นมาหลายปี ข้าอยากจบมันดีๆ"` : c.kind === "help" ? `${cnm(l, c)}ที่คุณช่วยไว้ตอน "${c.title}" กลับมาที่${cityOf(l).name}พร้อมห่อของใบใหญ่ \"ข้าบอกแล้วว่าจะไม่ลืม\"`
     : c.kind === "revenge" ? `${cnm(l, c)}จากเรื่อง "${c.title}" กลับมาพร้อมคนอีกสองคน ยืนรอคุณอยู่หน้าบ้าน`
-    : `${cnm(l, c)}จากเรื่อง "${c.title}" ส่งจดหมายมา ข้างในเป็นเรื่องของพ่อแม่คุณที่ไม่มีใครเคยเล่า`,
+    : `${cnm(l, c)}จากเรื่อง "${c.title}" ส่งจดหมายมา ข้างในเป็นเรื่องของพ่อแม่คุณที่ไม่มีใครเคยเล่า`),
   choices: [
     C("รับน้ำใจไว้", G((l, c) => `ในห่อมีเหรียญทองกับของฝากจากบ้านเกิดของ${cnm(l, c)} คุณสองคนนั่งคุยกันจนค่ำ`, { gold: 15, joy: 6 }, (l, c) => { const p = who(l, c); if (p) { p.relation = "friend"; p.bond = clamp(p.bond + 15, 0, 100); } }), { show: (_l, c) => c.kind === "help" }),
     C("ขอให้ช่วยเรื่องงานแทน", G((l, c) => `${cnm(l, c)}พาคุณไปรู้จักคนใหญ่คนโตของเมือง ประตูหลายบานเปิดให้คุณตั้งแต่วันนั้น`, { fame: 3 }, (l) => { addStanding(l, 3); if (l.job) l.job.performance = clamp(l.job.performance + 10, 0, 100); }), { show: (_l, c) => c.kind === "help" }),
     P("สู้ให้จบ", (l) => fightOdds(l, 22), G((l, c) => `${cnm(l, c)}กับพวกล้มลงทีละคน แล้วไม่กลับมาที่${cityOf(l).name}อีก`, { fame: 2, joy: 3 }), B((l, c) => `คุณแพ้ ${cnm(l, c)}เหยียบหน้าคุณไว้กับพื้นก่อนจะจากไป`, { hp: -9, joy: -5 }), { show: (_l, c) => c.kind === "revenge" }),
     C("ขอโทษเรื่องวันนั้น", N((l, c) => `${cnm(l, c)}เงียบไปนาน แล้วถุยน้ำลายลงพื้น \"ครั้งนี้ข้าปล่อย\"`, { joy: -2 }, (l, c) => { const p = who(l, c); if (p) remember(l, p, "sg_sorry", "คุณยอมขอโทษ", 2, { grudge: -20 }); }), { show: (_l, c) => c.kind === "revenge" }),
     PAY("จ่ายให้เขาจบเรื่อง", 12, N((l, c) => `${cnm(l, c)}รับเงินแล้วเดินจากไป เรื่องจบ แต่คุณรู้สึกขมในปาก`, { joy: -1 }), { show: (_l, c) => c.kind === "revenge" }),
+    C("จับมือแล้วเลี้ยงข้าวเขาสักมื้อ", G((l, c) => `${cnm(l, c)}กินไปเล่าไป ก่อนกลับเขาบอกว่าถ้าวันไหนคุณลำบาก ให้ส่งข่าวไปหา`, { joy: 6 }, (l, c) => { const p = who(l, c); if (p) { p.relation = "friend"; p.bond = clamp(p.bond + 20, 0, 100); remember(l, p, "sg_peace", "คุณยอมคืนดี", 2, { grudge: -40, trust: 15 }); } }), { show: (_l, c) => c.kind === "peace" }),
+    K("ถามตรงๆ ว่าเขาต้องการอะไรจริงๆ", "smarts", 45, G((l, c) => `${cnm(l, c)}ยอมรับว่าตกงานและไม่มีที่ไป คุณฝากเขาเข้างานกับคนรู้จัก เขาไม่ลืมเรื่องนี้`, { fame: 1 }, (l, c) => { const p = who(l, c); if (p) remember(l, p, "sg_peace", "คุณหางานให้", 2, { grudge: -30, debt: 20 }); addStanding(l, 1); }), B((l, c) => `คำถามของคุณฟังเหมือนดูถูก ${cnm(l, c)}หน้าแดงแล้วเดินจากไป`, { joy: -2 }), { show: (_l, c) => c.kind === "peace" }),
+    C("บอกว่าเรื่องมันจบไปนานแล้ว ไม่ต้องคุยอีก", N((l, c) => `${cnm(l, c)}พยักหน้าช้าๆ แล้วเดินจากไป คุณไม่รู้ว่าเขาจะกลับมาอีกไหม`, {}, (l, c) => { const p = who(l, c); if (p) remember(l, p, "sg_cold", "คุณไม่ยอมคุย", 1, { grudge: 5 }); }), { show: (_l, c) => c.kind === "peace" }),
     C("อ่านจนจบ", G("พ่อแม่ของคุณเคยช่วยคนทั้งหมู่บ้านไว้ในปีอดอยาก คุณเข้าใจพวกเขามากขึ้นกว่าตอนที่ยังมีชีวิต", { joy: 6, iq: 1 }), { show: (_l, c) => c.kind === "family" }),
     C((l, c) => `ไปหา${cnm(l, c)}เพื่อฟังจากปาก`, G((l, c) => `${cnm(l, c)}เล่าทั้งคืน และให้ของที่พ่อแม่คุณฝากไว้กับเขาเมื่อนานมาแล้ว`, { joy: 8, gold: 6 }, (l, c) => { const p = who(l, c); if (p) p.bond = clamp(p.bond + 20, 0, 100); }), { show: (_l, c) => c.kind === "family" }),
   ],
@@ -230,10 +264,14 @@ function storylineYear(l: Life) {
   if (i < 0) return;
   const s = list.splice(i, 1)[0];
   const p = l.people.find((x) => x.id === s.pid && x.alive);
-  if (!p || chance(l, 0.1)) return;
-  runEvent(l, "ft.sg.cont", { pid: s.pid, kind: s.kind, title: s.title });
+  // บางเรื่องไม่กลับมาเลย
+  if (!p || chance(l, STORYLINE_SKIP)) return;
+  // คนที่เคยแค้นแต่ภายหลังดีกันแล้ว กลับมาเพื่อคืนดีแทนการแก้แค้น
+  const kind = s.kind === "revenge" && (p.bond >= 55 || relOf(p).grudge < 15) ? "peace" : s.kind;
+  runEvent(l, "ft.sg.cont", { pid: s.pid, kind, title: s.title, ...(s.city && s.city !== cityOf(l).id ? { moved: 1 } : {}) });
 }
 
+export const STORYLINE_SKIP = 0.25;
 export const STORY_GEN_EVENTS: GameEvent[] = [...STORIES, CONT];
 export function loadStoryGen() {
   yearHooks.push(storylineYear);

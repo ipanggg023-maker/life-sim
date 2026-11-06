@@ -59,7 +59,8 @@ export function tickWorld(w: WorldState, r: Rng) {
   tickEmpire(w, d, r);
   tickSociety(w, d, r);
   for (const rl of d.relics) {
-    if (rl.holder === "player") continue;
+    // ดาบในหินอยู่ในหินจนกว่าผู้คู่ควรจะดึงออก ไม่หายไปเอง
+    if (rl.holder === "player" || rl.holder === "stone") continue;
     if (rl.holder === "lost" ? chance(r, 0.006) : chance(r, 0.02)) {
       const by = rl.holder === "lost" ? seekerOf(d, r)?.name ?? pick(r, SEEKERS) : "lost";
       recordChronicle(w, by === "lost" ? `${rl.name}หายไปจากมือ${rl.holder}อีกครั้ง` : `${by}พบ${rl.name}`);
