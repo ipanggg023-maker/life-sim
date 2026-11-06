@@ -2,8 +2,8 @@
 // ทางเลือกที่เพิ่มเขียนแยกไว้ในตารางตามรหัสเรื่อง "id" หรือ "id/ฉาก" แล้วต่อท้ายตอนโหลดโลก
 import type { Choice } from "../../engine/events";
 import { getEvent } from "../../engine/events";
-import { apply, type Fx } from "./kit";
-import type { Extra } from "./third_kit";
+import { apply } from "./kit";
+import { fxKind, type Extra, type Way } from "./third_kit";
 import { T1 } from "./third1";
 import { T2 } from "./third2";
 import { T3 } from "./third3";
@@ -18,17 +18,26 @@ const TABLES: Record<string, Extra>[] = [T1, T2, T3, T4, T5, T6, T7, T8, T9];
 
 function attach(base: Choice[], extra: Choice[]): Choice[] {
   return [...base, ...extra.map((x) => {
-    const v = x as unknown as { variantOf?: number; vText: string; vFx: Fx; label: string };
-    if (v.variantOf === undefined) return x;
-    const o = base[v.variantOf];
-    if (!o) throw new Error(`third: ไม่มีทางเลือกที่ ${v.variantOf}`);
-    return {
-      ...o, label: v.label, mark: undefined, run: (l, c, ok) => {
-        const out = o.run(l, c, ok);
-        if (l.alive) apply(l, v.vFx);
-        return { ...out, text: `${v.vText} ${out.text}`.trim() };
-      },
-    } as Choice;
+    const w = x as unknown as Partial<Way>;
+    if (w.wayOf !== undefined) {
+      const o = base[w.wayOf];
+      if (!o) throw new Error(`third: ไม่มีทางเลือกที่ ${w.wayOf}`);
+      const way = w as Way;
+      // ทางเดิมมีค่าใช้จ่าย: ทางนี้ก็จ่ายเท่ากัน ป้ายต้องบอกด้วย
+      const cost = typeof o.label === "string" ? o.label.match(/\(\d+ เหรียญทอง\)/)?.[0] : undefined;
+      return {
+        label: cost ? `${way.label} ${cost}` : way.label, show: o.show, req: o.req, tone: o.tone,
+        ...(way.stat ? { check: { stat: way.stat, dc: way.dc } } : {}),
+        run: (l, c, ok) => {
+          const win = !way.stat || ok;
+          const [text, fx] = win || !way.fail ? way.ok : way.fail;
+          const out = o.run(l, c, win);
+          if (l.alive) apply(l, fx);
+          return { ...out, text, kind: out.kind === "milestone" && win ? "milestone" : fxKind(fx) };
+        },
+      } as Choice;
+    }
+    return x;
   })];
 }
 
