@@ -79,6 +79,7 @@ import { loadThird } from "./third";
 import { loadHunts } from "./hunts";
 import { loadAncients } from "./ancients";
 import { loadFriends } from "./friends";
+import { loadWands } from "./wands";
 import { verdict } from "./persona";
 import { verdictHook } from "../../engine/game";
 import { TALENTS } from "../talents";
@@ -150,6 +151,7 @@ export function loadFantasyWorld() {
   loadHunts();
   loadAncients();
   loadFriends();
+  loadWands();
   loadThird();
   loadLifestory();
   loadYear();

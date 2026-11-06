@@ -11,7 +11,7 @@ export interface Gate { realm: Realm; kingdom: string; until: number }
 export interface God { name: string; domain: string; year: number; kin?: string }
 export type Element = "fire" | "water" | "earth" | "wind" | "light" | "dark";
 
-export interface Wand { name: string; quality: number; material: string }
+export interface Wand { name: string; quality: number; material: string; /** เนื้อไม้และแกน (wands.ts) · คทารุ่นเก่าไม่มี */ wood?: string; core?: string }
 
 export interface FLife {
   race: RaceId;

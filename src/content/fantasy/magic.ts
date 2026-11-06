@@ -1,4 +1,5 @@
 // เวทมนตร์เชิงลึก: ธาตุ สมุดเวท มานารายปี บทสวด วงเวท อักษรรูน · ทุกคนจึงสู้ไม่เหมือนกัน
+import { CORE_EDGE, coreFits } from "./wands";
 import { ACTIVITIES, type Activity } from "../../engine/activities";
 import type { Choice, Ctx, GameEvent } from "../../engine/events";
 import { runEvent } from "../../engine/game";
@@ -40,7 +41,7 @@ export const manaMax = (l: Life) => { const f = fl(l); return 2 + f.magicRank * 
 export const manaLeft = (l: Life) => Math.max(0, manaMax(l) - (fl(l).manaUsed ?? 0));
 const learned = (l: Life, s: Spell) => !!fl(l).spells?.includes(s.id);
 /** เรียนได้ถึงขั้นเท่าระดับเวท · ธาตุของตัวเองเรียนถูกกว่า */
-export const spellPrice = (l: Life, s: Spell) => s.tier * s.tier * (s.element === fl(l).element ? 12 : 25);
+export const spellPrice = (l: Life, s: Spell) => s.tier * s.tier * (s.element === fl(l).element || coreFits(l, s.element) ? 12 : 25);
 const available = (l: Life) => SPELLS.filter((s) => !learned(l, s) && s.tier <= Math.max(1, fl(l).magicRank));
 export function learnSpell(l: Life, id: string) {
   const f = fl(l);
@@ -53,6 +54,7 @@ export function spellOdds(l: Life, s: Spell, threat: number, weak?: Element, str
   const f = fl(l);
   let o = fightOdds(l, threat) + s.tier * 0.04 + (f.chant ?? 0) * 0.03 + (f.mschool === "elemental" ? 0.06 : 0);
   if (s.element === f.element) o += 0.05;
+  if (coreFits(l, s.element)) o += CORE_EDGE;
   // ธาตุตรงข้ามกับธาตุของคุณร่ายยากกว่า
   else if (f.element && OPPOSITE[f.element] === s.element) o -= 0.05;
   if (weak && s.element === weak) o += 0.25;

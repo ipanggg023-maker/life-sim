@@ -35,3 +35,18 @@ Grilled 2026-11-06. Each release is tested, given a balance pass, checked on scr
 - Tests: no scene repeats a choice label (conditionally shown choices aside); a new choice still graduates you, still moves a main story to its next scene, and has its own failure text.
 - Balance: the share dying before 60 is 63% and 61% on the two baseline seed sets (was 58% and 60%), because the third choice now carries real risk instead of being a safe copy.
 - Checked on screen: first word, baby bird, shared snack and wolf-cub popups show three distinct approaches, the new ones with their own odds and outcomes.
+
+## Release 23 built (2026-11-06)
+- wands.ts: 24 wands with the approved names (design/WAND_NAMES.md), made from 8 woods (each suits one pole of your personality) and 3 cores (each suits two elements). Old saves keep their old wand until they seek a new one.
+- The wand shop (Do tab) is now where a wand chooses you. On your first visit, two wrong wands misfire, then the one that fits your strongest personality pole and your element warms in your hand. Your choices:
+  - pay the full price
+  - put half down and owe the rest plus 20 gold interest
+  - try picking another yourself (it burns your hand)
+  - walk away; it waits for you
+- Magic-school students get their first wand from the school for free, at quality 2 at most.
+- Quality follows your magic stars. Stars cap it: 0–2 stars cap at 2, 3–5 at 3, 6–8 at 4, 9–10 at 5. A very clear personality adds +1 within the cap.
+- Seeking a better wand offers one quality step up, and that wand also has to accept you (odds from your stars and how clear your personality is). The shopkeeper can also read how your personality has changed.
+- Perks: the core makes spells of its two elements more accurate (+6%) and cheaper; the wood adds +4% to choices that match the personality it likes.
+- The Power tab shows the wand's name, wood and core, quality and perks.
+- Balance: a free "work a year for it" option made almost every random bot a caster, and reckless bots dying before 60 fell to 33% (the guardrail is 45%). It became half-down instalments and the guardrail passes again.
+- Checked on screen: a kind, fire-element character with 7 stars was chosen by ลูมิเอล (willow wood, phoenix core, quality 4) after two misfires; bought it and saw it in the Power tab.

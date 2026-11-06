@@ -10,6 +10,7 @@ import { legendLines } from "../../content/fantasy/legends2";
 import { HUNT_AGE, canStart, giveUp, huntOf, huntRelics, isPerson, pastHolders, startHunt } from "../../content/fantasy/hunts";
 import type { Act } from "../App";
 import { ancientLines } from "../../content/fantasy/ancients";
+import { coreOf, woodOf } from "../../content/fantasy/wands";
 import { BESTIARY, timesMet } from "../../content/fantasy/bestiary";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
@@ -185,7 +186,7 @@ export function FantasyPowerTab({ life }: { life: Life }) {
         </Fold>
       )}
       <Fold always kind="section" id="ft-gear" title={<>ของติดตัว</>}>
-        <p className="small">{f.wand ? `${f.wand.name} · คุณภาพ ${f.wand.quality}` : "ไม่มีคทา"}{f.magicRank >= 3 ? " · ร่ายได้โดยไม่ต้องใช้คทา" : ""}</p>
+        <p className="small">{f.wand ? `${f.wand.name} · ${f.wand.material} · คุณภาพ ${f.wand.quality}${woodOf(f.wand.wood) ? ` · ${woodOf(f.wand.wood)!.perk} · เวท${coreOf(f.wand.core)!.elements.map((e) => ELEMENTS[e].name).join("และ")}แม่นและถูกลง` : ""}` : "ไม่มีคทา (ไปร้านคทาในแท็บทำ คทาจะเป็นฝ่ายเลือกคุณ)"}{f.magicRank >= 3 ? " · ร่ายได้โดยไม่ต้องใช้คทา" : ""}</p>
         {f.weapon && <p className="small">{f.weapon.name} · คุณภาพ {f.weapon.quality}{f.weapon.enchant ? " · ลงอาคม" : ""}</p>}
         {f.armor && <p className="small">{f.armor.name} · คุณภาพ {f.armor.quality}</p>}
         <p className="small">บ้าน: {homeOf(life).name} · {homeOf(life).desc}</p>
