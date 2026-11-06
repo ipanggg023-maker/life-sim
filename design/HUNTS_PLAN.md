@@ -46,3 +46,14 @@ Grilled 2026-11-06. Each release is tested, given a balance pass, checked on scr
 - A test fails if any fantasy scene has fewer than three written choices (fantasy_release19.test.ts).
 - Balance: random bots now often take the middle-road option, so the share dying before 60 fell from 67% to 57%. That is back in the range of Releases 15–16 (54–57%), and the balance guardrail (at least 45%) still passes.
 - Checked on screen: school letter, wolf in the snow, star-stone and festival popups each show three choices, and a new third choice in the wolf story carries on into its next scene.
+
+## Release 20 built (2026-11-06)
+- hunts.ts and hunts_data.ts: all 16 relics have a four-chapter hunt using the approved names (design/HUNTS_NAMES.md): a past holder's trail, a later holder's descendants or records, the latest holder with a rival hunter, then the resting place.
+- The legends board in the World tab lists every relic: its power, where it is now (lost, in the stone, held by someone, or yours), and the last four past holders (approved legend holders from years 1–999, then real holders from play). From age 16 you can start one hunt (only while not holding a relic) or give one up, which closes that relic for this life.
+- Chapters come every 1–3 years as popups. Each has a fight, a smarts check, a luck check, and "take another year to prepare". A failed fight wounds you (harder each chapter). Three failures in one chapter end the hunt ("the trail goes cold").
+- The rival is a strong notable without a relic; if that rival dies, a new one takes over. Failing chapter three lets the rival grab the relic.
+- If someone holds the relic, the last chapter is facing them: duel (deadly at zero health), steal at night (the owner's people come back for it 2+ years later: fight, return it, or flee and hide), buy for 80 gold, earn it as a gift (fame 30+), or wait for them to die (the hunt resumes when the relic is lost again).
+- The final trial can kill. Excalibur still needs someone worthy of the throne.
+- The old four-clue trail activity is hidden during a hunt.
+- Balance: random bots that start a hunt at 20 win the relic about half the time (98–103 of ~185). A few die in the final trial, and the share dying before 60 runs about 5 points above bots that don't hunt (62–66% vs 58–60% across two seed sets). Hunting is optional and meant to be dangerous. Bots that never hunt are unchanged.
+- Checked on screen: the legends board with 16 relics and their past holders, starting a hunt (status line with the next chapter's age and the rival), and chapter 1 of the Sun Sword with odds that depend on stats (fight 4% untrained, smarts 31%, luck 83%) and its story result.

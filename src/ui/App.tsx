@@ -424,7 +424,7 @@ export function App() {
           {tab === "career" && <CareerTab life={life} act={act} />}
           {tab === "people" && <PeopleTab life={life} act={act} focus={focus} onShowLog={(id) => { setWho(id); setTab(null); }} />}
           {tab === "power" && (life.ft ? <FantasyPowerTab life={life} /> : <PowerTab life={life} act={act} />)}
-          {tab === "jianghu" && (life.ft ? <FantasyWorldTab life={life} /> : <JianghuTab life={life} act={act} />)}
+          {tab === "jianghu" && (life.ft ? <FantasyWorldTab life={life} act={act} /> : <JianghuTab life={life} act={act} />)}
           {tab === "activities" && <ActivitiesTab life={life} act={act} />}
           {tab === "phone" && <PhoneTab life={life} act={act} />}
           {tab === "soul" && (

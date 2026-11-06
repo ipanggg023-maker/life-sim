@@ -21,7 +21,7 @@ const lost = (l: Life) => dataOf(l).relics.filter((r) => r.holder !== "player" &
 const chase = (l: Life) => lost(l).slice().sort((a, b) => (fl(l).clues[b.id] ?? 0) - (fl(l).clues[a.id] ?? 0))[0];
 const R = (l: Life, c: Ctx): Relic => relicOf(l, String(c.relic))!;
 
-function takeRelic(l: Life, r: Relic) {
+export function takeRelic(l: Life, r: Relic) {
   const was = r.holder;
   r.holder = "player";
   fl(l).relic = r.id;

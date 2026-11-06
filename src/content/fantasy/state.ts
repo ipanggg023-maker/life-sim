@@ -50,6 +50,12 @@ export interface FLife {
   contracts: number;
   relic?: string;
   clues: Record<string, number>;
+  /** การตามล่าอาวุธตำนานที่กำลังทำ (hunts.ts) · ch = บทที่ 0-3 · wait = รอให้คนที่ถืออยู่ตายไปเอง */
+  hunt?: { id: string; ch: number; next: number; rival?: string; wait?: boolean; fails?: number };
+  /** อาวุธที่เลิกตามล่าแล้วในชีวิตนี้ */
+  huntsClosed?: string[];
+  /** อาวุธที่ขโมยมา เจ้าของเดิมจะตามทวง */
+  huntStolen?: { id: string; from: string; at: number };
   dragonBond: number;
   deeds: string[];
   /** ย้อนชะตาฟรีใช้ไปแล้วในชีวิตนี้ */

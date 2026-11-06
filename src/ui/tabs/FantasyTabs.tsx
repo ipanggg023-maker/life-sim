@@ -7,6 +7,8 @@ import { moneyLines } from "../../content/fantasy/money2";
 import { societyLines } from "../../content/fantasy/society2";
 import { creatureLines } from "../../content/fantasy/creatures";
 import { legendLines } from "../../content/fantasy/legends2";
+import { HUNT_AGE, canStart, giveUp, huntOf, huntRelics, isPerson, pastHolders, startHunt } from "../../content/fantasy/hunts";
+import type { Act } from "../App";
 import { BESTIARY, timesMet } from "../../content/fantasy/bestiary";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
@@ -260,7 +262,7 @@ export function FantasyPowerTab({ life }: { life: Life }) {
   );
 }
 
-export function FantasyWorldTab({ life }: { life: Life }) {
+export function FantasyWorldTab({ life, act }: { life: Life; act: Act }) {
   const w = worldOfLife(life);
   const d = dataOf(life);
   const f = fl(life);
@@ -275,6 +277,7 @@ export function FantasyWorldTab({ life }: { life: Life }) {
           {legendLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
         </Fold>
       )}
+      <HuntBoard life={life} act={act} />
       <Fold always id="ft-creatures" title={<>สัตว์และสิ่งลี้ลับ</>}>
         {creatureLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
       </Fold>
@@ -455,3 +458,35 @@ export function FantasyCareerCard({ life }: { life: Life }) {
     </>
   );
 }
+
+/** กระดานตำนาน: เลือกอาวุธที่จะตามล่า เห็นเจ้าของในอดีต และบทที่ถึงแล้ว */
+function HuntBoard({ life, act }: { life: Life; act: Act }) {
+  const h = huntOf(life);
+  const relics = huntRelics(life);
+  const status = (holder: string) => (holder === "player" ? "อยู่ในมือคุณ" : holder === "stone" ? "ปักอยู่ในหิน" : isPerson(holder) ? `อยู่ในมือ${holder}` : "หายสาบสูญ");
+  const next = !h ? "" : h.wait ? "รอให้เจ้าของคนปัจจุบันตายไปเอง" : h.next > life.age ? `บทต่อไปอายุ ${h.next}` : "บทต่อไปปีนี้";
+  return (
+    <Fold always id="ft-hunts" title={<>กระดานตำนาน</>}>
+      {h ? (
+        <p className="small">
+          กำลังตามล่า<b>{relics.find((r) => r.id === h.id)?.name}</b> · บทที่ {h.ch + 1}/4 · {next}
+          {h.rival ? ` · คู่แข่ง: ${h.rival}` : ""}{" "}
+          <button className="link-btn" onClick={() => act((l) => giveUp(l))}>เลิกตามล่า</button>
+        </p>
+      ) : (
+        <p className="small muted">{life.age < HUNT_AGE ? `เลือกอาวุธที่จะตามล่าได้ตั้งแต่อายุ ${HUNT_AGE}` : "เลือกอาวุธหนึ่งเล่มที่จะตามล่า แต่ละเล่มมีเรื่องสี่บท บทสุดท้ายถึงตายได้"}</p>
+      )}
+      {relics.map((r) => {
+        const why = canStart(life, r.id);
+        return (
+          <div className="hunt-row" key={r.id}>
+            <p className="small"><b>{r.name}</b> · {r.power} · {status(r.holder)}{h?.id === r.id ? " · กำลังตามล่า" : ""}</p>
+            <p className="small muted">เจ้าของในอดีต: {pastHolders(r).slice(-4).join(" · ")}</p>
+            {!h && !why && <button className="btn small ghost" onClick={() => act((l) => startHunt(l, r.id))}>ตามล่าเล่มนี้</button>}
+          </div>
+        );
+      })}
+    </Fold>
+  );
+}
+

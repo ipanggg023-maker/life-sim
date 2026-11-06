@@ -1527,3 +1527,8 @@ details[open] > .fold-head .fold-chevron { transform: rotate(180deg); }
 .alert-row.danger .alert-dot { background: var(--bad); }
 .alert-row.need .alert-dot { background: var(--accent); }
 .alert-row.ready .alert-dot { background: var(--good); }
+
+/* กระดานตำนาน (Release 20) */
+.hunt-row { padding: 6px 0; border-top: 1px solid var(--line); }
+.hunt-row:first-of-type { border-top: 0; }
+.hunt-row .btn { margin-top: 4px; }
