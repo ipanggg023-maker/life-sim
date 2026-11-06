@@ -14,7 +14,7 @@ import { pickHeadline } from "./hkit";
 import { GOLD } from "./kit";
 
 /** ฉากที่ต้องเป็นป๊อปอัปเสมอ: อ่านดาว ทะลวงขั้น สงครามจบ จุดหักเหของนิสัย */
-const ALWAYS = /^ft\.(st\.awaken|st\.bloom|break_|wr\.after|pe\.|hu\.)/;
+const ALWAYS = /^ft\.(st\.awaken|st\.bloom|break_|wr\.after|pe\.|hu\.|an\.(sleep|awake|friend|bones|raid))/;
 /** เรื่องจากระบบที่ผูกกับชีวิตคุณ: ผู้คน ครอบครัว ศัตรู เพื่อน เรื่องที่กลับมา งาน ราชสำนัก สงคราม */
 const TIED = /^ft\.(np|fd|en|fr|ec|wk|wd|wr|mo|fm)\./;
 export const MAX_MOMENTS = 4;

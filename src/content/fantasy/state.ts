@@ -56,6 +56,9 @@ export interface FLife {
   huntsClosed?: string[];
   /** อาวุธที่ขโมยมา เจ้าของเดิมจะตามทวง */
   huntStolen?: { id: string; from: string; at: number };
+  /** เบาะแสที่หลับของมังกรโบราณ · สิ่งที่ทำกับมังกรโบราณไปแล้วในชีวิตนี้ (ancients.ts) */
+  ancientLeads?: Record<string, number>;
+  ancientDone?: string[];
   dragonBond: number;
   deeds: string[];
   /** ย้อนชะตาฟรีใช้ไปแล้วในชีวิตนี้ */
@@ -234,7 +237,8 @@ export interface Notable { id: number; name: string; role: Role; age: number; po
 export interface Faction { id: string; /** แบบของงานและผลประโยชน์ · ไม่ใส่ = ใช้ id */ kind?: string; name: string; creed: string; power: number; leader: string; feud?: string; playerLed?: boolean }
 /** ชื่อเสียงของตระกูลข้ามชีวิต (family2.ts) */
 export interface FamilyRecord { fame: number; crest?: string; motto?: string; secret?: "sibling" | "crime" | "stolen" | "curse"; revealed?: boolean; lives: number }
-export interface FData { /** หลุมศพของชีวิตก่อนๆ ในโลกนี้ · ผู้ที่กลับมาเป็นอมตะ · ความสำเร็จแรกของโลก (souls2.ts) */ graves?: { name: string; lastName: string; kingdom: string; deed?: string; age: number; year: number }[]; undead?: { name: string; kind: "lich" | "ghost"; kingdom: string; met?: boolean }; firsts?: Record<string, string>; /** สิ่งมหัศจรรย์ที่ซ่อนอยู่ · ชื่อคนที่ค้นพบ (legends2.ts) */ wonders?: Record<string, string>; /** ภัยพิบัติของโลกที่กินเวลาหลายชีวิต */ crisis?: { kind: string; stage: number; since: number; done?: string }; /** ความจริงของโลกที่ค้นพบแล้ว */ lore?: string[]; families?: Record<string, FamilyRecord>; kingdoms: Kingdom[]; dragons: Dragon[]; eggs: Egg[]; gates: Gate[]; gods: God[]; mysteries: Record<string, Mystery>; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number; /** เซฟเก่าก่อนมีหลายมังกร */ dragon?: Omit<Dragon, "id" | "element" | "power"> }
+export interface AncientState { state: "asleep" | "awake" | "raging" | "slain" | "friend"; /** นามสกุลของตระกูลที่ทำให้เป็นแบบนี้ */ by?: string; year?: number }
+export interface FData { /** มังกรโบราณทั้งห้า (ancients.ts) · โลกจำผลข้ามชีวิต */ ancients?: Record<string, AncientState>; /** หลุมศพของชีวิตก่อนๆ ในโลกนี้ · ผู้ที่กลับมาเป็นอมตะ · ความสำเร็จแรกของโลก (souls2.ts) */ graves?: { name: string; lastName: string; kingdom: string; deed?: string; age: number; year: number }[]; undead?: { name: string; kind: "lich" | "ghost"; kingdom: string; met?: boolean }; firsts?: Record<string, string>; /** สิ่งมหัศจรรย์ที่ซ่อนอยู่ · ชื่อคนที่ค้นพบ (legends2.ts) */ wonders?: Record<string, string>; /** ภัยพิบัติของโลกที่กินเวลาหลายชีวิต */ crisis?: { kind: string; stage: number; since: number; done?: string }; /** ความจริงของโลกที่ค้นพบแล้ว */ lore?: string[]; families?: Record<string, FamilyRecord>; kingdoms: Kingdom[]; dragons: Dragon[]; eggs: Egg[]; gates: Gate[]; gods: God[]; mysteries: Record<string, Mystery>; relics: Relic[]; notables: Notable[]; factions: Faction[]; nextId: number; /** เซฟเก่าก่อนมีหลายมังกร */ dragon?: Omit<Dragon, "id" | "element" | "power"> }
 
 export const LAWS: Record<LawId, { name: string; desc: string }> = {
   banMagic: { name: "ห้ามเวทในที่สาธารณะ", desc: "ผู้ตรวจการตามล่าคนร่ายเวท" },

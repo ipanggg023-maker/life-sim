@@ -9,6 +9,7 @@ import { creatureLines } from "../../content/fantasy/creatures";
 import { legendLines } from "../../content/fantasy/legends2";
 import { HUNT_AGE, canStart, giveUp, huntOf, huntRelics, isPerson, pastHolders, startHunt } from "../../content/fantasy/hunts";
 import type { Act } from "../App";
+import { ancientLines } from "../../content/fantasy/ancients";
 import { BESTIARY, timesMet } from "../../content/fantasy/bestiary";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
 import { prejudice, riteOf, riteState } from "../../content/fantasy/races";
@@ -278,6 +279,10 @@ export function FantasyWorldTab({ life, act }: { life: Life; act: Act }) {
         </Fold>
       )}
       <HuntBoard life={life} act={act} />
+      <Fold always id="ft-ancients" title={<>มังกรโบราณ</>}>
+        {ancientLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
+        <p className="small muted">ได้ยินข่าวครบสองครั้งแล้วจะรู้ทางไปที่หลับ ไปได้จากแท็บทำ หมวดผจญภัย</p>
+      </Fold>
       <Fold always id="ft-creatures" title={<>สัตว์และสิ่งลี้ลับ</>}>
         {creatureLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
       </Fold>

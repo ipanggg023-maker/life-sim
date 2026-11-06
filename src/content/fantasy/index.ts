@@ -77,6 +77,7 @@ import { SOUL2_EVENTS, loadSouls2 } from "./souls2";
 import { loadEase } from "./ease";
 import { loadThird } from "./third";
 import { loadHunts } from "./hunts";
+import { loadAncients } from "./ancients";
 import { verdict } from "./persona";
 import { verdictHook } from "../../engine/game";
 import { TALENTS } from "../talents";
@@ -146,6 +147,7 @@ export function loadFantasyWorld() {
   loadSouls2();
   loadEase();
   loadHunts();
+  loadAncients();
   loadThird();
   loadLifestory();
   loadYear();
