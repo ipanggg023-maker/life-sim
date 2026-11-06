@@ -5,6 +5,7 @@ import { addStat, displayName, log } from "../../engine/util";
 import { addLegend, recordChronicle } from "../../engine/worldState";
 import { fl, kingdomsOf, worldOfLife, type FLife, type RaceId } from "./state";
 import { inheritCreatures } from "./creatures";
+import { FAR, SOON, recordSoul, takeStrangerGap, welcomeSoul } from "./souls2";
 import { release } from "./dragons";
 import { inheritThrone, passThrone } from "./realm";
 import { rollElement } from "./magic";
@@ -79,11 +80,14 @@ export function setRace(l: Life, r: RaceId) {
 export function attachWorld(l: Life, s: Soul) {
   if (!s.fantasyWorld) return;
   const w = structuredClone(s.fantasyWorld);
-  fastForward(w, randInt(l, STRANGER_GAP[0], STRANGER_GAP[1]), l);
+  // เกิดใหม่เร็ว (คนที่เคยรู้จักยังอยู่) หรือช้า (เรื่องของคุณกลายเป็นตำนาน) ตามที่เลือกหลังความตาย
+  const gap = takeStrangerGap() ?? STRANGER_GAP;
+  fastForward(w, randInt(l, gap[0], gap[1]), l);
   l.fw = w;
   l.birthYear = w.year;
   l.flags.seenRuler = "";
   if (!kingdomsOf(l).some((k) => k.id === fl(l).kingdom)) fl(l).kingdom = kingdomsOf(l)[0].id;
+  welcomeSoul(l, s, gap === SOON ? "soon" : gap === FAR ? "far" : undefined);
 }
 
 /** ชีวิตนี้น่าจดจำพอให้โลกเล่าต่อไหม: มีชื่อเสียง มีวีรกรรม หรือมีตำนานแล้ว */
@@ -105,6 +109,7 @@ export function closeLife(s: Soul, l: Life) {
   const top = f.deeds.at(-1);
   // ชีวิตที่มีตำนานบันทึกไว้แล้ว ไม่ต้องสรุปซ้ำตอนจากไป
   if (top && memorable(l) && !w.legends.some((g) => g.lifeId === l.id)) addLegend(w, { name: displayName(l), deed: top, lifeId: l.id });
+  recordSoul(s, l);
   s.fantasyWorld = w;
 }
 

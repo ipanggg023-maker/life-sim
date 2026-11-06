@@ -322,6 +322,10 @@ export interface Soul {
   arcEnds?: string[];
   /** โลกแฟนตาซีระหว่างตัวละคร */
   fantasyWorld?: import("./worldState").WorldState;
+  /** ร่องรอยจางๆ ที่ชีวิตก่อนทิ้งไว้กับวิญญาณ (แฟนตาซี · souls2.ts) */
+  ftEcho?: { name: string; lastName: string; kingdom: string; spouse?: string; child?: string; craft?: string; judged: "light" | "shadow" | "plain"; age: number };
+  /** สิ่งที่วิญญาณปลดได้จากสิ่งที่เคยทำ */
+  ftUnlocks?: string[];
   /** เผ่าหายากที่วิญญาณปลดได้แล้ว (แฟนตาซี) · เกิดเป็นเผ่านี้ได้บ่อยขึ้น */
   rareRaces?: string[];
   /** เป้าหมายของสายตระกูลที่เคยทำสำเร็จ */

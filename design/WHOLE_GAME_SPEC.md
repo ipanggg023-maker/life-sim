@@ -304,3 +304,17 @@ Foundations go first because the four rules apply to everything built after.
   A "legends of the world" section in the World tab.
 - Balance: 200-bot median 51, 57% die before 60; wonders reached in about 1 in 5 random lives.
 - Checked on screen: a relic choice in a guild fight and its result, the World tab section with the relic's past holders.
+
+## Release 16 built (2026-11-06)
+- souls2.ts (stories never cross lives; the soul carries only small traces, and the world keeps graves and legends):
+  Soul ranks by lives lived (new, old from 3, ancient from 8, eternal from 20) with small birth perks, shown by a village elder at 12.
+  Faint traces: a craft the last life mastered comes back as a head start at 12; being born in the same kingdom makes places feel familiar (+3 standing at 10).
+  An afterlife judgement from kindness, honesty, faith, killings and corruption: a light soul gets luck and a guide who comes to teach the child; a shadow soul starts with nightmares; birth itself stays random.
+  Unlocks earned by deeds (a throne, a dragon, master smithing, deep lore) that tilt later births a little (noble blood, a dragon omen, a craft head start).
+  After death you choose to be reborn soon (5–20 years later) or far (50–200 years later); when soon, someone you loved may still be alive and feel something familiar (hint, tell the truth, or stay silent).
+  Last words on every death, shaped by your character and the person closest to you. With strong faith in your god you may be pulled back from death once (rare), at the cost of five years and lasting nightmares.
+  Every finished life leaves a grave in the world that later lives can visit for a small blessing. Death-school mages and the deeply corrupted may rise as a lich or ghost that a later life can free or talk to. World "firsts" (first master smith, first dragon rider, first orc king, first archmage) are recorded.
+  The death screen shows a life-story card (chapters with their turning points, the people who mattered, the soul's judgement, rank and unlocks), and two rebirth buttons replace the single "new character" button.
+- Fixed: epitaphs no longer put "ผู้" before titles such as เจ้าถิ่น.
+- Balance: the faith rescue was making random bots live about 5 years longer; it now needs faith 60 and a 30% roll. 200-bot median 55, 54% die before 60.
+- Checked on screen: the death screen story card, the epitaph fix, a "soon" rebirth landing 6 years later, and the new life starting.

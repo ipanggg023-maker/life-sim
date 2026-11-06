@@ -66,11 +66,13 @@ export function enemies(l: Life, n = 3): Person[] {
 export const memoryLine = (p: Person) => topMemories(p, 1)[0]?.text;
 
 /** คำจารึก: คนแบบไหน ทำอะไรไว้ และใครจะคิดถึง */
+const TITLE_START = /^(เจ้า|นัก|ราชา|ยอด|ปรมาจารย์|คน|ช่าง|มหา|จอม|อัศวิน|นาย|ขุน|ราชาเงา|กรรมการ|สมาชิก|ลูกมือ|ที่ปรึกษา|ขุนนาง|วีร|เทพ|จักรพรรดิ)/;
 export function epitaph(l: Life): string[] {
   const f = fl(l);
   const lines = [verdict(l)];
   const big = (f.deedLog ?? []).at(-1)?.text ?? f.deeds.at(-1);
-  if (big) lines.push(`เป็นที่จดจำในฐานะผู้${big.replace(/^ผู้/, "")}`);
+  // ตำแหน่งที่เป็นคำนามอยู่แล้ว (เจ้าถิ่น นักรบ ยอดฝีมือ) ไม่ต้องเติม "ผู้" ข้างหน้า
+  if (big) lines.push(`เป็นที่จดจำในฐานะ${TITLE_START.test(big) ? big : `ผู้${big.replace(/^ผู้/, "")}`}`);
   const back = seedsOf(l).filter((s) => s.done !== undefined).length;
   if (back) lines.push(`ทางเลือก ${back} อย่างในชีวิตกลับมาหาตัวเองก่อนตาย`);
   const c = closest(l, 1)[0];

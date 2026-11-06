@@ -18,6 +18,7 @@ import { canMercy, canRewind, rewindTarget } from "../content/fantasy/life";
 import { headStart, heirlooms, legacyHeir, upbringing } from "../content/fantasy/family";
 import { BODY_RANKS, MAGIC_RANKS } from "../content/fantasy/power";
 import { verdict } from "../content/fantasy/persona";
+import { FAR, SOON, setStrangerGap, storyCard } from "../content/fantasy/souls2";
 import { Epitaph } from "./tabs/FantasyFate";
 import { displayName, loc, money, people } from "../engine/util";
 import { disciplesOf, lifeSummary } from "../content/murim/life/generations";
@@ -95,6 +96,7 @@ export function DeathScreen({
       </div>
 
       {life.worldId === "fantasy" && <Epitaph life={life} />}
+      {life.worldId === "fantasy" && <FantasyStory life={life} soul={soul} />}
       {life.worldId === "murim" && <RibbonCard life={life} soul={soul} />}
       {life.worldId === "murim" && <RouteCard life={life} soul={soul} />}
 
@@ -347,12 +349,20 @@ function ContinuePanel({ life, open, busy, go }: { life: Life; open: boolean; bu
         </button>
       ))}
       {life.worldId === "fantasy" && (
-        <button className="cont-btn era" disabled={busy} onClick={() => go("stranger")}>
-          <span className="cont-text">
-            <span className="cont-title">ตัวละครใหม่ในโลกเดิม</span>
-            <span className="cont-desc">เกิดเป็นคนอื่นหลายสิบปีให้หลัง เรื่องของ{displayName(life)}จะกลายเป็นคำเล่าขาน</span>
-          </span>
-        </button>
+        <>
+          <button className="cont-btn era" disabled={busy} onClick={() => { setStrangerGap("soon"); go("stranger"); }}>
+            <span className="cont-text">
+              <span className="cont-title">เกิดใหม่เร็ว · {SOON[0]}–{SOON[1]} ปีให้หลัง</span>
+              <span className="cont-desc">เป็นคนแปลกหน้าในโลกเดิม คนที่{displayName(life)}เคยรู้จักบางคนยังมีชีวิตอยู่</span>
+            </span>
+          </button>
+          <button className="cont-btn era" disabled={busy} onClick={() => { setStrangerGap("far"); go("stranger"); }}>
+            <span className="cont-text">
+              <span className="cont-title">เกิดใหม่ช้า · {FAR[0]}–{FAR[1]} ปีให้หลัง</span>
+              <span className="cont-desc">โลกเปลี่ยนไปมาก เรื่องของ{displayName(life)}เหลือแค่ในตำนานและเพลง</span>
+            </span>
+          </button>
+        </>
       )}
       {open && life.worldId !== "fantasy" && (
         <button className="cont-btn era" disabled={busy} onClick={() => go("nextEra")}>
@@ -411,6 +421,20 @@ function RibbonCard({ life, soul }: { life: Life; soul: Soul }) {
         <div className="small">{r.desc}</div>
         <div className="small muted">สะสมแล้ว {got}/{RIBBON_COUNT} แบบ</div>
       </div>
+    </div>
+  );
+}
+
+/** เรื่องเล่าชีวิต (แฟนตาซี): บทต่างๆ คนที่สำคัญ คำจารึก และการเดินทางของวิญญาณ */
+function FantasyStory({ life, soul }: { life: Life; soul: Soul }) {
+  return (
+    <div className="card">
+      {storyCard(life, soul).map((sec) => (
+        <div key={sec.title}>
+          <div className="card-title">{sec.title}</div>
+          {sec.lines.map((t, i) => <p className="small" key={i}>{t}</p>)}
+        </div>
+      ))}
     </div>
   );
 }
