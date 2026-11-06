@@ -38,7 +38,7 @@ describe("ชื่อและเผ่าของผู้คน", () => {
       expect(pool.m.concat(pool.f), `${l.ft!.race} ${l.firstName}`).toContain(l.firstName);
       // ครอบครัวต่างเผ่าที่เลี้ยงดู และลูกครึ่ง มีพ่อหรือแม่คนละเผ่าโดยตั้งใจ
       if (familyTypeOf(l) === "adopted" || l.ft!.half) continue;
-      for (const p of l.people.filter((x) => ["father", "mother", "sibling"].includes(x.relation))) {
+      for (const p of l.people.filter((x) => ["father", "mother", "sibling"].includes(x.relation) && !x.tags?.includes("guardian"))) {
         expect(raceOf(p)).toBe(l.ft!.race);
         expect(p.name.endsWith(l.lastName)).toBe(true);
       }

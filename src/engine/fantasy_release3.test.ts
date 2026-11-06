@@ -27,7 +27,9 @@ describe("การเกิด", () => {
   it("เด็กกำพร้ามีคนเลี้ยง และพ่อแม่จริงยังอยู่ที่ไหนสักแห่ง", () => {
     const o = lives(400).find((l) => familyTypeOf(l) === "orphan")!;
     expect(o.people.some((p) => p.tags?.includes("guardian"))).toBe(true);
-    expect(o.people.filter((p) => p.tags?.includes("lost_parent")).length).toBe(2);
+    // พ่อแม่จริงไม่อยู่ในรายชื่อคนที่รู้จัก เก็บไว้จนกว่าจะได้พบกัน
+    expect(fl(o).lostKin?.filter((p) => p.relation === "father" || p.relation === "mother").length).toBe(2);
+    expect(o.people.some((p) => (p.relation === "father" || p.relation === "mother") && !p.tags?.includes("guardian"))).toBe(false);
     expect(o.wealth).toBe("poor");
   });
   it("ลูกครึ่งอายุยืนอยู่กลางระหว่างสองเผ่า และชื่อเผ่าบอกทั้งสองสาย", () => {

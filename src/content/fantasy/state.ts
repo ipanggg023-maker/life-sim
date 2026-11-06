@@ -1,6 +1,6 @@
 // ข้อมูลของโลกแฟนตาซี: ส่วนที่อยู่กับตัวละคร (FLife) และส่วนที่อยู่ต่อหลังตัวละครตาย (FWorld)
 import { pick, randInt } from "../../engine/rng";
-import type { Life } from "../../engine/types";
+import type { Life, Person } from "../../engine/types";
 import { clamp } from "../../engine/util";
 import { newWorldState, type WorldState } from "../../engine/worldState";
 import { notableName } from "./names";
@@ -58,6 +58,8 @@ export interface FLife {
   huntStolen?: { id: string; from: string; at: number };
   /** เบาะแสที่หลับของมังกรโบราณ · สิ่งที่ทำกับมังกรโบราณไปแล้วในชีวิตนี้ (ancients.ts) */
   ancientLeads?: Record<string, number>;
+  /** เด็กที่ถูกทิ้ง: พ่อแม่และพี่น้องแท้ๆ ที่ยังไม่รู้จัก (birth.ts) · อายุของพวกเขาเก็บตามวันที่คุณเกิด */
+  lostKin?: Person[];
   ancientDone?: string[];
   dragonBond: number;
   deeds: string[];

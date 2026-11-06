@@ -107,13 +107,24 @@ export function createPerson(
     relation,
     age: opts.age,
     bond: opts.bond ?? 50,
+    met: life.age,
     alive: true,
     job: fitGender(opts.job, gender),
     ...(familyFirst ? { short: n.first } : {}),
     ...("tags" in n && n.tags?.length ? { tags: [...n.tags] } : {}),
   };
   life.people.push(person);
+  for (const h of personCreatedHooks) h(life, person, opts.bond);
   return person;
+}
+/** content ปรับคนที่เพิ่งรู้จัก (เช่น แฟนตาซี: เจอครั้งเดียวยังเป็นแค่คนรู้จัก) */
+export const personCreatedHooks: Array<(life: Life, p: Person, bond: number | undefined) => void> = [];
+/** ขั้นของมิตรภาพในโลกที่มิตรภาพต้องใช้เวลา · 0 คนรู้จัก 1 เพื่อน 2 เพื่อนสนิท */
+export const FRIEND_AT = 45, CLOSE_AT = 72;
+export function friendStage(p: Person, life?: { age: number }): 0 | 1 | 2 {
+  const years = life && p.met !== undefined ? life.age - p.met : 99;
+  if (p.bond >= CLOSE_AT && years >= 3) return 2;
+  return p.bond >= FRIEND_AT && years >= 1 ? 1 : 0;
 }
 
 /** ชื่อสั้นสำหรับใช้ในประโยค: ชื่อเล่น */
@@ -140,6 +151,13 @@ function murimLabel(p: Person): string | undefined {
 
 /** ส่ง life มาด้วยเพื่อบอกพี่/น้องตามอายุเทียบกับตัวเรา และใช้คำเรียกตามโลก */
 export function relationLabel(p: Person, life?: { age: number; worldId?: WorldId }): string {
+  // เด็กที่ถูกทิ้ง: คนที่รับเลี้ยงคือพ่อแม่บุญธรรม · พ่อแม่ที่แท้จริงที่กลับมาพบกันทีหลัง
+  if (p.relation === "father" || p.relation === "mother") {
+    if (p.tags?.includes("guardian")) return p.relation === "father" ? "พ่อบุญธรรม" : "แม่บุญธรรม";
+    if (p.tags?.includes("birth_parent")) return p.relation === "father" ? "พ่อแท้ๆ" : "แม่แท้ๆ";
+  }
+  // แฟนตาซี: มิตรภาพต้องใช้เวลา
+  if (p.relation === "friend" && life?.worldId === "fantasy") return ["คนรู้จัก", "เพื่อน", "เพื่อนสนิท"][friendStage(p, life)];
   const m = traitsOf(life?.worldId).classicKinTerms ? murimLabel(p) : undefined;
   if (m) return m;
   switch (p.relation) {

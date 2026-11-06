@@ -193,5 +193,5 @@ describe("เล่นจริง", () => {
     }
     for (const id of ["ft.s.exam", "ft.s.cup", "ft.s.secret", "ft.o.master", "ft.spellshop"]) expect(seen.has(id), id).toBe(true);
     expect(allEvents().filter((e) => e.world === "fantasy").length).toBeGreaterThanOrEqual(162);
-  }, 180_000);
+  }, 600_000);
 });

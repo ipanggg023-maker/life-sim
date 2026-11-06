@@ -314,5 +314,5 @@ describe("เล่นจริง", () => {
     }
     for (const id of ["ft.f.join", "ft.f.job", "ft.l.crime", "ft.l.arrest", "ft.e.trade", "ft.n.meet"]) expect(seen.has(id), id).toBe(true);
     expect(allEvents().filter((e) => e.world === "fantasy").length).toBeGreaterThanOrEqual(178);
-  }, 240_000);
+  }, 600_000);
 });

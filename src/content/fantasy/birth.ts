@@ -5,7 +5,7 @@ import { birthHooks, yearHooks } from "../../engine/game";
 import { remember } from "../../engine/npc";
 import { chance, pick, randInt, weightedPick } from "../../engine/rng";
 import type { Life, Person, Soul } from "../../engine/types";
-import { addStat, clamp, createPerson, log, people, shortName } from "../../engine/util";
+import { addStat, clamp, createPerson, log, people, relationLabel, shortName } from "../../engine/util";
 import { B, BIG, C, E, G, N, P } from "./kit";
 import { addStanding, deed, fl, homeKingdom, type RaceId } from "./state";
 import { RACES, applyRaceStats } from "./life";
@@ -53,16 +53,36 @@ export const FAMILY_TYPES: Record<FamilyType, { name: string }> = {
 };
 export const familyTypeOf = (l: Life) => l.flags.ftFamily as FamilyType | undefined;
 const parents = (l: Life) => l.people.filter((p) => p.relation === "father" || p.relation === "mother");
+/** ย้ายพ่อแม่และพี่น้องแท้ๆ ออกจากรายชื่อคนที่รู้จัก เด็กที่ถูกทิ้งไม่รู้ว่าพวกเขาเป็นใคร */
+export function hideKin(l: Life) {
+  const kin = l.people.filter((p) => (p.relation === "father" || p.relation === "mother" || p.relation === "sibling") && !p.tags?.includes("guardian"));
+  if (!kin.length) return;
+  l.people = l.people.filter((p) => !kin.includes(p));
+  fl(l).lostKin = [...(fl(l).lostKin ?? []), ...kin.map((p) => ({ ...p, tags: (p.tags ?? []).filter((t) => !t.startsWith("away:") && t !== "lost_parent") }))];
+}
+/** พ่อแม่แท้ๆ กลับมาพบ: เพิ่มเข้ารายชื่อด้วยอายุตามเวลาที่ผ่านไป · พี่น้องตามมาด้วย */
+function restoreKin(l: Life, bond: number) {
+  const lost = fl(l).lostKin ?? [];
+  fl(l).lostKin = undefined;
+  for (const p of lost) {
+    l.people.push({ ...p, age: p.age + l.age, bond: p.relation === "sibling" ? Math.round(bond / 2) : bond, met: l.age, tags: [...(p.tags ?? []), ...(p.relation === "sibling" ? [] : ["birth_parent"])] });
+  }
+}
+const lostParents = (l: Life) => (fl(l).lostKin ?? []).filter((p) => p.alive && (p.relation === "father" || p.relation === "mother"));
 const COMMON: RaceId[] = ["human", "elf", "dwarf", "orc", "beastfolk", "halfling"];
 
 function setFamily(l: Life, t: FamilyType) {
   l.flags.ftFamily = t;
   const ps = parents(l);
   if (t === "orphan") {
-    // พ่อแม่จริงยังอยู่ที่ไหนสักแห่ง · ผู้เลี้ยงคือคนที่เก็บคุณมา
-    for (const p of ps) p.tags = [...(p.tags ?? []), "away:0", "lost_parent"];
-    const g = createPerson(l, "friend", { age: randInt(l, 35, 60), bond: 75, job: pick(l, ["นักบวชประจำวิหาร", "แม่ครัวของกิลด์", "ช่างตีเหล็กหัวใจดี"]) });
+    // พ่อแม่และพี่น้องแท้ๆ ยังอยู่ที่ไหนสักแห่ง แต่เด็กที่ถูกทิ้งไม่รู้ว่าเป็นใคร · รู้แค่ว่าใครรับมาเลี้ยง
+    hideKin(l);
+    const job = pick(l, ["นักบวชประจำวิหาร", "แม่ครัวของกิลด์", "ช่างตีเหล็กหัวใจดี"]);
+    const g = createPerson(l, job === "ช่างตีเหล็กหัวใจดี" ? "father" : chance(l, 0.5) ? "mother" : "father", { age: randInt(l, 35, 60), bond: 75, job });
     g.tags = [...(g.tags ?? []), "guardian"];
+    // บรรทัดแนะนำพ่อแม่ตอนเกิดเปลี่ยนเป็นคนที่รับเลี้ยง
+    const intro = [...l.log].reverse().find((e) => e.text.startsWith("พ่อของคุณคือ"));
+    if (intro) intro.text = `${relationLabel(g, l)}ของคุณคือ${shortName(g)} (${g.job}) อายุ ${g.age} ปี`;
     l.wealth = "poor";
     log(l, `คุณถูกพบในตะกร้าหน้าประตูวิหาร ${shortName(g)}${g.job ? ` (${g.job})` : ""}รับคุณไปเลี้ยง ไม่มีใครรู้ว่าพ่อแม่จริงของคุณเป็นใคร`, "milestone");
   } else if (t === "adopted") {
@@ -160,7 +180,7 @@ function birthSetup(l: Life) {
 
 // ───────────── เรื่องที่ตามมาในชีวิต ─────────────
 const omenAt = (id: OmenId) => (l: Life) => on(l) && omenOfBirth(l) === id;
-const parentLost = (l: Life) => parents(l).find((p) => p.alive && p.tags?.includes("lost_parent"));
+const parentLost = (l: Life) => lostParents(l)[0];
 const sibWith = (r: SibRole) => (l: Life) => l.people.find((p) => p.alive && p.relation === "sibling" && sibRoleOf(p) === r);
 const nm = (p?: Person) => (p ? shortName(p) : "เขา");
 const OMEN_EVENTS: GameEvent[] = [
@@ -191,8 +211,8 @@ const OMEN_EVENTS: GameEvent[] = [
 ];
 const FAMILY_EVENTS: GameEvent[] = [
   E("ft.bt.parents_found", [16, 45], `ชายแปลกหน้ากับหญิงคนหนึ่งยืนรอคุณอยู่หน้าบ้าน ทั้งคู่ถือผ้าห่อตัวเด็กผืนเก่าที่มีรอยปักเหมือนผ้าในตะกร้าที่คุณถูกพบ`, [
-    C("ฟังเรื่องของพวกเขาจนจบ", G("พวกเขาเล่าว่าหนีโจรมาในคืนนั้น และวางคุณไว้หน้าวิหารเพื่อให้รอด ทั้งสามคนร้องไห้อยู่หน้าประตูนานจนฟ้ามืด", { joy: 10 }, (l) => { for (const p of parents(l)) { p.tags = (p.tags ?? []).filter((t) => !t.startsWith("away:") && t !== "lost_parent"); p.bond = 55; } deed(l, "ได้พบพ่อแม่ที่แท้จริง"); })),
-    C("บอกว่าครอบครัวของคุณคือคนที่เลี้ยงมา", N("ทั้งคู่ก้มหน้า แล้วฝากผ้าผืนนั้นไว้ให้ก่อนเดินจากไป", { joy: -2 }, (l) => { const g = l.people.find((p) => p.tags?.includes("guardian")); if (g) g.bond = clamp(g.bond + 15, 0, 100); for (const p of parents(l)) p.tags = [...(p.tags ?? []).filter((t) => t !== "lost_parent")]; })),
+    C("ฟังเรื่องของพวกเขาจนจบ", G("พวกเขาเล่าว่าหนีโจรมาในคืนนั้น และวางคุณไว้หน้าวิหารเพื่อให้รอด ทั้งสามคนร้องไห้อยู่หน้าประตูนานจนฟ้ามืด", { joy: 10 }, (l) => { restoreKin(l, 55); deed(l, "ได้พบพ่อแม่ที่แท้จริง"); })),
+    C("บอกว่าครอบครัวของคุณคือคนที่เลี้ยงมา", N("ทั้งคู่ก้มหน้า แล้วฝากผ้าผืนนั้นไว้ให้ก่อนเดินจากไป", { joy: -2 }, (l) => { const g = l.people.find((p) => p.tags?.includes("guardian")); if (g) g.bond = clamp(g.bond + 15, 0, 100); fl(l).lostKin = undefined; l.flags.ftKinRefused = true; })),
   ], { title: "คนที่ทิ้งตะกร้าไว้", weight: 25, when: (l) => on(l) && familyTypeOf(l) === "orphan" && !!parentLost(l) }),
   E("ft.bt.own_people", [14, 40], (l) => `คุณเห็นกลุ่ม${RACES[fl(l).race].name}เดินผ่านตลาด หน้าตาเหมือนคุณทุกคน แต่พูดภาษาที่คุณฟังไม่ออกสักคำ คนหนึ่งหันมามองคุณนาน`, [
     C("เข้าไปทักทายพวกเขา", G((l) => `พวกเขาชวนคุณกินข้าวและสอนคำแรกในภาษาของคุณเอง คุณกลับบ้านไปเล่าให้ครอบครัว${RACES[l.flags.ftRaisedBy as RaceId]?.name ?? ""}ฟังทั้งคืน`, { joy: 6, iq: 1 })),
@@ -247,7 +267,19 @@ function twinGrief(l: Life) {
 }
 
 export const BIRTH_EVENTS: GameEvent[] = [...OMEN_EVENTS, ...FAMILY_EVENTS, ...SIBLING_EVENTS, ...HALF_EVENTS];
+/** เซฟเก่า: เด็กที่ถูกทิ้งเคยเห็นพ่อแม่แท้ๆ ในรายชื่อ · ย้ายออกไป และให้คนที่รับเลี้ยงเป็นพ่อแม่บุญธรรม */
+function fixOldFoundling(l: Life) {
+  if (!on(l) || familyTypeOf(l) !== "orphan") return;
+  const old = parents(l).filter((p) => p.tags?.includes("lost_parent"));
+  if (!old.length) return;
+  l.people = l.people.filter((p) => !old.includes(p));
+  fl(l).lostKin = [...(fl(l).lostKin ?? []), ...old.map((p) => ({ ...p, age: p.age - l.age, tags: (p.tags ?? []).filter((t) => !t.startsWith("away:") && t !== "lost_parent") }))];
+  const g = l.people.find((p) => p.tags?.includes("guardian") && p.relation === "friend");
+  if (g) g.relation = g.gender === "m" ? "father" : "mother";
+}
+
 export function loadBirth() {
   birthHooks.push(birthSetup);
+  yearHooks.push(fixOldFoundling);
   yearHooks.push(twinGrief);
 }

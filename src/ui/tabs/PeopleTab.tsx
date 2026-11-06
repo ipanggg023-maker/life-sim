@@ -2,7 +2,7 @@ import { fitGender } from "../../engine/util";
 ﻿import { useEffect, useState } from "react";
 import { runEvent, argue, askMoney, breakUp, propose, spendTime, tryForBaby, confess, cutTies, giveGift } from "../../engine/game";
 import type { Life, Person, Relation } from "../../engine/types";
-import { relationLabel, shortName } from "../../engine/util";
+import { friendStage, relationLabel, shortName } from "../../engine/util";
 import type { Act } from "../App";
 import { AXIS, goalOf, notableAxes, traitName, traitsOf, profileOf, relOf } from "../../engine/npc";
 import { isRealistic } from "../../content/worlds";
@@ -18,7 +18,7 @@ import { Fold } from "../Fold";
 
 /** กลุ่มคนในแท็บผู้คน — แต่ละกลุ่มย่อ/ขยายได้ */
 const FAMILY: Relation[] = ["spouse", "partner", "child", "grandchild", "father", "mother", "sibling"];
-const PEOPLE_GROUPS: { id: string; name: string; of: (p: Person) => boolean }[] = [
+const PEOPLE_GROUPS: { id: string; name: string; of: (p: Person, l: Life) => boolean }[] = [
   { id: "family", name: "ครอบครัว", of: (p) => p.alive && FAMILY.includes(p.relation) },
   { id: "friends", name: "มิตรสหายและศิษย์", of: (p) => p.alive && (p.relation === "friend" || p.relation === "ally") },
   { id: "rivals", name: "คู่ปรับและศัตรู", of: (p) => p.alive && p.relation === "rival" },
@@ -26,12 +26,12 @@ const PEOPLE_GROUPS: { id: string; name: string; of: (p: Person) => boolean }[] 
 ];
 /** แฟนตาซี: วงคนใกล้ชิดอยู่บน คนรู้จักพับเก็บไว้ */
 const CLOSE_TAG = /^(party:|staff:|notable:)|^(mentor|sworn|apprentice|el_student|guardian|life_rival)$/;
-const closeOne = (p: Person) => p.bond >= 50 || !!p.tags?.some((t) => CLOSE_TAG.test(t));
+const closeOne = (p: Person, l: Life) => (p.relation === "friend" ? friendStage(p, l) >= 1 : p.bond >= 50) || !!p.tags?.some((t) => CLOSE_TAG.test(t));
 const FT_GROUPS: typeof PEOPLE_GROUPS = [
   PEOPLE_GROUPS[0],
-  { id: "circle", name: "คนใกล้ชิด", of: (p) => p.alive && (p.relation === "friend" || p.relation === "ally") && closeOne(p) },
+  { id: "circle", name: "คนใกล้ชิด", of: (p, l) => p.alive && (p.relation === "friend" || p.relation === "ally") && closeOne(p, l) },
   PEOPLE_GROUPS[2],
-  { id: "known", name: "คนรู้จัก", of: (p) => p.alive && (p.relation === "friend" || p.relation === "ally") && !closeOne(p) },
+  { id: "known", name: "คนรู้จัก", of: (p, l) => p.alive && (p.relation === "friend" || p.relation === "ally") && !closeOne(p, l) },
   PEOPLE_GROUPS[3],
 ];
 const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "grandchild", "father", "mother", "sibling", "friend", "rival"];
@@ -54,7 +54,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
       {life.worldId === "murim" && life.age >= 3 && <KinCare life={life} act={act} />}
       {life.worldId === "fantasy" && <PersonaCard life={life} />}
       {(life.worldId === "fantasy" ? FT_GROUPS : PEOPLE_GROUPS).map((grp) => {
-        const members = list.filter((p) => grp.of(p));
+        const members = list.filter((p) => grp.of(p, life));
         if (!members.length) return null;
         return (
           <Fold always={grp.id !== "gone" && grp.id !== "known"} kind="section" key={grp.id} id={`people-${grp.id}`} force={!!focus && members.some((m) => m.id === focus)} title={<>{grp.name} <span className="fold-count">{members.length}</span></>}>

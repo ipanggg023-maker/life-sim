@@ -60,11 +60,11 @@ describe("ลงทุนและปล่อยกู้", () => {
     expect(LOAN_RATE).toBeGreaterThan(0);
   });
   it("คนกู้ที่มาขอเลื่อน ยกหนี้ให้ได้ และเพื่อนจำได้", () => {
-    const l = life(3); const p = createPerson(l, "friend", { age: 30, bond: 50 });
+    const l = life(3); const p = createPerson(l, "friend", { age: 30, bond: 50 }); const before = p.bond;
     fl(l).loans = [{ name: "เพื่อน", gold: 30, due: l.age, pid: p.id }];
     runEvent(l, "ft.m2.loan_due", { n: "เพื่อน", g: 30 }); pickRun(l, /ยกหนี้/);
     expect(fl(l).loans).toHaveLength(0);
-    expect(p.bond).toBeGreaterThan(50);
+    expect(p.bond).toBeGreaterThan(before);
   });
 });
 

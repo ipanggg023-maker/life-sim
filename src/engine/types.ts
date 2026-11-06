@@ -51,6 +51,8 @@ export interface Person {
   relation: Relation;
   age: number;
   bond: number; // 0-100
+  /** อายุของผู้เล่นตอนรู้จักกัน (มิตรภาพต้องใช้เวลา) */
+  met?: number;
   alive: boolean;
   job?: string;
   /** ชื่อเรียกสั้น (เกาหลี/ญี่ปุ่นเรียกด้วยชื่อตัว ซึ่งอยู่ท้ายชื่อเต็ม) */

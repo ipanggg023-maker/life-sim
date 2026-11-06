@@ -78,6 +78,7 @@ import { loadEase } from "./ease";
 import { loadThird } from "./third";
 import { loadHunts } from "./hunts";
 import { loadAncients } from "./ancients";
+import { loadFriends } from "./friends";
 import { verdict } from "./persona";
 import { verdictHook } from "../../engine/game";
 import { TALENTS } from "../talents";
@@ -148,6 +149,7 @@ export function loadFantasyWorld() {
   loadEase();
   loadHunts();
   loadAncients();
+  loadFriends();
   loadThird();
   loadLifestory();
   loadYear();
