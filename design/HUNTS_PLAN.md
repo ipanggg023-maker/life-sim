@@ -35,3 +35,14 @@ Grilled 2026-11-06. Each release is tested, given a balance pass, checked on scr
 - Forced events loosened to a yearly chance: the two path choices (14–16 and 17–19, still certain by the end of the window), school contests (35% a year), the family crest, the old-age home, a signature technique, a named weapon, the world noticing your power, the first beastfolk hunt and demon horns. The calling at 60 now comes in a random later year. Kept as locks: the star reading, the school letter, race rites, breakthroughs, graduation, debt collectors, jail, omens, plague, tax, last wishes, death.
 - Measured in 30 lives: before, 18 stories hit the same age in 40% or more of lives (the wolf in the snow at 6 in 19 of 30). After, only the kept locks remain.
 - Balance: share of bots dying before 60 is unchanged (66% before, 67% after).
+
+## Release 19 built (2026-11-06)
+- Every fantasy scene now has at least three choices. All 925 thin scenes got hand-written extra choices: 1,315 scenes in total, and none has fewer than three.
+- The new choices live in third1.ts to third9.ts, keyed by event and scene, and are attached when the world loads (third.ts). There are three kinds:
+  - A new outcome with its own text and effects.
+  - A stat check with success and failure outcomes.
+  - A variant of an existing choice, which runs the original choice in full (its odds, story flags and next scene) and then adds its own twist. Variants are used wherever a choice sets state the story needs: path choices, rites, multi-scene main stories, the masterpiece jobs and the "not ready" branches.
+- Scenes with one choice (results, rewards) got two variants.
+- A test fails if any fantasy scene has fewer than three written choices (fantasy_release19.test.ts).
+- Balance: random bots now often take the middle-road option, so the share dying before 60 fell from 67% to 57%. That is back in the range of Releases 15–16 (54–57%), and the balance guardrail (at least 45%) still passes.
+- Checked on screen: school letter, wolf in the snow, star-stone and festival popups each show three choices, and a new third choice in the wolf story carries on into its next scene.
