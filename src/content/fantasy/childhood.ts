@@ -102,7 +102,7 @@ const PATHS: GameEvent[] = [
     C("ใช้ชีวิตกับเด็กข้างถนนในเมือง", G("คุณเรียนวิธีหายตัวในฝูงชนและวิธีรู้ว่าใครโกหก", { luck: 5 }, choosePath("street", () => undefined))),
     C("ไปอยู่กับฤๅษีบนเขา", G("ฤๅษีไม่พูดอะไรเลยสามเดือนแรก แล้ววันหนึ่งก็เริ่มสอน", { iq: 4, magic: 8 }, choosePath("hermit", () => undefined))),
     C("ช่วยงานไร่ของครอบครัว", G("มือคุณแข็งด้วยด้าม จอบ และคุณรู้จักดินทุกแปลง", { hp: 6 }, choosePath("farm", (l) => { l.flags.ftBest_ft_farmer = Math.max(Number(l.flags.ftBest_ft_farmer ?? 0), 3); }))),
-  ], { title: "วัยรุ่นที่ไม่ได้ไปโรงเรียน", forced: true, maxTimes: 1, when: (l) => on(l) && !fl(l).school && !fl(l).graduated && l.age >= 14 && !pathOf(l) }),
+  ], { title: "วัยรุ่นที่ไม่ได้ไปโรงเรียน", forced: true, loose: 0.45, by: 16, maxTimes: 1, when: (l) => on(l) && !fl(l).school && !fl(l).graduated && l.age >= 14 && !pathOf(l) }),
   E("ft.ch.path_apprentice", [15, 20], "ลูกค้าคนแรกที่สั่งงานจากคุณโดยตรงมาถึง เขาต้องการเคียวที่ไม่บิ่นแม้ใช้มาสิบปี", [
     K("ตีเคียวด้วยทุกอย่างที่เรียนมา", "health", 45, BIG("เคียวของคุณยังใช้ได้จนรุ่นหลานของลูกค้า ช่างของคุณจารึกชื่อคุณลงสมุดลูกมือ", { body: 8, gold: 6 }, (l) => deed(l, "ลูกมือช่างที่ตีงานชิ้นแรกได้ดี")), N("เคียวใช้ได้ แต่ลูกค้าบอกว่าคงต้องมาซ่อมปีหน้า", { body: 4 })),
   ], { title: "งานชิ้นแรก", weight: 40, maxTimes: 1, when: (l) => on(l) && pathOf(l) === "apprentice" }),
@@ -223,7 +223,7 @@ const TEEN: GameEvent[] = [
     C("คนที่สร้างอะไรสักอย่างด้วยมือ", G("คุณเริ่มสังเกตงานของช่างทุกคนในเมือง", { iq: 2 }, (l) => { l.flags.ftTeenPath = "craft"; })),
     C("คนที่รู้มากกว่าคนอื่น", G("คุณยืมหนังสือจากหอสมุดจนบรรณารักษ์จำชื่อได้", { iq: 3 }, (l) => { l.flags.ftTeenPath = "study"; })),
     C("คนที่มีบ้านอบอุ่น", G("คุณรู้ว่าสิ่งที่อยากได้ที่สุดไม่ได้อยู่ไกลเลย", { joy: 5 }, (l) => { l.flags.ftTeenPath = "home"; })),
-  ], { title: "คนที่อยากเป็น", forced: true, maxTimes: 1, when: (l) => on(l) && l.age >= 17 && !l.flags.ftTeenPath }),
+  ], { title: "คนที่อยากเป็น", forced: true, loose: 0.45, by: 19, maxTimes: 1, when: (l) => on(l) && l.age >= 17 && !l.flags.ftTeenPath }),
 ];
 const TEEN_ECHO: GameEvent[] = [
   ECHO("teen_letter", "เขียนจดหมายถึงความรู้สึกครั้งแรก", [20, 50], "จดหมายสามบรรทัดที่คุณได้รับตอนวัยรุ่นหล่นออกมาจากหนังสือเก่า และวันเดียวกันนั้น คนที่เขียนมันก็เดินผ่านหน้าร้านที่คุณนั่งอยู่", [

@@ -17,6 +17,7 @@ import { stageAge } from "./folk";
 import { storyCtx } from "./storygen";
 import { nextFloat } from "../../engine/rng";
 import { relOf } from "../../engine/npc";
+import { lifeHash } from "../../engine/events";
 
 /** จุดเชื่อมกับชีวิตคุณ · เรื่องที่ผูกกับชีวิตมากกว่าได้เป็นเรื่องหลักก่อน */
 export type Hook = "spouse" | "kid" | "teen" | "adultChild" | "parent" | "sibling" | "friend" | "boss" | "foe" | "lover" | "job" | "rank" | "mage" | "rich" | "poor" | "famous" | "war" | "omen" | "elder" | "student" | "seed" | "ruler";
@@ -134,11 +135,13 @@ export const HEADLINE_RESET = 10;
 /** คะแนนของเรื่องที่ประกอบจากชิ้นส่วน และสัดส่วนที่แทรกเข้ามาแม้ยังมีเรื่องเขียนไว้ */
 export const STORY_SCORE = 2.5;
 export const STORY_SHARE = 0.25;
+/** เรื่องหลักแต่ละเรื่องเริ่มได้ที่อายุสุ่มของแต่ละชีวิต (ไม่เกินสิบปีหลังต้นช่วง) */
+export const hlStart = (l: Life, h: Headline) => h.ages[0] + (lifeHash(l, `hl.${h.id}`) % (Math.min(10, Math.floor((h.ages[1] - h.ages[0]) / 2)) + 1));
 export function pickHeadline(l: Life): { id: string; score: number; ctx?: () => Ctx } | undefined {
   const story = storyCtx(l);
   const made = story && { id: story.id, score: STORY_SCORE, ctx: story.make };
   const a = stageAge(l);
-  const ok = HEADLINES.filter((h) => a >= h.ages[0] && a <= h.ages[1] && (l.seen[`ft.hl.${h.id}`] ?? 0) < 1 && ready(l, h));
+  const ok = HEADLINES.filter((h) => a >= hlStart(l, h) && a <= h.ages[1] && (l.seen[`ft.hl.${h.id}`] ?? 0) < 1 && ready(l, h));
   if (!ok.length) return made;
   // ทุกชีวิตต้องได้เรื่องไม่ซ้ำกัน: เรื่องหลักที่ชาติก่อนเคยเจอจะกลับมาเมื่อเรื่องใหม่หมดแล้วเท่านั้น
   const past = new Set(l.pastSeen ?? []);
@@ -150,9 +153,9 @@ export function pickHeadline(l: Life): { id: string; score: number; ctx?: () => 
   // เรื่องที่ประกอบจากชิ้นส่วนแทรกบ้าง ชีวิตจะได้ไม่วนอยู่กับเรื่องชุดเดิม
   if (made && nextFloat(l) < STORY_SHARE) return made;
   const scored = (fresh.length ? fresh : ok).map((h) => ({ h, s: 2 + hookScore(l, h) * 1.5 }));
-  scored.sort((a, b) => b.s - a.s);
-  const top = scored.filter((x) => x.s >= scored[0].s - 1.5);
-  const h = pick(l, top).h;
+  // สุ่มตามน้ำหนักจากทุกเรื่องที่เข้ากับปีนี้ เรื่องที่ผูกกับชีวิตมากกว่ามีโอกาสมากกว่า แต่ไม่ได้ชนะเสมอ
+  let r = nextFloat(l) * scored.reduce((s, x) => s + x.s, 0), h = scored[0].h;
+  for (const x of scored) { r -= x.s; if (r <= 0) { h = x.h; break; } }
   return { id: `ft.hl.${h.id}`, score: 2 + hookScore(l, h) * 1.5 };
 }
 export const fight = (threat: number) => (l: Life) => fightOdds(l, threat);

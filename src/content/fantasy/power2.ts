@@ -54,7 +54,7 @@ const MASTER_EV: GameEvent = E("ft.pw.master", [14, 400], (l, c) => `ปรม�
 const PARTS_A = ["ดาบ", "เงา", "พายุ", "ดวงดาว", "เพลิง", "จันทร์"], PARTS_B = ["ไร้รอย", "ผ่าฟ้า", "กลืนแสง", "พันปี", "ไม่หวนกลับ", "ใต้น้ำแข็ง"];
 const OWN_TECH: GameEvent = E("ft.pw.own_tech", [20, 400], "หลังฝึกมาทั้งชีวิต ท่าทุกท่าที่คุณรู้เริ่มรวมกันเป็นท่าเดียวที่ไม่มีในตำราของใคร มันต้องการชื่อ", [
   ...[0, 1, 2].map((i) => C((l) => `ตั้งชื่อว่า「${nameOf(l, i)}」`, BIG((l) => `ท่า「${nameOf(l, i)}」เป็นของคุณคนเดียวในโลกนี้ ศิษย์รุ่นหลังจะพยายามเลียนแบบมันไปอีกร้อยปี`, { fame: 4, joy: 6 }, (l) => { fl(l).myTech = nameOf(l, i); deed(l, `คิดค้นท่า「${nameOf(l, i)}」`); }))),
-], { title: "ท่าที่เป็นของคุณ", forced: true, maxTimes: 1, when: (l) => on(l) && fl(l).bodyRank >= MASTER && !fl(l).myTech });
+], { title: "ท่าที่เป็นของคุณ", forced: true, loose: 0.5, maxTimes: 1, when: (l) => on(l) && fl(l).bodyRank >= MASTER && !fl(l).myTech });
 const nameOf = (l: Life, i: number) => `${PARTS_A[(l.id.length + i * 2) % PARTS_A.length]}${PARTS_B[(l.age + i) % PARTS_B.length]}`;
 
 // ───────────── ความมืดในตัว ─────────────
@@ -109,7 +109,7 @@ const REFORGE = SCENE("ft.pw.reforge", "ตีอาวุธใหม่", (l) 
 export const KILLS_TO_NAME = 10;
 const WEAPON_NAME: GameEvent = E("ft.pw.weapon_name", [14, 900], (l) => `${fl(l).weapon?.name ?? "อาวุธของคุณ"}ล้มศัตรูมาแล้ว ${fl(l).weapon?.kills ?? 0} ครั้ง คนในเมืองเริ่มเรียกมันด้วยชื่อของมันเอง`, [
   ...["ผู้ไม่เคยแพ้", "เขี้ยวรัตติกาล", "เพลงสุดท้าย"].map((n) => C(`ให้มันชื่อ「${n}」`, BIG((l) => `${fl(l).weapon?.name}กลายเป็น「${n}」 มันดูคมขึ้นทั้งที่ไม่มีใครลับ`, { fame: 2, joy: 4 }, (l) => { const w = fl(l).weapon; if (w) { w.name = `${n}`; w.named = true; w.quality = Math.min(5, w.quality + 1); } }))),
-], { title: "อาวุธที่มีชื่อ", forced: true, maxTimes: 0, when: (l) => on(l) && !!fl(l).weapon && !fl(l).weapon!.named && (fl(l).weapon!.kills ?? 0) >= KILLS_TO_NAME });
+], { title: "อาวุธที่มีชื่อ", forced: true, loose: 0.5, maxTimes: 0, when: (l) => on(l) && !!fl(l).weapon && !fl(l).weapon!.named && (fl(l).weapon!.kills ?? 0) >= KILLS_TO_NAME });
 
 // ───────────── เก็บตัวฝึก ─────────────
 export const secludedUntil = (l: Life) => Number(l.flags.ftSecludeUntil ?? 0);
@@ -126,7 +126,7 @@ export const SECLUDE_HURT = 0.12, SECLUDE_DEATH = 0.015, SECLUDE_GAP = 5;
 const PEAK: GameEvent = E("ft.pw.peak", [14, 900], (l) => `ข่าวว่าคุณเป็น${fl(l).bodyRank >= 5 ? BODY_RANKS[fl(l).bodyRank] : MAGIC_RANKS[fl(l).magicRank]}ไปถึงทุกราชสำนัก ผู้ครองแผ่นดินส่งทูตมาพร้อมกัน บางคนนำของขวัญมา บางคนนำทหารมาด้วย`, [
   C("รับใช้ผู้ครองแผ่นดินบ้านเกิด", BIG("ผู้ครองของคุณประกาศให้คุณเป็นเสาหลักของแผ่นดิน แผ่นดินอื่นไม่กล้าแตะชายแดนอีกหลายปี", { fame: 6, gold: 60 }, (l) => { addStanding(l, 20); const k = homeKingdom(l); k.power = clamp(k.power + 10, 0, 100); })),
   C("ยืนอยู่เหนือทุกฝ่าย", BIG("คุณปฏิเสธทุกราชสำนัก ทุกแผ่นดินจึงต้องเกรงใจคุณเท่ากัน และมังกรเริ่มบินมาเกาะยอดเขาใกล้บ้านคุณ", { fame: 8 }, (l) => { fl(l).dragonBond += 15; })),
-], { title: "พลังที่โลกต้องหันมามอง", forced: true, maxTimes: 1, when: (l) => on(l) && (fl(l).bodyRank >= 5 || fl(l).magicRank >= 5) });
+], { title: "พลังที่โลกต้องหันมามอง", forced: true, loose: 0.5, maxTimes: 1, when: (l) => on(l) && (fl(l).bodyRank >= 5 || fl(l).magicRank >= 5) });
 
 // ───────────── ปีละครั้ง ─────────────
 function powerYear(l: Life) {

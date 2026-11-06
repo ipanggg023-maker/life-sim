@@ -1,4 +1,4 @@
-import { weightedPick } from "./rng";
+import { chance, weightedPick } from "./rng";
 import { worldMatches } from "../content/worlds";
 import type { Life, LogKind, QueuedEvent, StatKey, WorldId } from "./types";
 
@@ -65,6 +65,9 @@ export interface GameEvent {
   maxTimes?: number;
   /** ถ้าเงื่อนไขผ่าน เกิดแน่นอนในปีนั้น */
   forced?: boolean;
+  /** forced แบบหลวม: แต่ละปีมีโอกาสเท่านี้ · by = อายุที่ต้องเกิดแน่นอน (ไม่ใส่ = อาจไม่เกิดเลย) */
+  loose?: number;
+  by?: number;
   /** ไม่ถูกสุ่มเอง — เรียกจากปุ่มหรือ event อื่นเท่านั้น */
   manual?: boolean;
   when?: (life: Life) => boolean;
@@ -126,13 +129,28 @@ const ruinsBlock = (life: Life, e: GameEvent) => e.world === "modern" && !!life.
 /** ตัวกรองเพิ่มเติมจาก content (เช่น ปลดเรื่องเก่าของโลกที่เขียนใหม่) — คืน false = ห้ามเกิด */
 export const eligibilityFilters: Array<(life: Life, e: GameEvent) => boolean> = [];
 
+/** ตัวเลขสุ่มคงที่ต่อชีวิตและเรื่อง (ไม่กินลำดับสุ่มของชีวิต) */
+export function lifeHash(life: Life, key: string): number {
+  let h = 2166136261;
+  const s = life.id + "|" + key;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+/** โลกแฟนตาซี: เรื่องที่เกิดครั้งเดียวเริ่มได้ที่อายุสุ่มของแต่ละชีวิต ไม่ใช่ปีแรกของช่วงเสมอ */
+export function startAge(life: Life, e: GameEvent): number {
+  if (life.worldId !== "fantasy" || e.forced || (e.maxTimes ?? 1) !== 1) return e.minAge;
+  const span = Math.min(e.maxAge, e.minAge + 60) - e.minAge;
+  const room = Math.max(span >= 2 ? 1 : 0, Math.min(5, Math.floor(span / 3)));
+  return room > 0 ? e.minAge + (lifeHash(life, e.id) % (room + 1)) : e.minAge;
+}
+
 function eligible(life: Life, e: GameEvent, takenThisYear: Set<string>): boolean {
   if (e.manual) return false;
   for (const f of eligibilityFilters) if (!f(life, e)) return false;
   if (e.world && !worldMatches(e.world, life.worldId)) return false;
   if (e.notIn?.includes(life.worldId)) return false;
   if (ruinsBlock(life, e)) return false;
-  if (life.age < e.minAge || life.age > e.maxAge) return false;
+  if (life.age < startAge(life, e) || life.age > e.maxAge) return false;
   if (takenThisYear.has(e.id)) return false;
   const max = e.maxTimes ?? 1;
   if (max > 0 && (life.seen[e.id] ?? 0) >= max) return false;
@@ -153,7 +171,7 @@ export function pickEvents(life: Life, count: number): GameEvent[] {
   const taken = new Set<string>();
   const picked: GameEvent[] = [];
   for (const e of registry.values()) {
-    if (e.forced && eligible(life, e, taken)) {
+    if (e.forced && eligible(life, e, taken) && (!e.loose || life.age >= (e.by ?? Infinity) || chance(life, e.loose))) {
       picked.push(e);
       taken.add(e.id);
     }

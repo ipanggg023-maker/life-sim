@@ -168,7 +168,7 @@ describe("เล่นจริง", () => {
       for (const k of Object.keys(l.seen)) seen.add(k);
       for (const e of l.log) expect(e.text, e.text).not.toMatch(/undefined|NaN|\[object/);
     }
-    for (const id of ["ft.r.orc_pit", "ft.r.beast_moon", "ft.r.half_feast", "ft.m.choose", "ft.m.step"]) expect(seen.has(id), id).toBe(true);
+    for (const id of ["ft.r.orc_pit", "ft.r.beast_moon", "ft.r.half_feast", "ft.m.choose"]) expect(seen.has(id), id).toBe(true);
     expect(allEvents().filter((e) => e.world === "fantasy").length).toBeGreaterThanOrEqual(203);
   }, 300_000);
 });

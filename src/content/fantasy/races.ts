@@ -62,6 +62,8 @@ const RITE_EVENTS: GameEvent[] = (Object.keys(RITES) as RaceId[]).map((r) => E(`
 
 // ───────────── วัยเยาว์ของเผ่าอายุยืน ─────────────
 const LONG: RaceId[] = ["elf", "dwarf", "dragon", "demon"];
+/** เผ่าที่อายุยืนหลายร้อยปี: ข้ามเวลาหลายปีได้ */
+export const isLongLived = (l: Life) => on(l) && LONG.includes(fl(l).race);
 export const inYouth = (l: Life) => on(l) && LONG.includes(fl(l).race) && l.age >= 18 && !riteState(l);
 const YOUTH: GameEvent[] = [
   E("ft.rc.youth_elf", [20, 49], "เพื่อนมนุษย์รุ่นเดียวกันแต่งงานมีลูกกันหมดแล้ว แต่ผู้เฒ่าเอลฟ์ยังเรียกคุณว่าเด็กน้อย และไม่ให้เข้าร่วมสภา", [

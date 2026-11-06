@@ -54,7 +54,7 @@ export const SCHOOL_EVENTS: GameEvent[] = [
   E("ft.s.cup", [12, 40], "งานประลองประจำโรงเรียนเริ่มแล้ว ผู้ชมเต็มอัฒจันทร์ และป้ายชื่อคุณอยู่บนสาย", [
     C("ลงสนาม", (l) => { runEvent(l, "ft.s.round", { round: 1 }); return { text: "คุณเดินลงสนามท่ามกลางเสียงเชียร์" }; }),
     C("ถอนตัวปีนี้", N("คุณนั่งดูจากอัฒจันทร์และจดท่าของคู่แข่ง", { body: 2 })),
-  ], { when: (l) => student(l) && (l.age - Number(fl(l).schoolSince)) % 2 === 1, forced: true, maxTimes: 0, title: "งานประลอง" }),
+  ], { when: (l) => student(l) && l.age > Number(fl(l).schoolSince), forced: true, loose: 0.35, maxTimes: 0, title: "งานประลอง" }),
   SCENE("ft.s.round", "งานประลอง", (l, c) => (Number(c.round) >= 3 ? `รอบชิงชนะเลิศ คนตรงหน้าคือ${rivalName(l)} คู่ปรับของคุณ` : `รอบที่ ${c.round}`), [
     P("สู้เต็มที่", roundThreatOdds, roundWin, roundLose),
     ...spellChoices(roundThreat, () => undefined, () => undefined, () => roundWin, roundLose),

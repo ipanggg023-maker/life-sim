@@ -33,7 +33,7 @@ const readInstant = () => { try { return !!localStorage.getItem("ls.instantText"
 /** โอกาสแบบคร่าวๆ เมื่อตัวละครยังมีข้อมูลไม่พอ — ไม่โชว์ตัวเลขที่แม่นเกินจริง */
 const vagueLabel = (p: number) => (p >= 0.7 ? "สูง" : p >= 0.4 ? "กลาง" : "ต่ำ");
 
-export function EventModal({ life, onChoose, onUndo }: { life: Life; onChoose: (index: number) => void; onUndo?: () => void }) {
+export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: number) => void }) {
   const q = life.queue[0];
   const scene = currentScene(q, life)!;
   const text = noEmoji(loc(life, scene.text(life, q.ctx)));
@@ -77,7 +77,6 @@ export function EventModal({ life, onChoose, onUndo }: { life: Life; onChoose: (
             </button>
           </div>
           <p className="modal-text">{shown}</p>
-          {onUndo && <button className="link-btn undo-btn" onClick={(ev) => { ev.stopPropagation(); onUndo(); }}>กดผิด ย้อนปีที่เพิ่งผ่าน</button>}
           <div className={`choices ${done ? "in" : ""}`}>
             {choices.map(({ c, index }, n) => {
               const pct = choiceChance(life, q, index);

@@ -346,7 +346,8 @@ function beatFor(l: Life): [string, Ctx?] | undefined {
 export const CALLING_CHANCE = 0.6;
 function familyYear(l: Life) {
   if (!on(l) || !l.alive) return;
-  if (callingDue(l) && l.flags.ftCallingAsked !== l.age) { l.flags.ftCallingAsked = l.age; runEvent(l, "ft.el.calling"); return; }
+  // ช่วงหาทางใหม่ของวัยชรามาในปีที่สุ่ม ไม่ใช่วันเกิดหกสิบเสมอ
+  if (callingDue(l) && l.flags.ftCallingAsked !== l.age && chance(l, 0.4)) { l.flags.ftCallingAsked = l.age; runEvent(l, "ft.el.calling"); return; }
   if (!chance(l, CALLING_CHANCE)) return;
   const b = beatFor(l);
   if (!b) return;

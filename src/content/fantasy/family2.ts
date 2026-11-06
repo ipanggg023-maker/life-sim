@@ -124,7 +124,7 @@ const AGEING: GameEvent[] = [
     C("ย้ายไปอยู่กับลูก", G("หลานๆ วิ่งรอบตัวคุณทุกเช้า บ้านไม่เคยเงียบอีกเลย", { joy: 5 }, (l) => { l.flags.ftElderHome = "child"; for (const k of kids(l)) bond(k, 6); }), { show: (l) => kids(l).some((k) => k.age >= 20) }),
     C("ไปอยู่ที่วิหาร", G("นักบวชดูแลคุณอย่างดี และคุณมีเวลาคิดเรื่องที่ไม่เคยมีเวลาคิด", { joy: 3, hp: 3 }, (l) => { l.flags.ftElderHome = "temple"; })),
     C("อยู่บ้านใหญ่กับคนรับใช้", G("ทุกอย่างพร้อมตลอดเวลา แต่บางคืนคุณก็นั่งกินข้าวคนเดียวที่โต๊ะยาว", { hp: 4 }, (l) => { l.flags.ftElderHome = "estate"; }), { show: (l) => Number(l.flags.ftHome ?? 0) >= 3 }),
-  ], { title: "บ้านในวัยชรา", forced: true, maxTimes: 1, when: (l) => on(l) && stageAge(l) >= 70 && !l.flags.ftElderHome }),
+  ], { title: "บ้านในวัยชรา", forced: true, loose: 0.35, maxTimes: 1, when: (l) => on(l) && stageAge(l) >= 70 && !l.flags.ftElderHome }),
   E("ft.f2.last", [40, 900], (l) => `คุณรู้ว่าเวลาเหลือไม่มากแล้ว ${l.people.find((p) => p.alive && p.relation === "spouse")?.name ?? kids(l)[0]?.name ?? "คนที่รัก"}นั่งอยู่ข้างเตียง และถามว่ามีอะไรอยากทำเป็นอย่างสุดท้ายไหม`, [
     C("ให้อภัยศัตรูทุกคน", G("คุณส่งจดหมายสั้นๆ ไปหาทุกคนที่เคยแค้นกัน บางคนตอบกลับ บางคนไม่ แต่คุณนอนหลับสบาย", { joy: 6 }, (l) => { for (const p of l.people) if (p.alive && relOf(p).grudge >= 20) remember(l, p, "forgive", "คุณให้อภัยเขาก่อนจากไป", 3, { grudge: -40 }); l.flags.ftLastWish = "forgive"; })),
     C("แบ่งของที่มีให้ทุกคนที่รัก", G("คุณเรียกทุกคนเข้ามาทีละคน และมอบของชิ้นเล็กๆ ที่มีความหมายให้", { joy: 5 }, (l) => { for (const p of l.people) if (p.alive && p.bond >= 50) bond(p, 10); l.flags.ftLastWish = "give"; })),
@@ -143,7 +143,7 @@ const MOTTOS = ["ไม่ก้มหัวให้พายุ", "รัก�
 const FAMILY_EVENTS: GameEvent[] = [
   E("ft.f2.crest", [25, 900], (l) => `ชื่อของตระกูล${l.lastName}เริ่มเป็นที่รู้จัก ช่างตราประทับในเมืองมาถามว่าตระกูลของคุณจะใช้ตราแบบไหน`, [
     ...[0, 1, 2, 3].map((i) => C(`${CRESTS[i]} · "${MOTTOS[i]}"`, BIG(`ตรา${CRESTS[i]}ถูกแกะลงบนประตูบ้าน ใต้ตราเขียนว่า "${MOTTOS[i]}"`, { joy: 4, fame: 1 }, (l) => { const r = familyRec(l); r.crest = CRESTS[i]; r.motto = MOTTOS[i]; }))),
-  ], { title: "ตราของตระกูล", forced: true, maxTimes: 1, when: (l) => on(l) && !!l.fw && familyRec(l).fame + l.fame >= 30 && !familyRec(l).crest && l.age >= 25 }),
+  ], { title: "ตราของตระกูล", forced: true, loose: 0.35, maxTimes: 1, when: (l) => on(l) && !!l.fw && familyRec(l).fame + l.fame >= 30 && !familyRec(l).crest && l.age >= 25 }),
   E("ft.f2.secret", [20, 900], (l) => ({ sibling: "หญิงชราคนหนึ่งมาเคาะประตู เธอบอกว่าเป็นพี่สาวต่างแม่ของพ่อแม่คุณ ที่ไม่มีใครในตระกูลยอมพูดถึง", crime: "นักสืบของศาลนำเอกสารเก่ามาให้ดู พ่อแม่ของคุณเคยปล้นคาราวานของขุนนางเมื่อสี่สิบปีก่อน และไม่เคยถูกจับ", stolen: "ทนายแก่คนหนึ่งบอกว่ามรดกส่วนหนึ่งของตระกูลถูกญาติห่างๆ ยักยอกไปเมื่อสองรุ่นก่อน และยังทวงคืนได้", curse: "หมอดูประจำเมืองบอกว่าตระกูลของคุณถูกสาปมาสามรุ่น ผู้ชายในตระกูลไม่เคยอยู่เกินหกสิบ ผู้หญิงไม่เคยมีความสุขในงานแต่ง" })[familyRec(l).secret!], [
     C("ยอมรับความจริงและทำให้มันถูกต้อง", (l, c) => {
       const r = familyRec(l); r.revealed = true;

@@ -45,7 +45,7 @@ export const PAY = (label: string, gold: number, run: Res, o: Partial<Choice> = 
   ...o,
 });
 
-interface EOpts { when?: (l: Life) => boolean; weight?: number | ((l: Life) => number); maxTimes?: number; forced?: boolean; title?: string; prepare?: (l: Life) => Ctx }
+interface EOpts { when?: (l: Life) => boolean; weight?: number | ((l: Life) => number); maxTimes?: number; forced?: boolean; loose?: number; by?: number; title?: string; prepare?: (l: Life) => Ctx }
 export const E = (id: string, ages: [number, number], text: Txt, choices: Choice[], o: EOpts = {}): GameEvent => ({
   id, world: "fantasy", minAge: ages[0], maxAge: ages[1], text: typeof text === "string" ? () => text : text, choices, ...o,
 });

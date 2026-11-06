@@ -1,6 +1,7 @@
 import { fitGender } from "../engine/util";
 import { alertsOf } from "../content/fantasy/ease";
 import { QUIET_YEARS, REDO_COST, redoable } from "../content/fantasy/year";
+import { isLongLived } from "../content/fantasy/races";
 import { createContext, memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { careerById } from "../content/core/careers";
 import { rankLabel } from "../content/core/power";
@@ -367,12 +368,10 @@ export function MainScreen({
   who = null,
   setWho,
   onPerson,
-  onUndo,
 }: {
   life: Life;
   onAgeUp: (years?: number) => void;
   /** ย้อนปีที่เพิ่งกดผิด (มีเมื่อกดได้) */
-  onUndo?: () => void;
   /** คิดใหม่หนึ่งเรื่องเล็กของปีนี้ (แฟนตาซี) */
   onRedo?: (i: number) => void;
   onTab: (t: TabId) => void;
@@ -472,7 +471,7 @@ export function MainScreen({
             <>
               {title && <div className="title-tag">「{title.name}」</div>}
               <div className="sub">
-                {subtitle} · {money(life, life.money)}
+                {subtitle} · {money(life, life.money)}{life.ft && <span className="year-tag"> · ปี {life.birthYear + life.age}</span>}
                 {life.debt > 0 && <span className="debt"> · หนี้ {money(life, life.debt)}</span>}
               </div>
             </>
@@ -560,8 +559,7 @@ export function MainScreen({
         <button className="age-btn" onClick={() => onAgeUp(1)} disabled={life.queue.length > 0}>
           อายุ +1 ปี
         </button>
-        {onUndo && <button className="link-btn undo-btn" onClick={onUndo}>กดผิด ย้อนปีที่เพิ่งผ่าน</button>}
-        {life.ft && life.age >= 6 && (
+        {life.ft && life.age >= 6 && isLongLived(life) && (
           <div className="quiet-row">
             {QUIET_YEARS.map((n) => (
               <button key={n} className="btn small ghost" onClick={() => onAgeUp(n)} disabled={life.queue.length > 0}>ใช้ชีวิตเงียบๆ {n} ปี</button>

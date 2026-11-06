@@ -1527,4 +1527,3 @@ details[open] > .fold-head .fold-chevron { transform: rotate(180deg); }
 .alert-row.danger .alert-dot { background: var(--bad); }
 .alert-row.need .alert-dot { background: var(--accent); }
 .alert-row.ready .alert-dot { background: var(--good); }
-.undo-btn { display: block; margin: 4px auto 0; font-size: 12px; }
