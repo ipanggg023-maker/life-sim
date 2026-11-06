@@ -326,3 +326,8 @@
   :root[data-world="fantasy"] .modal, :root[data-world="fantasy"] .log-line, :root[data-world="fantasy"] .choice,
   :root[data-world="fantasy"] .roll, :root[data-world="fantasy"] .roll::before, :root[data-world="fantasy"] .age-btn::before, :root[data-world="fantasy"] .name { animation: none !important; transition: none !important; }
 }
+
+/* จอแคบ: ปุ่มข้อความทันทีขึ้นไปอยู่แถวเดียวกับป้ายอายุ ไม่ทับชื่อเรื่องที่ยาว */
+@media (max-width: 480px) {
+  :root[data-world="fantasy"] .text-speed { top: 0; }
+}

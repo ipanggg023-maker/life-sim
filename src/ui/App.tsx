@@ -26,6 +26,7 @@ import {
   saveCurrent,
   saveCurrentSoon,
   saveSnapshot,
+  saveBackup,
   saveSoul,
   updateGraveyardPoints,
   type Bundle,
@@ -147,7 +148,7 @@ export function App() {
     // ตายแล้วบันทึกทันที · ระหว่างเล่นบันทึกแบบรวบ
     if (l.alive) saveCurrentSoon(l);
     else await saveCurrent(l);
-    if (!l.alive) setGraveyard(await addToGraveyard(toPastLife(l)));
+    if (!l.alive) { setGraveyard(await addToGraveyard(toPastLife(l))); void saveBackup(l); }
   }, []);
 
   const commitSoul = useCallback(async (s: Soul) => {
@@ -166,9 +167,14 @@ export function App() {
     [flash],
   );
 
+  /** ปีที่เพิ่งกด: เก็บสภาพก่อนกดไว้ ย้อนได้จนกว่าจะเลือกหรือทำอะไรในปีใหม่ (ไม่ย้อนความตาย) */
+  const [undoLife, setUndoLife] = useState<Life | null>(null);
+  const onUndo = useCallback(() => { if (!undoLife) return; const l = undoLife; setUndoLife(null); void commit(l); }, [undoLife, commit]);
+
   const act: Act = useCallback(
     (fn) => {
       if (!life) return;
+      setUndoLife(null);
       const out = fn(life);
       feedback(out && { ...out, text: loc(life, out.text) });
       commit(life);
@@ -220,6 +226,8 @@ export function App() {
     async (years = 1) => {
       if (!life) return;
       const before = snapshot(life);
+      // กดผิดย้อนได้เฉพาะปีเดียวของโลกแฟนตาซี
+      const prev = life.worldId === "fantasy" && years === 1 ? structuredClone(life) : null;
       // แฟนตาซี: ใช้ชีวิตเงียบๆ หลายปี · นิสัยตัดสินเรื่องเล็ก หยุดเมื่อมีเรื่องสำคัญ
       if (life.worldId === "fantasy" && years > 1) {
         const stop = liveQuietly(life, years, (l) => {
@@ -236,6 +244,7 @@ export function App() {
         if (!life.alive || life.queue.length) break;
       }
       life.report = buildReport(life, before);
+      setUndoLife(prev && life.alive ? prev : null);
       commit(life);
       if (life.log[life.log.length - 1]?.kind === "bad") flash();
     },
@@ -250,6 +259,7 @@ export function App() {
       const prompt = loc(life, scene.text(life, q.ctx));
       const choice = loc(life, labelOf(scene.choices[index], life, q.ctx));
       const why = whyFailed(life, q, index);
+      setUndoLife(null);
       const out = resolveChoice(life, index);
       if (out) {
         const kind = out.kind === "system" && isRealistic(life.worldId) ? "good" : out.kind;
@@ -415,7 +425,7 @@ export function App() {
   return (
     <div className={`app ${shake ? "shake" : ""}`}>
       {life.worldId === "fantasy" && <AstralSky />}
-      <MainScreen life={life} onAgeUp={onAgeUp} onRedo={(i) => { const n = redoMoment(life, i); if (n) void commit(n); }} onTab={(t) => { setFocus(null); setTab(t); }} who={who} setWho={setWho} onPerson={(id) => { setFocus(id); setTab("people"); }} />
+      <MainScreen life={life} onAgeUp={onAgeUp} onUndo={undoLife && !life.queue.length ? onUndo : undefined} onRedo={(i) => { const n = redoMoment(life, i); if (n) void commit(n); }} onTab={(t) => { setFocus(null); setTab(t); }} who={who} setWho={setWho} onPerson={(id) => { setFocus(id); setTab("people"); }} />
 
       {tab && !life.queue.length && !resolved && (
         <Sheet title={isRealistic(life.worldId) && tab === "soul" ? "บันทึก" : isRealistic(life.worldId) && tab === "power" ? (life.worldId === "fantasy" ? "พลัง" : "วิชายุทธ์") : life.worldId === "fantasy" && tab === "jianghu" ? "โลก" : TAB_TITLES[tab]} onClose={() => setTab(null)}>
@@ -450,7 +460,7 @@ export function App() {
       {resolved ? (
         <OutcomeModal resolved={resolved} onNext={() => setResolved(null)} />
       ) : (
-        life.queue.length > 0 && <EventModal life={life} onChoose={onChoose} />
+        life.queue.length > 0 && <EventModal life={life} onChoose={onChoose} onUndo={undoLife ? onUndo : undefined} />
       )}
 
       {life.worldId === "murim" && !tab && !resolved && !life.queue.length && <Onboarding />}

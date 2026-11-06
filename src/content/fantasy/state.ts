@@ -158,6 +158,9 @@ export interface FLife {
   shadow?: { rank: number; missions: number; out?: boolean };
   /** กบฏ: ภารกิจที่ทำ */
   rebel?: { missions: number; kingdom: string };
+  /** เป้าหมายชีวิตที่เลือกไว้ และที่ทำสำเร็จแล้ว (ease.ts) */
+  goals?: string[];
+  goalsDone?: string[];
   // ── สัตว์ (creatures.ts) ──
   /** สัตว์ขี่: ม้า กริฟฟิน หมาป่ายักษ์ งูทะเล · สายเลือดรุ่นที่เท่าไร */
   steed?: { kind: string; name: string; bond: number; born: number; line: string; gen: number; lastCare: number };

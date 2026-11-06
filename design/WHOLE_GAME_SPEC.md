@@ -318,3 +318,13 @@ Foundations go first because the four rules apply to everything built after.
 - Fixed: epitaphs no longer put "ผู้" before titles such as เจ้าถิ่น.
 - Balance: the faith rescue was making random bots live about 5 years longer; it now needs faith 60 and a 30% roll. 200-bot median 55, 54% die before 60.
 - Checked on screen: the death screen story card, the epitaph fix, a "soon" rebirth landing 6 years later, and the new life starting.
+
+## Release 17 built (2026-11-06)
+- ease.ts (ease of use; no new story content, so balance is unchanged apart from a little fame for finished goals):
+  An alert strip above the year button shows the two most urgent things (a wound, an illness, debt, a nemesis, a family member far away, a whelp or steed to look after, a breakthrough or promotion that is ready, an egg about to hatch). Click one to open its tab.
+  The Do tab opens with "worth doing this year" cards (at most three, picked from your situation and goals) and a "life goals" fold: choose up to three of eight goals (throne, master, rich, warrior, family, relic, legend, dragon) with progress bars. Finishing one records a deed and a log entry.
+  Each Do-tab group shows a one-line hint until you press "got it". Locked buttons now say why (join the guild first, need more money, and so on), and the early-return-from-seclusion button only shows while secluded.
+  Undo: after a single-year age-up, a "wrong click, undo the year" link brings back the year before (until you make a choice).
+  Settings and export (in the record tab): text speed (normal, fast, instant), hints on or off, large text, export this life's story as a .txt file, and the last three finished lives kept as backups you can download. The death screen also has an export button.
+- Fixed: on phones the "instant text" button covered long popup titles; it now sits on the age row.
+- Checked on screen: alerts, suggestions, goals, undo (age 26 back to 25), the settings fold, large text, and the phone layout of the popup.

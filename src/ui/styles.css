@@ -1511,3 +1511,20 @@ details[open] > .fold-head .fold-chevron { transform: rotate(180deg); }
 @media (max-height: 700px) { :root[data-world="fantasy"] .fate-scene { height: 84px; } :root[data-world="fantasy"] .modal-text { line-height: 1.7; } }
 .quiet-row { display: flex; gap: 8px; justify-content: center; margin-top: 6px; }
 .volume { margin: 6px 0 10px; } .volume-head { margin: 4px 0; font-size: 13px; }
+
+/* ตัวหนังสือใหญ่ (ตั้งค่า) */
+:root.large-text body { font-size: 112%; }
+:root.large-text .small { font-size: 0.95rem; }
+:root.large-text .modal-text { font-size: 1.08rem; }
+
+/* ใช้ง่ายขึ้น (Release 17): หลอดความคืบหน้าของเป้าหมาย คำแนะนำครั้งแรก ปุ่มลิงก์ และสัญญาณเตือน */
+.bar-fill { height: 100%; background: var(--fill-grad); border-radius: 99px; }
+.hint { border-left: 2px solid var(--accent); padding: 4px 8px; margin: 2px 0 8px; color: var(--muted); }
+.link-btn { background: none; border: none; padding: 0 2px; color: var(--accent); text-decoration: underline; cursor: pointer; font-size: inherit; }
+.alert-strip { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+.alert-row { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; font-size: 13px; color: inherit; cursor: pointer; min-height: 38px; }
+.alert-row .alert-dot { width: 8px; height: 8px; border-radius: 99px; flex: none; background: var(--muted); }
+.alert-row.danger .alert-dot { background: var(--bad); }
+.alert-row.need .alert-dot { background: var(--accent); }
+.alert-row.ready .alert-dot { background: var(--good); }
+.undo-btn { display: block; margin: 4px auto 0; font-size: 12px; }

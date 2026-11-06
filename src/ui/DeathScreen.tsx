@@ -19,6 +19,8 @@ import { headStart, heirlooms, legacyHeir, upbringing } from "../content/fantasy
 import { BODY_RANKS, MAGIC_RANKS } from "../content/fantasy/power";
 import { verdict } from "../content/fantasy/persona";
 import { FAR, SOON, setStrangerGap, storyCard } from "../content/fantasy/souls2";
+import { storyText } from "../content/fantasy/ease";
+import { downloadText } from "./settings";
 import { Epitaph } from "./tabs/FantasyFate";
 import { displayName, loc, money, people } from "../engine/util";
 import { disciplesOf, lifeSummary } from "../content/murim/life/generations";
@@ -429,6 +431,7 @@ function RibbonCard({ life, soul }: { life: Life; soul: Soul }) {
 function FantasyStory({ life, soul }: { life: Life; soul: Soul }) {
   return (
     <div className="card">
+      <button className="btn small ghost" onClick={() => downloadText(`${life.firstName}-${life.lastName}.txt`, storyText(life))}>ส่งออกเรื่องราวชีวิตนี้เป็นไฟล์ข้อความ</button>
       {storyCard(life, soul).map((sec) => (
         <div key={sec.title}>
           <div className="card-title">{sec.title}</div>

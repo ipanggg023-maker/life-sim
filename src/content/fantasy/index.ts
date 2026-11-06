@@ -74,6 +74,7 @@ import { SOCIETY2_EVENTS, loadSociety2 } from "./society2";
 import { CREATURE_EVENTS, loadCreatures } from "./creatures";
 import { LEGEND2_EVENTS, loadLegends2 } from "./legends2";
 import { SOUL2_EVENTS, loadSouls2 } from "./souls2";
+import { loadEase } from "./ease";
 import { verdict } from "./persona";
 import { verdictHook } from "../../engine/game";
 import { TALENTS } from "../talents";
@@ -141,6 +142,7 @@ export function loadFantasyWorld() {
   loadCreatures();
   loadLegends2();
   loadSouls2();
+  loadEase();
   loadLifestory();
   loadYear();
   verdictHook.fn = verdict;

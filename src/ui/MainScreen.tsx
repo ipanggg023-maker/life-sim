@@ -1,4 +1,5 @@
 import { fitGender } from "../engine/util";
+import { alertsOf } from "../content/fantasy/ease";
 import { QUIET_YEARS, REDO_COST, redoable } from "../content/fantasy/year";
 import { createContext, memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { careerById } from "../content/core/careers";
@@ -308,6 +309,22 @@ function ReportCard({ report }: { report: YearReport }) {
 }
 
 /** แผนหลักของปี */
+/** สัญญาณเตือน: อันตราย คนที่ต้องการคุณ และสิ่งที่พร้อมแล้ว (แสดงสองเรื่องที่ด่วนที่สุด) */
+function AlertStrip({ life, onTab }: { life: Life; onTab: (t: TabId) => void }) {
+  const list = alertsOf(life).slice(0, 2);
+  if (!list.length) return null;
+  return (
+    <div className="alert-strip">
+      {list.map((a) => (
+        <button key={a.text} className={`alert-row ${a.kind}`} onClick={() => a.tab && onTab(a.tab as TabId)}>
+          <span className="alert-dot" />
+          <span>{a.text}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function PlanBar({ life }: { life: Life }) {
   const list = plansFor(life);
   const cur = currentPlan(life);
@@ -350,9 +367,12 @@ export function MainScreen({
   who = null,
   setWho,
   onPerson,
+  onUndo,
 }: {
   life: Life;
   onAgeUp: (years?: number) => void;
+  /** ย้อนปีที่เพิ่งกดผิด (มีเมื่อกดได้) */
+  onUndo?: () => void;
   /** คิดใหม่หนึ่งเรื่องเล็กของปีนี้ (แฟนตาซี) */
   onRedo?: (i: number) => void;
   onTab: (t: TabId) => void;
@@ -536,9 +556,11 @@ export function MainScreen({
         {murim && life.alive && <PlanBar life={life} />}
         {murim && life.alive && life.stats.health <= 25 && <p className="life-warn">สุขภาพวิกฤต ปีนี้อาจไม่รอด พักรักษาตัวหรือหาหมอก่อนเพิ่มอายุ</p>}
         {murim && life.alive && life.money < 0 && <p className="life-warn">เงินติดลบ ความสุขจะลดทุกปีจนกว่าจะหาเงินได้</p>}
+        {life.worldId === "fantasy" && life.alive && <AlertStrip life={life} onTab={onTab} />}
         <button className="age-btn" onClick={() => onAgeUp(1)} disabled={life.queue.length > 0}>
           อายุ +1 ปี
         </button>
+        {onUndo && <button className="link-btn undo-btn" onClick={onUndo}>กดผิด ย้อนปีที่เพิ่งผ่าน</button>}
         {life.ft && life.age >= 6 && (
           <div className="quiet-row">
             {QUIET_YEARS.map((n) => (

@@ -13,7 +13,7 @@ import type { Country, Gender, Life, PastLife, Soul, Stats, Wealth, WorldId } fr
 import { isRealistic, worldOf } from "../../content/worlds";
 import { COLLECTIBLES, SET_BONUS, completedSets, foundThisLife } from "../../content/shared/collection";
 import { displayName, money } from "../../engine/util";
-import { saveSnapshot, type Bundle } from "../../save";
+import { BACKUP_KEEP, loadBackups, saveSnapshot, type Bundle } from "../../save";
 import type { Act } from "../App";
 import { SaveTransfer } from "../SaveTransfer";
 import { CloudCard } from "../CloudCard";
@@ -25,6 +25,8 @@ import { injuryLabel } from "../../engine/body";
 import { SeriesCover } from "../SeriesCover";
 import { Fold } from "../Fold";
 import { FateLedger, LifeStoryFolds } from "./FantasyFate";
+import { downloadText, hintsOn, largeText, setHints, setLargeText, setTextSpeed, textSpeed, type TextSpeed } from "../settings";
+import { storyText } from "../../content/fantasy/ease";
 
 export function SoulTab({
   life,
@@ -52,6 +54,7 @@ export function SoulTab({
     <div className="tab-content">
       {life.worldId === "fantasy" && <LifeStoryFolds life={life} />}
       {life.worldId === "fantasy" && <FateLedger life={life} />}
+      {life.worldId === "fantasy" && <SettingsFold life={life} />}
       {real ? (
         <Fold always id="soul-0" title={<>บันทึกชีวิต</>}>
           <p>
@@ -463,5 +466,37 @@ function FoldList({ title, items, show = 5, closed = false }: { title: string; i
         </button>
       )}
     </details>
+  );
+}
+
+/** ตั้งค่าของเครื่องนี้ และส่งออกเรื่องเล่าชีวิตเป็นไฟล์ข้อความ */
+function SettingsFold({ life }: { life: Life }) {
+  const [, force] = useState(0);
+  const [backups, setBackups] = useState<Life[] | null>(null);
+  const speeds: [TextSpeed, string][] = [["normal", "ปกติ"], ["fast", "เร็ว"], ["instant", "ทันที"]];
+  return (
+    <Fold id="settings" kind="section" title={<>ตั้งค่าและส่งออก</>}>
+      <p className="small muted">ความเร็วข้อความในหน้าต่างเรื่องราว</p>
+      <div className="row">
+        {speeds.map(([k, name]) => (
+          <button key={k} className={`chip ${textSpeed() === k ? "on" : ""}`} onClick={() => { setTextSpeed(k); force((n) => n + 1); }}>{name}</button>
+        ))}
+      </div>
+      <div className="row">
+        <button className={`chip ${hintsOn() ? "on" : ""}`} onClick={() => { setHints(!hintsOn()); force((n) => n + 1); }}>คำแนะนำ{hintsOn() ? "เปิด" : "ปิด"}</button>
+        <button className={`chip ${largeText() ? "on" : ""}`} onClick={() => { setLargeText(!largeText()); force((n) => n + 1); }}>ตัวหนังสือใหญ่{largeText() ? "เปิด" : "ปิด"}</button>
+      </div>
+      <button className="btn small" onClick={() => downloadText(`${life.firstName}-${life.lastName}.txt`, storyText(life))}>ส่งออกเรื่องราวชีวิตนี้เป็นไฟล์ข้อความ</button>
+      <p className="small muted">ชีวิตที่จบแล้วถูกสำรองไว้ในเครื่องนี้ {BACKUP_KEEP} ชีวิตล่าสุด</p>
+      {backups === null ? (
+        <button className="btn small ghost" onClick={() => void loadBackups().then(setBackups)}>ดูชีวิตที่สำรองไว้</button>
+      ) : backups.length === 0 ? (
+        <p className="small muted">ยังไม่มีชีวิตที่จบแล้ว</p>
+      ) : (
+        backups.map((b) => (
+          <button key={b.id} className="btn small ghost" onClick={() => downloadText(`${b.firstName}-${b.lastName}.txt`, storyText(b))}>ดาวน์โหลดเรื่องราวของ{b.firstName} {b.lastName} (อายุ {b.age})</button>
+        ))
+      )}
+    </Fold>
   );
 }

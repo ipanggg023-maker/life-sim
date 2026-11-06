@@ -7,11 +7,13 @@ import { App } from "./ui/App";
 import "./ui/styles.css";
 import "./ui/astral.css";
 import { mountInkDefs } from "./ui/inkDefs";
+import { applyLargeText } from "./ui/settings";
 
 loadMurimWorld();
 loadFantasyWorld();
 loadSharedEvents();
 mountInkDefs();
+applyLargeText();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));

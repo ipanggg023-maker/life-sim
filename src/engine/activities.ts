@@ -20,6 +20,8 @@ export interface Activity {
   /** % สำเร็จที่แสดงให้ผู้เล่นเห็น */
   odds?: (life: Life) => number;
   available?: (life: Life) => boolean;
+  /** ทำไม่ได้เพราะอะไร (แสดงแทน "ตอนนี้ทำไม่ได้") */
+  need?: (life: Life) => string | undefined;
   run: (life: Life) => Outcome;
 }
 
@@ -186,7 +188,7 @@ export function activityLocked(life: Life, a: Activity): string | undefined {
   if (life.age < BABY_AGE) return "ยังเป็นเด็กเล็ก";
   if (Number(life.flags.jailUntil ?? -1) > life.age && !JAIL_OK.test(a.id)) return "ติดคุกอยู่";
   if (life.age < a.minAge) return `อายุ ${a.minAge}+`;
-  if (a.available && !a.available(life)) return "ตอนนี้ทำไม่ได้";
+  if (a.available && !a.available(life)) return a.need?.(life) ?? "ตอนนี้ทำไม่ได้";
   if (life.doneThisYear.includes(`act:${a.id}`)) return "ปีนี้ทำแล้ว";
   const left = timeLeft(life);
   if (left !== undefined && left < (a.time ?? 1)) return "ปีนี้ไม่มีเวลาเหลือ";

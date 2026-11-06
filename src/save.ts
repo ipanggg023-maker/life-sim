@@ -6,6 +6,25 @@ const CURRENT = "lifesim/current";
 const GRAVEYARD = "lifesim/graveyard";
 const SOUL = "lifesim/soul";
 const SNAP = "lifesim/snap/";
+const BACKUP = "lifesim/backup";
+/** สำรองชีวิตที่จบแล้วไว้ในเครื่อง (สามชีวิตล่าสุด) */
+export const BACKUP_KEEP = 3;
+export async function saveBackup(life: Life) {
+  try {
+    const list = (await get<Life[]>(BACKUP)) ?? [];
+    if (list.some((x) => x.id === life.id)) return;
+    await set(BACKUP, [life, ...list].slice(0, BACKUP_KEEP));
+  } catch {
+    /* ignore */
+  }
+}
+export async function loadBackups(): Promise<Life[]> {
+  try {
+    return (await get<Life[]>(BACKUP)) ?? [];
+  } catch {
+    return [];
+  }
+}
 
 export async function loadCurrent(): Promise<Life | undefined> {
   try {

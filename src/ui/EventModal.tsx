@@ -6,6 +6,7 @@ import type { Life } from "../engine/types";
 import { isRealistic } from "../content/worlds";
 import { Icon, noEmoji } from "./Icon";
 import { FateScene } from "./Astral";
+import { typeDelay } from "./settings";
 
 /** พิมพ์ข้อความทีละตัว แตะเพื่อข้าม */
 function useTypewriter(text: string, instant: boolean, speed = 18) {
@@ -32,12 +33,12 @@ const readInstant = () => { try { return !!localStorage.getItem("ls.instantText"
 /** โอกาสแบบคร่าวๆ เมื่อตัวละครยังมีข้อมูลไม่พอ — ไม่โชว์ตัวเลขที่แม่นเกินจริง */
 const vagueLabel = (p: number) => (p >= 0.7 ? "สูง" : p >= 0.4 ? "กลาง" : "ต่ำ");
 
-export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: number) => void }) {
+export function EventModal({ life, onChoose, onUndo }: { life: Life; onChoose: (index: number) => void; onUndo?: () => void }) {
   const q = life.queue[0];
   const scene = currentScene(q, life)!;
   const text = noEmoji(loc(life, scene.text(life, q.ctx)));
   const [instant, setInstant] = useState(readInstant);
-  const { shown, done, skip } = useTypewriter(text, instant);
+  const { shown, done, skip } = useTypewriter(text, instant, typeDelay());
   // ตัวเลือกที่กดได้ก่อน แล้วตามด้วยตัวที่ยังขาดเงื่อนไข (ล็อกไว้พร้อมเหตุผล) ตามลำดับเดิม
   const choices = [...visibleChoices(life, q), ...lockedChoices(life, q)].sort((a, b) => a.index - b.index);
   const [factorsOf, setFactorsOf] = useState<number>();
@@ -76,6 +77,7 @@ export function EventModal({ life, onChoose }: { life: Life; onChoose: (index: n
             </button>
           </div>
           <p className="modal-text">{shown}</p>
+          {onUndo && <button className="link-btn undo-btn" onClick={(ev) => { ev.stopPropagation(); onUndo(); }}>กดผิด ย้อนปีที่เพิ่งผ่าน</button>}
           <div className={`choices ${done ? "in" : ""}`}>
             {choices.map(({ c, index }, n) => {
               const pct = choiceChance(life, q, index);
