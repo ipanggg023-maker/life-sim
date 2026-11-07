@@ -1,5 +1,5 @@
 import { fitGender } from "../../engine/util";
-﻿import { useEffect, useState } from "react";
+﻿import { Fragment, useEffect, useState } from "react";
 import { runEvent, argue, askMoney, breakUp, propose, spendTime, tryForBaby, confess, cutTies, giveGift } from "../../engine/game";
 import type { Life, Person, Relation } from "../../engine/types";
 import { friendStage, relationLabel, shortName } from "../../engine/util";
@@ -15,6 +15,9 @@ import { feelingWords } from "../../content/fantasy/people2";
 import { STAGE_LABEL, stageOf } from "../../content/fantasy/people3";
 import { isPrincess, isSovereign, personActions } from "../../content/murim/life/kinship";
 import { Fold } from "../Fold";
+import { peopleToCare } from "../../content/fantasy/glance";
+import { Cap, Glance, R25, TopActs } from "./Glance";
+import type { IconName } from "../Icon";
 
 /** กลุ่มคนในแท็บผู้คน — แต่ละกลุ่มย่อ/ขยายได้ */
 const FAMILY: Relation[] = ["spouse", "partner", "child", "grandchild", "father", "mother", "sibling"];
@@ -38,6 +41,7 @@ const ORDER: Relation[] = ["spouse", "partner", "ally", "child", "grandchild", "
 
 export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; act: Act; focus?: string | null; onShowLog?: (id: string) => void }) {
   const [open, setOpen] = useState<string | null>(focus);
+  const [jump, setJump] = useState<string | null>(null);
   // แตะชื่อจากบันทึก → เลื่อนไปหาคนนั้น
   useEffect(() => {
     if (focus) document.getElementById(`person-${focus}`)?.scrollIntoView({ block: "center" });
@@ -48,8 +52,14 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
 
   if (!list.length) return <p className="muted">คุณยังไม่รู้จักใครเลย</p>;
 
+  const ft = life.worldId === "fantasy" && !!life.ft;
+  const Wrap = ft ? R25 : Fragment;
+  const jumpTo = (id: string) => { setOpen(id); setJump(id); setTimeout(() => document.getElementById(`person-${id}`)?.scrollIntoView({ block: "center" }), 60); };
   return (
     <div className="tab-content">
+      <Wrap>
+      {ft && <FtPeopleTop life={life} pick={jumpTo} />}
+      {ft && <Cap text="ทุกคน" hint="กดกลุ่มเพื่อเปิด" />}
       {life.worldId === "murim" && <LineageCard life={life} pick={(id) => { setOpen(id); document.getElementById(`person-${id}`)?.scrollIntoView({ block: "center" }); }} />}
       {life.worldId === "murim" && life.age >= 3 && <KinCare life={life} act={act} />}
       {life.worldId === "fantasy" && <PersonaCard life={life} />}
@@ -57,7 +67,7 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
         const members = list.filter((p) => grp.of(p, life));
         if (!members.length) return null;
         return (
-          <Fold always={grp.id !== "gone" && grp.id !== "known"} kind="section" key={grp.id} id={`people-${grp.id}`} force={!!focus && members.some((m) => m.id === focus)} title={<>{grp.name} <span className="fold-count">{members.length}</span></>}>
+          <Fold always={grp.id !== "gone" && grp.id !== "known"} kind="section" key={grp.id} id={`people-${grp.id}`} open={ft && grp.id === "family"} force={members.some((m) => m.id === (focus ?? jump))} title={<>{grp.name} <span className="fold-count">{members.length}</span></>}>
       {members.map((p) => (
         <div className={`person ${p.alive ? "" : "dead"} ${focus === p.id ? "focused" : ""}`} key={p.id} id={`person-${p.id}`}>
           <button className="person-row" onClick={() => setOpen(open === p.id ? null : p.id)}>
@@ -105,12 +115,43 @@ export function PeopleTab({ life, act, focus = null, onShowLog }: { life: Life; 
           </Fold>
         );
       })}
+      </Wrap>
     </div>
   );
 }
 
 const drifting = (p: Person) => p.bond < 30 && (FAMILY.includes(p.relation) || p.relation === "friend" || p.relation === "ally") && !isSovereign(p);
 const reachable = (p: Person) => p.alive && !isSovereign(p) && !p.tags?.some((t) => t.startsWith("away:"));
+
+/** แฟนตาซี: สรุปผู้คน และสามคนที่ควรใส่ใจ (ตามตัวอย่าง R25) · แตะเพื่อเปิดคนนั้น */
+function FtPeopleTop({ life, pick }: { life: Life; pick: (id: string) => void }) {
+  const alive = life.people.filter((p) => p.alive);
+  const n = (f: (p: Person) => boolean) => alive.filter(f).length;
+  const close = [
+    n((p) => p.relation === "spouse" || p.relation === "partner") && `คู่ชีวิต ${n((p) => p.relation === "spouse" || p.relation === "partner")}`,
+    n((p) => p.relation === "child") && `ลูก ${n((p) => p.relation === "child")}`,
+    n((p) => p.relation === "friend" && friendStage(p, life) >= 2) && `เพื่อนสนิท ${n((p) => p.relation === "friend" && friendStage(p, life) >= 2)}`,
+    n((p) => p.relation === "friend" && friendStage(p, life) === 1) && `เพื่อน ${n((p) => p.relation === "friend" && friendStage(p, life) === 1)}`,
+  ].filter(Boolean).join(" · ");
+  const far = alive.filter((p) => FAMILY.includes(p.relation) && p.bond < 35);
+  const foes = alive.filter((p) => relOf(p).grudge >= 50);
+  const care = peopleToCare(life);
+  const ICON: Record<string, IconName> = { spouse: "happiness", partner: "happiness", child: "people", father: "people", mother: "people", sibling: "people", friend: "people", rival: "flag" };
+  return (
+    <>
+      <Glance rows={[
+        ["ใกล้ชิด", close || "ยังไม่มีใครใกล้ชิด"],
+        far.length > 0 && ["ห่างเหิน", far.slice(0, 3).map((p) => `${shortName(p)} (${relationLabel(p, life)})`).join(" · "), "bad"],
+        foes.length > 0 && ["ศัตรู", foes.slice(0, 2).map((p) => `${shortName(p)} · แค้น ${relOf(p).grudge}`).join(" · ")],
+      ]} />
+      <TopActs title="ควรใส่ใจ" hint="คนที่กำลังห่างหรือมีเรื่องค้าง" items={care.map((c) => ({
+        key: c.p.id, icon: relOf(c.p).grudge >= 50 ? "flag" : ICON[c.p.relation] ?? "people", name: `${shortName(c.p)} · ${relationLabel(c.p, life)}`, why: c.why,
+        tags: relOf(c.p).grudge >= 50 ? ["คืนดี", "หรือสู้ · เสี่ยง"] : ["+ความผูกพัน"],
+        onClick: () => pick(c.p.id),
+      }))} />
+    </>
+  );
+}
 
 /** สรุปคนที่ควรดูแลปีนี้ พร้อมปุ่มรวบเดียว */
 function KinCare({ life, act }: { life: Life; act: Act }) {

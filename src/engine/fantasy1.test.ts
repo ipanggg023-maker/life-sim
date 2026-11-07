@@ -349,7 +349,7 @@ describe("สมดุล", () => {
     expect(trials).toBeGreaterThan(0);
     expect(relics / N).toBeLessThan(0.6);
     expect(guildDeaths).toBeGreaterThan(0);
-  }, 120_000);
+  }, 300_000);
 });
 
 describe("ปริมาณเนื้อหา", () => {

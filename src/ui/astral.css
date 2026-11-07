@@ -331,3 +331,36 @@
 @media (max-width: 480px) {
   :root[data-world="fantasy"] .text-speed { top: 0; }
 }
+
+/* ─── แถบแบบ R25: สรุปบนสุด · สามอย่างที่ควรทำ · ที่เหลือพับไว้ (หน้าหลักไม่เกี่ยว) ─── */
+:root[data-world="fantasy"] .r25 .glance { margin: 2px 0 12px; padding: 10px 12px; border-radius: 12px; background: var(--surface); box-shadow: var(--gild); font-family: var(--font-ui); font-size: 13.5px; line-height: 1.55; }
+:root[data-world="fantasy"] .r25 .glance-row { display: flex; gap: 8px; align-items: baseline; }
+:root[data-world="fantasy"] .r25 .glance-row + .glance-row { margin-top: 3px; }
+:root[data-world="fantasy"] .r25 .glance-k { color: var(--faint); min-width: 64px; flex: none; }
+:root[data-world="fantasy"] .r25 .glance-v { color: var(--text); }
+:root[data-world="fantasy"] .r25 .glance-v.bad, :root[data-world="fantasy"] .r25 .bad { color: var(--bad); }
+:root[data-world="fantasy"] .r25 .glance-v.good, :root[data-world="fantasy"] .r25 .good { color: var(--good); }
+:root[data-world="fantasy"] .r25 .glance-v.star { color: var(--gold); }
+:root[data-world="fantasy"] .r25 .glance-cap { font-family: var(--font-display); color: var(--gold); font-size: 14.5px; margin: 14px 2px 6px; display: flex; align-items: center; gap: 8px; }
+:root[data-world="fantasy"] .r25 .glance-cap::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
+:root[data-world="fantasy"] .r25 .glance-cap small { font-family: var(--font-ui); color: var(--faint); font-size: 11.5px; }
+:root[data-world="fantasy"] .r25 .top-act { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 11px; margin-bottom: 7px; border-radius: 11px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--gild); color: var(--text); font-family: var(--font-ui); cursor: pointer; }
+:root[data-world="fantasy"] .r25 button.top-act:hover, :root[data-world="fantasy"] .r25 button.top-act:focus-visible { background: var(--surface-2); }
+:root[data-world="fantasy"] .r25 .top-act.still { cursor: default; }
+:root[data-world="fantasy"] .r25 .top-ic { width: 34px; height: 34px; flex: none; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line-soft); background: radial-gradient(circle, rgba(240, 212, 146, 0.1), transparent 70%); color: var(--gold); }
+:root[data-world="fantasy"] .r25 .top-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+:root[data-world="fantasy"] .r25 .top-n { font-size: 14.5px; font-weight: 500; }
+:root[data-world="fantasy"] .r25 .top-why { font-size: 12px; color: var(--muted); margin-top: 1px; }
+:root[data-world="fantasy"] .r25 .tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+:root[data-world="fantasy"] .r25 .tag { font-size: 11px; padding: 1px 7px; border-radius: 20px; border: 1px solid; white-space: nowrap; }
+:root[data-world="fantasy"] .r25 .tag.good { color: var(--good); border-color: rgba(143, 214, 180, 0.35); }
+:root[data-world="fantasy"] .r25 .tag.bad { color: var(--bad); border-color: rgba(236, 142, 128, 0.4); }
+:root[data-world="fantasy"] .r25 .tag.warn { color: var(--warn); border-color: rgba(234, 197, 110, 0.35); }
+:root[data-world="fantasy"] .r25 .tag.star { color: var(--star); border-color: rgba(159, 196, 240, 0.35); }
+:root[data-world="fantasy"] .r25 .top-chev { color: var(--faint); font-size: 18px; }
+/* ส่วนที่พับ: เป็นแถวคั่นด้วยเส้นทองบางๆ แทนการ์ดทั้งใบ */
+:root[data-world="fantasy"] .r25 details.fold-card, :root[data-world="fantasy"] .r25 details.fold-section { background: none; box-shadow: none; border: 0; border-top: 1px solid var(--line-soft); border-radius: 0; margin: 0; padding: 0; }
+:root[data-world="fantasy"] .r25 details.fold-card > .fold-head, :root[data-world="fantasy"] .r25 details.fold-section > .fold-head { padding: 11px 2px; min-height: 44px; font-family: var(--font-display); font-size: 15px; letter-spacing: 0; color: var(--text); }
+:root[data-world="fantasy"] .r25 details.fold-card > .fold-body, :root[data-world="fantasy"] .r25 details.fold-section > .fold-body { padding: 0 2px 12px; }
+:root[data-world="fantasy"] .r25 details:last-of-type { border-bottom: 1px solid var(--line-soft); }
+:root[data-world="fantasy"] .r25 .fold-chevron { color: var(--gold); margin-left: auto; }

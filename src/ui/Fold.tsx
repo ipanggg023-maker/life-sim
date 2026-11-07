@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { Icon } from "./Icon";
 
 // การ์ด/หัวข้อในแผ่นเลื่อน: ส่วนสำคัญแสดงตลอด (always) · รายละเอียดปลีกย่อยย่อไว้ เปิดเมื่ออยากดู และจำไว้ว่าเปิดอันไหน (เก็บในเครื่องนี้)
@@ -10,7 +10,23 @@ function readOpen(): Set<string> {
     return new Set();
   }
 }
+const CLOSED = "ls.folds.closed";
+function readClosed(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(CLOSED) ?? "[]") as string[]);
+  } catch {
+    return new Set();
+  }
+}
 function saveOpen(id: string, open: boolean) {
+  try {
+    const c = readClosed();
+    if (open) c.delete(id);
+    else c.add(id);
+    localStorage.setItem(CLOSED, JSON.stringify([...c]));
+  } catch {
+    /* ไม่มีที่เก็บ */
+  }
   try {
     const s = readOpen();
     if (open) s.add(id);
@@ -21,11 +37,15 @@ function saveOpen(id: string, open: boolean) {
   }
 }
 
+/** แถบของโลกแฟนตาซี: สรุปและสามอย่างแนะนำอยู่บนสุด ส่วนที่เหลือพับไว้ทั้งหมด แม้จะเป็นส่วนที่เคยแสดงตลอด */
+export const FoldAll = createContext(false);
+
 /** kind="card": การ์ดทั้งใบ · kind="section": หัวข้อย่อยในการ์ดหรือในแผ่น
  *  always: ส่วนสำคัญ แสดงตลอดเหมือนการ์ดปกติ (ไม่มีปุ่มย่อ) — ย่อเฉพาะรายละเอียดปลีกย่อย · force: บังคับเปิด (เช่น แตะชื่อคนจากบันทึก) */
-export function Fold(props: { id: string; title: ReactNode; className?: string; kind?: "card" | "section"; force?: boolean; always?: boolean; children: ReactNode }) {
+export function Fold(props: { id: string; title: ReactNode; className?: string; kind?: "card" | "section"; force?: boolean; always?: boolean; open?: boolean; children: ReactNode }) {
   const { title, className = "", kind = "card", always, children } = props;
-  if (always)
+  const foldAll = useContext(FoldAll);
+  if (always && !foldAll)
     return kind === "card" ? (
       <div className={`card ${className}`}>
         <div className="card-title">{title}</div>
@@ -40,8 +60,9 @@ export function Fold(props: { id: string; title: ReactNode; className?: string; 
   return <Folding {...props} />;
 }
 
-function Folding({ id, title, className = "", kind = "card", force = false, children }: { id: string; title: ReactNode; className?: string; kind?: "card" | "section"; force?: boolean; children: ReactNode }) {
-  const [open, setOpen] = useState(() => force || readOpen().has(id));
+function Folding({ id, title, className = "", kind = "card", force = false, open: first = false, children }: { id: string; title: ReactNode; className?: string; kind?: "card" | "section"; force?: boolean; open?: boolean; children: ReactNode }) {
+  // open: เปิดไว้ตั้งแต่แรก จนกว่าผู้เล่นจะพับเอง (จำไว้ในเครื่องนี้)
+  const [open, setOpen] = useState(() => force || readOpen().has(id) || (first && !readClosed().has(id)));
   useEffect(() => {
     if (force) setOpen(true);
   }, [force]);

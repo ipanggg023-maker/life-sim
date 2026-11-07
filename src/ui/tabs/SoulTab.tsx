@@ -1,4 +1,8 @@
-import { useState, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
+import { Cap, Glance, R25, TopActs } from "./Glance";
+import { verdict } from "../../content/fantasy/persona";
+import { seedsOf } from "../../content/fantasy/conseq";
+import { fl as ftOf } from "../../content/fantasy/state";
 import { noEmoji } from "../Icon";
 import { COMBOS } from "../../content/murim/life/gifts";
 import { COUNTRIES } from "../../content/countries";
@@ -50,8 +54,13 @@ export function SoulTab({
   const real = isRealistic(life.worldId);
   /** ความสำเร็จที่ทำได้แล้วในชาตินี้ (แต้มวิญญาณได้ตอนจบชีวิต) */
   const thisLife = String(life.flags.achShown ?? "").split(",").filter((id) => id && !soul.achievements.includes(id));
+  const ft = life.worldId === "fantasy" && !!life.ft;
+  const Wrap = ft ? R25 : Fragment;
   return (
     <div className="tab-content">
+      <Wrap>
+      {ft && <SoulTop life={life} soul={soul} />}
+      {ft && <Cap text="ทั้งหมด" hint="กดหัวข้อเพื่อเปิด" />}
       {life.worldId === "fantasy" && <LifeStoryFolds life={life} />}
       {life.worldId === "fantasy" && <FateLedger life={life} />}
       {life.worldId === "fantasy" && <SettingsFold life={life} />}
@@ -290,6 +299,7 @@ export function SoulTab({
       )}
 
       {dev && <DevPanel act={act} onNewLife={onNewLife} />}</Fold>
+      </Wrap>
     </div>
   );
 }
@@ -498,5 +508,24 @@ function SettingsFold({ life }: { life: Life }) {
         ))
       )}
     </Fold>
+  );
+}
+
+/** แถบบันทึก (แฟนตาซี): สรุปชีวิตนี้ และสามเรื่องที่คนจะจำ (ตามตัวอย่าง R25) */
+function SoulTop({ life, soul }: { life: Life; soul: Soul }) {
+  const f = ftOf(life);
+  const chapters = Object.keys(life.flags).filter((k) => k.startsWith("ch_")).length;
+  const waiting = seedsOf(life).filter((x) => x.done === undefined).length;
+  const deeds = (f.deedLog ?? []).slice(-3).reverse();
+  return (
+    <>
+      <Glance rows={[
+        ["ชีวิตนี้", `${life.age} ปี · ${chapters} บท`],
+        ["คนจำว่า", verdict(life).replace(/^คนจดจำว่า/, ""), "star"],
+        ["วิญญาณ", `ชาติที่ ${soul.lives + 1} · แต้มวิญญาณ ${soul.points}`],
+        waiting > 0 && ["ค้างอยู่", `เรื่องเก่าที่ยังไม่กลับมา ${waiting} เรื่อง`],
+      ]} />
+      <TopActs title="ไฮไลต์" hint="เรื่องที่คนจะจำ" items={deeds.map((d, i) => ({ key: `${d.age}-${i}`, icon: "flag" as const, name: d.text, why: `อายุ ${d.age}` }))} />
+    </>
   );
 }

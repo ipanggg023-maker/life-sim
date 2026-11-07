@@ -423,7 +423,7 @@ export function App() {
         <Sheet title={isRealistic(life.worldId) && tab === "soul" ? "บันทึก" : isRealistic(life.worldId) && tab === "power" ? (life.worldId === "fantasy" ? "พลัง" : "วิชายุทธ์") : life.worldId === "fantasy" && tab === "jianghu" ? "โลก" : TAB_TITLES[tab]} onClose={() => setTab(null)}>
           {tab === "career" && <CareerTab life={life} act={act} />}
           {tab === "people" && <PeopleTab life={life} act={act} focus={focus} onShowLog={(id) => { setWho(id); setTab(null); }} />}
-          {tab === "power" && (life.ft ? <FantasyPowerTab life={life} /> : <PowerTab life={life} act={act} />)}
+          {tab === "power" && (life.ft ? <FantasyPowerTab life={life} act={act} /> : <PowerTab life={life} act={act} />)}
           {tab === "jianghu" && (life.ft ? <FantasyWorldTab life={life} act={act} /> : <JianghuTab life={life} act={act} />)}
           {tab === "activities" && <ActivitiesTab life={life} act={act} />}
           {tab === "phone" && <PhoneTab life={life} act={act} />}

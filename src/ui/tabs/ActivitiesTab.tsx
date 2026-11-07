@@ -2,11 +2,15 @@ import { BABY_AGE, activitiesFor, activityLocked, activityNotes, doActivity, tim
 import type { Life } from "../../engine/types";
 import { loc, money } from "../../engine/util";
 import type { Act } from "../App";
-import { noEmoji } from "../Icon";
+import { noEmoji, type IconName } from "../Icon";
 import { Fold } from "../Fold";
 import { placeHidden, placeName, placeOf } from "../../content/murim/life/place";
 import { useState } from "react";
-import { GOALS, GROUP_HINTS, MAX_GOALS, goalDone, goalsOf, setGoal, suggestionsOf } from "../../content/fantasy/ease";
+import { GOALS, GROUP_HINTS, MAX_GOALS, goalDone, goalsOf, setGoal } from "../../content/fantasy/ease";
+import { topPicks } from "../../content/fantasy/glance";
+import { Cap, Glance, R25, TopActs } from "./Glance";
+import { nextYearGold } from "../../content/fantasy/economy";
+import { GOLD } from "../../content/fantasy/kit";
 import { hintSeen, hintsOn, markHint } from "../settings";
 
 const ROLE_GROUPS = new Set(["ทรัพย์สิน", "ราชสำนัก", "วังหลัง", "ชีวิตในวัง"]);
@@ -28,9 +32,12 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
   const groups = [...new Set(list.map((a) => a.group ?? ""))].sort((a, b) => Number(b === place?.group) - Number(a === place?.group));
   const hidden = place ? placeHidden(life) : 0;
   const left = timeLeft(life);
-  return (
-    <div className="tab-content">
-      {left !== undefined && <TimeBar left={left} max={timeBudget.fn?.(life) ?? left} />}
+  const ft = life.worldId === "fantasy" && !!life.ft;
+  const body = (
+    <>
+      {!ft && left !== undefined && <TimeBar left={left} max={timeBudget.fn?.(life) ?? left} />}
+      {ft && <FtTop life={life} act={act} left={left} />}
+      {ft && <Cap text="ทั้งหมด" hint="กดหมวดเพื่อเปิด" />}
       {life.worldId === "fantasy" && life.age >= 6 && (
         <label className="auto-decide small">
           <input type="checkbox" checked={!!life.flags.ftAutoDecide} onChange={() => act((l) => { l.flags.ftAutoDecide = !l.flags.ftAutoDecide; })} />
@@ -67,7 +74,7 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
           </div>
         );
         return g ? (
-          <Fold always kind="section" key={g} id={`act-${g}`} title={g}>
+          <Fold always kind="section" key={g} id={`act-${g}`} title={ft ? <>{g} <span className="fold-count">{items.length}</span></> : g}>
             {life.worldId === "fantasy" && <GroupHint group={g} />}
             {grid}
           </Fold>
@@ -75,7 +82,29 @@ export function ActivitiesTab({ life, act }: { life: Life; act: Act }) {
           <div key="all">{grid}</div>
         );
       })}
-    </div>
+    </>
+  );
+  return <div className="tab-content">{ft ? <R25>{body}</R25> : body}</div>;
+}
+
+/** แฟนตาซี: สรุปปีนี้ และสามอย่างที่ควรทำ (ตามตัวอย่าง R25) */
+const PICK_ICON: Record<string, IconName> = { ft_healer: "health", ft_rest: "happiness", ft_tavern: "people", ft_festival: "happiness", ft_go_out: "people", ft_gig: "career", ft_oddjob: "career", ft_train: "power", ft_study: "smarts", ft_wand: "smarts", ft_h_temple: "luck" };
+function FtTop({ life, act, left }: { life: Life; act: Act; left?: number }) {
+  if (life.age < 6) return null;
+  const hp = life.stats.health, g = Math.floor(life.money / GOLD), next = nextYearGold(life), debt = Math.ceil(life.debt / GOLD);
+  return (
+    <>
+      <Glance rows={[
+        ["สุขภาพ", hp < 40 ? `${hp} · ต่ำ ควรพักหรือหาหมอ` : `${hp}`, hp < 40 ? "bad" : undefined],
+        ["เงิน", <>{g} เหรียญทอง{next !== undefined && <> · ปีหน้าน่าจะ <span className={next - g >= 0 ? "good" : "bad"}>{next - g >= 0 ? "+" : "−"}{Math.abs(next - g)}</span></>}</>],
+        debt > 0 && ["หนี้", `${debt} เหรียญทอง`, "bad"],
+        left !== undefined && ["ปีนี้", left > 0 ? `ทำได้อีก ${left} อย่าง` : "ทำครบแล้ว กด +1 ปี"],
+      ]} />
+      <TopActs title="ควรทำปีนี้" hint="เลือกจากสถานการณ์ของคุณ" items={topPicks(life).map((x) => ({
+        key: x.id, icon: PICK_ICON[x.id] ?? "activities", name: x.name, why: x.why, tags: x.gets,
+        onClick: () => act((l) => doActivity(l, x.id)),
+      }))} />
+    </>
   );
 }
 
@@ -97,23 +126,9 @@ export function TimeBar({ left, max }: { left: number; max: number }) {
 /** แฟนตาซี: สิ่งที่น่าทำปีนี้ และเป้าหมายชีวิต */
 function FtPlan({ life, act }: { life: Life; act: Act }) {
   const [pick, setPick] = useState(false);
-  const sug = suggestionsOf(life);
   const goals = goalsOf(life);
   return (
     <>
-      {sug.length > 0 && (
-        <div className="card">
-          <div className="card-title">น่าทำปีนี้</div>
-          <div className="grid">
-            {sug.map((x) => (
-              <button key={x.id} className="activity" onClick={() => act((l) => doActivity(l, x.id))}>
-                <span className="act-name">{x.name}</span>
-                <span className="act-desc">{x.why}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
       <Fold kind="section" id="ft-goals" title={<>เป้าหมายชีวิต <span className="fold-count">{goals.length}/{MAX_GOALS}</span></>}>
         {goals.map((g) => (
           <div key={g.id}>

@@ -9,7 +9,12 @@ import { doJobAction, jobActionLocked, jobActionsFor, jobCost } from "../../cont
 import { timeBudget, timeLeft } from "../../engine/activities";
 import { TimeBar } from "./ActivitiesTab";
 import { Fold } from "../Fold";
-import { FantasyCareerCard } from "./FantasyTabs";
+import { CareerTop, FantasyCareerCard } from "./FantasyTabs";
+import { Cap, R25 } from "./Glance";
+import type { ReactNode } from "react";
+
+/** โลกแฟนตาซีใช้หน้าตาแบบ R25 · โลกอื่นเหมือนเดิม */
+const CareerWrap = ({ life, children }: { life: Life; children: ReactNode }) => (life.worldId === "fantasy" && life.ft ? <R25>{children}</R25> : <>{children}</>);
 import { WorkplaceCard } from "./FantasyFate";
 import { cityPay } from "../../content/fantasy/cities";
 import { canRetire, nextStep, pensionOf, retire, workActions } from "../../content/murim/life/workplace";
@@ -34,6 +39,9 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
 
   return (
     <div className="tab-content">
+      <CareerWrap life={life}>
+      {life.worldId === "fantasy" && life.ft && <CareerTop life={life} act={act} />}
+      {life.worldId === "fantasy" && life.ft && <Cap text="ทั้งหมด" hint="กดหัวข้อเพื่อเปิด" />}
       {!worldOf(life.worldId).modern ? null : <Fold always id="career-0" title={<>การศึกษา</>}>
         <p>
           สถานะ: {STAGE_LABEL[ed.stage]}
@@ -140,6 +148,7 @@ export function CareerTab({ life, act }: { life: Life; act: Act }) {
           })}</Fold>
         </>
       )}
+      </CareerWrap>
     </div>
   );
 }

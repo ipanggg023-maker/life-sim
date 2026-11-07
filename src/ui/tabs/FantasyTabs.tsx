@@ -10,6 +10,10 @@ import { legendLines } from "../../content/fantasy/legends2";
 import { HUNT_AGE, canStart, giveUp, huntOf, huntRelics, isPerson, pastHolders, startHunt } from "../../content/fantasy/hunts";
 import type { Act } from "../App";
 import { ancientLines } from "../../content/fantasy/ancients";
+import { careerPicks, powerSteps, worldSteps, type Step } from "../../content/fantasy/glance";
+import { Cap, Glance, R25, TopActs } from "./Glance";
+import type { IconName } from "../Icon";
+import { doActivity } from "../../engine/activities";
 import { coreOf, woodOf } from "../../content/fantasy/wands";
 import { BESTIARY, timesMet } from "../../content/fantasy/bestiary";
 import { PARENTING, familyRec, parentingOf, type Parenting } from "../../content/fantasy/family2";
@@ -135,7 +139,7 @@ function TrainingFold({ life }: { life: Life }) {
   );
 }
 
-export function FantasyPowerTab({ life }: { life: Life }) {
+export function FantasyPowerTab({ life, act }: { life: Life; act: Act }) {
   const f = fl(life);
   const s = schoolOf(life);
   const relic = myRelic(life);
@@ -143,7 +147,9 @@ export function FantasyPowerTab({ life }: { life: Life }) {
   const d = dataOf(life);
   const faction = myFaction(life);
   return (
-    <div className="tab-content">
+    <div className="tab-content"><R25>
+      <PowerTop life={life} act={act} />
+      <Cap text="ทั้งหมด" hint="กดหัวข้อเพื่อเปิด" />
       <Fold always id="ft-power" title={<>ตัวคุณ{epithetOf(life) ? <span className="muted small"> · {epithetOf(life)}</span> : null}</>}>
         <div className="status-grid">
           <span>เผ่า</span>
@@ -260,7 +266,42 @@ export function FantasyPowerTab({ life }: { life: Life }) {
           {f.scars.map((d, i) => <p className="small" key={i}>{d}</p>)}
         </Fold>
       )}
-    </div>
+    </R25></div>
+  );
+}
+
+/** แถบพลัง: ดาว ขั้น คทา และก้าวต่อไป (ตามตัวอย่าง R25) */
+const STEP_ICON: Record<string, IconName> = { body: "power", magic: "smarts", wand: "smarts", hunt: "flag", ancient: "flag", legend: "scroll" };
+const stepItems = (steps: Step[], act: Act) => steps.map((x) => ({ key: x.key, icon: STEP_ICON[x.key] ?? "activities", name: x.name, why: x.why, tags: x.tags, onClick: x.act ? () => act((l) => doActivity(l, x.act!)) : undefined }));
+function PowerTop({ life, act }: { life: Life; act: Act }) {
+  const f = fl(life), open = seen(life), w = f.wand;
+  const stars = (n: number) => <><span className="stars">{starsOn(n)}</span><span className="stars-off">{starsOff(n)}</span></>;
+  return (
+    <>
+      <Glance rows={[
+        ["กาย", open ? <>{stars(f.bstars ?? 0)} <span className="muted small">{BODY_RANKS[f.bodyRank]}</span></> : BODY_RANKS[f.bodyRank]],
+        ["เวท", open ? <>{stars(f.potential)} <span className="muted small">{MAGIC_RANKS[f.magicRank]}{f.element ? ` · ธาตุ${ELEMENTS[f.element].name}` : ""}</span></> : MAGIC_RANKS[f.magicRank]],
+        ["คทา", w ? `${w.name}${woodOf(w.wood) ? ` · ${woodOf(w.wood)!.name}` : ""}${coreOf(w.core) ? ` แกน${coreOf(w.core)!.name}` : ""} · ขั้น ${w.quality}` : "ยังไม่มี"],
+        f.ailment && ["อาการ", "พิษ คำสาป หรือโรคกำลังทรุดลง", "bad"],
+        f.wound !== undefined && ["แผล", "มีแผลที่ยังไม่หาย", "bad"],
+      ]} />
+      <TopActs title="ก้าวต่อไป" hint="ใกล้ขั้นต่อไปแค่ไหน" items={stepItems(powerSteps(life), act)} />
+    </>
+  );
+}
+function WorldTop({ life, act }: { life: Life; act: Act }) {
+  const here = homeKingdom(life), c = cityOf(life), om = omenOf(life);
+  const trouble = [here.war && "สงคราม", here.plague && "โรคระบาด", here.famine && "ทุพภิกขภัย"].filter(Boolean).join(" · ");
+  return (
+    <>
+      <Glance rows={[
+        ["แผ่นดิน", <>{here.name} · ปกครองโดย{here.ruler}{trouble ? <span className="bad"> · {trouble}</span> : <span className="good"> · สงบ</span>}</>],
+        ["ที่อยู่", `${c.name} · ${KINDS[c.kind].name}`],
+        om && ["ลาง", `${om.name} · ถึงปี ${om.until}`, "bad"],
+        ["ปี", `${worldOfLife(life).year}`],
+      ]} />
+      <TopActs title="ตำนานที่รออยู่" hint="อาวุธ มังกร และเบาะแส" items={stepItems(worldSteps(life), act)} />
+    </>
   );
 }
 
@@ -270,7 +311,9 @@ export function FantasyWorldTab({ life, act }: { life: Life; act: Act }) {
   const f = fl(life);
   const here = homeKingdom(life);
   return (
-    <div className="tab-content">
+    <div className="tab-content"><R25>
+      <WorldTop life={life} act={act} />
+      <Cap text="ทั้งหมด" hint="กดหัวข้อเพื่อเปิด" />
       <Fold always id="ft-society" title={<>สังคม ชนชั้น และศรัทธา</>}>
         {societyLines(life).map((t) => <p className="small" key={t}>{t}</p>)}
       </Fold>
@@ -345,7 +388,7 @@ export function FantasyWorldTab({ life, act }: { life: Life; act: Act }) {
       <Fold id="ft-chronicle" title={<>พงศาวดาร</>}>
         {w.chronicle.slice(-20).reverse().map((c, i) => <p className="small" key={i}>ปี {c.year} · {c.text}</p>)}
       </Fold>
-    </div>
+    </R25></div>
   );
 }
 
@@ -461,6 +504,24 @@ export function FantasyCareerCard({ life }: { life: Life }) {
       {owned.length > 0 && <p className="small muted">รายได้จากทรัพย์สินรวมปีละ {assetIncome(life)} เหรียญทอง</p>}
     </Fold>
     )}
+    </>
+  );
+}
+
+/** แถบอาชีพ: งาน เงินปีนี้ หนี้ และสามอย่างที่ควรทำ (ตามตัวอย่าง R25) */
+export function CareerTop({ life, act }: { life: Life; act: Act }) {
+  const job = life.job, career = job ? careerById(job.careerId) : undefined;
+  const g = fl(life).ledger, debt = Math.ceil(life.debt / GOLD);
+  const ICON: Record<string, IconName> = { ft_raise: "career", ft_gig: "career", ft_oddjob: "career", ft_invest: "luck", ft_tguild: "people" };
+  return (
+    <>
+      <Glance rows={[
+        ["งาน", job && career ? `${fitGender(career.titles[job.level - 1], life.gender)} · ขั้น ${job.level}/5 · ผลงาน ${job.performance}` : "ยังไม่มีงานประจำ"],
+        g && ["ปีนี้", <>รายได้ {g.pay + g.assets} · ค่าใช้จ่าย {g.living + g.upkeep + g.interest} · {g.pay + g.assets - g.living - g.upkeep - g.interest >= 0 ? <span className="good">เหลือ +{g.pay + g.assets - g.living - g.upkeep - g.interest}</span> : <span className="bad">ขาด {g.living + g.upkeep + g.interest - g.pay - g.assets}</span>}</>],
+        ["เงิน", `${Math.floor(life.money / GOLD)} เหรียญทอง`],
+        debt > 0 && ["หนี้", `${debt} เหรียญทอง · ดอกเบี้ยปีละ ${Math.round(DEBT_RATE * 100)}%`, "bad"],
+      ]} />
+      <TopActs title="ควรทำ" hint="ให้งานและเงินไปต่อ" items={careerPicks(life).map((x) => ({ key: x.id, icon: ICON[x.id] ?? "career", name: x.name, why: x.why, tags: x.gets, onClick: () => act((l) => doActivity(l, x.id)) }))} />
     </>
   );
 }
